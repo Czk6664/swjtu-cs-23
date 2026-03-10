@@ -1,0 +1,29 @@
+TEST AND SET指令后续简写为TS。TS指令的格式如下:
+TS 	REG, LOCK
+其中，操作数REG是CPU中的一个寄存器，操作数LOCK是一个内存单元。
+TS指令可以完成如下两个作用：
+1) 把LOCK（内存单元）的值搬移到REG（CPU中的寄存器），即LOCK=>REG；
+2) 把一个非零值放入LOCK中，即!0=>LOCK
+
+通过TS指令实现互斥的方案如下（汇编代码不区分大小写）：
+
+entercritical：
+	ts 	reg, lock
+	cmp	reg, 0
+	jnz 	entercritical
+          ...				;critical section
+
+exitcritical：
+	mov	lock, 0
+
+
+
+entercritical：
+        mov     reg, 1
+	xchg 	reg, lock
+	cmp	reg, 0
+	jnz 	entercritical
+          ...				;critical section
+
+exitcritical：
+	mov	lock, 0
