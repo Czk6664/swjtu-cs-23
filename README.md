@@ -2,7 +2,7 @@
 
 # 🎓 西南交通大学计算机科学与技术专业
 
-## 📚 大三上学期课程资料合集
+## 📚 课程资料合集
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Update](https://img.shields.io/badge/update-持续更新-green.svg)](README.md)
