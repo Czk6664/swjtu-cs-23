@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>西南交大论坛 - 内容治理</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+</head>
+<body data-page="moderation">
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="topbar__inner container">
+        <div class="topbar__content">
+          <a class="brand" href="../index.html"><span class="brand__mark"></span><span class="brand__text">西南交大论坛</span></a>
+          <nav class="nav">
+            <a href="../admin_overview/code.html">管理总览</a>
+            <a href="../content_governance/code.html" style="color: var(--interaction-blue);">内容治理</a>
+            <a href="../user_management_desktop/code.html">用户管理</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section class="section">
+        <div class="container split-layout">
+          <section class="surface-section stack">
+            <div class="toolbar-space">
+              <div><div class="label">Forum Moderation</div><h1 class="section__title">审核队列</h1></div>
+              <div class="inline-tags"><span class="tag tag--blue">待审核 14</span><span class="tag">已驳回 3</span></div>
+            </div>
+            <table class="table table--compact">
+              <thead>
+                <tr><th>帖子</th><th>版块</th><th>风险原因</th><th>操作</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>“高数速成资料群”扫码引流帖</td><td>课程互助</td><td>外链导流</td><td><a class="button button--outline" href="javascript:void(0)">处理</a></td></tr>
+                <tr><td>犀浦西门转租信息重复发布</td><td>转租合租</td><td>重复内容</td><td><a class="button button--outline" href="javascript:void(0)">处理</a></td></tr>
+                <tr><td>匿名吐槽舍友帖</td><td>犀浦生活</td><td>存在人身攻击</td><td><a class="button button--outline" href="javascript:void(0)">处理</a></td></tr>
+                <tr><td>不完整保研信息汇总</td><td>保研考研</td><td>事实待核验</td><td><a class="button button--outline" href="javascript:void(0)">处理</a></td></tr>
+              </tbody>
+            </table>
+          </section>
+          <aside class="stack">
+            <section class="card card--quiet">
+              <div class="label">治理规则</div>
+              <h3 class="post-card__title">审核原则</h3>
+              <ul class="bullet-list">
+                <li>优先处理课程资料引流、转租违规和交易欺诈类内容。</li>
+                <li>对保研考研、就业类信息保留事实核验入口。</li>
+                <li>失物招领与求助帖优先保护真实有效性。</li>
+              </ul>
+            </section>
+            <section class="card">
+              <div class="label">风险趋势</div>
+              <div class="metric-line"><strong>72%</strong><span class="muted">风险帖来自课程互助和转租版块</span></div>
+              <div class="progress"><span style="width: 72%"></span></div>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="../assets/app.js"></script>
+</body>
+</html>
+

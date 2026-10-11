@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>交大论坛 - 西南交通大学校园交流平台</title>
+  <style>
+    :root {
+      --brand: #0075b8;
+      --brand-deep: #004f86;
+      --brand-soft: #e8f5ff;
+      --mint: #49d9c9;
+      --sun: #ffd166;
+      --coral: #ff8b7b;
+      --lavender: #b6b7ff;
+      --ink: #17212b;
+      --ink-soft: #435463;
+      --muted: #6f8190;
+      --line: #dce9f2;
+      --page: #ffffff;
+      --wash: #f6fbff;
+      --card: rgba(255, 255, 255, .88);
+      --shadow-sm: 0 8px 22px rgba(0, 79, 134, .08);
+      --shadow-md: 0 18px 46px rgba(0, 79, 134, .12);
+      --container: min(1180px, calc(100vw - 40px));
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 8%, rgba(73, 217, 201, .14), transparent 28%),
+        radial-gradient(circle at 84% 4%, rgba(0, 117, 184, .13), transparent 30%),
+        linear-gradient(180deg, #ffffff 0%, #f8fcff 58%, #ffffff 100%);
+      line-height: 1.6;
+      text-rendering: optimizeLegibility;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img,
+    svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    .container {
+      width: var(--container);
+      margin: 0 auto;
+    }
+
+    .home-shell {
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      border-bottom: 1px solid rgba(220, 233, 242, .76);
+      background: rgba(255, 255, 255, .78);
+      backdrop-filter: blur(18px) saturate(1.25);
+    }
+
+    .site-nav__inner {
+      width: var(--container);
+      min-height: 72px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+    }
+
+    .brand__mark {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: transparent;
+    }
+
+    .brand__mark img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 22px rgba(0, 117, 184, .22));
+    }
+
+    .brand__name {
+      font-size: 21px;
+      letter-spacing: -.02em;
+    }
+
+    .nav-links {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    .nav-links a {
+      padding: 9px 13px;
+      border-radius: 999px;
+      color: var(--ink-soft);
+      font-size: 14px;
+      font-weight: 750;
+      transition: color .18s ease, background .18s ease, transform .18s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--brand);
+      background: var(--brand-soft);
+      transform: translateY(-1px);
+    }
+
+    .nav-cta {
+      color: #fff !important;
+      background: var(--brand) !important;
+      box-shadow: 0 10px 20px rgba(0, 117, 184, .18);
+    }
+
+    .hero {
+      position: relative;
+      padding: clamp(56px, 7vw, 92px) 0 72px;
+      background:
+        linear-gradient(135deg, rgba(0, 117, 184, .05), transparent 36%),
+        radial-gradient(circle at 68% 18%, rgba(182, 183, 255, .18), transparent 24%);
+    }
+
+    .hero__grid {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(380px, .9fr);
+      gap: clamp(34px, 6vw, 68px);
+      align-items: center;
+    }
+
+    .soft-pill {
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 13px;
+      border-radius: 999px;
+      color: var(--brand-deep);
+      background: rgba(232, 245, 255, .9);
+      border: 1px solid rgba(0, 117, 184, .12);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .soft-pill::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 0 5px rgba(73, 217, 201, .16);
+    }
+
+    h1,
+    h2,
+    h3 {
+      text-wrap: balance;
+    }
+
+    .hero h1 {
+      max-width: 730px;
+      margin: 22px 0 18px;
+      font-size: clamp(40px, 6vw, 72px);
+      line-height: 1.08;
+      letter-spacing: -.035em;
+    }
+
+    .hero h1 span {
+      color: var(--brand);
+    }
+
+    .hero__lead {
+      max-width: 680px;
+      margin: 0 0 30px;
+      color: var(--ink-soft);
+      font-size: 18px;
+      text-wrap: pretty;
+    }
+
+    .hero__actions,
+    .cta-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 13px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 0 22px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-weight: 850;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+      will-change: transform;
+    }
+
+    .button:hover {
+      transform: translateY(-2px) scale(1.015);
+    }
+
+    .button--primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--brand), var(--brand-deep));
+      box-shadow: 0 15px 28px rgba(0, 117, 184, .22);
+    }
+
+    .button--primary:hover {
+      box-shadow: 0 18px 34px rgba(0, 117, 184, .28), 0 0 0 7px rgba(0, 117, 184, .08);
+    }
+
+    .button--ghost {
+      color: var(--ink);
+      background: #fff;
+      border-color: var(--line);
+      box-shadow: 0 8px 18px rgba(0, 79, 134, .06);
+    }
+
+    .hero-art {
+      position: relative;
+      min-height: 470px;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(1px);
+      opacity: .72;
+      animation: drift 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .orb--blue {
+      width: 120px;
+      height: 120px;
+      right: 2%;
+      top: 3%;
+      background: rgba(0, 117, 184, .12);
+    }
+
+    .orb--mint {
+      width: 88px;
+      height: 88px;
+      left: 1%;
+      bottom: 13%;
+      background: rgba(73, 217, 201, .18);
+      animation-delay: -2s;
+    }
+
+    .orb--sun {
+      width: 62px;
+      height: 62px;
+      right: 22%;
+      bottom: 6%;
+      background: rgba(255, 209, 102, .22);
+      animation-delay: -4s;
+    }
+
+    @keyframes drift {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      50% { transform: translate3d(0, -14px, 0); }
+    }
+
+    .illustration-card {
+      position: relative;
+      padding: 18px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, .86);
+      border: 1px solid rgba(220, 233, 242, .9);
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(16px);
+    }
+
+    .product-shot {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid rgba(220, 233, 242, .9);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .product-shot img {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      object-position: top center;
+    }
+
+    .vector-scene {
+      position: absolute;
+      left: -26px;
+      bottom: -34px;
+      width: min(260px, 48%);
+      padding: 16px;
+      border-radius: 22px;
+      background: #fff;
+      border: 1px solid rgba(220, 233, 242, .88);
+      box-shadow: var(--shadow-sm);
+      animation: float-card 5s ease-in-out infinite;
+    }
+
+    @keyframes float-card {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .mini-card {
+      position: absolute;
+      right: -14px;
+      top: 44px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 180px;
+      padding: 13px 14px;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid rgba(220, 233, 242, .88);
+      box-shadow: var(--shadow-sm);
+      animation: float-card 5.5s ease-in-out infinite;
+      animation-delay: -1.5s;
+    }
+
+    .mini-card__icon {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--mint), var(--brand));
+      font-weight: 900;
+    }
+
+    .mini-card strong,
+    .mini-card span {
+      display: block;
+    }
+
+    .mini-card span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .section {
+      padding: 78px 0;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, .78fr) minmax(260px, .42fr);
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 30px;
+    }
+
+    .section-label {
+      margin-bottom: 12px;
+      color: var(--brand);
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 46px);
+      line-height: 1.16;
+      letter-spacing: -.03em;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 16px;
+      text-wrap: pretty;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .feature-card,
+    .scenario-card,
+    .step-card {
+      border: 1px solid rgba(220, 233, 242, .9);
+      background: var(--card);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .feature-card {
+      position: relative;
+      min-height: 260px;
+      padding: 22px;
+      overflow: hidden;
+      border-radius: 22px;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(0, 117, 184, .26);
+      box-shadow: var(--shadow-md);
+    }
+
+    .feature-card::after {
+      content: "";
+      position: absolute;
+      right: -34px;
+      bottom: -34px;
+      width: 116px;
+      height: 116px;
+      border-radius: 999px;
+      background: var(--feature-glow, rgba(0, 117, 184, .08));
+      pointer-events: none;
+    }
+
+    .feature-icon {
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 18px;
+      border-radius: 18px;
+      background: var(--feature-bg, var(--brand-soft));
+      color: var(--feature-color, var(--brand));
+      animation: icon-breathe 3.6s ease-in-out infinite;
+    }
+
+    .feature-card:nth-child(2) .feature-icon { animation-delay: -.7s; }
+    .feature-card:nth-child(3) .feature-icon { animation-delay: -1.4s; }
+    .feature-card:nth-child(4) .feature-icon { animation-delay: -2.1s; }
+
+    @keyframes icon-breathe {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-4px) scale(1.03); }
+    }
+
+    .feature-card h3 {
+      position: relative;
+      z-index: 1;
+      margin: 0 0 10px;
+      font-size: 20px;
+      line-height: 1.28;
+    }
+
+    .feature-card p {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+
+    .process {
+      position: relative;
+      padding: 24px;
+      border-radius: 28px;
+      background:
+        linear-gradient(135deg, rgba(232, 245, 255, .76), rgba(255, 255, 255, .92)),
+        #fff;
+      border: 1px solid rgba(220, 233, 242, .9);
+    }
+
+    .process-line {
+      position: absolute;
+      left: 9%;
+      right: 9%;
+      top: 76px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--brand), var(--mint), var(--sun), var(--coral));
+      opacity: .55;
+    }
+
+    .step-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .step-card {
+      min-height: 190px;
+      padding: 18px;
+      border-radius: 20px;
+    }
+
+    .step-number {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 18px;
+      border-radius: 16px;
+      color: #fff;
+      background: var(--brand);
+      font-weight: 900;
+      box-shadow: 0 10px 20px rgba(0, 117, 184, .18);
+    }
+
+    .step-card h3 {
+      margin: 0 0 8px;
+      font-size: 19px;
+    }
+
+    .step-card p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .scenario-card {
+      position: relative;
+      min-height: 210px;
+      padding: 22px;
+      overflow: hidden;
+      border-radius: 22px;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .scenario-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .scenario-card svg {
+      width: 74px;
+      height: 74px;
+      margin-bottom: 20px;
+    }
+
+    .scenario-card h3 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .scenario-card p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+
+    .cta-section {
+      padding: 86px 0 94px;
+    }
+
+    .cta-panel {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 28px;
+      align-items: center;
+      padding: clamp(28px, 5vw, 54px);
+      border-radius: 28px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(73, 217, 201, .24), transparent 28%),
+        linear-gradient(135deg, var(--brand-deep), var(--brand));
+      box-shadow: 0 22px 52px rgba(0, 79, 134, .2);
+    }
+
+    .cta-panel::after {
+      content: "";
+      position: absolute;
+      right: 4%;
+      top: 10%;
+      width: 170px;
+      height: 170px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .12);
+      animation: drift 8s ease-in-out infinite;
+    }
+
+    .cta-panel h2 {
+      position: relative;
+      z-index: 1;
+      margin: 0 0 12px;
+      max-width: 780px;
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 1.16;
+      letter-spacing: -.03em;
+    }
+
+    .cta-panel p {
+      position: relative;
+      z-index: 1;
+      max-width: 760px;
+      margin: 0;
+      color: rgba(255, 255, 255, .8);
+      font-size: 17px;
+    }
+
+    .cta-actions {
+      position: relative;
+      z-index: 1;
+      justify-content: flex-end;
+    }
+
+    .cta-panel .button--ghost {
+      color: var(--brand-deep);
+      background: #fff;
+    }
+
+    .site-footer {
+      padding: 28px 0;
+      border-top: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .site-footer .container {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .motion-enabled .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .56s ease, transform .56s ease;
+    }
+
+    .motion-enabled .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .motion-enabled .reveal[data-delay="1"] { transition-delay: .08s; }
+    .motion-enabled .reveal[data-delay="2"] { transition-delay: .16s; }
+    .motion-enabled .reveal[data-delay="3"] { transition-delay: .24s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+      }
+
+      .motion-enabled .reveal {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @media (max-width: 1040px) {
+      .hero__grid,
+      .section-head,
+      .cta-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-art {
+        min-height: auto;
+      }
+
+      .feature-grid,
+      .scenario-grid,
+      .step-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .process-line {
+        display: none;
+      }
+
+      .cta-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 680px) {
+      :root {
+        --container: min(100vw - 28px, 1180px);
+      }
+
+      .site-nav__inner {
+        min-height: auto;
+        padding: 14px 0;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav-links {
+        width: 100%;
+        margin-left: 0;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      .hero {
+        padding-top: 44px;
+      }
+
+      .hero h1 {
+        font-size: 39px;
+      }
+
+      .feature-grid,
+      .scenario-grid,
+      .step-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .vector-scene {
+        position: relative;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        margin-top: 14px;
+      }
+
+      .mini-card {
+        right: 10px;
+        top: 18px;
+      }
+
+      .section {
+        padding: 56px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="home-shell">
+    <header class="site-nav">
+      <div class="site-nav__inner">
+        <a class="brand" href="./index.html" aria-label="交大论坛产品介绍首页">
+          <span class="brand__mark"><img src="./assets/generated/brand/swjtu-forum-logo-transparent.png" alt="" /></span>
+          <span class="brand__name">交大论坛</span>
+        </a>
+        <nav class="nav-links" aria-label="首页导航">
+          <a href="#features">功能</a>
+          <a href="#process">流程</a>
+          <a href="#scenarios">场景</a>
+          <a href="./login_register/code.html">登录</a>
+          <a class="nav-cta" href="./home_recommended_desktop/code.html">进入社区</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero__grid">
+          <div class="reveal">
+            <div class="soft-pill">西南交通大学校园交流平台</div>
+            <h1>面向校园学习与生活的交流服务系统。</h1>
+            <p class="hero__lead">
+              交大论坛面向学生、社团和平台管理员，提供校园资讯浏览、主题发布、评论互动、圈子交流、积分成长和内容审核等功能，支持日常交流与后台管理。
+            </p>
+            <div class="hero__actions">
+              <a class="button button--primary" href="./home_recommended_desktop/code.html">进入论坛首页</a>
+              <a class="button button--ghost" href="#features">查看核心功能</a>
+            </div>
+          </div>
+
+          <aside class="hero-art reveal" data-delay="1" aria-label="产品界面预览">
+            <span class="orb orb--blue"></span>
+            <span class="orb orb--mint"></span>
+            <span class="orb orb--sun"></span>
+            <div class="illustration-card">
+              <div class="product-shot">
+                <img src="./assets/product-screen.png" alt="交大论坛产品界面截图" />
+              </div>
+              <div class="mini-card" aria-hidden="true">
+                <span class="mini-card__icon">✓</span>
+                <span>
+                  <strong>校园身份</strong>
+                  <span>认证后参与互动</span>
+                </span>
+              </div>
+              <div class="vector-scene" aria-hidden="true">
+                <svg viewBox="0 0 220 150" role="img">
+                  <defs>
+                    <linearGradient id="sceneBlue" x1="0" x2="1" y1="0" y2="1">
+                      <stop offset="0" stop-color="#49d9c9" />
+                      <stop offset="1" stop-color="#0075b8" />
+                    </linearGradient>
+                  </defs>
+                  <rect x="18" y="20" width="164" height="94" rx="20" fill="#e8f5ff" />
+                  <circle cx="170" cy="33" r="28" fill="#ffd166" opacity=".72" />
+                  <path d="M38 105c22-34 40-34 62 0 16-22 31-24 52 0z" fill="url(#sceneBlue)" opacity=".9" />
+                  <rect x="54" y="38" width="72" height="10" rx="5" fill="#0075b8" opacity=".88" />
+                  <rect x="54" y="58" width="104" height="8" rx="4" fill="#7fbce0" opacity=".75" />
+                  <rect x="54" y="76" width="82" height="8" rx="4" fill="#7fbce0" opacity=".52" />
+                  <circle cx="168" cy="104" r="18" fill="#fff" />
+                  <path d="M160 104l6 6 12-15" fill="none" stroke="#49d9c9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section" id="features">
+        <div class="container">
+          <div class="section-head reveal">
+            <div>
+              <div class="section-label">核心功能</div>
+              <h2>覆盖内容浏览、发布互动、成长激励与平台治理。</h2>
+            </div>
+            <p>核心模块围绕用户访问路径组织，普通用户与管理员入口边界清晰。</p>
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature-card reveal" style="--feature-bg:#e8f5ff;--feature-color:#0075b8;--feature-glow:rgba(0,117,184,.1)">
+              <div class="feature-icon">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <rect x="5" y="7" width="22" height="18" rx="6" fill="currentColor" opacity=".18" />
+                  <path d="M10 13h12M10 17h9M10 21h6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" />
+                </svg>
+              </div>
+              <h3>话题浏览</h3>
+              <p>热榜、版块、搜索和词云放在一个入口里，学生可以快速找到课程互助、考研、实习和生活信息。</p>
+            </article>
+
+            <article class="feature-card reveal" data-delay="1" style="--feature-bg:#eafffb;--feature-color:#008c80;--feature-glow:rgba(73,217,201,.14)">
+              <div class="feature-icon">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <path d="M8 23l3-7 9-9 5 5-9 9-8 2z" fill="currentColor" opacity=".2" />
+                  <path d="M12 20l9-9M19 8l5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+                </svg>
+              </div>
+              <h3>内容创建</h3>
+              <p>发帖页提供版块、圈子、标签和模板提示，适合发布经验、资料、活动、失物招领和二手闲置。</p>
+            </article>
+
+            <article class="feature-card reveal" data-delay="2" style="--feature-bg:#fff7df;--feature-color:#c38200;--feature-glow:rgba(255,209,102,.22)">
+              <div class="feature-icon">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <circle cx="16" cy="12" r="6" fill="currentColor" opacity=".2" />
+                  <path d="M11 19l-2 8 7-4 7 4-2-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M13 12l2 2 5-5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <h3>成长反馈</h3>
+              <p>签到、积分、等级、徽章和兑换串成闭环，让用户知道自己的贡献被记录，也能看到继续参与的理由。</p>
+            </article>
+
+            <article class="feature-card reveal" data-delay="3" style="--feature-bg:#f0f0ff;--feature-color:#686bd9;--feature-glow:rgba(182,183,255,.18)">
+              <div class="feature-icon">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <path d="M16 4l10 4v7c0 7-4 11-10 14C10 26 6 22 6 15V8z" fill="currentColor" opacity=".18" />
+                  <path d="M11 16l4 4 7-9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <h3>内容治理</h3>
+              <p>管理员可以审核帖子、处理举报、管理用户和调整推荐策略，普通用户不会被后台权限页困住。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="process">
+        <div class="container">
+          <div class="section-head reveal">
+            <div>
+              <div class="section-label">使用流程</div>
+              <h2>开始使用 → 创建内容 → 生成结果 → 分享应用。</h2>
+            </div>
+            <p>流程用四个动作说明用户从进入系统到产生价值的完整路径，不需要额外说明也能看懂。</p>
+          </div>
+
+          <div class="process reveal">
+            <span class="process-line" aria-hidden="true"></span>
+            <div class="step-grid">
+              <article class="step-card">
+                <div class="step-number">1</div>
+                <h3>开始使用</h3>
+                <p>进入论坛首页后，游客可浏览公开内容，登录用户可使用发帖、评论和个人中心功能。</p>
+              </article>
+              <article class="step-card">
+                <div class="step-number">2</div>
+                <h3>创建内容</h3>
+                <p>选择版块和标签，发布帖子、回复评论，也可以加入圈子参与小范围讨论。</p>
+              </article>
+              <article class="step-card">
+                <div class="step-number">3</div>
+                <h3>生成结果</h3>
+                <p>系统沉淀为可搜索帖子、互动记录、成长积分、徽章和后台运营数据。</p>
+              </article>
+              <article class="step-card">
+                <div class="step-number">4</div>
+                <h3>分享应用</h3>
+                <p>内容可以用于课程互助、活动通知、学习资料整理、项目演示和校园服务。</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="scenarios">
+        <div class="container">
+          <div class="section-head reveal">
+            <div>
+              <div class="section-label">场景展示</div>
+              <h2>网站、App、演示和学习项目都能讲得通。</h2>
+            </div>
+            <p>系统按校园交流、内容发布、结果反馈和应用管理组织核心使用路径。</p>
+          </div>
+
+          <div class="scenario-grid">
+            <a class="scenario-card reveal" href="./home_recommended_desktop/code.html">
+              <svg viewBox="0 0 96 96" aria-hidden="true">
+                <rect x="12" y="18" width="72" height="52" rx="12" fill="#e8f5ff" />
+                <rect x="22" y="30" width="36" height="8" rx="4" fill="#0075b8" />
+                <rect x="22" y="46" width="52" height="7" rx="3.5" fill="#8cc9e8" />
+                <rect x="22" y="60" width="40" height="7" rx="3.5" fill="#b6dff3" />
+                <rect x="34" y="76" width="28" height="5" rx="2.5" fill="#dce9f2" />
+              </svg>
+              <h3>网站</h3>
+              <p>适合部署成校园论坛门户，首页、帖子、个人中心和后台入口清晰分层。</p>
+            </a>
+
+            <a class="scenario-card reveal" data-delay="1" href="./home_recommended/code.html">
+              <svg viewBox="0 0 96 96" aria-hidden="true">
+                <rect x="30" y="10" width="36" height="76" rx="14" fill="#f0f0ff" />
+                <rect x="36" y="22" width="24" height="8" rx="4" fill="#686bd9" />
+                <rect x="36" y="38" width="24" height="22" rx="8" fill="#b6b7ff" />
+                <circle cx="48" cy="74" r="4" fill="#686bd9" />
+              </svg>
+              <h3>App</h3>
+              <p>移动端页面支持浏览、登录、发帖、评论和签到等常用操作。</p>
+            </a>
+
+            <a class="scenario-card reveal" data-delay="2" href="./admin_overview/code.html">
+              <svg viewBox="0 0 96 96" aria-hidden="true">
+                <rect x="14" y="18" width="68" height="58" rx="14" fill="#eafffb" />
+                <path d="M28 62V45M45 62V34M62 62V26" stroke="#008c80" stroke-width="8" stroke-linecap="round" />
+                <circle cx="68" cy="27" r="10" fill="#49d9c9" />
+              </svg>
+              <h3>演示</h3>
+              <p>项目展示时可先说明系统目标，再进入后台查看审核、数据看板和推荐策略。</p>
+            </a>
+
+            <a class="scenario-card reveal" data-delay="3" href="./create_post/code.html">
+              <svg viewBox="0 0 96 96" aria-hidden="true">
+                <rect x="18" y="18" width="60" height="62" rx="12" fill="#fff7df" />
+                <path d="M31 36h34M31 49h28M31 62h20" stroke="#c38200" stroke-width="6" stroke-linecap="round" />
+                <circle cx="70" cy="68" r="12" fill="#ffd166" />
+                <path d="M65 68h10M70 63v10" stroke="#fff" stroke-width="4" stroke-linecap="round" />
+              </svg>
+              <h3>学习项目</h3>
+              <p>适合作为课程设计成果包，前端、后端、数据库、权限和文档都能串起来。</p>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta-section">
+        <div class="container">
+          <div class="cta-panel reveal">
+            <div>
+              <h2>进入交大论坛，开始校园交流与内容管理。</h2>
+              <p>系统支持公开浏览、账号登录、主题发布、评论互动、圈子交流和后台管理，适用于校园信息交流与课程项目展示。</p>
+            </div>
+            <div class="cta-actions">
+              <a class="button button--ghost" href="./home_recommended_desktop/code.html">进入论坛首页</a>
+              <a class="button button--ghost" href="./login_register/code.html">登录系统</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <span>西南交通大学校园论坛课程设计 · 系统介绍首页</span>
+        <span>校园交流 · 内容发布 · 社区治理</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    document.documentElement.classList.add("motion-enabled");
+    const revealItems = Array.from(document.querySelectorAll(".reveal"));
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.16, rootMargin: "0px 0px -8% 0px" });
+      revealItems.forEach((item) => observer.observe(item));
+    } else {
+      revealItems.forEach((item) => item.classList.add("is-visible"));
+    }
+  </script>
+</body>
+</html>

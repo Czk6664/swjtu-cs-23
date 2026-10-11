@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>西南交大论坛 - 用户管理移动端</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+</head>
+<body data-page="user-management-mobile">
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="topbar__inner container">
+        <div class="topbar__content">
+          <a class="brand" href="../index.html"><span class="brand__mark"></span><span class="brand__text">西南交大论坛</span></a>
+          <nav class="nav">
+            <a href="../user_management_desktop/code.html">桌面端</a>
+            <a href="../user_management/code.html" style="color: var(--interaction-blue);">移动端</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section class="hero">
+        <div class="container">
+          <div class="phone-stage">
+            <div class="phone-frame">
+              <div class="phone-screen">
+                <div class="phone-screen__header stack">
+                  <div class="toolbar-space"><strong>版主与用户</strong><span class="tag tag--blue">24 待处理</span></div>
+                  <div class="input">搜索成员、版块、认证状态</div>
+                </div>
+                <div class="phone-screen__body stack">
+                  <article class="card"><div class="avatar-row"><span class="avatar">ZT</span><div><strong>张同学</strong><div class="muted">学生 · 正常</div></div></div><div class="meta-row muted"><span>积分 820</span><span>课程互助区活跃</span></div></article>
+                  <article class="card"><div class="avatar-row"><span class="avatar">WB</span><div><strong>王版主</strong><div class="muted">课程互助版主 · 正常</div></div></div><div class="meta-row muted"><span>积分 1,920</span><span>负责资料审核</span></div></article>
+                  <article class="card"><div class="avatar-row"><span class="avatar">LT</span><div><strong>李同学</strong><div class="muted">学生 · 封禁</div></div></div><div class="meta-row muted"><span>风险：课程资料引流</span><span>待复核</span></div></article>
+                </div>
+                <div class="phone-screen__footer">
+                  <nav class="phone-nav">
+                    <a href="javascript:void(0)">概览</a>
+                    <a class="active" href="javascript:void(0)">成员</a>
+                    <a href="javascript:void(0)">风控</a>
+                    <a href="javascript:void(0)">设置</a>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+          <div data-slot="user-management-mobile-content" hidden></div>
+    </main>
+  </div>
+  <script type="module" src="../assets/app.js"></script>
+</body>
+</html>
+
