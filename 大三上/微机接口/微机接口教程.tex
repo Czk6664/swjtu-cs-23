@@ -1,0 +1,386 @@
+\documentclass[12pt,a4paper]{ctexart}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\usepackage{listings}
+
+\geometry{left=2.5cm,right=2.5cm,top=3cm,bottom=3cm}
+
+\title{微机接口技术教程}
+\author{Antigravity 辅助制作}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{微机系统基础}
+
+\subsection{冯·诺依曼体系结构}
+冯·诺依曼体系结构是现代计算机的核心思想，其主要特点包括：
+\begin{enumerate}
+    \item \textbf{采用二进制}：计算机内部采用二进制表示指令和数据。
+    \item \textbf{存储程序工作方式}：程序和数据一样存储在存储器中，由计算机自动执行。
+    \item \textbf{硬件五大部件}：输入设备、输出设备、存储器、运算器、控制器。
+\end{enumerate}
+
+\subsection{存储程序工作原理}
+\begin{itemize}
+    \item \textbf{编程序}：用户根据任务逻辑编写指令序列。
+    \item \textbf{存储}：程序预先加载到存储器中。
+    \item \textbf{自动执行}：控制器自动、连续地从存储器中取出指令并执行。
+\end{itemize}
+
+\section{数据表示与运算}
+
+\subsection{原码、反码与补码}
+\begin{enumerate}
+    \item \textbf{原码}：最高位为符号位（0正1负），其余位表示数值绝对值。存在 $\pm 0$ 不唯一问题。
+    \item \textbf{反码}：正数同原码；负数符号位保持，数值位按位取反。
+    \item \textbf{补码}：正数同原码；负数为反码加1。
+    \begin{itemize}
+        \item \textbf{优点}：零唯一；加减法统一；硬件实现简单。
+        \item \textbf{范围}（8位）：$-128 \sim +127$。
+    \end{itemize}
+\end{enumerate}
+
+\subsection{BCD码与ASCII码}
+\begin{itemize}
+    \item \textbf{BCD码}：用4位二进制表示1位十进制数。分为压缩BCD（一字节两位）和非压缩BCD（一字节一位）。
+    \item \textbf{ASCII码}：美国标准信息交换代码。常用值：'0' (30H), 'A' (41H), 'a' (61H)。
+\end{itemize}
+
+\section{8086 CPU 架构}
+
+\subsection{CPU 基本功能}
+\begin{enumerate}
+    \item \textbf{指令控制}：控制指令执行顺序。
+    \item \textbf{操作控制}：产生操作控制信号。
+    \item \textbf{时间控制}：对操作进行定时。
+    \item \textbf{数据加工}：算术与逻辑运算。
+\end{enumerate}
+
+\subsection{寄存器组}
+\begin{itemize}
+    \item \textbf{通用寄存器}：AX (累加器), BX (基址), CX (计数), DX (数据)。
+    \item \textbf{指针与变址}：SP (堆栈指针), BP (基址指针), SI (源变址), DI (目的变址)。
+    \item \textbf{段寄存器}：CS (代码段), DS (数据段), SS (堆栈段), ES (附加段)。
+    \item \textbf{指令指针}：IP。
+    \item \textbf{标志寄存器}：FLAGS (含 CF, ZF, SF, OF, IF, DF 等)。
+\end{itemize}
+
+\section{存储器组织}
+
+\subsection{分段机制}
+8086 具有 20 位地址总线，可寻址 1MB 空间。由于寄存器为 16 位，采用分段机制：
+\begin{equation}
+    \text{物理地址} = \text{段地址} \times 16 + \text{偏移地址}
+\end{equation}
+
+\subsection{字单元存储}
+采用小端格式（Little-endian）：低位字节存入低地址，高位字节存入高地址。
+
+\section{指令系统与汇编语言}
+
+\subsection{数据传送指令 (Data Transfer)}
+\begin{enumerate}
+    \item \textbf{MOV (Move)}
+    \begin{itemize}
+        \item \textbf{功能}: 将源操作数传送到目的操作数。
+        \item \textbf{使用场景}: 寄存器初始化、内存数据加载、通用数据交换。
+        \item \textbf{影响}: 不影响任何标志位。可以改变通用寄存器、段寄存器或存储单元。
+    \end{itemize}
+    \item \textbf{XCHG (Exchange)}
+    \begin{itemize}
+        \item \textbf{功能}: 交换两个操作数的内容。
+        \item \textbf{使用场景}: 在没有中间寄存器的情况下互换两个值。
+        \item \textbf{影响}: 不影响标志位。不支持内存与内存之间的交换。
+    \end{itemize}
+    \item \textbf{LEA (Load Effective Address)}
+    \begin{itemize}
+        \item \textbf{功能}: 将源操作数的偏移地址送入目的寄存器。
+        \item \textbf{使用场景}: 获取变量地址、复杂的地址计算。
+        \item \textbf{影响}: 不影响标志位。常用格式 \texttt{LEA BX, OFFSET VAR}。
+    \end{itemize}
+    \item \textbf{PUSH/POP (Push/Pop onto Stack)}
+    \begin{itemize}
+        \item \textbf{功能}: 将数据压入堆栈或从堆栈弹出数据。
+        \item \textbf{使用场景}: 子程序参数跳转、保存寄存器现场。
+        \item \textbf{影响}: 不影响标志位（POP FLAGS 除外）。修改 SP 指针。
+    \end{itemize}
+    \item \textbf{IN/OUT (Input/Output)}
+    \begin{itemize}
+        \item \textbf{功能}: 在累加器（AL/AX）与 I/O 端口之间传输数据。
+        \item \textbf{使用场景}: 与外部硬件通信。
+        \item \textbf{影响}: 不影响标志位。只能使用 AL/AX 作为数据载体。
+    \end{itemize}
+\end{enumerate}
+
+\subsection{算术运算指令 (Arithmetic)}
+\begin{enumerate}
+    \item \textbf{ADD/ADC (Add / Add with Carry)}
+    \begin{itemize}
+        \item \textbf{功能}: 执行二进制加法（ADC 包含进位 CF）。
+        \item \textbf{使用场景}: 普通加法计算、多字节/高精度加法链。
+        \item \textbf{影响}: 影响 CF, ZF, SF, OF, AF, PF。
+    \end{itemize}
+    \item \textbf{SUB/SBB (Subtract / Subtract with Borrow)}
+    \begin{itemize}
+        \item \textbf{功能}: 执行二进制减法（SBB 包含借位 CF）。
+        \item \textbf{使用场景}: 数值相减、多字节减法链。
+        \item \textbf{影响}: 影响 CF, ZF, SF, OF, AF, PF。
+    \end{itemize}
+    \item \textbf{MUL/IMUL (Multiply / Integer Multiply)}
+    \begin{itemize}
+        \item \textbf{功能}: 无符号/有符号乘法。
+        \item \textbf{使用场景}: 整数扩大倍数、数值运算。
+        \item \textbf{影响}: 影响 CF, OF（若高位有意义则置1），其余标志位不确定。
+    \end{itemize}
+    \item \textbf{DIV/IDIV (Divide / Integer Divide)}
+    \begin{itemize}
+        \item \textbf{功能}: 无符号/有符号除法。
+        \item \textbf{使用场景}: 整数均摊、取余运算。
+        \item \textbf{影响}: 标志位不确定。若除数为0或溢出会触发中断。
+    \end{itemize}
+    \item \textbf{INC/DEC (Increment/Decrement)}
+    \begin{itemize}
+        \item \textbf{功能}: 操作数加1或减1。
+        \item \textbf{使用场景}: 循环计数器更新、指针位移。
+        \item \textbf{影响}: 影响 ZF, SF, OF, AF, PF，\textbf{不影响 CF}。
+    \end{itemize}
+    \item \textbf{NEG (Negate)}
+    \begin{itemize}
+        \item \textbf{功能}: 执行 0 减去操作数，即求二进补码的负数。
+        \item \textbf{使用场景}: 正负号反转。
+        \item \textbf{影响}: 只要操作数不为0，CF 总是置1。
+    \end{itemize}
+    \item \textbf{CBW/CWD (Convert Byte to Word / Word to Doubleword)}
+    \begin{itemize}
+        \item \textbf{功能}: 将 AL 的符号位扩展到 AH，或将 AX 的符号位扩展到 DX。
+        \item \textbf{使用场景}: 有符号除法前的准备工作（防止数据溢出或符号丢失）。
+        \item \textbf{影响}: \textbf{不影响标志位}。改变 AH 或 DX 寄存器。
+    \end{itemize}
+    \item \textbf{BCD 调整指令 (BCD Adjustments)}
+    \begin{itemize}
+        \item \textbf{功能}: 在执行二进制加减后，将结果调整为 8421 BCD 格式。
+        \item \textbf{使用场景}: 财务计算、BCD 码格式的数据运算。
+        \item \textbf{主要指令}: \texttt{DAA/DAS} (加/减后的十进制调整)、\texttt{AAA/AAS} (加/减后的 ASCII 调整)。
+        \item \textbf{影响}: 影响 CF, AF, ZF, SF, PF。
+    \end{itemize}
+\end{enumerate}
+
+\subsection{逻辑与移位指令 (Logical and Shift)}
+\begin{enumerate}
+    \item \textbf{AND (Logical AND)}
+    \begin{itemize}
+        \item \textbf{功能}: 对两个操作数执行按位与运算。
+        \item \textbf{使用场景}: 屏蔽特定位（将不需要的位清零）。
+        \item \textbf{影响}: CF=0, OF=0; 影响 ZF, SF, PF。
+    \end{itemize}
+    \item \textbf{OR (Logical OR)}
+    \begin{itemize}
+        \item \textbf{功能}: 对两个操作数执行按位或运算。
+        \item \textbf{使用场景}: 设置特定位（将需要的位置1）。
+        \item \textbf{影响}: CF=0, OF=0; 影响 ZF, SF, PF。
+    \end{itemize}
+    \item \textbf{XOR (Exclusive OR)}
+    \begin{itemize}
+        \item \textbf{功能}: 对两个操作数执行按位异或运算。
+        \item \textbf{使用场景}: 寄存器快速清零（如 \texttt{XOR AX, AX}）、位反转。
+        \item \textbf{影响}: CF=0, OF=0; 影响 ZF, SF, PF。
+    \end{itemize}
+    \item \textbf{NOT (Logical NOT)}
+    \begin{itemize}
+        \item \textbf{功能}: 对操作数执行按位取反（一补码）。
+        \item \textbf{使用场景}: 位级逻辑取反。
+        \item \textbf{影响}: \textbf{不影响任何标志位}。
+    \end{itemize}
+    \item \textbf{TEST (Test Bits)}
+    \begin{itemize}
+        \item \textbf{功能}: 执行按位与运算但不保存结果，仅更新标志位。
+        \item \textbf{使用场景}: 检测特定位是否为1（如检测状态位）。
+        \item \textbf{影响}: CF=0, OF=0; 影响 ZF, SF, PF。
+    \end{itemize}
+    \item \textbf{SHL/SHR (Shift Logical Left/Right)}
+    \begin{itemize}
+        \item \textbf{功能}: 逻辑左移/右移。
+        \item \textbf{使用场景}: 无符号数快速乘除 2 的幂次、位级拼接。
+        \item \textbf{影响}: 移出的位进入 CF。影响 ZF, SF, PF, OF。
+    \end{itemize}
+    \item \textbf{SAR (Shift Arithmetic Right)}
+    \begin{itemize}
+        \item \textbf{功能}: 算术右移（保持符号位）。
+        \item \textbf{使用场景}: 有符号数快速除法。
+        \item \textbf{影响}: 移出的位进入 CF。影响 ZF, SF, PF, OF。
+    \end{itemize}
+    \item \textbf{ROL/ROR/RCL/RCR (Rotate)}
+    \begin{itemize}
+        \item \textbf{功能}: 循环移位（带或不带进位 CF）。
+        \item \textbf{使用场景}: 位模式循环、加密算法、位重组。
+        \item \textbf{影响}: 影响 CF 和 OF。
+    \end{itemize}
+\end{enumerate}
+
+\subsection{串操作指令 (String Operations)}
+\begin{enumerate}
+    \item \textbf{REP (Repeat Prefix)}
+    \begin{itemize}
+        \item \textbf{功能}: 根据 CX 的值重复执行串指令。
+        \item \textbf{使用场景}: 批量数据移动、内存填充。
+        \item \textbf{影响}: 自动递减 CX。
+    \end{itemize}
+    \item \textbf{MOVSB/MOVSW (Move String Byte/Word)}
+    \begin{itemize}
+        \item \textbf{功能}: 将源串 (SI) 数据传送到目的串 (DI)。
+        \item \textbf{使用场景}: 内存块大范围复制。
+        \item \textbf{影响}: 自动更新 SI 和 DI（方向受 DF 标志控制）。
+    \end{itemize}
+    \item \textbf{STOSB/STOSW (Store String Byte/Word)}
+    \begin{itemize}
+        \item \textbf{功能}: 将 AL/AX 内容存入目的地 (DI)。
+        \item \textbf{使用场景}: 内存缓冲区快速清零或初始化。
+        \item \textbf{影响}: 自动更新 DI。
+    \end{itemize}
+    \item \textbf{LODSB/LODSW (Load String Byte/Word)}
+    \begin{itemize}
+        \item \textbf{功能}: 从源地址 (SI) 加载数据到 AL/AX。
+        \item \textbf{使用场景}: 遍历字符串进行逐字符分析。
+        \item \textbf{影响}: 自动更新 SI。
+    \end{itemize}
+    \item \textbf{CMPSB/CMPSW (Compare Strings)}
+    \begin{itemize}
+        \item \textbf{功能}: 比较源串 (SI) 与目的串 (DI) 的内容。
+        \item \textbf{使用场景}: 字符串相等性检测。
+        \item \textbf{影响}: 影响所有状态标志位，特别是 ZF（用于判断是否相等）。
+    \end{itemize}
+    \item \textbf{SCASB/SCASW (Scan String)}
+    \begin{itemize}
+        \item \textbf{功能}: 将 AL/AX 内容与目的串 (DI) 内容进行比较。
+        \item \textbf{使用场景}: 在字符串中搜索特定字符或零结束符。
+        \item \textbf{影响}: 影响所有状态标志位。
+    \end{itemize}
+\end{enumerate}
+
+\subsection{控制转移指令 (Control Transfer)}
+\begin{enumerate}
+    \item \textbf{JMP (Jump)}
+    \begin{itemize}
+        \item \textbf{功能}: 无条件改变程序执行顺序。
+        \item \textbf{使用场景}: 循环跳转、分支结束后的汇合、程序入口跳转。
+        \item \textbf{影响}: \textbf{不影响标志位}。修改 CS (若是段间) 和 IP。
+    \end{itemize}
+    \item \textbf{Jcc (Jump on Condition)}
+    \begin{itemize}
+        \item \textbf{功能}: 根据状态标志位的状态（如 ZF, CF, SF 等）决定是否跳转。
+        \item \textbf{使用场景}: 实现 \texttt{if-else} 结构、循环终止条件。
+        \item \textbf{常见指令}: \texttt{JZ/JE} (结果为0/相等), \texttt{JNZ/JNE} (不为0/不等), \texttt{JB/JA} (低于/高于 - 无符号), \texttt{JL/JG} (低于/高于 - 有符号)。
+        \item \textbf{影响}: 不影响标志位。
+    \end{itemize}
+    \item \textbf{LOOP/LOOPE/LOOPNE (Loop Control)}
+    \begin{itemize}
+        \item \textbf{功能}: 以 CX 为计数器执行循环转移。
+        \item \textbf{使用场景}: 定次数的重复代码执行。
+        \item \textbf{影响}: \textbf{不影响标志位}。自动执行 $(CX) \gets (CX) - 1$，且当 $CX \neq 0$ (及满足额外条件) 时跳转。
+    \end{itemize}
+\end{enumerate}
+
+\subsection{子程序与中断 (Subroutines and Interrupts)}
+\begin{enumerate}
+    \item \textbf{CALL (Call Subroutine)}
+    \begin{itemize}
+        \item \textbf{功能}: 调用过程（子程序）。将返回地址压栈并跳转到目标。
+        \item \textbf{使用场景}: 函数封装、模块化程序设计。
+        \item \textbf{影响}: 不影响标志位。修改 SP 并更新 IP/CS。
+    \end{itemize}
+    \item \textbf{RET (Return from Subroutine)}
+    \begin{itemize}
+        \item \textbf{功能}: 从子程序返回。从堆栈弹出返回地址到 IP/CS。
+        \item \textbf{使用场景}: 结束函数执行。
+        \item \textbf{影响}: 不影响标志位。
+    \end{itemize}
+    \item \textbf{INT n (Interrupt)}
+    \begin{itemize}
+        \item \textbf{功能}: 触发类型编号为 $n$ 的软件中断。
+        \item \textbf{使用场景}: DOS 系统功能调用 (\texttt{INT 21H})、BIOS 屏幕服务 (\texttt{INT 10H})。
+        \item \textbf{影响}: 将 FLAGS, CS, IP 压栈。清除 IF 和 TF 标志（禁止后续中断）。
+    \end{itemize}
+    \item \textbf{IRET (Interrupt Return)}
+    \begin{itemize}
+        \item \textbf{功能}: 从中断服务程序返回。从堆栈弹出 IP, CS, FLAGS。
+        \item \textbf{使用场景}: 结束中断处理，恢复原程序状态。
+        \item \textbf{影响}: 恢复 FLAGS 寄存器的原始值。
+    \end{itemize}
+\end{enumerate}
+
+\subsection{常用伪指令}
+\begin{itemize}
+    \item \textbf{数据定义}：\texttt{DB} (字节), \texttt{DW} (字), \texttt{DD} (双字), \texttt{DUP} (重复)。
+    \item \textbf{符号定义}：\texttt{EQU} 或 \texttt{=} 用于定义常量。
+    \item \textbf{段定义}：\texttt{SEGMENT} 和 \texttt{ENDS} 用于界定逻辑段。
+    \item \textbf{段关联}：\texttt{ASSUME} 告诉汇编器段寄存器与逻辑段的对应关系。
+    \item \textbf{地址操作符}：\texttt{OFFSET} 获取偏移地址，\texttt{SEG} 获取段地址。
+\end{itemize}
+
+\subsection{DOS 功能调用 (INT 21H)}
+\begin{itemize}
+    \item \textbf{1号}：单字符输入（带回显），结果保存在 AL。
+    \item \textbf{2号}：单字符输出，由 DL 提供字符。
+    \item \textbf{9号}：输出字符串，DX 指向以 `\$' 结尾的字符串首地址。
+    \item \textbf{0AH}：字符串输入，DX 指向缓冲区。
+    \item \textbf{4CH}：结束程序并返回 DOS。
+\end{itemize}
+
+\section{汇编语言程序结构}
+标准 8086 汇编程序通常由数据段、堆栈段和代码段组成：
+\begin{lstlisting}[language={[x86masm]Assembler}, basicstyle=\ttfamily\small]
+DATA SEGMENT
+    MSG DB 'Hello, World!$'
+DATA ENDS
+
+CODE SEGMENT
+    ASSUME CS:CODE, DS:DATA
+START:
+    MOV AX, DATA
+    MOV DS, AX      ; 初始化 DS
+    LEA DX, MSG
+    MOV AH, 09H
+    INT 21H         ; 显示字符串
+    MOV AH, 4CH
+    INT 21H         ; 返回 DOS
+CODE ENDS
+END START
+\end{lstlisting}
+
+\section{存储器硬件基础}
+
+\subsection{存储器分类}
+\begin{enumerate}
+    \item \textbf{按位置分类}：
+    \begin{itemize}
+        \item \textbf{内存}：CPU 直接访问，速度快，易失性（断电丢失）。
+        \item \textbf{外存}：通过 I/O 接口访问，容量大，持久化存储。
+        \item \textbf{Cache}：高速缓冲存储器，协调 CPU 与内存的速度差异。
+    \end{itemize}
+    \item \textbf{按物理特性分类}：
+    \begin{itemize}
+        \item \textbf{RAM}：随机存取存储器。SRAM（快，无需刷新，贵）和 DRAM（慢，需刷新，廉价）。
+        \item \textbf{ROM}：只读存储器。数据固化，断电不丢失。
+    \end{itemize}
+\end{enumerate}
+
+\subsection{地址译码方式}
+\begin{itemize}
+    \item \textbf{单译码}：一条选择线对应一个存储单元，结构简单，适合小容量。
+    \item \textbf{双译码}：采用行、列地址线交叉选中单元，大幅减少译码线，适合大容量。
+\end{itemize}
+
+\section{微机接口芯片（待续）}
+
+\end{document}

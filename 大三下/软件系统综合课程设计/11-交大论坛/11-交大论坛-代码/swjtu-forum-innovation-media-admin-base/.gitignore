@@ -1,0 +1,70 @@
+### IntelliJ IDEA ###
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+.kotlin
+.idea/
+backend/.idea/
+*.iml
+*.ipr
+*.iws
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+.settings/
+backend/.settings/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Node / Frontend ###
+frontend/node_modules/
+frontend/dist/
+
+### Maven / Backend ###
+backend/target/
+
+### Runtime logs and local diagnostics ###
+*.log
+*.out.log
+*.err.log
+hs_err_pid*.log
+backend/hs_err_pid*.log
+frontend/preview.out.log
+frontend/preview.err.log
+runtime-*.log
+
+### Local temporary files ###
+*.tmp
+.codex-write-check.tmp
+
+### Project-local generated output ###
+frontend/.vite/
+backend/logs/
+backend/data/
+backend/uploads/posts/
+backend/uploads/avatars/*
+!backend/uploads/avatars/demo-avatar-*.png
+data/
+_shots/
+release/
+*.zip

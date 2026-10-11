@@ -1,0 +1,167 @@
+\documentclass{article}
+\usepackage[UTF8]{ctex}
+\usepackage{tikz}
+\usepackage[margin=1in]{geometry}
+\usetikzlibrary{shapes.geometric, arrows, positioning, calc}
+
+\begin{document}
+
+% Styles
+\tikzset{
+    startstop/.style={rectangle, rounded corners, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=red!30},
+    io/.style={trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2.5cm, minimum height=1cm, text centered, draw=black, fill=blue!30},
+    process/.style={rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=orange!30},
+    decision/.style={diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30, aspect=2},
+    arrow/.style={thick,->,>=stealth},
+    flowchart/.style={node distance=1.2cm, auto, transform shape, scale=0.85}
+}
+
+\section*{8086 音乐播放与录制系统流程图}
+
+\subsection*{1. 主程序流程图}
+\begin{center}
+\begin{tikzpicture}[flowchart]
+    \node (start) [startstop] {开始 (START)};
+    \node (initDS) [process, below=of start] {初始化段寄存器 (DS, ES)};
+    \node (initINT) [process, below=of initDS] {安装中断向量 (IRQ0 - IRQ5)};
+    \node (initChips) [process, below=of initINT] {初始化 8255/8253};
+    \node (init8259) [process, below=of initChips] {初始化 8259A (开中断)};
+    \node (loop) [process, below=of init8259] {调用主任务循环};
+    \node (jump) [process, below=of loop] {跳转回 Loop};
+
+    \draw [arrow] (start) -- (initDS);
+    \draw [arrow] (initDS) -- (initINT);
+    \draw [arrow] (initINT) -- (initChips);
+    \draw [arrow] (initChips) -- (init8259);
+    \draw [arrow] (init8259) -- (loop);
+    \draw [arrow] (loop) -- (jump);
+    \draw [arrow] (jump.east) -- ++(1,0) |- (loop.east);
+\end{tikzpicture}
+\end{center}
+
+\newpage
+\subsection*{2. IRQ0 中断服务程序 (播放/停止切换)}
+\begin{center}
+\begin{tikzpicture}[flowchart]
+    % Main Column
+    \node (start) [startstop] {IRQ0 入口};
+    \node (decRecord) [decision, below=of start] {系统录制中? (STAT=3)};
+    
+    % Right Branch (No recording)
+    \node (resetIDX) [process, right=of decRecord, xshift=1.5cm] {重置播放索引};
+    \node (decPlay) [decision, below=of resetIDX] {当前状态 (STAT=0)};
+    \node (setPlay) [process, right=of decPlay, xshift=0.5cm] {STAT=1, 开始播放};
+    \node (setStop) [process, below=of decPlay] {停止播放 (STAT=0)};
+
+    % Determine lowest point of right branch (either setStop or setPlay)
+    % setStop is below decPlay. setPlay is right of decPlay. 
+    % Visually, setStop is likely lower. We place EXIT below setStop level.
+    % We align EXIT horizontally with 'decRecord' (Main Column).
+    \path let \p1 = (decRecord), \p2 = (setStop.south) in node (exit) [startstop] at (\x1, \y2 - 2cm) {发送 EOI 并返回};
+
+    % Edges - Main
+    \draw [arrow] (start) -- (decRecord);
+    
+    % Yes -> Exit (Straight down)
+    \draw [arrow] (decRecord) -- node[left] {是} (exit);
+
+    % No -> Right Branch
+    \draw [arrow] (decRecord) -- node[above] {否} (resetIDX);
+    \draw [arrow] (resetIDX) -- (decPlay);
+    
+    % decPlay logic
+    \draw [arrow] (decPlay) -- node[above] {0 (空闲)} (setPlay);
+    \draw [arrow] (decPlay) -- node[right] {非0} (setStop);
+    
+    % Rejoin Exit
+    \draw [arrow] (setPlay) |- (exit);
+    \draw [arrow] (setStop) |- (exit);
+
+\end{tikzpicture}
+\end{center}
+
+\newpage
+\subsection*{3. IRQ1 中断服务程序 (节拍控制)}
+\begin{center}
+\begin{tikzpicture}[flowchart]
+    \node (start) [startstop] {IRQ1 入口};
+    \node (checkStat) [decision, below=of start] {状态检查 (STAT)};
+    
+    \node (wait) [process, left=of checkStat, xshift=-0.5cm] {STAT=1 $\to$ 2};
+    \node (play) [process, right=of checkStat, xshift=0.5cm] {STAT=2 $\to$ 1};
+    
+    % Exit aligned below checkStat, clears children
+    \node (exit) [startstop, below=3cm of checkStat] {发送 EOI 并返回};
+
+    \draw [arrow] (start) -- (checkStat);
+    \draw [arrow] (checkStat) -- node[left] {STAT=0/3} (exit);
+    \draw [arrow] (checkStat) -- node[above] {STAT=1} (wait);
+    \draw [arrow] (checkStat) -- node[above] {其他} (play);
+    
+    \draw [arrow] (wait) |- (exit);
+    \draw [arrow] (play) |- (exit);
+\end{tikzpicture}
+\end{center}
+
+\newpage
+\subsection*{4. IRQ2 中断服务程序 (录制模式切换)}
+\begin{center}
+\begin{tikzpicture}[flowchart]
+    \node (start) [startstop] {IRQ2 入口};
+    \node (check) [decision, below=of start] {状态检查};
+    
+    \node (startRec) [process, left=of check, xshift=-0.5cm] {进入录制};
+    \node (stopRec) [process, right=of check, xshift=0.5cm] {退出录制};
+    
+    \node (exit) [startstop, below=3cm of check] {发送 EOI 并返回};
+
+    \draw [arrow] (start) -- (check);
+    \draw [arrow] (check) -- node[left] {播放中} (exit);
+    \draw [arrow] (check) -- node[above] {空闲} (startRec);
+    \draw [arrow] (check) -- node[above] {录制中} (stopRec);
+    
+    \draw [arrow] (startRec) |- (exit);
+    \draw [arrow] (stopRec) |- (exit);
+\end{tikzpicture}
+\end{center}
+
+\newpage
+\subsection*{5. IRQ5 中断服务程序 (按键录音输入)}
+\begin{center}
+\begin{tikzpicture}[flowchart]
+    % Main Column
+    \node (start) [startstop] {IRQ5 入口};
+    \node (checkPlay) [decision, below=of start] {是否播放中?};
+    
+    % Right Branch
+    \node (readKey) [io, right=of checkPlay, xshift=1.5cm] {读8255 B口};
+    \node (calcFreq) [process, below=of readKey] {查表, 计算计值};
+    \node (outSound) [io, below=of calcFreq] {输出到 8253};
+    \node (checkRec) [decision, below=of outSound] {是否录制中?};
+    \node (saveNote) [process, right=of checkRec, xshift=0.5cm] {保存到MTAB};
+
+    % Exit Node calc: Aligned with 'checkPlay' (Main), below 'saveNote' (Lowest Right)
+    \path let \p1 = (checkPlay), \p2 = (saveNote.south) in node (exit) [startstop] at (\x1, \y2 - 2cm) {发送 EOI 并返回};
+
+    % Edges
+    \draw [arrow] (start) -- (checkPlay);
+    
+    % Yes -> Exit (Main Col)
+    \draw [arrow] (checkPlay) -- node[left] {是} (exit);
+    
+    % No -> Right Col
+    \draw [arrow] (checkPlay) -- node[above] {否} (readKey);
+    
+    \draw [arrow] (readKey) -- (calcFreq);
+    \draw [arrow] (calcFreq) -- (outSound);
+    \draw [arrow] (outSound) -- (checkRec);
+    
+    \draw [arrow] (checkRec) |- node[above, near start] {否} (exit);
+    
+    \draw [arrow] (checkRec) -- node[above] {是} (saveNote);
+    \draw [arrow] (saveNote) |- (exit);
+
+\end{tikzpicture}
+\end{center}
+
+\end{document}
