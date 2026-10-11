@@ -1,0 +1,586 @@
+%========================================
+\chapter{传输层}
+%========================================
+\section{传输层概述}
+传输层提供端到端的通信服务，是面向通信部分的最高层。
+
+\subsection{传输层的功能}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{端到端通信}：在应用进程之间提供逻辑通信
+    \item \textbf{复用和分用}：多个应用进程共享网络层服务
+    \item \textbf{差错检测}：检测报文段的传输错误
+    \item \textbf{可靠传输}（TCP）：确保数据正确、有序、不丢失、不重复
+\end{itemize}
+
+\subsection{端口号}
+端口号用于标识主机上的应用进程，16位，范围0-65535。
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{熟知端口}（0-1023）：分配给常用服务
+    \item \textbf{登记端口}（1024-49151）：需要登记使用
+    \item \textbf{动态端口}（49152-65535）：客户端临时使用
+\end{itemize}
+
+\subsection{套接字 (Socket)}
+在网络编程中，使用套接字来唯一标识一个应用进程。
+\begin{center}
+\fbox{\textbf{套接字 = (IP 地址 : 端口号)}}
+\end{center}
+一个 TCP 连接由一对套接字唯一确定。
+
+\textbf{常用端口号}：
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{cccc}
+\toprule
+\textbf{协议} & \textbf{端口} & \textbf{协议} & \textbf{端口} \\
+\midrule
+FTP数据 & 20 & FTP控制 & 21 \\
+SSH & 22 & Telnet & 23 \\
+SMTP & 25 & DNS & 53 \\
+HTTP & 80 & POP3 & 110 \\
+HTTPS & 443 & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{UDP协议}
+UDP（User Datagram Protocol）是一种无连接的传输层协议。
+
+\subsection{UDP特点}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{无连接}：发送前不需要建立连接
+    \item \textbf{不可靠}：不保证数据到达，不重传
+    \item \textbf{面向报文}：保留报文边界，一次发送一个完整报文
+    \item \textbf{无拥塞控制}：适合实时应用
+    \item \textbf{首部开销小}：只有8字节
+\end{itemize}
+
+\subsection{UDP首部格式}
+\begin{center}
+\begin{tikzpicture}[node distance=0cm]
+\node[draw,minimum width=2cm,minimum height=0.7cm] (sp) {源端口};
+\node[draw,minimum width=2cm,minimum height=0.7cm,right=of sp] (dp) {目的端口};
+\node[draw,minimum width=2cm,minimum height=0.7cm,below=of sp] (len) {长度};
+\node[draw,minimum width=2cm,minimum height=0.7cm,right=of len] (cs) {校验和};
+\node[below=0.1cm of sp] {\tiny 2字节};
+\node[below=0.1cm of dp] {\tiny 2字节};
+\end{tikzpicture}
+\end{center}
+
+\subsection{UDP校验}
+UDP校验和覆盖首部和数据，计算时需要加上伪首部（源IP、目的IP、协议号、UDP长度）。
+
+\section{TCP协议}
+TCP（Transmission Control Protocol）是一种面向连接的可靠传输协议。
+
+\subsection{TCP特点}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{面向连接}：通信前需要建立连接
+    \item \textbf{可靠传输}：确保数据正确、有序、不丢失、不重复
+    \item \textbf{面向字节流}：把数据看作无结构的字节流
+    \item \textbf{全双工通信}：双向同时传输
+    \item \textbf{点对点}：一对一通信
+\end{itemize}
+
+\subsection{TCP首部格式}
+TCP首部最小20字节，最大60字节。
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{源端口、目的端口}：各2字节
+    \item \textbf{序号}（4字节）：本报文段数据的第一个字节的序号
+    \item \textbf{确认号}（4字节）：期望收到的下一个字节的序号
+    \item \textbf{数据偏移}（4位）：首部长度，以4字节为单位
+    \item \textbf{控制位}：URG、ACK、PSH、RST、SYN、FIN
+    \item \textbf{窗口}（2字节）：接收窗口大小，用于流量控制
+    \item \textbf{校验和}（2字节）：覆盖首部和数据
+    \item \textbf{紧急指针}（2字节）：URG=1时有效
+\end{itemize}
+
+\textbf{控制位含义}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{SYN}：同步，建立连接时使用
+    \item \textbf{ACK}：确认，确认号有效
+    \item \textbf{FIN}：终止，释放连接
+    \item \textbf{RST}：复位，连接出错需要重建
+    \item \textbf{PSH}：推送，尽快交付应用层
+    \item \textbf{URG}：紧急，紧急指针有效
+\end{itemize}
+
+\section{TCP连接管理}
+\subsection{三次握手（建立连接）}
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick]
+\draw[dashed] (0,0) -- (0,-4.5) node[below]{\small 客户端};
+\draw[dashed] (6,0) -- (6,-4.5) node[below]{\small 服务器};
+% 第一次握手
+\draw[->,blue,thick] (0,-0.5) -- node[above,sloped]{\small SYN=1, seq=x} (6,-1.2);
+\node[left] at (0,-0.5) {\tiny SYN\_SENT};
+% 第二次握手
+\draw[->,red,thick] (6,-1.5) -- node[above,sloped]{\small SYN=1,ACK=1,seq=y,ack=x+1} (0,-2.2);
+\node[right] at (6,-1.5) {\tiny SYN\_RCVD};
+% 第三次握手
+\draw[->,blue,thick] (0,-2.5) -- node[above,sloped]{\small ACK=1,seq=x+1,ack=y+1} (6,-3.2);
+\node[left] at (0,-2.8) {\tiny ESTABLISHED};
+\node[right] at (6,-3.5) {\tiny ESTABLISHED};
+\end{tikzpicture}
+\end{center}
+
+\textbf{三次握手过程}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 客户端发送SYN报文，seq=x，进入SYN\_SENT状态
+    \item 服务器回复SYN+ACK报文，seq=y，ack=x+1，进入SYN\_RCVD状态
+    \item 客户端发送ACK报文，seq=x+1，ack=y+1，双方进入ESTABLISHED状态
+\end{enumerate}
+
+\begin{notebox}
+\textbf{为什么需要三次握手？}
+\begin{itemize}[itemsep=0pt]
+    \item 防止已失效的连接请求到达服务器
+    \item 确认双方的发送和接收能力都正常
+    \item 同步双方的初始序号
+\end{itemize}
+\end{notebox}
+
+\subsection{四次挥手（释放连接）}
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick]
+\draw[dashed] (0,0) -- (0,-5.5) node[below]{\small 客户端};
+\draw[dashed] (6,0) -- (6,-5.5) node[below]{\small 服务器};
+% 第一次挥手
+\draw[->,blue,thick] (0,-0.5) -- node[above,sloped]{\small FIN=1,seq=u} (6,-1.2);
+\node[left] at (0,-0.5) {\tiny FIN\_WAIT\_1};
+% 第二次挥手
+\draw[->,red,thick] (6,-1.5) -- node[above,sloped]{\small ACK=1,ack=u+1} (0,-2.2);
+\node[right] at (6,-1.5) {\tiny CLOSE\_WAIT};
+\node[left] at (0,-2.5) {\tiny FIN\_WAIT\_2};
+% 第三次挥手
+\draw[->,red,thick] (6,-3) -- node[above,sloped]{\small FIN=1,seq=w} (0,-3.7);
+% 第四次挥手
+\draw[->,blue,thick] (0,-4) -- node[above,sloped]{\small ACK=1,ack=w+1} (6,-4.7);
+\node[left] at (0,-4.3) {\tiny TIME\_WAIT};
+\node[right] at (6,-5) {\tiny CLOSED};
+\end{tikzpicture}
+\end{center}
+
+\textbf{四次挥手过程}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 客户端发送FIN报文，进入FIN\_WAIT\_1状态
+    \item 服务器回复ACK，进入CLOSE\_WAIT状态；客户端进入FIN\_WAIT\_2
+    \item 服务器发送FIN报文，进入LAST\_ACK状态
+    \item 客户端回复ACK，进入TIME\_WAIT状态，等待2MSL后关闭
+\end{enumerate}
+
+\begin{notebox}
+\textbf{为什么需要TIME\_WAIT等待2MSL？}
+\begin{itemize}[itemsep=0pt]
+    \item 确保最后一个ACK能够到达服务器
+    \item 让本连接的所有报文段从网络中消失
+    \item MSL（Maximum Segment Lifetime）：报文段最大生存时间
+\end{itemize}
+\end{notebox}
+
+\begin{examplebox}[例题5.1 TCP连接状态]
+\textbf{题目}：TCP连接释放过程中，主动关闭方在发送最后一个ACK后进入什么状态？为什么？
+\tcblower
+进入\textbf{TIME\_WAIT}状态，等待2MSL时间后才关闭。
+
+原因：
+\begin{enumerate}[itemsep=0pt]
+    \item 确保最后的ACK能到达对方（如果丢失，对方会重发FIN）
+    \item 让本连接的所有报文段从网络中消失，避免影响新连接
+\end{enumerate}
+\end{examplebox}
+
+\section{TCP可靠传输}
+\subsection{序号与确认}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{序号}：每个字节都有唯一的序号
+    \item \textbf{确认号}：期望收到的下一个字节的序号
+    \item \textbf{累积确认}：确认号之前的所有数据都已收到
+\end{itemize}
+
+\subsection{超时重传}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 发送方为每个报文段设置超时计时器
+    \item 超时未收到确认则重传
+    \item 超时时间RTO根据RTT动态调整
+\end{itemize}
+
+\begin{formulabox}
+\textbf{RTT估计}：$RTT_s = (1-\alpha) \times RTT_s + \alpha \times RTT_{sample}$
+
+\textbf{超时时间}：$RTO = RTT_s + 4 \times RTT_D$
+
+其中$\alpha$通常取0.125，$RTT_D$为RTT偏差
+\end{formulabox}
+
+\subsection{快速重传}
+收到3个重复ACK时，立即重传丢失的报文段，不等待超时。
+
+\section{TCP流量控制}
+流量控制是让发送方的发送速率不要太快，使接收方来得及接收。
+
+\subsection{滑动窗口机制}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 接收方通过窗口字段告知发送方自己的接收窗口大小
+    \item 发送方的发送窗口不能超过接收方的接收窗口
+    \item 窗口大小可以动态调整
+\end{itemize}
+
+\begin{examplebox}[例题5.2 流量控制]
+\textbf{题目}：接收方的接收缓存为4000字节，已接收2000字节未被应用取走，此时通告的窗口大小是多少？
+\tcblower
+可用缓存 = 4000 - 2000 = 2000字节
+
+通告窗口大小 = \textbf{2000字节}
+\end{examplebox}
+
+\subsection{零窗口问题}
+当接收方窗口为0时，发送方停止发送。为避免死锁，发送方定期发送零窗口探测报文。
+
+\section{TCP拥塞控制}
+拥塞控制是防止过多的数据注入网络，使网络中的路由器或链路不致过载。
+
+\subsection{拥塞控制算法}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{慢开始}：cwnd从1开始，每收到一个ACK，cwnd加1（指数增长）
+    \item \textbf{拥塞避免}：这是 \textbf{AIMD} (加性增乘性减) 中的 \textbf{AI} (Additive Increase) 部分。cwnd达到ssthresh后，每个RTT，cwnd仅增加1（线性增长）。
+    \item \textbf{快重传}：收到3个重复ACK，立即重传，不等待超时。
+    \item \textbf{快恢复}：这是 \textbf{AIMD} 中的 \textbf{MD} (Multiplicative Decrease) 部分。快重传后，ssthresh 减半 ($ssthresh = cwnd / 2$)，设置 $cwnd = ssthresh$，然后直接进入拥塞避免阶段。
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.7]
+\draw[->] (0,0) -- (12,0) node[right] {传输轮次};
+\draw[->] (0,0) -- (0,6) node[above] {cwnd};
+% 慢开始
+\draw[blue,thick] (0,0.5) -- (1,1) -- (2,2) -- (3,4);
+% 拥塞避免
+\draw[blue,thick] (3,4) -- (4,4.3) -- (5,4.6) -- (6,4.9) -- (7,5.2);
+% 超时
+\draw[red,thick,dashed] (7,5.2) -- (7,0.5);
+% 慢开始
+\draw[blue,thick] (7,0.5) -- (8,1) -- (9,2);
+% 拥塞避免
+\draw[blue,thick] (9,2) -- (10,2.3) -- (11,2.6);
+% 标注
+\node at (1.5,4.5) {\small 慢开始};
+\node at (5,5.5) {\small 拥塞避免};
+\draw[dashed] (0,4) -- (3,4);
+\node[left] at (0,4) {\small ssthresh};
+\draw[dashed] (0,2) -- (9,2);
+\node[left] at (0,2) {\small 新ssthresh};
+\end{tikzpicture}
+\end{center}
+
+\begin{notebox}
+\textbf{发送窗口的确定}：
+
+发送窗口 = min(接收窗口rwnd, 拥塞窗口cwnd)
+
+\begin{itemize}[itemsep=0pt]
+    \item rwnd：接收方的流量控制
+    \item cwnd：发送方的拥塞控制
+\end{itemize}
+\end{notebox}
+
+\begin{examplebox}[例题5.3 拥塞控制]
+\textbf{题目}：TCP拥塞窗口cwnd=16，ssthresh=8，发生超时后cwnd和ssthresh变为多少？
+\tcblower
+发生超时：
+\begin{itemize}[itemsep=0pt]
+    \item ssthresh = cwnd/2 = 16/2 = \textbf{8}
+    \item cwnd = 1（重新慢开始）
+\end{itemize}
+
+若是收到3个重复ACK（快重传）：
+\begin{itemize}[itemsep=0pt]
+    \item ssthresh = cwnd/2 = 8
+    \item cwnd = ssthresh = 8（快恢复，进入拥塞避免）
+\end{itemize}
+\end{examplebox}
+
+\begin{examplebox}[例题5.4 TCP综合计算]
+\textbf{题目}：主机A向主机B发送TCP报文段，seq=100，携带200字节数据。B收到后回复的确认号是多少？
+\tcblower
+确认号 = 发送方序号 + 数据长度 = 100 + 200 = \textbf{300}
+
+表示B期望收到的下一个字节的序号是300。
+\end{examplebox}
+
+\begin{examplebox}[综合题5.4b TCP首部分析]
+\textbf{题目}：分析以下捕获到的 TCP 报文段首部信息。
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+Transmission Control Protocol, Src Port: 54321, Dst Port: 80, Seq: 101, Ack: 201, Len: 0
+    Source Port: 54321
+    Destination Port: 80
+    Sequence Number: 101
+    Acknowledgment Number: 201
+    1000 .... = Header Length: 32 bytes (8)
+    Flags: 0x012 (SYN, ACK)
+        0... .... = Urgent: Not set
+        .1.. .... = Acknowledgment: Set
+        .... .0.. = PSH: Not set
+        .... ..1. = Syn: Set
+        .... ...0 = Fin: Not set
+    Window: 64240
+\end{lstlisting}
+\tcblower
+\textbf{解析}：
+\begin{enumerate}[itemsep=0pt]
+    \item \textbf{端口号}：源端口 54321 为临时端口，目的端口 80 为 HTTP 服务常用端口。
+    \item \textbf{序号 (Seq)}：本次发送的数据字节流的起始序号为 101。
+    \item \textbf{确认号 (Ack)}：期望收到对方下一个字节的序号是 201。
+    \item \textbf{首部长度}：32字节（即 $8 \times 4$）。标准首部为20字节，此处多出12字节的选项字段。
+    \item \textbf{控制位 (Flags)}：SYN=1, ACK=1，表示这是三次握手中的第二次握手（服务器响应）。
+    \item \textbf{窗口 (Window)}：64240 字节，表示接收方的接收缓存剩余空间，用于流量控制。
+\end{enumerate}
+\end{examplebox}
+
+\section{TCP与UDP对比}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{特性} & \textbf{TCP} & \textbf{UDP} \\
+\midrule
+连接 & 面向连接 & 无连接 \\
+可靠性 & 可靠传输 & 不可靠 \\
+传输单位 & 字节流 & 报文 \\
+首部开销 & 20-60字节 & 8字节 \\
+拥塞控制 & 有 & 无 \\
+通信方式 & 点对点 & 支持多播 \\
+应用场景 & 文件传输、网页 & 视频、DNS \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{传输层综合例题}
+
+\begin{examplebox}[例题5.5 TCP序号计算]
+\textbf{题目}：主机A与主机B建立TCP连接，A的初始序号为100，B的初始序号为200。A向B发送200字节数据后，B向A发送确认并携带100字节数据。求B发送的报文段中的序号和确认号。
+\tcblower
+\textbf{分析}：
+
+A发送数据：seq=101（第一个数据字节），携带200字节
+
+B收到后：期望收到的下一个字节序号 = 101 + 200 = 301
+
+B发送确认并携带数据：
+\begin{itemize}[itemsep=0pt]
+    \item 序号 = 201（B的第一个数据字节）
+    \item 确认号 = 301（期望收到A的下一个字节）
+\end{itemize}
+
+\textbf{答案}：序号=201，确认号=301
+\end{examplebox}
+
+\begin{examplebox}[例题5.6 拥塞控制过程]
+\textbf{题目}：TCP连接的拥塞窗口cwnd初始为1，ssthresh=16。假设没有发生超时，描述cwnd的变化过程直到cwnd=32。
+\tcblower
+\textbf{慢开始阶段}（cwnd < ssthresh=16）：
+
+cwnd指数增长：1→2→4→8→16
+
+\textbf{拥塞避免阶段}（cwnd ≥ ssthresh）：
+
+cwnd线性增长：16→17→18→...→32
+
+\textbf{总结}：
+\begin{itemize}[itemsep=0pt]
+    \item 慢开始：4个RTT（1→2→4→8→16）
+    \item 拥塞避免：16个RTT（16→17→...→32）
+    \item 共需20个RTT达到cwnd=32
+\end{itemize}
+\end{examplebox}
+
+\begin{examplebox}[例题5.7 TCP连接状态转换]
+\textbf{题目}：TCP客户端依次经历的状态变化是什么？
+\tcblower
+\textbf{建立连接}：
+\begin{enumerate}[itemsep=0pt]
+    \item CLOSED → SYN\_SENT（发送SYN）
+    \item SYN\_SENT → ESTABLISHED（收到SYN+ACK，发送ACK）
+\end{enumerate}
+
+\textbf{释放连接}（主动关闭方）：
+\begin{enumerate}[itemsep=0pt]
+    \item ESTABLISHED → FIN\_WAIT\_1（发送FIN）
+    \item FIN\_WAIT\_1 → FIN\_WAIT\_2（收到ACK）
+    \item FIN\_WAIT\_2 → TIME\_WAIT（收到FIN，发送ACK）
+    \item TIME\_WAIT → CLOSED（等待2MSL）
+\end{enumerate}
+\end{examplebox}
+
+\begin{examplebox}[例题5.8 滑动窗口]
+\textbf{题目}：发送方的发送窗口为400字节，已发送300字节但只收到对前200字节的确认。此时发送方还能发送多少字节？
+\tcblower
+发送窗口 = 400字节
+
+已发送未确认 = 300 - 200 = 100字节
+
+可用窗口 = 发送窗口 - 已发送未确认 = 400 - 100 = 300字节
+
+但实际已发送300字节，其中200字节已确认，100字节在途
+
+\textbf{还能发送} = 400 - 300 = \textbf{100字节}
+\end{examplebox}
+
+\section{本章习题}
+
+\begin{examplebox}[填空题]
+\textbf{1.} HTTP的中文含义是\underline{超文本传输协议}，TCP的中文含义是\underline{传输控制协议}。
+
+\textbf{2.} \underline{ipconfig}命令可以用来查看TCP/IP配置信息，\underline{ping}命令测试主机是否可达。
+\end{examplebox}
+
+\begin{examplebox}[选择题]
+\textbf{1.} 以下关于TCP/IP协议的描述中，错误的是（\textbf{A}）\\
+A. 地址解析协议ARP/RARP属于应用层\\
+B. TCP、UDP协议都要通过IP协议来传送\\
+C. TCP提供可靠的面向连接服务\\
+D. UDP提供简单的无连接服务
+
+\textit{解析}：ARP/RARP属于网络层协议，不是应用层。
+
+\textbf{2.} 下列的应用协议中，基于UDP的有（\textbf{B}）\\
+A. HTTP \quad B. DNS \quad C. POP \quad D. SMTP
+
+\textbf{3.} 用于文件下载的协议是（\textbf{B}）\\
+A. TELNET \quad B. FTP \quad C. POP3 \quad D. SMTP
+\end{examplebox}
+
+\begin{examplebox}[判断题]
+\textbf{1.} （×）在数据传输中IP协议可提供可靠的传输。\\
+\textit{解析}：IP协议是不可靠的，可靠传输由TCP提供。
+
+\textbf{2.} （×）Internet在传输层只提供面向连接服务。\\
+\textit{解析}：传输层提供TCP（面向连接）和UDP（无连接）两种服务。
+\end{examplebox}
+
+\begin{examplebox}[计算题5.9 TCP序号确认]
+\textbf{题目}：主机A与主机B建立TCP连接，A的初始序号为200，B的初始序号为500。完成三次握手后，A向B发送300字节数据，B收到后发送确认。求：(1)A发送数据的序号范围 (2)B发送的确认号
+\tcblower
+(1) 三次握手后，A的序号为201（SYN占用一个序号）
+
+A发送300字节数据，序号范围为\textbf{201-500}
+
+(2) B期望收到的下一个字节序号 = 201 + 300 = \textbf{501}
+
+所以B发送的确认号为\textbf{501}
+\end{examplebox}
+
+\begin{examplebox}[简答题：网络互连设备]
+\textbf{题目}：网络互连设备有哪些？各工作在什么层次？适用于什么场合？
+\tcblower
+\begin{enumerate}[itemsep=0pt]
+    \item \textbf{路由器}：网络层，用于两个不同的网络互连
+    \item \textbf{交换机}：数据链路层，用于局域网
+    \item \textbf{集线器}：物理层，用于局域网（已较少使用）
+    \item \textbf{网关}：应用层，用于不同协议网络的互连
+\end{enumerate}
+\end{examplebox}
+
+\begin{examplebox}[计算题5.10 TCP序号确认（变形）]
+\textbf{题目}：主机A与主机B已建立TCP连接。A向B连续发送两个报文段，第一个报文段序号为100，携带200字节数据；第二个报文段携带300字节数据。求：(1)第二个报文段的序号 (2)B收到两个报文段后发送的确认号
+\tcblower
+(1) 第二个报文段序号 = 100 + 200 = \textbf{300}
+
+(2) B期望收到的下一个字节 = 100 + 200 + 300 = \textbf{600}
+
+所以B发送的确认号为\textbf{600}
+\end{examplebox}
+
+\begin{examplebox}[计算题5.11 拥塞控制过程（变形）]
+\textbf{题目}：TCP连接初始cwnd=1，ssthresh=32。在第8个RTT时发生超时，描述cwnd的变化过程。
+\tcblower
+\textbf{慢开始阶段}（RTT 1-5）：
+\begin{itemize}[itemsep=0pt]
+    \item RTT1: cwnd=1
+    \item RTT2: cwnd=2
+    \item RTT3: cwnd=4
+    \item RTT4: cwnd=8
+    \item RTT5: cwnd=16
+    \item RTT6: cwnd=32（达到ssthresh，进入拥塞避免）
+\end{itemize}
+
+\textbf{拥塞避免阶段}（RTT 6-8）：
+\begin{itemize}[itemsep=0pt]
+    \item RTT6: cwnd=32
+    \item RTT7: cwnd=33
+    \item RTT8: cwnd=34，发生超时
+\end{itemize}
+
+\textbf{超时后}：
+\begin{itemize}[itemsep=0pt]
+    \item ssthresh = cwnd/2 = 34/2 = 17
+    \item cwnd = 1（重新慢开始）
+\end{itemize}
+\end{examplebox}
+
+\begin{examplebox}[计算题5.12 滑动窗口（变形）]
+\textbf{题目}：TCP发送方的发送窗口为1000字节，已发送600字节，收到确认号为400的ACK。此时发送方还能发送多少字节？
+\tcblower
+假设初始序号为0：
+\begin{itemize}[itemsep=0pt]
+    \item 已发送：序号0-599（共600字节）
+    \item 收到ACK=400：表示0-399已确认（400字节）
+    \item 在途数据：400-599（200字节）
+\end{itemize}
+
+可用窗口 = 发送窗口 - 在途数据 = 1000 - 200 = \textbf{800字节}
+\end{examplebox}
+
+\begin{examplebox}[选择题（补充）]
+\textbf{4.} TCP连接释放过程中，主动关闭方发送最后一个ACK后进入（\textbf{C}）状态\\
+A. CLOSED \quad B. LAST\_ACK \quad C. TIME\_WAIT \quad D. FIN\_WAIT\_2
+
+\textbf{5.} 下列关于TCP和UDP的说法，错误的是（\textbf{D}）\\
+A. TCP提供可靠传输，UDP不提供\\
+B. TCP面向连接，UDP无连接\\
+C. TCP首部最小20字节，UDP首部8字节\\
+D. TCP和UDP都支持多播通信
+
+\textit{解析}：TCP是点对点通信，不支持多播；UDP支持多播。
+
+\textbf{6.} TCP使用的流量控制机制是（\textbf{B}）\\
+A. 停止等待 \quad B. 滑动窗口 \quad C. 后退N帧 \quad D. 选择重传
+
+\textbf{7.} 在TCP拥塞控制中，收到3个重复ACK后执行（\textbf{B}）\\
+A. 慢开始 \quad B. 快重传和快恢复 \quad C. 拥塞避免 \quad D. 超时重传
+\end{examplebox}
+
+\begin{examplebox}[简答题：三次握手必要性]
+\textbf{题目}：为什么TCP建立连接需要三次握手而不是两次？
+\tcblower
+\textbf{原因}：
+\begin{enumerate}[itemsep=0pt]
+    \item \textbf{防止已失效的连接请求}：若只有两次握手，当一个延迟的SYN到达服务器时，服务器会建立连接并等待数据，造成资源浪费。
+    
+    \item \textbf{确认双方收发能力}：
+    \begin{itemize}[itemsep=0pt]
+        \item 第一次握手：服务器确认客户端发送能力正常
+        \item 第二次握手：客户端确认服务器收发能力正常
+        \item 第三次握手：服务器确认客户端接收能力正常
+    \end{itemize}
+    
+    \item \textbf{同步初始序号}：双方需要交换并确认各自的初始序号
+\end{enumerate}
+\end{examplebox}
+
+\begin{examplebox}[简答题：四次挥手必要性]
+\textbf{题目}：为什么TCP释放连接需要四次挥手而不是三次？
+\tcblower
+\textbf{原因}：TCP是全双工通信，每个方向的连接需要单独关闭。
+
+\begin{enumerate}[itemsep=0pt]
+    \item 客户端发送FIN：表示客户端没有数据要发送了
+    \item 服务器回复ACK：确认收到客户端的FIN
+    \item 此时服务器可能还有数据要发送，不能立即关闭
+    \item 服务器发送完数据后，发送FIN：表示服务器也没有数据了
+    \item 客户端回复ACK：确认收到服务器的FIN
+\end{enumerate}
+
+因此，第二次和第三次挥手不能合并，需要四次挥手。
+\end{examplebox}

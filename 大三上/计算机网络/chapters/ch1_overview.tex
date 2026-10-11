@@ -1,0 +1,601 @@
+%========================================
+\chapter{计算机网络概述}
+%========================================
+\section{交换技术}
+计算机网络中的数据交换技术主要分为三种：电路交换、报文交换和分组交换。
+
+\subsection{三种交换方式对比图}
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm,>=stealth,thick]
+% 电路交换
+\node[draw,circle,minimum size=0.7cm] (A1) {A};
+\node[draw,rectangle,right=of A1,minimum width=0.9cm,minimum height=0.6cm] (S1) {\small 交换机};
+\node[draw,rectangle,right=of S1,minimum width=0.9cm,minimum height=0.6cm] (S2) {\small 交换机};
+\node[draw,circle,right=of S2,minimum size=0.7cm] (B1) {B};
+\draw[->,red,very thick] (A1) -- (S1);
+\draw[->,red,very thick] (S1) -- (S2);
+\draw[->,red,very thick] (S2) -- (B1);
+\node[above=0.2cm of S1] {\footnotesize 电路交换：建立专用通路};
+% 报文交换
+\node[draw,circle,minimum size=0.7cm,below=1.8cm of A1] (A2) {A};
+\node[draw,rectangle,right=of A2,minimum width=0.9cm,minimum height=0.6cm] (S3) {\small 节点1};
+\node[draw,rectangle,right=of S3,minimum width=0.9cm,minimum height=0.6cm] (S4) {\small 节点2};
+\node[draw,circle,right=of S4,minimum size=0.7cm] (B2) {B};
+\draw[->,blue] (A2) -- node[above]{\tiny 报文} (S3);
+\draw[->,blue] (S3) -- node[above]{\tiny 存储转发} (S4);
+\draw[->,blue] (S4) -- node[above]{\tiny 报文} (B2);
+\node[below=0.2cm of S3] {\footnotesize 报文交换：整个报文存储转发};
+% 分组交换
+\node[draw,circle,minimum size=0.7cm,below=1.8cm of A2] (A3) {A};
+\node[draw,rectangle,right=of A3,minimum width=0.9cm,minimum height=0.6cm] (S5) {\small 路由器};
+\node[draw,rectangle,right=of S5,minimum width=0.9cm,minimum height=0.6cm] (S6) {\small 路由器};
+\node[draw,circle,right=of S6,minimum size=0.7cm] (B3) {B};
+\draw[->,green!60!black] (A3) -- node[above]{\tiny P1,P2} (S5);
+\draw[->,green!60!black] (S5) -- node[above]{\tiny P1,P2} (S6);
+\draw[->,green!60!black] (S6) -- node[above]{\tiny P1,P2} (B3);
+\node[below=0.2cm of S5] {\footnotesize 分组交换：分组独立转发};
+\end{tikzpicture}
+\end{center}
+
+\subsection{电路交换}
+电路交换的特点是比特流直达终点，在通信前需要建立一条专用的物理通路。
+
+\textbf{工作过程}：电路交换分为三个阶段：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{建立连接}：发送方向网络发出连接请求，网络为通信双方分配专用的物理通路
+    \item \textbf{数据传输}：通信双方通过已建立的专用通路进行数据传输，比特流直达终点
+    \item \textbf{释放连接}：通信结束后，释放占用的物理通路资源
+\end{enumerate}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{优点}：通信时延小、有序传输、没有冲突、实时性强、控制简单
+    \item \textbf{缺点}：建立连接时间长、线路独占使用效率低、灵活性差
+    \item \textbf{典型应用}：传统电话网络
+\end{itemize}
+
+\subsection{报文交换}
+报文交换采用存储转发的方式，将整个报文作为传输单位。
+
+\textbf{工作过程}：发送方将整个报文发送给相邻节点，节点将报文完整存储后再转发给下一个节点，直到到达目的地。
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{优点}：无需建立连接、动态分配线路、提高线路利用率
+    \item \textbf{缺点}：转发时延大、需要大存储空间、需要额外信息量
+    \item \textbf{典型应用}：早期电报系统
+\end{itemize}
+
+\subsection{分组交换}
+分组交换将报文分割成较小的数据块（分组）进行传输，是现代计算机网络的主流交换方式。
+
+\textbf{分组交换的两种方式}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{数据报方式}：每个分组独立选择路由，可能乱序到达，因特网采用此方式
+    \item \textbf{虚电路方式}：先建立虚电路，所有分组沿同一路径传输，按序到达
+\end{itemize}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{优点}：无需建立连接、线路利用率高、加速传输、减少出错概率
+    \item \textbf{缺点}：有转发时延、需要额外信息量、可能失序/丢失/重复
+    \item \textbf{典型应用}：因特网
+\end{itemize}
+
+\subsection{三种交换方式对比表}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{特性} & \textbf{电路交换} & \textbf{报文交换} & \textbf{分组交换} \\
+\midrule
+建立连接 & 需要 & 不需要 & 不需要 \\
+传输单位 & 比特流 & 整个报文 & 分组 \\
+存储转发 & 无 & 有 & 有 \\
+线路利用率 & 低 & 较高 & 高 \\
+时延 & 小（建立后） & 大 & 较小 \\
+可靠性 & 差 & 较好 & 好 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{交换方式例题}
+\begin{examplebox}[例题1.1 分组交换时延计算]
+\textbf{题目}：主机A向主机B发送一个大小为$10^6$bit的文件，链路传输速率为$10^6$bps，经过2个分组交换机。若采用报文交换，时延为多少？若将报文划分为1000个等长分组，采用分组交换，时延为多少？
+\tcblower
+\textbf{解答}：
+
+(1) \textbf{报文交换}：报文需要经过3段链路（A→交换机1→交换机2→B）
+
+每段链路发送时延 = $\frac{10^6}{10^6} = 1$s，总时延 = $3 \times 1 = \textbf{3s}$
+
+(2) \textbf{分组交换}：每个分组大小 = $\frac{10^6}{1000} = 1000$bit
+
+每个分组发送时延 = $\frac{1000}{10^6} = 1$ms
+
+采用流水线方式传输：
+\begin{itemize}[itemsep=0pt]
+    \item 第1个分组到达B的时间：$3 \times 1\text{ms} = 3$ms
+    \item 后续999个分组依次到达，每个间隔1ms
+    \item 总时延 = $3 + 999 = 1002$ms $\approx$ \textbf{1s}
+\end{itemize}
+
+\textbf{结论}：分组交换比报文交换快约3倍！
+\end{examplebox}
+
+\section{计算机网络性能指标}
+\subsection{基本概念}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{比特}：数据量单位，1 Byte = 8 bit，1 KB = $2^{10}$ B，1 MB = $2^{20}$ B
+    \item \textbf{速率}：比特率/数据率，单位bps。1 kbps = $10^3$ bps，1 Mbps = $10^6$ bps
+    \item \textbf{带宽}：通信线路的最高数据率，单位与速率相同
+    \item \textbf{吞吐量}：单位时间内实际通过的数据量
+\end{itemize}
+
+\begin{tipbox}
+\textbf{注意单位换算的区别}：
+\begin{itemize}[itemsep=0pt]
+    \item 数据量单位（KB、MB、GB）：采用$2^{10}$进制，1KB = 1024B
+    \item 速率单位（kbps、Mbps、Gbps）：采用$10^3$进制，1kbps = 1000bps
+\end{itemize}
+\end{tipbox}
+
+\subsection{网络时延}
+网络时延是数据从发送端到接收端所需的总时间，由以下几部分组成：
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{发送时延}：将数据从主机发送到链路上所需的时间，$T_s = \frac{\text{数据量}}{\text{发送速率}}$
+    \item \textbf{传播时延}：电磁波在信道中传播所需的时间，$T_p = \frac{\text{距离}}{\text{传播速度}}$
+    \item \textbf{处理时延}：路由器等设备处理分组所需的时间
+    \item \textbf{排队时延}：分组在路由器缓冲区中等待的时间
+\end{enumerate}
+
+\begin{notebox}
+\textbf{发送时延与传播时延的区别}：
+\begin{itemize}[itemsep=0pt]
+    \item 发送时延：与数据量和发送速率有关，与距离无关
+    \item 传播时延：与距离和传播速度有关，与数据量无关
+\end{itemize}
+\end{notebox}
+
+\begin{formulabox}
+\textbf{总时延} = 发送时延 + 传播时延 + 处理时延 + 排队时延
+
+\textbf{时延带宽积} = 传播时延 $\times$ 带宽（表示链路可容纳的最大比特数）
+
+\textbf{往返时间RTT} = 数据从发送到收到确认的双向时间
+
+\textbf{信道（带宽）利用率}：$U = \frac{\text{发送有效数据的时间}}{\text{总耗时（发送数据+往返传播）}}$
+\end{formulabox}
+
+\begin{examplebox}[例题1.2b 信道利用率计算]
+\textbf{题目}：一个数据包大小为1000字节，信道速率为1Mbps，传播时延为10ms。忽略ACK的发送时间和处理时间，求信道利用率。
+\tcblower
+发送时延 $T_s = \frac{1000 \times 8}{10^6} = 8\text{ms}$
+
+往返传播时延 $2\tau = 2 \times 10 = 20\text{ms}$
+
+信道利用率 $U = \frac{8}{8 + 20} = \frac{8}{28} \approx \textbf{28.5\%}$
+\end{examplebox}
+
+\begin{examplebox}[例题1.2 时延计算]
+\textbf{题目}：主机A向主机B发送1MB文件，距离2000km，速率10Mbps，传播速度$2\times10^8$m/s。求总时延。
+\tcblower
+发送时延：$T_s = \frac{1\times10^6\times8}{10\times10^6} = 0.8$s = 800ms
+
+传播时延：$T_p = \frac{2000\times10^3}{2\times10^8} = 0.01$s = 10ms
+
+\textbf{总时延} = 800 + 10 = \textbf{810ms}（发送时延占主导）
+\end{examplebox}
+
+\section{网络体系结构}
+\subsection{分层的必要性}
+计算机网络是一个非常复杂的系统，采用分层结构可以：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 将复杂问题分解为若干较小的、易于处理的问题
+    \item 各层独立实现，便于维护和升级
+    \item 促进标准化工作，实现不同厂商设备的互联
+\end{itemize}
+
+\subsection{TCP/IP四层模型}
+\begin{center}
+\begin{tikzpicture}[node distance=0cm]
+\node[draw,minimum width=5.5cm,minimum height=0.7cm,fill=red!10] (app) {应用层（HTTP、FTP、DNS、SMTP）};
+\node[draw,minimum width=5.5cm,minimum height=0.7cm,below=of app,fill=orange!10] (trans) {运输层（TCP、UDP）};
+\node[draw,minimum width=5.5cm,minimum height=0.7cm,below=of trans,fill=yellow!10] (net) {网际层（IP、ICMP、ARP）};
+\node[draw,minimum width=5.5cm,minimum height=0.7cm,below=of net,fill=green!10] (link) {网络接口层（以太网、WiFi）};
+\end{tikzpicture}
+\end{center}
+
+\textbf{各层功能}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{应用层}：为用户提供各种网络服务，如Web浏览、电子邮件、文件传输等
+    \item \textbf{运输层}：提供端到端的通信服务，TCP提供可靠传输，UDP提供快速传输
+    \item \textbf{网际层}：负责分组的路由选择和转发，实现不同网络之间的互联
+    \item \textbf{网络接口层}：负责在相邻节点之间传输数据帧
+\end{itemize}
+
+\begin{notebox}
+\textbf{IP协议的核心地位}：
+\begin{itemize}[itemsep=0pt]
+    \item IP over everything：IP可运行在任何网络接口上
+    \item Everything over IP：所有应用都基于IP传输
+\end{itemize}
+\end{notebox}
+
+\subsection{数据封装与解封装}
+数据在发送时，从上层向下层传递，每经过一层都会添加该层的控制信息（头部）：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 应用层：产生应用数据
+    \item 运输层：添加TCP/UDP头部，形成报文段/用户数据报
+    \item 网际层：添加IP头部，形成IP数据报
+    \item 网络接口层：添加帧头和帧尾，形成帧
+\end{itemize}
+
+接收时，从下层向上层传递,每经过一层都会去掉该层的头部：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 网络接口层：去掉帧头和帧尾，得到IP数据报
+    \item 网际层：去掉IP头部，得到报文段/用户数据报
+    \item 运输层：去掉TCP/UDP头部，得到应用数据
+    \item 应用层：处理应用数据
+\end{itemize}
+
+\begin{examplebox}[例题1.3 数据封装]
+\textbf{题目}：应用层数据为1000字节，TCP头部20字节，IP头部20字节，以太网帧头18字节（含帧尾），求最终发送的帧长度。
+\tcblower
+\textbf{解答}：
+\begin{itemize}[itemsep=0pt]
+    \item TCP报文段 = 1000 + 20 = 1020字节
+    \item IP数据报 = 1020 + 20 = 1040字节
+    \item 以太网帧 = 1040 + 18 = \textbf{1058字节}
+\end{itemize}
+\end{examplebox}
+
+\section{OSI七层模型}
+虽然实际应用中主要使用TCP/IP四层模型，但OSI七层模型是理论基础，考试中经常出现。
+
+\begin{center}
+\begin{tikzpicture}[node distance=0cm]
+\node[draw,minimum width=4cm,minimum height=0.6cm,fill=red!20] (app7) {应用层};
+\node[draw,minimum width=4cm,minimum height=0.6cm,below=of app7,fill=red!15] (pre) {表示层};
+\node[draw,minimum width=4cm,minimum height=0.6cm,below=of pre,fill=red!10] (ses) {会话层};
+\node[draw,minimum width=4cm,minimum height=0.6cm,below=of ses,fill=orange!10] (trans7) {运输层};
+\node[draw,minimum width=4cm,minimum height=0.6cm,below=of trans7,fill=yellow!10] (net7) {网络层};
+\node[draw,minimum width=4cm,minimum height=0.6cm,below=of net7,fill=green!10] (link7) {数据链路层};
+\node[draw,minimum width=4cm,minimum height=0.6cm,below=of link7,fill=blue!10] (phy) {物理层};
+\end{tikzpicture}
+\end{center}
+
+\textbf{各层功能简述}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{应用层}：为应用程序提供网络服务
+    \item \textbf{表示层}：数据格式转换、加密解密、压缩解压
+    \item \textbf{会话层}：建立、管理和终止会话
+    \item \textbf{运输层}：提供端到端的可靠或不可靠传输
+    \item \textbf{网络层}：路由选择和分组转发
+    \item \textbf{数据链路层}：成帧、差错控制、流量控制
+    \item \textbf{物理层}：比特流的传输
+\end{itemize}
+
+\begin{notebox}
+\textbf{OSI与TCP/IP的对应关系}：
+\begin{itemize}[itemsep=0pt]
+    \item OSI的应用层、表示层、会话层 → TCP/IP的应用层
+    \item OSI的运输层 → TCP/IP的运输层
+    \item OSI的网络层 → TCP/IP的网际层
+    \item OSI的数据链路层、物理层 → TCP/IP的网络接口层
+\end{itemize}
+\end{notebox}
+
+\section{网络设备与工作层次}
+不同的网络设备工作在不同的层次，这是考试的重点内容。
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{设备} & \textbf{工作层次} & \textbf{功能} \\
+\midrule
+中继器 & 物理层 & 信号放大和再生 \\
+集线器(Hub) & 物理层 & 多端口中继器，广播 \\
+网桥 & 数据链路层 & 根据MAC地址转发 \\
+交换机(Switch) & 数据链路层 & 多端口网桥，MAC地址表 \\
+路由器(Router) & 网络层 & 根据IP地址路由转发 \\
+网关 & 应用层 & 协议转换 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{examplebox}[例题1.4 设备工作层次]
+\textbf{题目}：以下哪些设备能隔离冲突域？哪些能隔离广播域？
+
+A. 集线器  B. 交换机  C. 路由器  D. 网桥
+\tcblower
+\textbf{解答}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{隔离冲突域}：B、C、D（数据链路层及以上设备）
+    \item \textbf{隔离广播域}：C（只有路由器能隔离广播域）
+\end{itemize}
+
+\textbf{解释}：
+\begin{itemize}[itemsep=0pt]
+    \item 集线器工作在物理层，所有端口共享一个冲突域
+    \item 交换机、网桥工作在数据链路层，每个端口一个冲突域，但广播帧会转发到所有端口
+    \item 路由器工作在网络层，不转发广播帧，能隔离广播域
+\end{itemize}
+\end{examplebox}
+
+\section{协议、服务与接口}
+\subsection{基本概念}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{协议}：对等层之间通信的规则，包括语法、语义和同步
+    \item \textbf{服务}：下层向上层提供的功能，通过服务访问点(SAP)提供
+    \item \textbf{接口}：相邻层之间交换信息的连接点
+\end{itemize}
+
+\subsection{服务访问点 (SAP)}
+服务访问点是相邻层之间进行交互的逻辑接口。每一层都有自己的 SAP：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{物理层}：网卡接口、物理插口
+    \item \textbf{数据链路层}：MAC地址、网卡标识
+    \item \textbf{网络层}：IP地址
+    \item \textbf{运输层}：端口号
+    \item \textbf{应用层}：用户界面、API
+\end{itemize}
+
+\subsection{面向连接与无连接服务}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{面向连接服务}：通信前建立连接，通信后释放连接（如TCP、电话）
+    \begin{itemize}[itemsep=0pt]
+        \item 优点：可靠、有序
+        \item 缺点：开销大、灵活性差
+    \end{itemize}
+    \item \textbf{无连接服务}：直接发送数据，不建立连接（如UDP、邮政系统）
+    \begin{itemize}[itemsep=0pt]
+        \item 优点：快速、灵活、开销小
+        \item 缺点：不可靠、可能乱序
+    \end{itemize}
+\end{itemize}
+
+\subsection{可靠与不可靠服务}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{可靠服务}：具有纠错、检错、应答、重传等机制，确保数据正确、不丢失、不重复（如面向连接的TCP）。
+    \item \textbf{不可靠服务}：尽力而为传输，不保证数据一定到达（如网络层的IP、无连接的UDP）。
+\end{itemize}
+
+\section{网络拓扑结构}
+\subsection{常见拓扑类型}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{总线型}：所有节点连接到一条总线上
+    \begin{itemize}[itemsep=0pt]
+        \item 优点：布线简单、节省线缆
+        \item 缺点：故障诊断困难、总线故障影响全网
+    \end{itemize}
+    \item \textbf{星型}：所有节点连接到中心节点
+    \begin{itemize}[itemsep=0pt]
+        \item 优点：易于管理、故障隔离好
+        \item 缺点：中心节点故障影响全网、线缆用量大
+    \end{itemize}
+    \item \textbf{环型}：节点连接成环
+    \begin{itemize}[itemsep=0pt]
+        \item 优点：无需中心节点
+        \item 缺点：一个节点故障可能影响全网
+    \end{itemize}
+    \item \textbf{网状型}：节点之间有多条路径
+    \begin{itemize}[itemsep=0pt]
+        \item 优点：可靠性高、多路径
+        \item 缺点：成本高、管理复杂
+    \end{itemize}
+\end{itemize}
+
+\section{网络分类}
+\subsection{按覆盖范围分类}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{个域网(PAN)}：个人设备互联，范围几米（如蓝牙）
+    \item \textbf{局域网(LAN)}：覆盖几百米到几公里（如校园网、企业网）
+    \item \textbf{城域网(MAN)}：覆盖一个城市，几十公里
+    \item \textbf{广域网(WAN)}：覆盖国家或全球，几百到几千公里（如因特网）
+\end{itemize}
+
+\subsection{按使用者分类}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{公用网}：电信公司建设，向公众开放
+    \item \textbf{专用网}：某个部门或单位建设，仅供内部使用
+\end{itemize}
+
+\section{因特网的组成}
+\subsection{边缘部分与核心部分}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{边缘部分}：由所有连接到因特网的主机组成，用户直接使用
+    \begin{itemize}[itemsep=0pt]
+        \item 客户-服务器方式(C/S)：客户主动请求，服务器被动响应
+        \item 对等方式(P2P)：两台主机地位平等，互相提供服务
+    \end{itemize}
+    \item \textbf{核心部分}：由大量网络和路由器组成，为边缘部分提供连通性和交换服务
+\end{itemize}
+
+\subsection{ISP层次结构}
+因特网服务提供商(ISP)分为多个层次：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{第一层ISP}：国际性ISP，覆盖全球（如AT\&T、Sprint）
+    \item \textbf{第二层ISP}：区域性ISP，连接到第一层ISP
+    \item \textbf{第三层ISP}：本地ISP，为用户提供接入服务
+\end{itemize}
+
+\begin{examplebox}[例题1.5 综合题]
+\textbf{题目}：某公司要建设一个局域网，有以下需求：
+\begin{itemize}[itemsep=0pt]
+    \item 100台计算机分布在3层楼
+    \item 需要访问Internet
+    \item 要求可靠性高、易于管理
+\end{itemize}
+请设计网络拓扑结构并说明理由。
+\tcblower
+\textbf{解答}：
+
+\textbf{推荐方案}：星型拓扑结构
+
+\textbf{设备配置}：
+\begin{itemize}[itemsep=0pt]
+    \item 每层楼配置1台接入交换机，连接该层的计算机
+    \item 配置1台核心交换机，连接3台接入交换机
+    \item 配置1台路由器，连接核心交换机和Internet
+\end{itemize}
+
+\textbf{理由}：
+\begin{itemize}[itemsep=0pt]
+    \item 星型拓扑易于管理和故障诊断
+    \item 单台计算机故障不影响其他设备
+    \item 核心交换机提供高速交换能力
+    \item 路由器实现内网与Internet的互联
+    \item 可扩展性好，便于后续增加设备
+\end{itemize}
+\end{examplebox}
+
+\section{标准化组织}
+\subsection{主要标准化组织}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{ISO}：国际标准化组织，制定OSI参考模型
+    \item \textbf{ITU}：国际电信联盟，制定通信标准
+    \item \textbf{IEEE}：电气电子工程师协会，制定局域网标准（如IEEE 802.3以太网）
+    \item \textbf{IETF}：因特网工程任务组，制定因特网标准（RFC文档）
+\end{itemize}
+
+\subsection{RFC文档}
+RFC(Request For Comments)是因特网标准的发布形式：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 每个RFC有唯一编号，如RFC 791定义IP协议
+    \item 分为标准RFC和非标准RFC
+    \item 一旦发布，内容不再修改，新版本使用新编号
+\end{itemize}
+
+\section{本章小结}
+本章介绍了计算机网络的基本概念：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 三种交换技术：电路交换、报文交换、分组交换
+    \item 网络性能指标：速率、带宽、时延、吞吐量
+    \item 网络体系结构：OSI七层模型、TCP/IP四层模型
+    \item 网络设备：集线器、交换机、路由器及其工作层次
+    \item 网络分类：按范围、按使用者分类
+    \item 因特网组成：边缘部分、核心部分、ISP层次
+\end{itemize}
+
+\textbf{重点掌握}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 分组交换的工作原理和时延计算
+    \item TCP/IP各层的功能和协议
+    \item 网络设备的工作层次和功能
+    \item 数据封装与解封装过程
+\end{itemize}
+
+\section{本章习题}
+
+\begin{examplebox}[填空题]
+\textbf{1.} 计算机网络是现代\underline{通信}技术和\underline{计算机}技术密切结合的产物。
+
+\textbf{2.} 计算机网络按规模分为\underline{局域网}、\underline{城域网}和\underline{广域网}。
+
+\textbf{3.} 局域网的英文缩写为\underline{LAN}，城域网的英文缩写为\underline{MAN}，广域网的英文缩写为\underline{WAN}。
+
+\textbf{4.} 协议由\underline{语义}、\underline{语法}和\underline{时序}三部分组成。
+
+\textbf{5.} TCP/IP模型从低到高依次为\underline{网络接口层}、\underline{网际层}、\underline{传输层}、\underline{应用层}。
+
+\textbf{6.} OSI参考模型分为\underline{7}层，从低到高依次是\underline{物理层}、\underline{数据链路层}、\underline{网络层}、\underline{传输层}、\underline{会话层}、\underline{表示层}、\underline{应用层}。
+
+\textbf{7.} 交换技术分为\underline{电路交换}、\underline{报文交换}、\underline{分组交换}三种。
+
+\textbf{8.} 在计算机网络中，带宽表示在单位时间内从网络中的某一点到另一点所能通过的\underline{最高数据率}，单位是\underline{bps}。
+
+\textbf{9.} 网络核心部分起特殊作用的是\underline{路由器}，它是一种专用计算机，主要功能是实现\underline{路由选择}和\underline{分组转发}。
+\end{examplebox}
+
+\begin{examplebox}[选择题]
+\textbf{1.} 管理计算机通信的规则称为（\textbf{A}）\\
+A. 协议 \quad B. 介质 \quad C. 服务 \quad D. 网络操作系统
+
+\textbf{2.} 以下哪一个选项按顺序包括了OSI模型的各个层次（\textbf{A}）\\
+A. 物理层，数据链路层，网络层，传输层，会话层，表示层和应用层\\
+B. 物理层，数据链路层，网络层，传输层，系统层，表示层和应用层\\
+C. 物理层，数据链路层，网络层，转换层，会话层，表示层和应用层\\
+D. 表示层，数据链路层，网络层，传输层，会话层，物理层和应用层
+
+\textbf{3.} 在OSI模型中，第N层和其上的N+1层的关系是（\textbf{A}）\\
+A. N层为N+1层提供服务\\
+B. N+1层将从N层接收的信息增加一个头\\
+C. N层利用N+1层提供的服务\\
+D. N层对N+1层没有任何作用
+
+\textbf{4.} 世界上很多国家都相继组建了自己国家的公用数据网，现有的公用数据网大都采用（\textbf{C}）\\
+A. 电路交换方式 \quad B. 报文交换方式\\
+C. 分组交换方式 \quad D. 空分交换方式
+\end{examplebox}
+
+\begin{examplebox}[计算题：协议头开销]
+\textbf{题目}：一个系统的协议结构有N层。应用程序产生M字节长的报文。网络软件在每层都加上H字节长的协议头。那么，网络带宽中有多大比率用于协议头信息的传输？
+\tcblower
+\textbf{解答}：
+
+总共有N层，每层加H字节头
+
+每个报文附加的头字节总数 = H × N
+
+传输的总字节数 = M + H × N
+
+\textbf{协议头开销比率} = $\frac{H \times N}{M + H \times N}$
+\end{examplebox}
+
+
+\begin{examplebox}[选择题（续）]
+\textbf{5.} 以下各项中，不是数据报操作特点的是（\textbf{C}）\\
+A. 每个分组自身携带有足够的信息，它的传送是被单独处理的\\
+B. 在整个传送过程中，不需建立虚电路\\
+C. 使所有分组按顺序到达目的端系统\\
+D. 网络节点要为每个分组做出路由选择
+
+\textbf{6.} 网络是分布在不同地理位置的多个独立的（\textbf{D}）的集合\\
+A. 局域网系统 \quad B. 多协议路由器 \quad C. 操作系统 \quad D. 自治计算机
+
+\textbf{7.} 在OSI模型中，会话层管理（\textbf{A}）\\
+A. 不同主机上各进程间会话 \quad B. 数据格式转换\\
+C. 路由选择 \quad D. 差错控制
+
+\textbf{8.} 下列关于协议与服务的说法，正确的是（\textbf{C}）\\
+A. 协议是垂直的 \quad B. 服务是水平的\\
+C. 下层向上层提供服务 \quad D. 上层向下层提供服务
+\end{examplebox}
+
+\begin{examplebox}[计算题1.6 时延计算]
+\textbf{题目}：主机A通过100Mbps的链路向主机B发送一个2MB的文件，两主机之间的距离为2000km，信号传播速度为$2\times10^8$m/s。求：(1)发送时延 (2)传播时延 (3)总时延
+\tcblower
+(1) 发送时延 = $\frac{2 \times 2^{20} \times 8}{100 \times 10^6} = \frac{16777216}{10^8} \approx \textbf{0.168s} = 168\text{ms}$
+
+(2) 传播时延 = $\frac{2000 \times 10^3}{2 \times 10^8} = \textbf{0.01s} = 10\text{ms}$
+
+(3) 总时延 = 168 + 10 = \textbf{178ms}
+\end{examplebox}
+
+\begin{examplebox}[计算题1.7 分组交换时延]
+\textbf{题目}：主机A向主机B发送一个大小为$8 \times 10^6$bit的文件，链路传输速率为$2$Mbps，经过3个分组交换机。若将报文划分为4000个等长分组，采用分组交换，忽略传播时延和处理时延，求总时延。
+\tcblower
+每个分组大小 = $\frac{8 \times 10^6}{4000} = 2000$bit
+
+每个分组发送时延 = $\frac{2000}{2 \times 10^6} = 1$ms
+
+采用流水线方式传输，需经过4段链路（A→交换机1→交换机2→交换机3→B）：
+\begin{itemize}[itemsep=0pt]
+    \item 第1个分组到达B的时间：$4 \times 1\text{ms} = 4$ms
+    \item 后续3999个分组依次到达，每个间隔1ms
+    \item 总时延 = $4 + 3999 = \textbf{4003ms} \approx 4s$
+\end{itemize}
+\end{examplebox}
+
+\begin{examplebox}[计算题1.8 数据封装开销]
+\textbf{题目}：长度为500字节的应用层数据，从上至下依次传递给传输层、网络层和数据链路层（以太网），已知TCP头部20字节，IP头部20字节，以太网帧头部14字节，帧尾4字节。求：(1)最终发送的帧长度 (2)有效数据传输效率
+\tcblower
+(1) 帧长度计算：
+\begin{itemize}[itemsep=0pt]
+    \item TCP报文段 = 500 + 20 = 520字节
+    \item IP数据报 = 520 + 20 = 540字节
+    \item 以太网帧 = 540 + 14 + 4 = \textbf{558字节}
+\end{itemize}
+
+(2) 有效数据传输效率 = $\frac{500}{558} \times 100\% \approx \textbf{89.6\%}$
+\end{examplebox}

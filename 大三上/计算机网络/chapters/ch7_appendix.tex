@@ -1,0 +1,370 @@
+%========================================
+\chapter{附录：常见考点与公式汇总}
+%========================================
+
+\section{重要公式汇总}
+
+\subsection{物理层}
+
+\begin{formulabox}
+\textbf{奈氏准则}（无噪声信道）：
+$$B_{max} = 2W \text{ Baud}$$
+其中$W$为带宽(Hz)
+
+\textbf{香农公式}（有噪声信道）：
+$$C = W \log_2\left(1 + \frac{S}{N}\right) \text{ bps}$$
+
+\textbf{信噪比转换}：
+$$\text{信噪比(dB)} = 10\log_{10}\left(\frac{S}{N}\right)$$
+
+\textbf{比特率与波特率}：
+$$\text{比特率} = \text{波特率} \times \log_2(\text{码元种类数})$$
+
+\textbf{传输时延}：
+$$T_s = \frac{\text{数据量(bit)}}{\text{发送速率(bps)}}$$
+
+\textbf{传播时延}：
+$$T_p = \frac{\text{距离(m)}}{\text{传播速度(m/s)}}$$
+
+\textbf{总时延}：
+$$T = T_s + T_p + T_{处理} + T_{排队}$$
+
+\textbf{时延带宽积}：
+$$\text{时延带宽积} = T_p \times \text{带宽}$$
+\end{formulabox}
+
+\subsection{数据链路层}
+
+\begin{formulabox}
+\textbf{停等协议信道利用率}：
+$$U = \frac{T_D}{T_D + RTT}$$
+
+\textbf{CSMA/CD争用期}：
+$$\text{争用期} = 2\tau = \frac{2d}{v}$$
+
+\textbf{最小帧长}：
+$$L_{min} = 2\tau \times R$$
+
+\textbf{GBN发送窗口}：
+$$1 < W_T \leq 2^n - 1$$
+
+\textbf{SR发送窗口}：
+$$1 < W_T \leq 2^{n-1}$$
+\end{formulabox}
+
+\subsection{网络层}
+
+\begin{formulabox}
+\textbf{子网主机数}：
+$$\text{主机数} = 2^{\text{主机位数}} - 2$$
+
+\textbf{子网数}：
+$$\text{子网数} = 2^{\text{子网位数}}$$
+
+\textbf{IP分片片偏移}：
+$$\text{片偏移} = \frac{\text{数据偏移量}}{8}$$
+\end{formulabox}
+
+\subsection{传输层}
+
+\begin{formulabox}
+\textbf{TCP序号}：
+$$\text{下一序号} = \text{当前序号} + \text{数据字节数}$$
+
+\textbf{TCP确认号}：
+$$\text{确认号} = \text{期望收到的下一字节序号}$$
+
+\textbf{TCP超时重传时间}：
+$$\text{RTO} = \text{RTT}_S + 4 \times \text{RTT}_D$$
+
+\textbf{TCP拥塞窗口}：
+慢开始：$cwnd = cwnd \times 2$（指数增长）
+
+拥塞避免：$cwnd = cwnd + 1$（线性增长）
+\end{formulabox}
+
+\subsection{应用层}
+
+\begin{formulabox}
+\textbf{HTTP传输时间}：
+$$T = \text{RTT} \times \text{往返次数} + \text{传输时延}$$
+
+\textbf{DNS查询时间}：
+递归查询：$T = n \times \text{RTT}$（n为层级数）
+
+迭代查询：$T = (2n-1) \times \text{RTT}$
+\end{formulabox}
+
+\section{常见端口号汇总}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{协议} & \textbf{端口} & \textbf{传输层} & \textbf{功能} \\
+\midrule
+FTP数据 & 20 & TCP & 文件传输数据连接 \\
+FTP控制 & 21 & TCP & 文件传输控制连接 \\
+SSH & 22 & TCP & 安全远程登录 \\
+Telnet & 23 & TCP & 远程登录 \\
+SMTP & 25 & TCP & 发送邮件 \\
+DNS & 53 & UDP/TCP & 域名解析 \\
+DHCP服务器 & 67 & UDP & 动态主机配置 \\
+DHCP客户端 & 68 & UDP & 动态主机配置 \\
+TFTP & 69 & UDP & 简单文件传输 \\
+HTTP & 80 & TCP & Web服务 \\
+POP3 & 110 & TCP & 接收邮件 \\
+SNMP & 161 & UDP & 网络管理 \\
+HTTPS & 443 & TCP & 安全Web服务 \\
+RIP & 520 & UDP & 路由信息协议 \\
+\bottomrule
+\end{tabular}
+\caption{常用协议端口号}
+\end{table}
+
+\section{协议封装层次}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{协议} & \textbf{封装在} & \textbf{协议号/端口} \\
+\midrule
+HTTP & TCP & 端口80 \\
+FTP & TCP & 端口20/21 \\
+SMTP & TCP & 端口25 \\
+DNS & UDP & 端口53 \\
+DHCP & UDP & 端口67/68 \\
+RIP & UDP & 端口520 \\
+TCP & IP & 协议号6 \\
+UDP & IP & 协议号17 \\
+ICMP & IP & 协议号1 \\
+OSPF & IP & 协议号89 \\
+IP & 数据链路层 & 类型0x0800 \\
+ARP & 数据链路层 & 类型0x0806 \\
+\bottomrule
+\end{tabular}
+\caption{协议封装关系}
+\end{table}
+
+\section{网络设备工作层次}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{设备} & \textbf{工作层次} & \textbf{隔离冲突域} & \textbf{隔离广播域} \\
+\midrule
+中继器 & 物理层 & 否 & 否 \\
+集线器 & 物理层 & 否 & 否 \\
+网桥 & 数据链路层 & 是 & 否 \\
+交换机 & 数据链路层 & 是 & 否 \\
+路由器 & 网络层 & 是 & 是 \\
+三层交换机 & 网络层 & 是 & 是 \\
+网关 & 应用层 & 是 & 是 \\
+\bottomrule
+\end{tabular}
+\caption{网络设备对比}
+\end{table}
+
+\section{IP地址分类}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ccccc}
+\toprule
+\textbf{类别} & \textbf{首位} & \textbf{地址范围} & \textbf{默认掩码} & \textbf{私有地址} \\
+\midrule
+A & 0 & 1-126 & 255.0.0.0 & 10.0.0.0/8 \\
+B & 10 & 128-191 & 255.255.0.0 & 172.16.0.0/12 \\
+C & 110 & 192-223 & 255.255.255.0 & 192.168.0.0/16 \\
+D & 1110 & 224-239 & \multicolumn{2}{c}{多播地址} \\
+E & 1111 & 240-255 & \multicolumn{2}{c}{保留地址} \\
+\bottomrule
+\end{tabular}
+\caption{IP地址分类}
+\end{table}
+
+\section{路由协议对比}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{特性} & \textbf{RIP} & \textbf{OSPF} & \textbf{BGP} \\
+\midrule
+类型 & 距离矢量 & 链路状态 & 路径矢量 \\
+度量标准 & 跳数 & 链路代价 & 策略 \\
+最大跳数 & 15 & 无限制 & 无限制 \\
+收敛速度 & 慢 & 快 & 慢 \\
+适用范围 & 小型网络 & 大型网络 & AS之间 \\
+更新方式 & 周期性 & 触发式 & 触发式 \\
+管理距离 & 120 & 110 & 20(eBGP)/200(iBGP) \\
+封装协议 & UDP(520) & IP(89) & TCP(179) \\
+\bottomrule
+\end{tabular}
+\caption{路由协议对比}
+\end{table}
+
+\section{TCP与UDP对比}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{特性} & \textbf{TCP} & \textbf{UDP} \\
+\midrule
+连接性 & 面向连接 & 无连接 \\
+可靠性 & 可靠传输 & 不可靠传输 \\
+流量控制 & 有（滑动窗口） & 无 \\
+拥塞控制 & 有 & 无 \\
+首部开销 & 20字节 & 8字节 \\
+传输方式 & 字节流 & 数据报 \\
+适用场景 & 文件传输、邮件 & 视频、语音、DNS \\
+\bottomrule
+\end{tabular}
+\caption{TCP与UDP对比}
+\end{table}
+
+\section{常见考点速记}
+
+\subsection{物理层}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 曼彻斯特编码：波特率是数据率的2倍
+    \item 差分曼彻斯特编码：码元开始处有跳变表示0，无跳变表示1
+    \item CDMA：码片序列正交，规格化内积为0
+    \item 双绞线：10/100Mbps只用1、2、3、6号线
+\end{itemize}
+
+\subsection{数据链路层}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 集线器：物理层，共享冲突域，不能隔离冲突域
+    \item 交换机：数据链路层，隔离冲突域，不隔离广播域
+    \item VLAN：隔离广播域，不同VLAN间需三层设备通信
+    \item STP：防止环路，根桥优先级最小
+    \item PPP：点对点协议，支持多种网络层协议
+\end{itemize}
+
+\subsection{网络层}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 路由器：网络层，隔离广播域
+    \item IP分片：只有源主机和路由器可分片，IPv6只有源主机分片
+    \item TTL：每经过一个路由器减1，减到0则丢弃
+    \item ICMP：封装在IP中，ping使用回送请求/回答
+    \item ARP：将IP地址解析为MAC地址
+    \item 最长前缀匹配：选择匹配位数最多的路由
+\end{itemize}
+
+\subsection{传输层}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item TCP三次握手：SYN→SYN+ACK→ACK
+    \item TCP四次挥手：FIN→ACK→FIN→ACK
+    \item TCP序号：字节序号，不是报文段序号
+    \item TCP确认号：期望收到的下一字节序号
+    \item 慢开始：指数增长，拥塞避免：线性增长
+    \item 快重传：收到3个重复ACK立即重传
+\end{itemize}
+
+\subsection{应用层}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item HTTP：无状态协议，默认端口80
+    \item FTP：双连接，控制连接21，数据连接20
+    \item DNS：递归查询和迭代查询
+    \item DHCP：动态分配IP地址，使用UDP
+    \item 电子邮件：SMTP发送，POP3/IMAP接收
+\end{itemize}
+
+\section{易错点提醒}
+
+\begin{notebox}
+\textbf{单位换算}：
+\begin{itemize}[itemsep=0pt]
+    \item 数据量：1KB = 1024B（$2^{10}$进制）
+    \item 速率：1kbps = 1000bps（$10^3$进制）
+    \item 1Byte = 8bit
+\end{itemize}
+\end{notebox}
+
+\begin{notebox}
+\textbf{时延计算}：
+\begin{itemize}[itemsep=0pt]
+    \item 发送时延：与数据量和速率有关，与距离无关
+    \item 传播时延：与距离和传播速度有关，与数据量无关
+    \item 光纤传播速度：约$2\times10^8$m/s
+    \item 电磁波传播速度：约$3\times10^8$m/s
+\end{itemize}
+\end{notebox}
+
+\begin{notebox}
+\textbf{子网划分}：
+\begin{itemize}[itemsep=0pt]
+    \item 网络地址：主机号全0
+    \item 广播地址：主机号全1
+    \item 可用主机数：$2^n - 2$（减去网络地址和广播地址）
+    \item 子网掩码：网络位全1，主机位全0
+\end{itemize}
+\end{notebox}
+
+\begin{notebox}
+\textbf{协议特点}：
+\begin{itemize}[itemsep=0pt]
+    \item IP：无连接、不可靠、尽最大努力交付
+    \item TCP：面向连接、可靠、字节流、全双工
+    \item UDP：无连接、不可靠、数据报、开销小
+    \item HTTP：无状态、基于TCP
+\end{itemize}
+\end{notebox}
+
+\section{计算题常见类型}
+
+\subsection{时延计算}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 计算发送时延：数据量÷速率
+    \item 计算传播时延：距离÷传播速度
+    \item 计算总时延：发送+传播+处理+排队
+    \item 计算往返时间RTT：2×传播时延
+\end{enumerate}
+
+\subsection{信道容量计算}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 奈氏准则：$B = 2W$，再乘以每码元比特数
+    \item 香农公式：先将dB转换为信噪比，再代入公式
+    \item 取两者中的较小值作为实际信道容量
+\end{enumerate}
+
+\subsection{子网划分计算}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 确定需要的子网数，计算子网位数
+    \item 确定需要的主机数，计算主机位数
+    \item 计算子网掩码
+    \item 列出各子网的地址范围
+\end{enumerate}
+
+\subsection{IP分片计算}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 计算数据部分长度：总长度-首部长度
+    \item 计算每个分片最大数据：MTU-首部长度
+    \item 计算分片数量：向上取整
+    \item 计算片偏移：数据偏移量÷8
+\end{enumerate}
+
+\subsection{TCP序号计算}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 序号：当前序号+已发送数据字节数
+    \item 确认号：期望收到的下一字节序号
+    \item 三次握手：注意SYN占用一个序号
+    \item 四次挥手：注意FIN占用一个序号
+\end{enumerate}
+
+\section{本章小结}
+
+本附录汇总了计算机网络课程中的重要公式、常见端口号、协议对比、常见考点和易错点。建议在复习时：
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 熟记所有公式，理解其物理意义
+    \item 掌握常用协议的端口号和封装关系
+    \item 理解各层协议的工作原理和特点
+    \item 多做计算题，熟练掌握计算方法
+    \item 注意单位换算，避免低级错误
+    \item 理解概念之间的联系和区别
+\end{enumerate}

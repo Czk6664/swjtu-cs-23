@@ -1,0 +1,434 @@
+%========================================
+\chapter{物理层}
+%========================================
+\section{物理层特性}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{特性} & \textbf{定义} & \textbf{示例} \\
+\midrule
+机械特性 & 接口形状、尺寸、引脚排列 & RJ45接口规格 \\
+电气特性 & 电压范围、阻抗等 & 以太网电压标准 \\
+功能特性 & 电压的逻辑含义 & 高电平表示1 \\
+过程特性 & 事件执行顺序 & 握手协议流程 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{传输媒体}
+\begin{center}
+\begin{tikzpicture}[
+    level 1/.style={sibling distance=4.5cm,level distance=1.2cm},
+    level 2/.style={sibling distance=2cm,level distance=1cm},
+    every node/.style={draw,rounded corners,minimum height=0.5cm,font=\small}
+]
+\node {传输媒体}
+    child {node {导引型}
+        child {node {双绞线}}
+        child {node {光纤}}
+    }
+    child {node {非导引型}
+        child {node {无线电波}}
+        child {node {微波}}
+    };
+\end{tikzpicture}
+\end{center}
+
+\textbf{导引型传输媒体}（有线）：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{双绞线}：成本低，易安装，是局域网最常用的传输媒体
+    \item \textbf{同轴电缆}：抗干扰能力强，曾用于有线电视和早期以太网
+    \item \textbf{光纤}：传输速率高，抗干扰能力极强，适用于长距离高速传输
+\end{itemize}
+
+\textbf{非导引型传输媒体}（无线）：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{无线电波}：覆盖范围广，用于移动通信、WiFi
+    \item \textbf{微波}：传输距离远，用于卫星通信、城域网
+\end{itemize}
+
+\section{编码与调制}
+\subsection{基本概念}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{码元}：代表不同离散值的基本波形，是数字通信中的最小单位
+    \item \textbf{波特率}：每秒传输的码元数，单位Baud
+    \item \textbf{比特率}：每秒传输的比特数，单位bps
+    \item \textbf{关系}：比特率 = 波特率 $\times$ 每码元比特数
+\end{itemize}
+
+\subsection{数字信号编码}
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+% 曼彻斯特编码示意
+\draw[->] (0,0) -- (8,0) node[right] {t};
+\draw[->] (0,-1.5) -- (0,1.5) node[above] {V};
+\foreach \x in {1,2,3,4,5,6,7} \draw (\x,0.1) -- (\x,-0.1);
+% 数据: 1 0 1 1 0 0 1
+\node at (0.5,1.8) {\small 1};
+\node at (1.5,1.8) {\small 0};
+\node at (2.5,1.8) {\small 1};
+\node at (3.5,1.8) {\small 1};
+\node at (4.5,1.8) {\small 0};
+\node at (5.5,1.8) {\small 0};
+\node at (6.5,1.8) {\small 1};
+% 曼彻斯特编码波形
+\draw[thick,blue] (0,1) -- (0.5,1) -- (0.5,-1) -- (1,-1);
+\draw[thick,blue] (1,-1) -- (1.5,-1) -- (1.5,1) -- (2,1);
+\draw[thick,blue] (2,1) -- (2.5,1) -- (2.5,-1) -- (3,-1);
+\draw[thick,blue] (3,-1) -- (3,1) -- (3.5,1) -- (3.5,-1) -- (4,-1);
+\draw[thick,blue] (4,-1) -- (4.5,-1) -- (4.5,1) -- (5,1);
+\draw[thick,blue] (5,1) -- (5,-1) -- (5.5,-1) -- (5.5,1) -- (6,1);
+\draw[thick,blue] (6,1) -- (6.5,1) -- (6.5,-1) -- (7,-1);
+\node at (3.5,-2) {\small 曼彻斯特编码：码元中间跳变，下跳=1，上跳=0};
+\end{tikzpicture}
+\end{center}
+
+\textbf{常见编码方式}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{不归零编码(NRZ)}：高电平表示1，低电平表示0，无自同步能力
+    \item \textbf{曼彻斯特编码}：码元中间跳变，下跳表示1，上跳表示0，用于传统以太网
+    \item \textbf{差分曼彻斯特编码}：码元中间跳变仅表示时钟，码元开始处有无跳变表示数据
+\end{itemize}
+
+\subsection{基本调制方法}
+调制是将数字信号转换为模拟信号的过程。
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{调幅(AM)}：改变载波振幅，有/无载波表示1/0
+    \item \textbf{调频(FM)}：改变载波频率，不同频率表示不同数据
+    \item \textbf{调相(PM)}：改变载波相位，不同相位表示不同数据
+    \item \textbf{QAM}：正交振幅调制（Quadrature Amplitude Modulation）。
+    同时使用调幅和调相技术，使一个码元可以携带更多的比特。
+    \begin{itemize}[itemsep=0pt]
+        \item \textbf{原理}：将数据分成两路，分别对两个正交的载波（通常是一个正弦波和一个余弦波）进行调幅，然后叠加。
+        \item \textbf{QAM-16}：由12种相位和4种振幅（其中4种相位各有两种振幅）组合而成，共16种码元状态。
+        \item \textbf{优点}：大幅提高频带利用率。
+    \end{itemize}
+\end{itemize}
+
+\section{信道容量}
+信道容量是指信道能够传输的最大数据率，受到物理条件的限制。
+
+\begin{formulabox}
+\textbf{奈氏准则}（理想无噪声信道）：$B_{max} = 2W$ Baud，其中$W$为带宽(Hz)
+
+\textbf{香农公式}（有噪声信道）：$C = W \log_2(1 + \frac{S}{N})$ bps
+
+\textbf{信噪比转换}：信噪比(dB) = $10\log_{10}(\frac{S}{N})$
+\end{formulabox}
+
+\begin{notebox}
+\textbf{奈氏准则与香农公式的区别}：
+\begin{itemize}[itemsep=0pt]
+    \item 奈氏准则：限制码元传输速率，与噪声无关
+    \item 香农公式：限制比特传输速率，考虑噪声影响
+    \item 实际信道容量取两者中的较小值
+\end{itemize}
+\end{notebox}
+
+\begin{examplebox}[例题2.1 信道容量计算]
+\textbf{题目}：信道带宽4kHz，信噪比30dB，求极限传输速率。
+\tcblower
+信噪比转换：$30 = 10\log_{10}(\frac{S}{N})$ $\Rightarrow$ $\frac{S}{N} = 10^3 = 1000$
+
+香农公式：$C = 4000 \times \log_2(1001) \approx 4000 \times 9.97 \approx$ \textbf{40 kbps}
+\end{examplebox}
+
+\begin{examplebox}[例题2.2 综合计算]
+\textbf{题目}：带宽3kHz，采用QAM-16调制（16种码元），求最大数据率。
+\tcblower
+奈氏准则：$B = 2W = 2 \times 3000 = 6000$ Baud
+
+每码元比特数：$n = \log_2 16 = 4$ bit
+
+最大数据率：$R = 6000 \times 4 = $ \textbf{24 kbps}
+\end{examplebox}
+
+\begin{examplebox}[例题2.3 奈氏准则与香农公式综合]
+\textbf{题目}：某信道带宽为8kHz，信噪比为30dB，若使用256种不同的码元，该信道的最大数据率是多少？
+\tcblower
+\textbf{方法1}：根据奈氏准则
+
+最高码元传输速率：$B = 2W = 2 \times 8000 = 16000$ Baud
+
+每码元比特数：$n = \log_2 256 = 8$ bit
+
+数据率：$R_1 = 16000 \times 8 = 128$ kbps
+
+\textbf{方法2}：根据香农公式
+
+$\frac{S}{N} = 10^{30/10} = 1000$
+
+$C = 8000 \times \log_2(1001) \approx 8000 \times 9.97 \approx 80$ kbps
+
+\textbf{结论}：实际最大数据率取较小值，为\textbf{80 kbps}
+\end{examplebox}
+
+\section{信道复用技术}
+信道复用是指多个用户共享同一条物理信道的技术。
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.9]
+% FDM
+\draw (0,0) rectangle (3,2);
+\node at (1.5,2.3) {\small 频分复用FDM};
+\draw[fill=red!30] (0.2,0.2) rectangle (2.8,0.6);
+\draw[fill=green!30] (0.2,0.7) rectangle (2.8,1.1);
+\draw[fill=blue!30] (0.2,1.2) rectangle (2.8,1.6);
+\node at (1.5,0.4) {\tiny 用户1};
+\node at (1.5,0.9) {\tiny 用户2};
+\node at (1.5,1.4) {\tiny 用户3};
+% TDM
+\draw (4,0) rectangle (7,2);
+\node at (5.5,2.3) {\small 时分复用TDM};
+\draw[fill=red!30] (4.2,0.2) rectangle (4.7,1.8);
+\draw[fill=green!30] (4.9,0.2) rectangle (5.4,1.8);
+\draw[fill=blue!30] (5.6,0.2) rectangle (6.1,1.8);
+\draw[fill=red!30] (6.3,0.2) rectangle (6.8,1.8);
+% CDM
+\draw (8,0) rectangle (11,2);
+\node at (9.5,2.3) {\small 码分复用CDM};
+\node at (9.5,1) {\small 同时同频};
+\node at (9.5,0.5) {\small 用码区分};
+\end{tikzpicture}
+\end{center}
+
+\textbf{四种复用技术}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{频分复用(FDM)}：将信道带宽划分为多个子频带，每个用户占用一个子频带
+    \item \textbf{时分复用(TDM)}：将时间划分为等长的时隙，每个用户轮流占用时隙
+    \item \textbf{波分复用(WDM)}：光纤通信中的频分复用，不同波长的光信号在同一光纤中传输
+    \item \textbf{码分复用(CDM)}：每个用户分配唯一的码片序列，所有用户可同时同频通信
+\end{itemize}
+
+\begin{tipbox}
+\textbf{码分多址(CDMA)原理}：
+\begin{itemize}[itemsep=0pt]
+    \item 每个用户分配一个唯一的m位码片序列
+    \item 发送1时发送码片序列，发送0时发送码片序列的反码
+    \item 各用户的码片序列相互正交（规格化内积为0）
+    \item 接收方通过计算内积来分离不同用户的信号
+\end{itemize}
+\end{tipbox}
+
+\section{物理层综合例题}
+
+\begin{examplebox}[例题2.4 数据传输时间]
+\textbf{题目}：某用户通过100Mbps的以太网下载一个大小为1GB的文件，假设网络无其他开销，理论上最短需要多长时间？
+\tcblower
+文件大小：1GB = $1 \times 2^{30}$ B = $1 \times 2^{30} \times 8$ bit
+
+传输速率：100Mbps = $100 \times 10^6$ bps
+
+传输时间 = $\frac{2^{30} \times 8}{100 \times 10^6} = \frac{8 \times 1073741824}{100000000}$ ≈ \textbf{85.9秒}
+\end{examplebox}
+
+\begin{examplebox}[例题2.5 曼彻斯特编码]
+\textbf{题目}：使用曼彻斯特编码传输数据，数据率为10Mbps，求波特率。
+\tcblower
+曼彻斯特编码的特点：每个比特周期中间都有一次电平跳变
+
+因此：1个比特需要2个码元
+
+波特率 = 2 × 数据率 = 2 × 10Mbps = \textbf{20MBaud}
+
+\textbf{注意}：曼彻斯特编码的波特率是数据率的2倍，这是其缺点之一（占用带宽大），但优点是自带时钟同步。
+\end{examplebox}
+
+\begin{examplebox}[例题2.6 信道容量综合]
+\textbf{题目}：某信道带宽为6kHz，采用4种不同的码元，信噪比为20dB。求该信道的最大数据率。
+\tcblower
+\textbf{方法1}：奈氏准则
+
+最高码元传输速率 = 2W = 2 × 6000 = 12000 Baud
+
+每码元比特数 = $\log_2 4$ = 2 bit
+
+数据率 = 12000 × 2 = 24 kbps
+
+\textbf{方法2}：香农公式
+
+信噪比：20dB → $\frac{S}{N} = 10^{20/10} = 100$
+
+$C = 6000 \times \log_2(1+100) = 6000 \times \log_2 101$
+
+$\approx 6000 \times 6.66 \approx 40$ kbps
+
+\textbf{结论}：取较小值，最大数据率为\textbf{24 kbps}
+\end{examplebox}
+
+\begin{examplebox}[例题2.7 CDMA码片序列]
+\textbf{题目}：CDMA系统中，用户A的码片序列为(1,-1,1,-1,1,-1,1,-1)，用户B的码片序列为(1,1,-1,-1,1,1,-1,-1)。若接收到的信号为(2,0,0,-2,2,0,0,-2)，求A和B分别发送了什么数据。
+\tcblower
+\textbf{计算A发送的数据}：
+
+将接收信号与A的码片序列做内积：
+
+$(2,0,0,-2,2,0,0,-2) \cdot (1,-1,1,-1,1,-1,1,-1)$
+
+$= 2×1 + 0×(-1) + 0×1 + (-2)×(-1) + 2×1 + 0×(-1) + 0×1 + (-2)×(-1)$
+
+$= 2 + 0 + 0 + 2 + 2 + 0 + 0 + 2 = 8$
+
+规格化：$8/8 = 1$ → A发送了\textbf{比特1}
+
+\textbf{计算B发送的数据}：
+
+$(2,0,0,-2,2,0,0,-2) \cdot (1,1,-1,-1,1,1,-1,-1)$
+
+$= 2×1 + 0×1 + 0×(-1) + (-2)×(-1) + 2×1 + 0×1 + 0×(-1) + (-2)×(-1)$
+
+$= 2 + 0 + 0 + 2 + 2 + 0 + 0 + 2 = 8$
+
+规格化：$8/8 = 1$ → B发送了\textbf{比特1}
+\end{examplebox}
+
+\section{本章习题}
+
+\begin{examplebox}[填空题]
+\textbf{1.} 物理层的主要任务所描述的4个特性为\underline{机械特性}、\underline{电气特性}、\underline{功能特性}和\underline{过程特性}。
+
+\textbf{2.} 常用的多路复用技术包括：\underline{FDM}、\underline{TDM}、\underline{WDM}、\underline{CDMA}。
+
+\textbf{3.} 数字信号模拟传输时，数字信号变成音频信号的过程称为\underline{调制}，音频信号变成数字信号的过程称为\underline{解调}。
+
+\textbf{4.} PCM的三个步骤是：\underline{采样}、\underline{量化}、\underline{编码}。
+
+\textbf{5.} 调制的基本方法有\underline{调幅(ASK)}、\underline{调频(FSK)}、\underline{调相(PSK)}。
+
+\textbf{6.} 传输介质分为\underline{有线}和\underline{无线}两大类。有线介质分为\underline{同轴电缆}、\underline{双绞线}、\underline{光纤}。
+
+\textbf{7.} 网络拓扑结构有\underline{星形}、\underline{环形}、\underline{树形}、\underline{总线形}、\underline{网状形}。
+\end{examplebox}
+
+\begin{examplebox}[选择题]
+\textbf{1.} 下列选项中，不属于物理层接口规范定义范畴的是（\textbf{A}）\\
+A. 物理地址 \quad B. 接口形状 \quad C. 引脚功能 \quad D. 信号电平
+
+\textbf{2.} 双绞线传输介质是把两根导线绞在一起，这样可以减少（\textbf{D}）\\
+A. 外界信号的干扰 \quad B. 信号传输时的衰减\\
+C. 信号向外泄漏 \quad D. 信号之间的相互串扰
+
+\textbf{3.} 将一条物理信道按时间分成若干时间片轮换地给多个信号使用，这就是（\textbf{B}）\\
+A. 频分多路复用 \quad B. 时分多路复用\\
+C. 空分多路复用 \quad D. 频分与时分混合多路复用
+
+\textbf{4.} 在带宽为8kHz的信道上，如果用8种不同的物理状态来表示数据，若信噪比S/N为30dB，按香农定理，最大限制的数据速率为（\textbf{D}）\\
+A. 24kbps \quad B. 48kbps \quad C. 40kbps \quad D. 80kbps
+\end{examplebox}
+
+\begin{examplebox}[计算题2.8 香农公式应用]
+\textbf{题目}：若要在一条50kHz的信道上传输1.544Mbps的数据，信噪比至少为多少？
+\tcblower
+根据香农公式：$C = W \times \log_2(1 + S/N)$
+
+$1.544 \times 10^6 = 50 \times 10^3 \times \log_2(1 + S/N)$
+
+$\log_2(1 + S/N) = 30.88$
+
+$S/N = 2^{30.88} - 1 \approx 1.97 \times 10^9$
+
+\textbf{信噪比至少约为} $2 \times 10^9$（约93dB）
+\end{examplebox}
+
+\begin{examplebox}[计算题2.9 奈氏准则与香农公式综合]
+\textbf{题目}：假设某个信道的频带在3MHz到4MHz之间，信噪比等于24分贝，那么最大限制的数据速率是多少？如果要达到这个理论值，根据奈氏准则，编码的状态应该为多少？
+\tcblower
+带宽：$W = 4\text{MHz} - 3\text{MHz} = 1\text{MHz}$
+
+信噪比：$24\text{dB} = 10\log_{10}(S/N)$，得 $S/N = 10^{2.4} \approx 251$
+
+香农公式：$C = W \times \log_2(1 + S/N) = 10^6 \times \log_2(252) \approx 10^6 \times 8 = \textbf{8Mbps}$
+
+根据奈氏准则：$C = 2W\log_2 M$
+
+$8 \times 10^6 = 2 \times 10^6 \times \log_2 M$
+
+$\log_2 M = 4$，$M = 2^4 = \textbf{16}$种状态
+\end{examplebox}
+
+\begin{examplebox}[计算题2.10 PCM编码]
+\textbf{题目}：在某系统传输中，某声音数据的频率为2000Hz，在模拟数据的数字信号编码时，如果有128个量化级，试求该系统的数据传输速率。
+\tcblower
+根据奈奎斯特采样定理，采样频率 $\geq 2 \times 2000 = 4000$Hz
+
+每个采样点的比特数 = $\log_2 128 = 7$bit
+
+数据传输速率 = 采样频率 × 每样本比特数 = $4000 \times 7 = \textbf{28kbps}$
+\end{examplebox}
+
+
+\begin{examplebox}[选择题（续）]
+\textbf{5.} 单模光纤与多模光纤相比，其特点是（\textbf{A}）\\
+A. 传输速率高，传输距离远 \quad B. 传输速率低，传输距离近\\
+C. 纤芯粗，易于制造 \quad D. 价格便宜
+
+\textbf{6.} 下列关于曼彻斯特编码的说法，正确的是（\textbf{B}）\\
+A. 波特率等于比特率 \quad B. 波特率是比特率的2倍\\
+C. 比特率是波特率的2倍 \quad D. 无法自同步
+
+\textbf{7.} 光纤是由能传导光波的（\textbf{A}）组成\\
+A. 石英玻璃纤维和保护层 \quad B. 铜芯和绝缘层\\
+C. 铝芯和屏蔽层 \quad D. 塑料和金属
+
+\textbf{8.} 同轴电缆分为（\textbf{A}）\\
+A. 基带同轴电缆和宽带同轴电缆 \quad B. 单模和多模\\
+C. 屏蔽和非屏蔽 \quad D. 粗缆和细缆
+\end{examplebox}
+
+\begin{examplebox}[计算题2.11 信道容量]
+\textbf{题目}：某信道带宽为4kHz，采用16种不同的码元，信噪比为20dB。求该信道的最大数据率。
+\tcblower
+\textbf{方法1}：奈氏准则
+
+最高码元传输速率 = 2W = 2 × 4000 = 8000 Baud
+
+每码元比特数 = $\log_2 16$ = 4 bit
+
+数据率 = 8000 × 4 = \textbf{32 kbps}
+
+\textbf{方法2}：香农公式
+
+信噪比：20dB → $\frac{S}{N} = 10^{20/10} = 100$
+
+$C = 4000 \times \log_2(101) \approx 4000 \times 6.66 \approx \textbf{26.6 kbps}$
+
+\textbf{结论}：取较小值，最大数据率为\textbf{26.6 kbps}
+\end{examplebox}
+
+\begin{examplebox}[计算题2.12 调制解调器]
+\textbf{题目}：某调制解调器采用QAM-64调制方式，信道带宽为3kHz。求该调制解调器的最大数据传输速率。
+\tcblower
+QAM-64表示有64种不同的码元状态
+
+根据奈氏准则：最高码元传输速率 = 2W = 2 × 3000 = 6000 Baud
+
+每码元比特数 = $\log_2 64$ = 6 bit
+
+最大数据传输速率 = 6000 × 6 = \textbf{36 kbps}
+\end{examplebox}
+
+\begin{examplebox}[计算题2.13 采样定理]
+\textbf{题目}：某音频信号的最高频率为4kHz，采用PCM编码，量化级数为256级。求：(1)最小采样频率 (2)每个采样点的比特数 (3)数据传输速率
+\tcblower
+(1) 根据奈奎斯特采样定理：最小采样频率 = 2 × 4000 = \textbf{8000 Hz}
+
+(2) 每个采样点的比特数 = $\log_2 256$ = \textbf{8 bit}
+
+(3) 数据传输速率 = 8000 × 8 = \textbf{64 kbps}
+
+（这正是标准电话语音的PCM编码速率）
+\end{examplebox}
+
+\begin{examplebox}[计算题2.14 CDMA]
+\textbf{题目}：CDMA系统中，用户A的码片序列为(1,1,1,-1,-1,1,-1,-1)，用户B的码片序列为(1,-1,1,1,-1,-1,1,-1)。若A发送比特1，B发送比特0，求叠加后的信号。
+\tcblower
+A发送比特1：发送码片序列本身 = (1,1,1,-1,-1,1,-1,-1)
+
+B发送比特0：发送码片序列的反码 = (-1,1,-1,-1,1,1,-1,1)
+
+叠加信号 = A + B = (1+(-1), 1+1, 1+(-1), -1+(-1), -1+1, 1+1, -1+(-1), -1+1)
+
+= \textbf{(0, 2, 0, -2, 0, 2, -2, 0)}
+\end{examplebox}
