@@ -1,0 +1,49 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{listings}
+\geometry{a4paper, margin=1in}
+
+\title{计算机图形学模拟试卷（三）}
+\author{考试时间：120分钟 \quad 总分：100分}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{简答题（每题 10 分，共 30 分）}
+\begin{enumerate}
+    \item 简述计算机图形学与数字图像处理的区别与联系。
+    \item 描述 Direct3D 12 图形绘制的基本流程（从 CPU 到渲染管线）。
+    \item 请列举三维模型顶点通常包含的数据结构及其意义。
+\end{enumerate}
+
+\section{计算题（每题 15 分，共 45 分）}
+\begin{enumerate}
+    \item \textbf{Bresenham 画线算法}：
+    已知起点 $(0, 0)$，终点 $(10, 3)$。请计算误差项 $d$ 的初值，并计算前 3 个像素点的坐标。
+    
+    \item \textbf{3D 变换分析}：
+    场景中有一个物体 $A$。若要使物体 $A$ 先绕其局部坐标系的原点旋转 $\theta$ 角，再移动到世界坐标系的 $(10, 20, 30)$ 位置。请给出最终的世界变换矩阵计算公式。
+    
+    \item \textbf{裁剪编码}：
+    窗口矩形 $(10, 10)$ 到 $(20, 20)$。线段端点 $P_1(5, 15), P_2(25, 25)$。请得出 $P_1, P_2$ 的 Cohen-Sutherland 编码，并判断其可见性状态。
+\end{enumerate}
+
+\section{画图与分析题（共 15 分）}
+\begin{enumerate}
+    \item \textbf{算法分析：纹理寻址方式}：
+    请描述重复（Wrap）、镜像（Mirror）和夹持（Clamp）三种纹理寻址方式在超出 $[0, 1]$ 范围时的坐标映射规律，并分析它们的应用场景。
+    \item \textbf{递推法画图：Bezier 曲线}：
+    已知控制点 $P_0, P_1, P_2$。请描绘使用递推方法（De Casteljau 算法）在 $t=0.5$ 处确定曲线上点的几何构造过程。
+\end{enumerate}
+
+\section{算法题（10 分）}
+\begin{enumerate}
+    \item \textbf{代码实现}：
+    请编写一段 C++ 代码，模拟简单的 Z-Buffer 消隐逻辑（对一个像素点进行颜色和深度更新的逻辑判断）。
+\end{enumerate}
+
+\end{document}

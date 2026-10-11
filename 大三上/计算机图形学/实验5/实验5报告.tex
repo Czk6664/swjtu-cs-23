@@ -1,0 +1,1325 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage[most]{tcolorbox}
+\tcbset{colback=white,colframe=black,boxrule=0.6pt,arc=0mm,left=3mm,right=3mm,top=2mm,bottom=2mm,breakable,enhanced}
+
+\newcommand{\fillin}[1]{\underline{\makebox[8cm][l]{#1}}}
+\usetikzlibrary{shapes,arrows,positioning,calc,chains}
+
+% 确保section标题使用宋体
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+    {-3.5ex \@plus -1ex \@minus -.2ex}%
+    {2.3ex \@plus.2ex}%
+    {\normalfont\Large\bfseries\songti}}
+\makeatother
+
+\geometry{left=2.5cm,right=2.5cm,top=3.5cm,bottom=2.5cm}
+\setlength{\headheight}{24.64995pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\textbf{实验5 三维图形生成及变换}}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{2pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\leaders\hrule height 2pt\hfill}}
+
+\lstset{
+    language=C++,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+}
+
+\title{\textbf{实验5 三维图形生成及变换}}
+\author{程泽凯 \quad 2023112621}
+\date{\today}
+
+\begin{document}
+
+\begin{titlepage}
+    \thispagestyle{empty}
+    \begin{spacing}{1.2}
+    \centering
+    \vspace*{10mm}
+    {\zihao{4} 《计算机图形学及人机交互》\par}
+    \vspace{20mm}
+    {\bfseries\zihao{1} 实 验 报 告\par}
+    \vspace{40mm}
+    \songti\zihao{-3}
+    \begin{flushleft}
+    \setlength{\tabcolsep}{1em}
+    \renewcommand\arraystretch{2}
+    \begin{tabular}{@{}ll}
+        学\quad 号： & \fillin{2023112621} \\
+        姓\quad 名： & \fillin{程泽凯} \\
+        年\quad 级： & \fillin{2023 级} \\
+        专\quad 业： & \fillin{计算机科学与技术} \\
+        院\quad 系： & \fillin{计算机与人工智能学院} \\
+    \end{tabular}
+    \end{flushleft}
+    \vfill
+    {\zihao{-3} 2025~2026 第 1 学期\par}
+    \end{spacing}
+\end{titlepage}
+
+\clearpage
+\tableofcontents
+\clearpage
+
+\songti\zihao{-4}
+\onehalfspacing
+
+\section{实验目的、任务及要求}
+
+\subsection{实验目的}
+
+\begin{tcolorbox}
+通过本次实验，学习并实现计算机图形学中的三维图形生成与变换技术，掌握三维图形的建模、渲染和交互操作方法。
+\begin{enumerate}
+    \item 掌握三维基本几何体的生成方法：球体、圆柱体、立方体、四面体、平面等
+    \item 理解三维图形的顶点、法线、纹理坐标等属性的计算方法
+    \item 掌握三维图形的几何变换：平移、旋转、缩放
+    \item 学习Direct3D 11图形渲染管线的基本原理
+    \item 掌握Phong光照模型的实现方法
+    \item 学习材质系统和纹理映射技术
+    \item 实现三维场景的交互式操作：图形选择、拖动、摄像机控制
+\end{enumerate}
+\end{tcolorbox}
+
+\subsection{实验任务与要求}
+
+\begin{tcolorbox}
+\begin{enumerate}
+    \item \textbf{三维几何体生成}：实现球体、圆柱体、立方体、四面体、平面等基本几何体的生成
+    \item \textbf{图形变换}：实现三维图形的平移、旋转、缩放变换
+    \item \textbf{光照渲染}：实现Phong光照模型，包括环境光、漫反射、镜面反射
+    \item \textbf{材质系统}：实现多种预设材质（金属、塑料、玻璃、黄金等）
+    \item \textbf{纹理映射}：支持从文件加载纹理并映射到几何体表面
+    \item \textbf{交互操作}：实现鼠标拾取、拖动移动、摄像机旋转缩放等交互功能
+    \item \textbf{坐标轴显示}：绘制三维坐标轴辅助定位
+\end{enumerate}
+\end{tcolorbox}
+
+\clearpage
+
+\section{实验环境}
+\begin{tcolorbox}
+\subsection{硬件环境}
+
+\begin{enumerate}
+    \item 计算机：机械革命旷世 16pro
+    \item CPU：12th Gen Intel® i9-12900H
+    \item RAM：32GB
+    \item 显卡：NVIDIA GeForce RTX 4070 Laptop GPU
+\end{enumerate}
+
+\subsection{软件环境}
+
+\begin{enumerate}
+    \item 操作系统：Windows 11 专业版
+    \item 开发工具：Visual Studio 2022
+    \item 编程语言：C++17
+    \item 图形API：Direct3D 11 (Windows SDK)
+    \item 着色器语言：HLSL (High Level Shading Language)
+    \item 图像加载：Windows Imaging Component (WIC)
+    \item 项目类型：Win32桌面应用程序
+\end{enumerate}
+\end{tcolorbox}
+
+\clearpage
+
+\section{主要功能模块结构及说明}
+\begin{tcolorbox}
+\subsection{系统总体架构}
+
+本系统采用模块化设计，基于Direct3D 11图形API实现三维图形的生成、渲染和交互。系统主要包括几何体生成、图形变换、光照渲染、材质纹理和用户交互五大功能模块。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    every node/.style={font=\scriptsize},
+    mainbox/.style={rectangle, draw=black, line width=1.2pt, fill=yellow!25, minimum width=3cm, minimum height=0.8cm, text centered, rounded corners=3pt, font=\footnotesize\bfseries},
+    modulebox/.style={rectangle, draw=black, line width=1pt, fill=blue!20, minimum width=2.2cm, minimum height=0.7cm, text centered, rounded corners=2pt, align=center, font=\scriptsize},
+    subbox/.style={rectangle, draw=black, line width=0.8pt, fill=green!15, minimum width=0.9cm, minimum height=0.55cm, text centered, rounded corners=2pt, font=\tiny}
+]
+
+% 第一层：主程序
+\node[mainbox] (main) at (0, 0) {3D图形编辑器};
+
+% 第二层：五个功能模块
+\node[modulebox] (m1) at (-6.4, -1.8) {几何体生成};
+\node[modulebox] (m2) at (-3.2, -1.8) {图形变换};
+\node[modulebox] (m3) at (0, -1.8) {光照渲染};
+\node[modulebox] (m4) at (3.2, -1.8) {材质纹理};
+\node[modulebox] (m5) at (6.4, -1.8) {用户交互};
+
+% 第三层：子模块
+\node[subbox] (s1a) at (-7.4, -3.5) {球体};
+\node[subbox] (s1b) at (-6.4, -3.5) {圆柱};
+\node[subbox] (s1c) at (-5.4, -3.5) {立方体};
+
+\node[subbox] (s2a) at (-4.2, -3.5) {平移};
+\node[subbox] (s2b) at (-3.2, -3.5) {旋转};
+\node[subbox] (s2c) at (-2.2, -3.5) {缩放};
+
+\node[subbox] (s3a) at (-1.0, -3.5) {环境光};
+\node[subbox] (s3b) at (0, -3.5) {漫反射};
+\node[subbox] (s3c) at (1.0, -3.5) {镜面};
+
+\node[subbox] (s4a) at (2.7, -3.5) {预设材质};
+\node[subbox] (s4b) at (3.7, -3.5) {纹理加载};
+
+\node[subbox] (s5a) at (5.9, -3.5) {鼠标拾取};
+\node[subbox] (s5b) at (6.9, -3.5) {摄像机};
+
+% 连线
+\draw[->, line width=0.8pt] ([xshift=-1.5cm]main.south) -- (m1.north);
+\draw[->, line width=0.8pt] ([xshift=-0.75cm]main.south) -- (m2.north);
+\draw[->, line width=0.8pt] (main.south) -- (m3.north);
+\draw[->, line width=0.8pt] ([xshift=0.75cm]main.south) -- (m4.north);
+\draw[->, line width=0.8pt] ([xshift=1.5cm]main.south) -- (m5.north);
+
+\draw[->, line width=0.6pt] (m1.south) -- (s1a.north);
+\draw[->, line width=0.6pt] (m1.south) -- (s1b.north);
+\draw[->, line width=0.6pt] (m1.south) -- (s1c.north);
+
+\draw[->, line width=0.6pt] (m2.south) -- (s2a.north);
+\draw[->, line width=0.6pt] (m2.south) -- (s2b.north);
+\draw[->, line width=0.6pt] (m2.south) -- (s2c.north);
+
+\draw[->, line width=0.6pt] (m3.south) -- (s3a.north);
+\draw[->, line width=0.6pt] (m3.south) -- (s3b.north);
+\draw[->, line width=0.6pt] (m3.south) -- (s3c.north);
+
+\draw[->, line width=0.6pt] (m4.south) -- (s4a.north);
+\draw[->, line width=0.6pt] (m4.south) -- (s4b.north);
+
+\draw[->, line width=0.6pt] (m5.south) -- (s5a.north);
+\draw[->, line width=0.6pt] (m5.south) -- (s5b.north);
+
+\end{tikzpicture}
+\caption{系统模块结构图}
+\label{fig:system_arch}
+\end{figure}
+\end{tcolorbox}
+
+\subsection{核心模块详细说明}
+
+\begin{tcolorbox}
+\subsubsection{几何体生成模块}
+\textbf{模块功能}：
+
+本模块实现多种三维基本几何体的生成，包括顶点坐标、法线向量、纹理坐标的计算。
+
+\textbf{支持的几何体类型}：
+\begin{itemize}
+    \item \textbf{球体(Sphere)}：使用经纬度参数化方法生成，支持自定义细分级别
+    \item \textbf{圆柱体(Cylinder)}：包含顶面、底面和侧面，支持自定义半径和高度
+    \item \textbf{立方体(Cube)}：六个面各自独立法线，支持纹理映射
+    \item \textbf{四面体(Tetrahedron)}：正四面体，每个面独立法线
+    \item \textbf{平面(Plane)}：双面渲染的矩形平面
+\end{itemize}
+
+\textbf{顶点数据结构}：
+\begin{itemize}
+    \item Position：三维坐标 (x, y, z)
+    \item Normal：法线向量，用于光照计算
+    \item Color：顶点颜色 (RGBA)
+    \item TexCoord：纹理坐标 (u, v)
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{图形变换模块}
+
+\textbf{模块功能}：
+
+本模块实现三维图形的基本几何变换，所有变换都基于4×4齐次变换矩阵实现。
+
+\textbf{平移变换}：
+\begin{itemize}
+    \item 将图形沿指定方向移动指定距离
+    \item 变换矩阵：$T(t_x, t_y, t_z) = \begin{pmatrix} 1 & 0 & 0 & t_x \\ 0 & 1 & 0 & t_y \\ 0 & 0 & 1 & t_z \\ 0 & 0 & 0 & 1 \end{pmatrix}$
+\end{itemize}
+
+\textbf{旋转变换}：
+\begin{itemize}
+    \item 支持绑定X、Y、Z三个轴的独立旋转
+    \item 绕X轴旋转：$R_x(\theta) = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & \cos\theta & -\sin\theta & 0 \\ 0 & \sin\theta & \cos\theta & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}$
+\end{itemize}
+
+\textbf{缩放变换}：
+\begin{itemize}
+    \item 支持非均匀缩放（各轴独立缩放因子）
+    \item 变换矩阵：$S(s_x, s_y, s_z) = \begin{pmatrix} s_x & 0 & 0 & 0 \\ 0 & s_y & 0 & 0 \\ 0 & 0 & s_z & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}$
+\end{itemize}
+
+\textbf{复合变换}：世界矩阵 = 缩放 × 旋转X × 旋转Y × 旋转Z × 平移
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{光照渲染模块}
+
+\textbf{模块功能}：
+
+本模块实现Phong光照模型，在像素着色器中计算每个像素的最终颜色。
+
+\textbf{Phong光照模型组成}：
+\begin{itemize}
+    \item \textbf{环境光(Ambient)}：模拟间接光照，$I_a = k_a \cdot L_a$
+    \item \textbf{漫反射(Diffuse)}：与光线入射角相关，$I_d = k_d \cdot L_d \cdot \max(0, \vec{N} \cdot \vec{L})$
+    \item \textbf{镜面反射(Specular)}：产生高光效果，$I_s = k_s \cdot L_s \cdot \max(0, \vec{V} \cdot \vec{R})^n$
+    \item \textbf{自发光(Emissive)}：物体自身发出的光，$I_e = k_e$
+\end{itemize}
+
+\textbf{最终颜色计算}：
+$$I = I_a + I_d + I_s + I_e = (k_a + k_d \cdot (\vec{N} \cdot \vec{L}) + k_s \cdot (\vec{V} \cdot \vec{R})^n) \cdot C_{base} + k_e$$
+
+\textbf{光照参数}：
+\begin{itemize}
+    \item 光源方向：可调节的平行光方向向量
+    \item 光源颜色：RGB颜色值，支持超过1.0的HDR值
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{材质纹理模块}
+
+\textbf{模块功能}：
+
+本模块实现材质属性管理和纹理映射功能。
+
+\textbf{材质属性}：
+\begin{itemize}
+    \item 环境光系数(Ambient)：控制环境光反射强度
+    \item 漫反射系数(Diffuse)：控制漫反射颜色
+    \item 镜面反射系数(Specular)：控制高光颜色和强度
+    \item 自发光系数(Emissive)：控制自发光颜色
+    \item 光泽度(Shininess)：控制高光范围大小
+    \item 透明度(Transparency)：控制物体透明程度
+    \item 反射率(Reflectivity)：预留的反射属性
+\end{itemize}
+
+\textbf{预设材质样式}：
+金属、塑料、玻璃、橡胶、黄金、白银、紫铜、铬、翡翠、绿宝石、珍珠等11种预设材质。
+
+\textbf{纹理映射}：
+\begin{itemize}
+    \item 支持BMP、PNG、JPG、JPEG、GIF、TIFF等格式
+    \item 使用Windows Imaging Component (WIC)加载图像
+    \item 支持颜色混合和纹理替换两种映射模式
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{用户交互模块}
+
+\textbf{模块功能}：
+
+本模块实现三维场景的交互式操作，包括图形选择、移动和摄像机控制。
+
+\textbf{鼠标拾取(Ray Picking)}：
+\begin{itemize}
+    \item 将屏幕坐标转换为NDC坐标
+    \item 通过逆投影矩阵和逆视图矩阵计算射线方向
+    \item 对每个物体进行射线-包围球相交测试
+    \item 选择距离摄像机最近的相交物体
+\end{itemize}
+
+\textbf{图形移动}：
+\begin{itemize}
+    \item 左键拖动：在XY平面内移动选中物体
+    \item 滚轮：调整选中物体的Z轴位置
+    \item 双击：打开属性编辑对话框
+\end{itemize}
+
+\textbf{摄像机控制}：
+\begin{itemize}
+    \item 右键/中键拖动：旋转摄像机视角（球坐标系）
+    \item 滚轮（无选中物体时）：调整摄像机距离
+    \item 摄像机始终朝向原点
+\end{itemize}
+
+\textbf{键盘操作}：
+\begin{itemize}
+    \item Delete键：删除选中的图形
+\end{itemize}
+\end{tcolorbox}
+
+\clearpage
+
+\section{实验算法及程序流程}
+\begin{tcolorbox}
+\subsection{三维几何体生成算法}
+
+\subsubsection{球体生成算法}
+
+\textbf{输入}：半径 $r$，经度细分数 $slices$，纬度细分 $stacks$。
+
+\textbf{输出}：包含了顶点位置、法向量和纹理坐标的顶点数组，以及用于构成三角形网格的索引数组。
+
+\textbf{算法步骤}：
+\begin{enumerate}
+    \item 初始化顶点数组和索引数组。
+    \item \textbf{顶点计算}：
+    \begin{itemize}
+        \item 遍历纬度 $stack \in [0, stacks]$，计算垂直倾角 $\phi = \pi \cdot stack / stacks$。
+        \item 在每一层纬度内，遍历经度 $slice \in [0, slices]$，计算水平方位角 $\theta = 2\pi \cdot slice / slices$。
+        \item 利用球坐标系公式计算三维坐标：
+        \begin{align*}
+        x &= r \cdot \sin\phi \cdot \cos\theta \\
+        y &= r \cdot \cos\phi \\
+        z &= r \cdot \sin\phi \cdot \sin\theta
+        \end{align*}
+        \item 顶点法向量 $\vec{N}$ 为归一化的位置向量：$\vec{N} = (x/r, y/r, z/r)$。
+        \item 计算纹理坐标：$u = slice / slices$，$v = stack / stacks$。
+        \item 将计算得到的顶点信息存入顶点数组。
+    \end{itemize}
+    \item \textbf{索引生成}：通过双重循环连接相邻的 $stack$ 和 $slice$ 索引，生成构成球面的三角形索引。
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=2.8cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    decision/.style={diamond, aspect=2, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=green!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (init) [process, below=of start] {输入: 半径$r$, 细分数$slices$, $stacks$\\初始化: 顶点数组, 索引数组};
+\node (loop1) [process, below=of init] {外循环: $stack = 0$ to $stacks$\\计算$\phi = \pi \cdot stack / stacks$};
+\node (loop2) [process, below=of loop1] {内循环: $slice = 0$ to $slices$\\计算$\theta = 2\pi \cdot slice / slices$};
+\node (calc) [process, below=of loop2] {计算顶点坐标、法线、纹理坐标\\添加到顶点数组};
+\node (index) [process, below=of calc] {生成三角形索引\\连接相邻四个顶点};
+\node (end) [startstop, below=of index] {结束, 返回顶点和索引};
+
+\draw [arrow] (start) -- (init);
+\draw [arrow] (init) -- (loop1);
+\draw [arrow] (loop1) -- (loop2);
+\draw [arrow] (loop2) -- (calc);
+\draw [arrow] (calc) -- (index);
+\draw [arrow] (index) -- (end);
+\end{tikzpicture}
+\caption{球体生成算法流程图}
+\label{fig:sphere_flow}
+\end{figure}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{圆柱体生成算法}
+
+\textbf{输入}：半径 $r$，高度 $h$，细分数 $slices$。
+
+\textbf{输出}：圆柱体的顶点数组和索引数组。
+
+\textbf{算法步骤}：
+\begin{enumerate}
+    \item \textbf{生成侧面顶点}：
+    \begin{itemize}
+        \item 遍历圆周角 $\theta \in [0, 2\pi]$，步长为 $2\pi/slices$。
+        \item 计算每个角度在上下两个平面的位置：$(r\cos\theta, \pm h/2, r\sin\theta)$。
+        \item 侧面顶点的法线向量水平向外：$(\cos\theta, 0, \sin\theta)$。
+    \end{itemize}
+    \item \textbf{生成顶面和底面顶点}：
+    \begin{itemize}
+        \item 添加顶面圆心 $(0, h/2, 0)$ 和底面圆心 $(0, -h/2, 0)$，法线分别为 $(0, 1, 0)$ 和 $(0, -1, 0)$。
+        \item 围绕圆心生成圆周上的顶点，用于构成端面扇形。
+    \end{itemize}
+    \item \textbf{构建索引数组}：
+    \begin{itemize}
+        \item 对侧面，每四个顶点构建两个三角形。
+        \item 对端面，通过圆心与圆周顶点序列构建三角形扇形。
+    \end{itemize}
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.0cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.7cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=2.8cm, minimum height=0.7cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (init) [process, below=of start] {输入: 半径$r$, 高度$h$, 细分数$slices$};
+\node (top) [process, below=of init] {生成顶面圆心和圆周顶点\\法线向上$(0, 1, 0)$};
+\node (bottom) [process, below=of top] {生成底面圆心和圆周顶点\\法线向下$(0, -1, 0)$};
+\node (side) [process, below=of bottom] {生成侧面顶点\\法线水平向外$(\cos\theta, 0, \sin\theta)$};
+\node (index) [process, below=of side] {生成顶面、底面、侧面三角形索引};
+\node (end) [startstop, below=of index] {结束};
+
+\draw [arrow] (start) -- (init);
+\draw [arrow] (init) -- (top);
+\draw [arrow] (top) -- (bottom);
+\draw [arrow] (bottom) -- (side);
+\draw [arrow] (side) -- (index);
+\draw [arrow] (index) -- (end);
+\end{tikzpicture}
+\caption{圆柱体生成算法流程图}
+\label{fig:cylinder_flow}
+\end{figure}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{立方体生成算法}
+
+\textbf{输入}：边长 $size$。
+
+\textbf{输出}：立方体的顶点数组和索引数组。
+
+\textbf{算法步骤}：
+\begin{enumerate}
+    \item \textbf{确定顶点位置}：根据边长计算八个顶点的原始坐标 $(\pm size/2, \pm size/2, \pm size/2)$。
+    \item \textbf{生成六个面}：
+    \begin{itemize}
+        \item 对立方体的六个面（前、后、左、右、顶、底）分别记录顶点。
+        \item 为了实现硬边缘光照效果，每个面的四个顶点必须拥有该面唯一的法线向量（如前面法线为 $(0, 0, -1)$）。
+        \item 为每个面的四个顶点分配纹理坐标 $(0,0), (1,0), (1,1), (0,1)$。
+    \end{itemize}
+    \item \textbf{构建索引}：每个面由两个三角形组成（共12个三角形），按照逆时针或顺时针顺序填入索引。
+\end{enumerate}
+
+\subsubsection{四面体生成算法}
+
+\textbf{输入}：边长 $size$。
+
+\textbf{输出}：正四面体的顶点数组和索引数组。
+
+\textbf{算法步骤}：
+\begin{enumerate}
+    \item \textbf{计算基本几何参数}：
+    \begin{itemize}
+        \item 高度 $h = size \cdot \sqrt{2/3}$。
+        \item 外接圆半径 $r = size / \sqrt{3}$。
+    \end{itemize}
+    \item \textbf{确定顶点位置}：
+    \begin{itemize}
+        \item 顶顶点 $v_0$：$(0, h, 0)$。
+        \item 底面三个顶点 $v_1, v_2, v_3$ 均匀分布在 $X-Z$ 平面半径为 $r$ 的圆周上。
+    \end{itemize}
+    \item \textbf{法线计算与索引生成}：
+    \begin{itemize}
+        \item 为每个三角形面独立计算法线向量。
+        \item 通过两条边的叉积 $\vec{N} = \text{normalize}((\vec{v_1} - \vec{v_0}) \times (\vec{v_2} - \vec{v_0}))$ 确定法线方向。
+        \item 将 4 个三角形与其对应的法线和顶点存入数组。
+    \end{itemize}
+\end{enumerate}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsection{三维图形变换算法}
+
+\subsubsection{世界矩阵计算}
+
+\textbf{输入}：位置 $(p_x, p_y, p_z)$，缩放 $(s_x, s_y, s_z)$，旋转角度 $(\theta_x, \theta_y, \theta_z)$。
+
+\textbf{输出}：组合后的 $4 \times 4$ 世界变换矩阵 $M_{World}$。
+
+\textbf{算法步骤}：
+\begin{enumerate}
+    \item \textbf{构建基本变换矩阵}：
+    \begin{itemize}
+        \item 缩放矩阵 $M_S$：依据缩放因子在对角线上设值。
+        \item 旋转矩阵 $M_{Rx}, M_{Ry}, M_{Rz}$：分别依据欧拉角计算绕轴旋转矩阵。
+        \item 平移矩阵 $M_T$：依据位置坐标在变换列设值。
+    \end{itemize}
+    \item \textbf{矩阵复合}：按照“缩放 $\to$ 旋转 $\to$ 平移”的逻辑顺序进行矩阵乘法。
+    \item \textbf{结果输出}：计算 $M_{World} = M_S \cdot M_{Rx} \cdot M_{Ry} \cdot M_{Rz} \cdot M_T$。
+\end{enumerate}
+
+\textbf{变换顺序说明}：先缩放、再旋转、最后平移，确保旋转和缩放都是相对于物体自身中心进行的。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.0cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.7cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=3cm, minimum height=0.7cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (scale) [process, below=of start] {构建缩放矩阵$M_S$};
+\node (rotx) [process, below=of scale] {构建X轴旋转矩阵$M_{Rx}$};
+\node (roty) [process, below=of rotx] {构建Y轴旋转矩阵$M_{Ry}$};
+\node (rotz) [process, below=of roty] {构建Z轴旋转矩阵$M_{Rz}$};
+\node (trans) [process, below=of rotz] {构建平移矩阵$M_T$};
+\node (mult) [process, below=of trans] {矩阵相乘: $M_S \cdot M_{Rx} \cdot M_{Ry} \cdot M_{Rz} \cdot M_T$};
+\node (end) [startstop, below=of mult] {返回世界矩阵};
+
+\draw [arrow] (start) -- (scale);
+\draw [arrow] (scale) -- (rotx);
+\draw [arrow] (rotx) -- (roty);
+\draw [arrow] (roty) -- (rotz);
+\draw [arrow] (rotz) -- (trans);
+\draw [arrow] (trans) -- (mult);
+\draw [arrow] (mult) -- (end);
+\end{tikzpicture}
+\caption{世界矩阵计算流程图}
+\label{fig:world_matrix_flow}
+\end{figure}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsection{摄像机视图矩阵算法}
+
+\textbf{输入}：摄像机偏航角 $yaw$，俯仰角 $pitch$，距离 $distance$。
+
+\textbf{输出}：$4 \times 4$ 视图矩阵 $M_{View}$ 和摄像机世界坐标位置。
+
+\textbf{算法步骤}：
+\begin{enumerate}
+    \item \textbf{球坐标转笛卡尔坐标}：
+    \begin{align*}
+    Eye_x &= distance \cdot \cos(pitch) \cdot \cos(yaw) \\
+    Eye_y &= distance \cdot \cos(pitch) \cdot \sin(yaw) \\
+    Eye_z &= distance \cdot \sin(pitch)
+    \end{align*}
+    \item \textbf{设置观察参数}：设定目标点 $Target = (0, 0, 0)$，上方向 $Up = (0, 0, 1)$。
+    \item \textbf{构建视图矩阵}：根据 $Eye, Target, Up$ 参数通过 LookAt 函数算法生成视图空间变换矩阵。
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.0cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.7cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=3cm, minimum height=0.7cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (calc) [process, below=of start] {根据球坐标计算摄像机位置\\$Eye = (d\cos p\cos y, d\cos p\sin y, d\sin p)$};
+\node (target) [process, below=of calc] {设置目标点$At = (0, 0, 0)$\\设置上方向$Up = (0, 0, 1)$};
+\node (lookat) [process, below=of target] {调用LookAtLH构建视图矩阵};
+\node (end) [startstop, below=of lookat] {返回视图矩阵和摄像机位置};
+
+\draw [arrow] (start) -- (calc);
+\draw [arrow] (calc) -- (target);
+\draw [arrow] (target) -- (lookat);
+\draw [arrow] (lookat) -- (end);
+\end{tikzpicture}
+\caption{摄像机视图矩阵计算流程图}
+\label{fig:camera_flow}
+\end{figure}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{射线拾取算法}
+
+\textbf{输入}：鼠标点击时的屏幕二维坐标 $(x, y)$。
+
+\textbf{输出}：场景中被选中的图形对象（若未选中则为空）。
+
+\textbf{算法步骤}：
+\begin{enumerate}
+    \item \textbf{屏幕坐标转归一化设备坐标 (NDC)}：
+    $$ndcX = \frac{2x}{width} - 1, \quad ndcY = 1 - \frac{2y}{height}$$
+    
+    \item \textbf{构建射线方向}：
+    \begin{itemize}
+        \item 定义近平面上的点，并利用投影矩阵的逆矩阵 $M_{Projection}^{-1}$ 变换到视图空间。
+        \item 再利用视图矩阵的逆矩阵 $M_{View}^{-1}$ 变换到世界空间。
+        \item 归一化处理得到从摄像机指向点击点的射线方向 $\vec{D}$。
+    \end{itemize}
+    
+    \item \textbf{相交性测试}：
+    \begin{itemize}
+        \item 将世界空间射线变换到每个物体的局部坐标系中。
+        \item 对每个物体进行“射线-包围球”相交数学计算。
+        \item 计算射线源点到物体的距离，保存相交成功的候选物体。
+    \end{itemize}
+    
+    \item \textbf{优选最近物体}：在所有相交物体中，返回距离摄像机最近的一个作为最终选择。
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.9cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.7cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=3cm, minimum height=0.7cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    decision/.style={diamond, aspect=2, minimum width=2.5cm, minimum height=0.7cm, text centered, draw=black, fill=green!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (ndc) [process, below=of start] {屏幕坐标转NDC坐标};
+\node (ray) [process, below=of ndc] {通过逆矩阵计算射线方向};
+\node (loop) [process, below=of ray] {遍历场景中每个物体};
+\node (trans) [process, below=of loop] {将射线变换到物体局部坐标系};
+\node (test) [decision, below=of trans] {射线与包围球相交?};
+\node (update) [process, right=2.5cm of test] {更新最近物体};
+\node (next) [decision, below=of test] {还有更多物体?};
+\node (end) [startstop, below=of next] {返回最近的相交物体};
+
+\draw [arrow] (start) -- (ndc);
+\draw [arrow] (ndc) -- (ray);
+\draw [arrow] (ray) -- node(ray_to_loop){} (loop);
+\draw [arrow] (loop) -- (trans);
+\draw [arrow] (trans) -- (test);
+\draw [arrow] (test) -- node[above] {是} (update);
+\draw [arrow] (test) -- node[right] {否} (next);
+\draw [arrow] (update) |- (next);
+\draw [arrow] (next.west) -- node[left,yshift=8pt] {是} ++(-2,0) |- (ray_to_loop);
+\draw [arrow] (next) -- node[right] {否} (end);
+\end{tikzpicture}
+\caption{射线拾取算法流程图}
+\label{fig:pick_flow}
+\end{figure}
+\end{tcolorbox}
+
+\clearpage
+
+\section{程序实现}
+
+\begin{tcolorbox}
+\subsection{算法设计思路}
+
+\subsubsection{Direct3D 11渲染管线设计}
+
+本程序采用Direct3D 11图形API，实现了完整的渲染管线：
+
+\textbf{渲染管线流程}：
+\begin{enumerate}
+    \item \textbf{输入装配(IA)}：设置顶点缓冲区、索引缓冲区、输入布局
+    \item \textbf{顶点着色器(VS)}：进行世界、视图、投影变换
+    \item \textbf{光栅化(RS)}：三角形裁剪、背面剔除、插值
+    \item \textbf{像素着色器(PS)}：计算Phong光照、纹理采样
+    \item \textbf{输出合并(OM)}：深度测试、Alpha混合
+\end{enumerate}
+
+\subsubsection{着色器设计思路}
+
+\textbf{顶点着色器}：
+\begin{itemize}
+    \item 将顶点从模型空间变换到裁剪空间
+    \item 将法线变换到世界空间（用于光照计算）
+    \item 传递颜色和纹理坐标到像素着色器
+\end{itemize}
+
+\textbf{像素着色器}：
+\begin{itemize}
+    \item 归一化插值后的法线向量
+    \item 计算Phong光照模型的各个分量
+    \item 根据纹理模式进行纹理采样和混合
+    \item 输出最终颜色
+\end{itemize}
+
+\subsubsection{材质系统设计}
+
+材质系统采用预设+自定义的混合模式：
+\begin{itemize}
+    \item 提供11种常用材质预设，方便快速选择
+    \item 支持自定义所有材质参数
+    \item 材质参数通过常量缓冲区传递给着色器
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsection{核心代码实现}
+
+\subsubsection{顶点和常量缓冲区结构}
+
+\textbf{代码思路}：定义GPU和CPU之间传递数据的结构体。
+
+\begin{lstlisting}[caption={顶点和常量缓冲区结构定义}]
+// 顶点结构 - 包含位置、法线、颜色、纹理坐标
+struct Vertex {
+    XMFLOAT3 position;  // 三维位置
+    XMFLOAT3 normal;    // 法线向量
+    XMFLOAT4 color;     // RGBA颜色
+    XMFLOAT2 texCoord;  // 纹理坐标
+};
+
+// 常量缓冲区 - 传递变换矩阵和光照参数
+struct ConstantBuffer {
+    XMMATRIX world;       // 世界矩阵
+    XMMATRIX view;        // 视图矩阵
+    XMMATRIX projection;  // 投影矩阵
+    XMFLOAT4 lightDir;    // 光源方向
+    XMFLOAT4 lightColor;  // 光源颜色
+    XMFLOAT4 cameraPos;   // 摄像机位置
+    XMFLOAT4 matAmbient;  // 环境光系数
+    XMFLOAT4 matDiffuse;  // 漫反射系数
+    XMFLOAT4 matSpecular; // 镜面反射系数(w=光泽度)
+    XMFLOAT4 matEmissive; // 自发光系数
+    XMFLOAT4 textureInfo; // 纹理模式信息
+    XMFLOAT4 materialExtra; // 透明度、反射率等
+};
+\end{lstlisting}
+
+\subsubsection{世界矩阵计算}
+
+\textbf{代码思路}：组合缩放、旋转、平移矩阵得到世界变换矩阵。
+
+\begin{lstlisting}[caption={世界矩阵计算函数}]
+// 计算物体的世界变换矩阵
+// 变换顺序: 缩放 -> 旋转X -> 旋转Y -> 旋转Z -> 平移
+XMMATRIX GetWorldMatrix() {
+    // 构建各个变换矩阵
+    XMMATRIX mScale = XMMatrixScaling(scale.x, scale.y, scale.z);
+    XMMATRIX mRotX = XMMatrixRotationX(rotation.x);
+    XMMATRIX mRotY = XMMatrixRotationY(rotation.y);
+    XMMATRIX mRotZ = XMMatrixRotationZ(rotation.z);
+    XMMATRIX mTrans = XMMatrixTranslation(
+        position.x, position.y, position.z);
+    
+    // 按顺序相乘得到世界矩阵
+    return mScale * mRotX * mRotY * mRotZ * mTrans;
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{球体生成实现}
+
+\textbf{代码思路}：使用球坐标系参数化方法，通过双重循环生成球面网格。
+
+\begin{lstlisting}[caption={球体生成函数}]
+// 创建球体网格
+// radius: 半径, slices: 经度细分, stacks: 纬度细分
+void CreateSphere(float radius, int slices, int stacks,
+    std::vector<Vertex>& vertices, std::vector<UINT>& indices) {
+    vertices.clear();
+    indices.clear();
+    
+    // 生成顶点
+    for (int stack = 0; stack <= stacks; ++stack) {
+        float phi = XM_PI * stack / stacks;  // 纬度角 [0, PI]
+        for (int slice = 0; slice <= slices; ++slice) {
+            float theta = 2.0f * XM_PI * slice / slices;  // 经度角
+            
+            Vertex v;
+            // 球坐标转直角坐标
+            v.position.x = radius * sinf(phi) * cosf(theta);
+            v.position.y = radius * cosf(phi);
+            v.position.z = radius * sinf(phi) * sinf(theta);
+            
+            // 法线 = 归一化的位置向量
+            XMVECTOR pos = XMLoadFloat3(&v.position);
+            XMVECTOR norm = XMVector3Normalize(pos);
+            XMStoreFloat3(&v.normal, norm);
+            
+            v.color = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
+            v.texCoord = XMFLOAT2((float)slice/slices, 
+                                  (float)stack/stacks);
+            vertices.push_back(v);
+        }
+    }
+    
+    // 生成索引 - 每个四边形分成两个三角形
+    for (int stack = 0; stack < stacks; ++stack) {
+        for (int slice = 0; slice < slices; ++slice) {
+            int first = stack * (slices + 1) + slice;
+            int second = first + slices + 1;
+            // 第一个三角形
+            indices.push_back(first);
+            indices.push_back(first + 1);
+            indices.push_back(second);
+            // 第二个三角形
+            indices.push_back(second);
+            indices.push_back(first + 1);
+            indices.push_back(second + 1);
+        }
+    }
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{圆柱体生成实现}
+
+\textbf{代码思路}：分别生成顶面、底面和侧面，注意各部分的法线方向。
+
+\begin{lstlisting}[caption={圆柱体生成函数}]
+// 创建圆柱体网格
+void CreateCylinder(float radius, float height, int slices,
+    std::vector<Vertex>& vertices, std::vector<UINT>& indices) {
+    vertices.clear();
+    indices.clear();
+    float halfHeight = height * 0.5f;
+    XMFLOAT4 defaultColor(0.7f, 0.7f, 0.7f, 1.0f);
+    
+    // 顶面圆心
+    Vertex topCenter;
+    topCenter.position = XMFLOAT3(0, halfHeight, 0);
+    topCenter.normal = XMFLOAT3(0, 1, 0);  // 法线向上
+    topCenter.color = defaultColor;
+    vertices.push_back(topCenter);
+    
+    // 底面圆心
+    Vertex bottomCenter;
+    bottomCenter.position = XMFLOAT3(0, -halfHeight, 0);
+    bottomCenter.normal = XMFLOAT3(0, -1, 0);  // 法线向下
+    bottomCenter.color = defaultColor;
+    vertices.push_back(bottomCenter);
+    
+    // 顶部圆周顶点(用于侧面)
+    for (int i = 0; i <= slices; ++i) {
+        float theta = 2.0f * XM_PI * i / slices;
+        Vertex v;
+        v.position.x = radius * cosf(theta);
+        v.position.y = halfHeight;
+        v.position.z = radius * sinf(theta);
+        // 侧面法线水平向外
+        v.normal = XMFLOAT3(cosf(theta), 0, sinf(theta));
+        v.color = defaultColor;
+        v.texCoord = XMFLOAT2((float)i / slices, 0.0f);
+        vertices.push_back(v);
+    }
+    
+    // 底部圆周顶点(用于侧面)
+    for (int i = 0; i <= slices; ++i) {
+        float theta = 2.0f * XM_PI * i / slices;
+        Vertex v;
+        v.position.x = radius * cosf(theta);
+        v.position.y = -halfHeight;
+        v.position.z = radius * sinf(theta);
+        v.normal = XMFLOAT3(cosf(theta), 0, sinf(theta));
+        v.color = defaultColor;
+        v.texCoord = XMFLOAT2((float)i / slices, 1.0f);
+        vertices.push_back(v);
+    }
+    
+    // 生成顶面、底面、侧面索引...
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{四面体生成实现}
+
+\textbf{代码思路}：计算正四面体的四个顶点坐标，每个面独立计算法线。
+
+\begin{lstlisting}[caption={四面体生成函数}]
+// 创建正四面体网格
+void CreateTetrahedron(float size, 
+    std::vector<Vertex>& vertices, std::vector<UINT>& indices) {
+    vertices.clear();
+    indices.clear();
+    XMFLOAT4 color = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
+    
+    // 计算四面体几何参数
+    float h = size * sqrtf(2.0f / 3.0f);  // 高度
+    float r = size / sqrtf(3.0f);          // 底面外接圆半径
+    
+    // 四个顶点坐标
+    XMFLOAT3 v0(0, h, 0);                          // 顶点
+    XMFLOAT3 v1(-size * 0.5f, 0, r);               // 底面顶点1
+    XMFLOAT3 v2(size * 0.5f, 0, r);                // 底面顶点2
+    XMFLOAT3 v3(0, 0, -size / sqrtf(3.0f));        // 底面顶点3
+    
+    // 计算第一个面的法线 (v0, v1, v2)
+    XMVECTOR n1 = XMVector3Normalize(XMVector3Cross(
+        XMVectorSubtract(XMLoadFloat3(&v1), XMLoadFloat3(&v0)),
+        XMVectorSubtract(XMLoadFloat3(&v2), XMLoadFloat3(&v0))));
+    XMFLOAT3 normal1;
+    XMStoreFloat3(&normal1, n1);
+    
+    // 添加第一个面的三个顶点
+    vertices.push_back({ v0, normal1, color, XMFLOAT2(0.5f, 0.0f) });
+    vertices.push_back({ v1, normal1, color, XMFLOAT2(0.0f, 1.0f) });
+    vertices.push_back({ v2, normal1, color, XMFLOAT2(1.0f, 1.0f) });
+    
+    // 类似地计算其他三个面...
+    // 每个面独立的法线确保正确的光照效果
+    
+    // 生成索引
+    for (UINT i = 0; i < 12; ++i) {
+        indices.push_back(i);
+    }
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{顶点着色器实现}
+
+\textbf{代码思路}：将顶点从模型空间变换到裁剪空间，同时传递光照计算所需的数据。
+
+\begin{lstlisting}[caption={HLSL顶点着色器}]
+// 常量缓冲区
+cbuffer ConstantBuffer : register(b0) {
+    matrix World; matrix View; matrix Projection;
+    float4 LightDir; float4 LightColor; float4 CameraPos;
+    float4 MatAmbient; float4 MatDiffuse; 
+    float4 MatSpecular; float4 MatEmissive;
+    float4 TextureInfo; float4 MaterialExtra;
+}
+
+// 输入输出结构
+struct VS_INPUT { 
+    float3 Pos : POSITION; 
+    float3 Normal : NORMAL; 
+    float4 Color : COLOR; 
+    float2 TexCoord : TEXCOORD; 
+};
+struct PS_INPUT { 
+    float4 Pos : SV_POSITION; 
+    float3 Normal : NORMAL; 
+    float4 Color : COLOR; 
+    float3 WorldPos : TEXCOORD0; 
+    float2 TexCoord : TEXCOORD1; 
+};
+
+PS_INPUT main(VS_INPUT input) {
+    PS_INPUT output;
+    // 计算世界坐标
+    float4 worldPos = mul(float4(input.Pos, 1.0f), World);
+    output.WorldPos = worldPos.xyz;
+    // 变换到裁剪空间
+    output.Pos = mul(mul(worldPos, View), Projection);
+    // 变换法线到世界空间
+    output.Normal = mul(input.Normal, (float3x3)World);
+    output.Color = input.Color;
+    output.TexCoord = input.TexCoord;
+    return output;
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{像素着色器实现}
+
+\textbf{代码思路}：实现Phong光照模型，支持纹理采样和多种混合模式。
+
+\begin{lstlisting}[caption={HLSL像素着色器}]
+Texture2D texDiffuse : register(t0);
+SamplerState samLinear : register(s0);
+
+float4 main(PS_INPUT input) : SV_Target {
+    // 归一化法线
+    float3 normal = normalize(input.Normal);
+    // 计算光线方向(指向光源)
+    float3 lightDir = normalize(-LightDir.xyz);
+    
+    // 基础颜色
+    float3 baseColor = input.Color.rgb;
+    float alpha = input.Color.a;
+    
+    // 纹理采样
+    int texMode = (int)TextureInfo.x;
+    if (texMode > 0) {
+        float4 texColor = texDiffuse.Sample(samLinear, input.TexCoord);
+        if (texMode == 1) {  // 颜色混合模式
+            baseColor = texColor.rgb * MatDiffuse.rgb;
+            alpha = texColor.a * input.Color.a;
+        } else if (texMode == 2) {  // 纹理替换模式
+            baseColor = texColor.rgb;
+            alpha = texColor.a;
+        }
+    }
+    
+    // Phong光照计算
+    // 环境光
+    float3 ambient = MatAmbient.rgb * LightColor.rgb;
+    // 漫反射
+    float NdotL = max(dot(normal, lightDir), 0.0f);
+    float3 diffuse = MatDiffuse.rgb * NdotL * LightColor.rgb;
+    // 镜面反射
+    float3 viewDir = normalize(CameraPos.xyz - input.WorldPos);
+    float3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0f), MatSpecular.w);
+    float3 specular = MatSpecular.rgb * spec * LightColor.rgb;
+    // 自发光
+    float3 emissive = MatEmissive.rgb;
+    
+    // 最终颜色
+    float3 finalColor = (ambient + diffuse + specular) * baseColor + emissive;
+    return float4(saturate(finalColor), alpha);
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{摄像机视图矩阵实现}
+
+\textbf{代码思路}：使用球坐标系计算摄像机位置，始终朝向原点。
+
+\begin{lstlisting}[caption={摄像机视图矩阵计算}]
+// 计算摄像机视图矩阵
+// 使用球坐标系: yaw(偏航角), pitch(俯仰角), distance(距离)
+void GetCameraViewMatrix(XMMATRIX& outView, XMVECTOR& outEye) {
+    // 球坐标转直角坐标计算摄像机位置
+    outEye = XMVectorSet(
+        g_cameraDistance * cosf(g_cameraPitch) * cosf(g_cameraYaw),
+        g_cameraDistance * cosf(g_cameraPitch) * sinf(g_cameraYaw),
+        g_cameraDistance * sinf(g_cameraPitch), 
+        0.0f);
+    
+    // 目标点为原点
+    XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+    // 上方向为Z轴正方向
+    XMVECTOR Up = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+    
+    // 构建左手坐标系的LookAt矩阵
+    outView = XMMatrixLookAtLH(outEye, At, Up);
+}
+\end{lstlisting}
+
+\subsubsection{射线拾取实现}
+
+\textbf{代码思路}：将屏幕坐标转换为三维射线，与物体包围球进行相交测试。
+
+\begin{lstlisting}[caption={射线拾取函数}]
+// 根据鼠标位置拾取物体
+Shape3D* PickShape(int x, int y) {
+    // 屏幕坐标转NDC
+    float ndcX = (2.0f * x / WINDOW_WIDTH) - 1.0f;
+    float ndcY = 1.0f - (2.0f * y / WINDOW_HEIGHT);
+    
+    // 构建投影矩阵和逆矩阵
+    XMMATRIX projection = XMMatrixPerspectiveFovLH(
+        XM_PIDIV4, (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 100.0f);
+    XMMATRIX invProj = XMMatrixInverse(nullptr, projection);
+    
+    // 计算射线方向
+    XMVECTOR rayDir = XMVectorSet(ndcX, ndcY, 1.0f, 0.0f);
+    rayDir = XMVector3TransformCoord(rayDir, invProj);
+    
+    XMVECTOR Eye; XMMATRIX view;
+    GetCameraViewMatrix(view, Eye);
+    XMMATRIX invView = XMMatrixInverse(nullptr, view);
+    
+    XMVECTOR rayOrigin = Eye;
+    rayDir = XMVector3TransformNormal(rayDir, invView);
+    rayDir = XMVector3Normalize(rayDir);
+    
+    // 遍历所有物体进行相交测试
+    Shape3D* closest = nullptr;
+    float minDist = FLT_MAX;
+    for (auto shape : g_shapes) {
+        // 射线-包围球相交测试...
+        // 选择最近的相交物体
+    }
+    return closest;
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{材质预设实现}
+
+\textbf{代码思路}：定义多种常用材质的光照参数，方便用户快速选择。
+
+\begin{lstlisting}[caption={材质预设应用函数}]
+// 应用预设材质样式
+void ApplyPresetStyle(PresetStyle style) {
+    presetStyle = style;
+    switch (style) {
+    case STYLE_GOLD:  // 黄金材质
+        color = XMFLOAT4(1.0f, 0.84f, 0.0f, 1.0f);
+        material.ambient = XMFLOAT3(0.24725f, 0.1995f, 0.0745f);
+        material.diffuse = XMFLOAT3(0.75164f, 0.60648f, 0.22648f);
+        material.specular = XMFLOAT3(0.628281f, 0.555802f, 0.366065f);
+        material.emissive = XMFLOAT3(0.0f, 0.0f, 0.0f);
+        material.shininess = 51.2f;
+        material.transparency = 1.0f;
+        material.reflectivity = 0.7f;
+        break;
+        
+    case STYLE_GLASS:  // 玻璃材质
+        color = XMFLOAT4(0.9f, 0.95f, 1.0f, 0.3f);
+        material.ambient = XMFLOAT3(0.1f, 0.1f, 0.1f);
+        material.diffuse = XMFLOAT3(0.6f, 0.7f, 0.8f);
+        material.specular = XMFLOAT3(1.0f, 1.0f, 1.0f);
+        material.shininess = 96.0f;
+        material.transparency = 0.3f;  // 半透明
+        material.reflectivity = 0.8f;
+        break;
+        
+    case STYLE_CHROME:  // 铬材质
+        color = XMFLOAT4(0.9f, 0.9f, 0.9f, 1.0f);
+        material.ambient = XMFLOAT3(0.25f, 0.25f, 0.25f);
+        material.diffuse = XMFLOAT3(0.4f, 0.4f, 0.4f);
+        material.specular = XMFLOAT3(0.774597f, 0.774597f, 0.774597f);
+        material.shininess = 76.8f;
+        material.reflectivity = 0.9f;
+        break;
+    // ... 其他材质预设
+    }
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{纹理加载实现}
+
+\textbf{代码思路}：使用Windows Imaging Component (WIC)加载各种格式的图像文件。
+
+\begin{lstlisting}[caption={纹理加载函数}]
+// 使用WIC加载图片纹理
+bool LoadTextureFromFile(const wchar_t* filename, 
+    ID3D11ShaderResourceView** textureView) {
+    if (!g_pd3dDevice || !filename || !textureView) return false;
+    *textureView = nullptr;
+    
+    // 初始化COM
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    
+    // 创建WIC工厂
+    IWICImagingFactory* pFactory = nullptr;
+    hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr,
+        CLSCTX_INPROC_SERVER, __uuidof(IWICImagingFactory),
+        (void**)&pFactory);
+    
+    // 创建解码器并加载图像
+    IWICBitmapDecoder* pDecoder = nullptr;
+    hr = pFactory->CreateDecoderFromFilename(filename, nullptr,
+        GENERIC_READ, WICDecodeMetadataCacheOnLoad, &pDecoder);
+    
+    // 获取第一帧并转换为32位RGBA格式
+    IWICBitmapFrameDecode* pFrame = nullptr;
+    pDecoder->GetFrame(0, &pFrame);
+    
+    IWICFormatConverter* pConverter = nullptr;
+    pFactory->CreateFormatConverter(&pConverter);
+    pConverter->Initialize(pFrame, GUID_WICPixelFormat32bppRGBA,
+        WICBitmapDitherTypeNone, nullptr, 0.0, 
+        WICBitmapPaletteTypeCustom);
+    
+    // 读取像素数据
+    UINT width, height;
+    pFrame->GetSize(&width, &height);
+    std::vector<BYTE> imageData(width * height * 4);
+    pConverter->CopyPixels(nullptr, width * 4, 
+        width * height * 4, imageData.data());
+    
+    // 创建D3D11纹理
+    D3D11_TEXTURE2D_DESC texDesc = {};
+    texDesc.Width = width;
+    texDesc.Height = height;
+    texDesc.MipLevels = 1;
+    texDesc.ArraySize = 1;
+    texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    texDesc.SampleDesc.Count = 1;
+    texDesc.Usage = D3D11_USAGE_DEFAULT;
+    texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    
+    // 创建纹理和着色器资源视图...
+    return SUCCEEDED(hr);
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsubsection{渲染循环实现}
+
+\textbf{代码思路}：每帧清除缓冲区，设置渲染状态，遍历所有物体进行绘制。
+
+\begin{lstlisting}[caption={主渲染函数}]
+void Render() {
+    if (!g_pImmediateContext) return;
+    
+    // 清除渲染目标和深度缓冲
+    float clearColor[4] = { 0.75f, 0.75f, 0.78f, 1.0f };
+    g_pImmediateContext->ClearRenderTargetView(
+        g_pRenderTargetView, clearColor);
+    g_pImmediateContext->ClearDepthStencilView(
+        g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+    
+    // 获取摄像机矩阵
+    XMVECTOR Eye; XMMATRIX view;
+    GetCameraViewMatrix(view, Eye);
+    XMMATRIX projection = XMMatrixPerspectiveFovLH(
+        XM_PIDIV4, (float)WINDOW_WIDTH / WINDOW_HEIGHT, 
+        0.01f, 100000.0f);
+    
+    // 设置渲染状态
+    g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
+    g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
+    g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
+    g_pImmediateContext->RSSetState(g_pRasterizerState);
+    g_pImmediateContext->OMSetDepthStencilState(g_pDepthStencilState, 1);
+    g_pImmediateContext->OMSetBlendState(g_pBlendState, nullptr, 0xffffffff);
+    
+    // 遍历所有物体进行绘制
+    for (auto shape : g_shapes) {
+        // 设置常量缓冲区(世界矩阵、材质参数等)
+        ConstantBuffer cb;
+        cb.world = XMMatrixTranspose(shape->GetWorldMatrix());
+        cb.view = XMMatrixTranspose(view);
+        cb.projection = XMMatrixTranspose(projection);
+        // ... 设置光照和材质参数
+        
+        g_pImmediateContext->UpdateSubresource(
+            g_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+        
+        // 绑定顶点和索引缓冲区
+        UINT stride = sizeof(Vertex), offset = 0;
+        g_pImmediateContext->IASetVertexBuffers(
+            0, 1, &shape->vertexBuffer, &stride, &offset);
+        g_pImmediateContext->IASetIndexBuffer(
+            shape->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+        
+        // 绘制
+        g_pImmediateContext->DrawIndexed(shape->indexCount, 0, 0);
+        
+        // 选中物体绘制线框高亮
+        if (shape->selected) {
+            g_pImmediateContext->RSSetState(g_pWireframeState);
+            g_pImmediateContext->DrawIndexed(shape->indexCount, 0, 0);
+            g_pImmediateContext->RSSetState(g_pRasterizerState);
+        }
+    }
+    
+    // 绘制坐标轴
+    if (g_showAxes) { /* 绘制XYZ坐标轴 */ }
+    
+    // 呈现
+    g_pSwapChain->Present(0, 0);
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\clearpage
+
+\begin{tcolorbox}
+
+\section{实验总结}
+
+通过本次实验，深入理解了计算机图形学中三维图形生成与变换的原理和实现方法：
+
+\begin{enumerate}
+    \item \textbf{三维几何体生成}：掌握了球体、圆柱体、立方体、四面体等基本几何体的参数化生成方法。理解了顶点坐标、法线向量、纹理坐标的计算原理，特别是法线向量对光照效果的重要影响。
+    
+    \item \textbf{三维变换矩阵}：深入理解了齐次坐标和4×4变换矩阵的概念。掌握了平移、旋转、缩放矩阵的构建方法，以及复合变换的矩阵乘法顺序（缩放→旋转→平移）。
+    
+    \item \textbf{Direct3D 11渲染管线}：学习了现代图形API的渲染管线架构，包括输入装配、顶点着色器、光栅化、像素着色器、输出合并等阶段。理解了GPU编程的基本概念。
+    
+    \item \textbf{Phong光照模型}：实现了完整的Phong光照模型，包括环境光、漫反射、镜面反射和自发光四个分量。理解了各个分量的物理意义和计算方法。
+    
+    \item \textbf{材质与纹理}：学习了材质属性（环境光系数、漫反射系数、镜面反射系数、光泽度等）对渲染效果的影响。掌握了使用WIC加载图像文件并创建纹理的方法。
+    
+    \item \textbf{交互技术}：实现了射线拾取算法，理解了屏幕坐标到三维射线的转换过程。掌握了球坐标系摄像机控制的实现方法。
+    
+    \item \textbf{HLSL着色器编程}：学习了HLSL着色器语言的基本语法，理解了顶点着色器和像素着色器的职责分工，以及常量缓冲区、纹理采样器的使用方法。
+\end{enumerate}
+
+本实验综合运用了计算机图形学的多个核心概念，从几何建模到光照渲染，从变换矩阵到交互操作，构建了一个功能完整的三维图形编辑器。通过实践加深了对三维图形学理论的理解，提高了使用现代图形API进行图形编程的能力。
+\end{tcolorbox}
+
+\end{document}

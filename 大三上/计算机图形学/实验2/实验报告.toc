@@ -1,0 +1,46 @@
+\contentsline {section}{\numberline {1}实验目的、任务及要求}{3}{}%
+\contentsline {subsection}{\numberline {1.1}实验目的}{3}{}%
+\contentsline {subsection}{\numberline {1.2}实验任务与要求}{3}{}%
+\contentsline {section}{\numberline {2}数据结构设计}{4}{}%
+\contentsline {subsection}{\numberline {2.1}图形对象数据结构}{4}{}%
+\contentsline {subsubsection}{\numberline {2.1.1}图形基类设计}{4}{}%
+\contentsline {subsubsection}{\numberline {2.1.2}辅助几何函数}{5}{}%
+\contentsline {subsubsection}{\numberline {2.1.3}具体图形类设计}{6}{}%
+\contentsline {paragraph}{1. 直线类（LineShape）}{6}{}%
+\contentsline {paragraph}{2. 圆类（CircleShape）}{8}{}%
+\contentsline {paragraph}{3. 矩形类（RectangleShape）}{9}{}%
+\contentsline {paragraph}{4. 三角形类（TriangleShape）}{11}{}%
+\contentsline {paragraph}{5. 菱形类（DiamondShape）}{13}{}%
+\contentsline {paragraph}{6. 平行四边形类（ParallelogramShape）}{15}{}%
+\contentsline {paragraph}{7. 曲线类（CurveShape）}{16}{}%
+\contentsline {paragraph}{8. 多义线类（PolylineShape）}{18}{}%
+\contentsline {subsection}{\numberline {2.2}图形管理数据结构}{20}{}%
+\contentsline {section}{\numberline {3}文件结构设计}{20}{}%
+\contentsline {subsection}{\numberline {3.1}文件格式设计}{20}{}%
+\contentsline {subsection}{\numberline {3.2}各类图形的序列化格式}{21}{}%
+\contentsline {subsection}{\numberline {3.3}文件读取与保存实现}{21}{}%
+\contentsline {section}{\numberline {4}界面与交互设计}{25}{}%
+\contentsline {subsection}{\numberline {4.1}菜单结构设计}{25}{}%
+\contentsline {subsection}{\numberline {4.2}交互方式设计}{25}{}%
+\contentsline {subsubsection}{\numberline {4.2.1}绘制交互}{25}{}%
+\contentsline {subsubsection}{\numberline {4.2.2}选择与编辑交互}{27}{}%
+\contentsline {subsubsection}{\numberline {4.2.3}几何计算交互}{30}{}%
+\contentsline {section}{\numberline {5}主要功能模块结构图及功能说明}{33}{}%
+\contentsline {subsection}{\numberline {5.1}系统模块化设计思想}{33}{}%
+\contentsline {subsection}{\numberline {5.2}系统模块结构图}{33}{}%
+\contentsline {subsection}{\numberline {5.3}核心模块功能说明}{33}{}%
+\contentsline {subsubsection}{\numberline {5.3.1}主程序模块（Main Module）}{33}{}%
+\contentsline {subsubsection}{\numberline {5.3.2}图形管理模块（Shape Management Module）}{34}{}%
+\contentsline {subsubsection}{\numberline {5.3.3}渲染模块（Rendering Module）}{35}{}%
+\contentsline {subsubsection}{\numberline {5.3.4}事件处理模块（Event Handling Module）}{36}{}%
+\contentsline {subsubsection}{\numberline {5.3.5}文件管理模块（File Management Module）}{36}{}%
+\contentsline {subsubsection}{\numberline {5.3.6}几何计算模块（Geometry Calculation Module）}{37}{}%
+\contentsline {subsubsection}{\numberline {5.3.7}撤销/重做模块（Undo/Redo Module）}{38}{}%
+\contentsline {section}{\numberline {6}用户使用说明}{39}{}%
+\contentsline {subsection}{\numberline {6.1}界面介绍}{39}{}%
+\contentsline {subsection}{\numberline {6.2}绘制基本图形}{39}{}%
+\contentsline {subsection}{\numberline {6.3}选择与编辑图形}{45}{}%
+\contentsline {subsection}{\numberline {6.4}撤销与重做操作}{52}{}%
+\contentsline {subsection}{\numberline {6.5}几何计算功能}{54}{}%
+\contentsline {subsection}{\numberline {6.6}文件操作}{59}{}%
+\contentsline {section}{\numberline {7}实验总结}{63}{}%

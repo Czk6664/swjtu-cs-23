@@ -1,0 +1,14 @@
+[package]
+name = "line_drawing"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[lib]
+name = "line_drawing"
+path = "src/lib.rs"
+
+[[bin]]
+name = "line_drawing"
+path = "src/main.rs"

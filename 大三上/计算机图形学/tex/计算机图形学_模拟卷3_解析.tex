@@ -1,0 +1,61 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{listings}
+\geometry{a4paper, margin=1in}
+
+\title{计算机图形学模拟试卷（三）参考答案与解析}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{简答题建议答案}
+\begin{enumerate}
+    \item \textbf{图形 vs 图像}：图形是基于算法生成的几何表示（抽象数据 $\to$ 图像）；图像处理是对已有像素点阵的加工（图像 $\to$ 图像）。二者在计算机视觉和现代渲染中相互渗透。
+    \item \textbf{D3D12 流程}：CPU 准备资源 $\to$ 将资源（顶点等）上传到 GPU 堆 $\to$ 绑定根签名和 PSO $\to$ 发布记录命令列表 $\to$ 命令队列执行 $\to$ GPU 渲染。
+    \item \textbf{顶点结构}：位置（Position，几何形状）、颜色（Color）、法线（Normal，光照计算）、切线（复杂着色）、纹理坐标（UV 映射）。
+\end{enumerate}
+
+\section{计算题解析}
+\begin{enumerate}
+    \item \textbf{Bresenham (10, 3)}：$\Delta x=10, \Delta y=3$。$d = 2\Delta y - \Delta x = 6 - 10 = -4$。
+    1. (0,0), $d=-4 < 0 \to d = -4+6=2$。
+    2. (1,0), $d=2 \ge 0 \to y=1, d = 2+2(3-10)=-12$。
+    3. (2,1), $d=-12 < 0 \to d = -12+6=-6$ $\to$ (3,1)。
+    
+    \item \textbf{3D 变换}：$M = T(10, 20, 30) \cdot R(\theta)$。遵循“先变换、后叠加”顺序。
+    
+    \item \textbf{C-S 编码}：窗口 $[10,20]$。
+    $P_1(5, 15)$：$x < 10 \implies$ 0001。
+    $P_2(25, 25)$：$x > 20, y > 20 \implies$ 1010。
+    不可简弃，相穿。
+\end{enumerate}
+
+\section{画图与分析解析}
+\begin{itemize}
+    \item \textbf{纹理寻址}：
+    \begin{itemize}
+        \item Wrap: $u \mod 1.0$ (贴瓷砖效果)。
+        \item Mirror: 坐标在整数边界处翻转。
+        \item Clamp: 强制为 0 或 1（取边缘色）。
+    \end{itemize}
+    \item \textbf{De Casteljau}：
+    1. 在 $P_0P_1$ 线段中点找到 $M_{01}$。
+    2. 在 $P_1P_2$ 线段中点找到 $M_{12}$。
+    3. 在 $M_{01}M_{12}$ 线段中点找到 $M_{final}$（此即曲线上点）。
+\end{itemize}
+
+\section{算法解析}
+\begin{lstlisting}[language=C++]
+void UpdatePixelZ(int x, int y, float newZ, Color newColor) {
+    if (newZ < ZBuffer[x][y]) {
+        ZBuffer[x][y] = newZ;
+        FrameBuffer[x][y] = newColor;
+    }
+}
+\end{lstlisting}
+
+\end{document}

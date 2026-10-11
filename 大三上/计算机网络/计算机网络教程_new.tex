@@ -1,0 +1,71 @@
+\documentclass[12pt,a4paper,openany]{ctexbook}
+% 基础宏包
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc,decorations.pathreplacing}
+
+% 页面设置
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm,headheight=15pt}
+
+% 改善排版警告
+\tolerance=1000
+\emergencystretch=3em
+\hbadness=10000
+\vbadness=10000
+
+% 减少章节前后空白
+\usepackage{titlesec}
+\titlespacing*{\chapter}{0pt}{-20pt}{20pt}
+\titlespacing*{\section}{0pt}{10pt}{5pt}
+\titlespacing*{\subsection}{0pt}{8pt}{4pt}
+
+% 超链接设置
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+
+% 代码样式
+\lstset{basicstyle=\ttfamily\small,breaklines=true,frame=single,backgroundcolor=\color{gray!10}}
+
+% 页眉页脚
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% 定义颜色盒子
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\newtcolorbox{notebox}{colback=blue!5,colframe=blue!75!black,title=注意,fonttitle=\bfseries}
+\newtcolorbox{tipbox}{colback=green!5,colframe=green!75!black,title=提示,fonttitle=\bfseries}
+\newtcolorbox{formulabox}{colback=yellow!5,colframe=orange!75!black,title=公式,fonttitle=\bfseries}
+\newtcolorbox{examplebox}[1][]{colback=gray!5,colframe=gray!75!black,title=#1,fonttitle=\bfseries}
+
+\title{\Huge\textbf{计算机网络教程}}
+\author{基于复习笔记整理}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+% 引入各章节
+\input{chapters/ch1_overview}
+\input{chapters/ch2_physical}
+\input{chapters/ch3_datalink}
+\input{chapters/ch4_network}
+\input{chapters/ch5_transport}
+\input{chapters/ch6_application}
+\input{chapters/ch7_appendix}
+\input{chapters/ch8_exam}
+
+\end{document}

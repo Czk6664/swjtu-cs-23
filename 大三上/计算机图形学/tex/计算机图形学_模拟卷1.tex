@@ -1,0 +1,51 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{listings}
+\geometry{a4paper, margin=1in}
+
+\title{计算机图形学模拟试卷（一）}
+\author{考试时间：120分钟 \quad 总分：100分}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{简答题（每题 10 分，共 30 分）}
+\begin{enumerate}
+    \item 简述什么是计算机图形学，以及它的主要研究内容包含哪些？
+    \item 请解释“图形”与“图像”的主要区别是什么？
+    \item 描述 GPU 渲染流水线（Rendering Pipeline）包含的主要阶段（输入装配、顶点着色、曲面细分、几何着色、光栅化、像素着色、输出融合等）及其任务。
+\end{enumerate}
+
+\section{计算题（每题 15 分，共 45 分）}
+\begin{enumerate}
+    \item \textbf{Bresenham 画线算法}：
+    已知直线起点为 $(0, 0)$，终点为 $(2, 5)$。请使用 Bresenham 算法计算出生成该直线所需经过的所有中介像素点坐标。请写出计算过程及误差项 $d$ 的更新。
+    
+    \item \textbf{中点画圆算法}：
+    已知圆的圆心在原点，半径 $R=10$。当 $x$ 坐标在原点左下方（第三象限），且 $|x|=6$ 时，请根据中点画圆法的原理（或 8 对称性）计算出对应的 $y$ 坐标。
+    
+    \item \textbf{Cohen-Sutherland 裁剪算法}：
+    设定裁剪窗口为 $W_{xmin}=0, W_{xmax}=5, W_{ymin}=0, W_{ymax}=5$。
+    线段 $P_1P_2$ 的端点为 $P_1(-1, 5), P_2(6, -2)$。
+    请写出端点 $P_1$ 和 $P_2$ 的 4 位编码（Region Code），并判断该线段是否可以被“简取”或“简弃”？若不能，请写出求交点的逻辑步骤。
+\end{enumerate}
+
+\section{画图与分析题（共 15 分）}
+\begin{enumerate}
+    \item \textbf{分析题：纹理坐标映射}：
+    现有一个三维坐标系下的单位立方体，请说明如何将数字 1 到 6 的图片分别映射到立方体的六个面上。请描述纹理坐标 $(u, v)$ 与面顶点之间的对应关系。
+    \item \textbf{画图描述题}：
+    简述栅栏填充法（Fence Fill）的基本原理，并画图示意（或文字描述其填充填充多边形时的翻转过程）。
+\end{enumerate}
+
+\section{算法题（10 分）}
+\begin{enumerate}
+    \item \textbf{编程实现}：
+    请编写一段 C++ 代码或伪代码，利用 De Casteljau 算法或参数方程，计算三阶 Bezier 曲线（由 $P_0, P_1, P_2, P_3$ 定义）上的点，并将计算出的 100 个点收集到一个数组 `Point points[100]` 中。
+\end{enumerate}
+
+\end{document}

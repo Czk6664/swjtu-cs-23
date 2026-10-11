@@ -1,0 +1,1030 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage[most]{tcolorbox}
+\tcbset{colback=white,colframe=black,boxrule=0.6pt,arc=0mm,left=3mm,right=3mm,top=2mm,bottom=2mm,breakable,enhanced}
+
+\newcommand{\fillin}[1]{\underline{\makebox[8cm][l]{#1}}}
+\usetikzlibrary{shapes,arrows,positioning,calc,chains}
+
+% 确保section标题使用宋体
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+    {-3.5ex \@plus -1ex \@minus -.2ex}%
+    {2.3ex \@plus.2ex}%
+    {\normalfont\Large\bfseries\songti}}
+\makeatother
+
+\geometry{left=2.5cm,right=2.5cm,top=3.5cm,bottom=2.5cm}
+\setlength{\headheight}{24.64995pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\textbf{实验3 基本图元的生成}}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{2pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\leaders\hrule height 2pt\hfill}}
+
+\lstset{
+    language=C++,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+}
+
+\title{\textbf{实验3 基本图元的生成}}
+\author{程泽凯 \quad 2023112621}
+\date{\today}
+
+\begin{document}
+
+\begin{titlepage}
+    \thispagestyle{empty}
+    \begin{spacing}{1.2}
+    \centering
+    \vspace*{10mm}
+    {\zihao{4} 《计算机图形学及人机交互》\par}
+    \vspace{20mm}
+    {\bfseries\zihao{1} 实 验 报 告\par}
+    \vspace{40mm}
+    \songti\zihao{-3}
+    \begin{flushleft}
+    \setlength{\tabcolsep}{1em}
+    \renewcommand\arraystretch{2}
+    \begin{tabular}{@{}ll}
+        学\quad 号： & \fillin{2023112621} \\
+        姓\quad 名： & \fillin{程泽凯} \\
+        年\quad 级： & \fillin{2023 级} \\
+        专\quad 业： & \fillin{计算机科学与技术} \\
+        院\quad 系： & \fillin{计算机与人工智能学院} \\
+    \end{tabular}
+    \end{flushleft}
+    \vfill
+    {\zihao{-3} 2025~2026 第 1 学期\par}
+    \end{spacing}
+\end{titlepage}
+
+\clearpage
+\tableofcontents
+\clearpage
+
+\songti\zihao{-4}
+\onehalfspacing
+
+\section{实验目的、任务及要求}
+
+\subsection{实验目的}
+
+\begin{tcolorbox}
+通过本次实验，学习并实现计算机图形学中的基本图元生成算法，掌握区域填充技术和曲线绘制方法。
+\begin{enumerate}
+    \item 掌握中点画线法和Bresenham画线法的原理与实现
+    \item 掌握中点画圆法和Bresenham画圆法的原理与实现
+    \item 理解并实现种子填充算法和扫描线填充算法
+    \item 掌握Bezier曲线的de Casteljau递推算法
+    \item 学习图形属性（线型、线宽）的控制方法
+\end{enumerate}
+\end{tcolorbox}
+
+\subsection{实验任务与要求}
+
+\begin{tcolorbox}
+\begin{enumerate}
+    \item \textbf{直线绘制算法}：采用中点画线法和Bresenham法实现直线段的绘制
+    \item \textbf{圆绘制算法}：采用中点画圆法和Bresenham法实现圆的绘制
+    \item \textbf{线宽修改}：采用扫描线填充法修改直线和圆的线宽
+    \item \textbf{线型修改}：实现实线、虚线、点线、点划线
+    \item \textbf{区域填充}：采用种子填充法和扫描线填充法对封闭区域进行填充
+    \item \textbf{Bezier曲线}：采用de Casteljau递推算法绘制Bezier曲线
+\end{enumerate}
+\end{tcolorbox}
+
+\clearpage
+
+\section{实验环境}
+\begin{tcolorbox}
+\subsection{硬件环境}
+
+\begin{enumerate}
+    \item 计算机：机械革命旷世 16pro
+    \item CPU：12th Gen Intel® i9-12900H
+    \item RAM：32GB
+    \item 显卡：NVIDIA GeForce RTX 4070 Laptop GPU
+\end{enumerate}
+
+\subsection{软件环境}
+
+\begin{enumerate}
+    \item 操作系统：Windows 11 专业版
+    \item 开发工具：Visual Studio 2022
+    \item 编程语言：C++17
+    \item 图形API：Direct2D (Windows SDK)
+    \item 项目类型：Win32桌面应用程序
+\end{enumerate}
+\end{tcolorbox}
+
+\clearpage
+
+\section{主要功能模块结构及说明}
+\begin{tcolorbox}
+\subsection{系统总体架构}
+
+本系统基于实验2的绘图软件扩展，采用模块化设计。根据实验任务要求，系统主要包括直线绘制、圆绘制、线宽修改、线型修改、区域填充和Bezier曲线六大功能模块。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    every node/.style={font=\scriptsize},
+    mainbox/.style={rectangle, draw=black, line width=1.2pt, fill=yellow!25, minimum width=3cm, minimum height=0.8cm, text centered, rounded corners=3pt, font=\footnotesize\bfseries},
+    modulebox/.style={rectangle, draw=black, line width=1pt, fill=blue!20, minimum width=1.4cm, minimum height=0.7cm, text centered, rounded corners=2pt, align=center, font=\scriptsize},
+    subbox/.style={rectangle, draw=black, line width=0.8pt, fill=green!15, minimum width=1.3cm, minimum height=0.55cm, text centered, rounded corners=2pt, font=\tiny}
+]
+
+% 第一层：主程序
+\node[mainbox] (main) at (0, 0) {图形绘制系统};
+
+% 第二层：六个功能模块
+\node[modulebox] (m1) at (-6, -1.8) {直线绘制};
+\node[modulebox] (m2) at (-3.6, -1.8) {圆绘制};
+\node[modulebox] (m3) at (-1.2, -1.8) {线宽修改};
+\node[modulebox] (m4) at (1.2, -1.8) {线型修改};
+\node[modulebox] (m5) at (3.6, -1.8) {区域填充};
+\node[modulebox] (m6) at (6, -1.8) {Bezier曲线};
+
+% 第三层：子模块（全部并列，10个子模块均匀分布）
+\node[subbox] (s1a) at (-7.2, -3.5) {中点画线法};
+\node[subbox] (s1b) at (-5.5, -3.5) {Bresenham法};
+\node[subbox] (s2a) at (-3.8, -3.5) {中点画圆法};
+\node[subbox] (s2b) at (-2.1, -3.5) {Bresenham法};
+\node[subbox] (s3) at (-0.4, -3.5) {扫描线填充};
+\node[subbox] (s4) at (1.3, -3.5) {线型样式};
+\node[subbox] (s5a) at (3, -3.5) {栅栏填充法};
+\node[subbox] (s5b) at (4.7, -3.5) {种子填充法};
+\node[subbox] (s6) at (6.4, -3.5) {de Casteljau};
+
+% 连线：主程序到六个模块
+\draw[->, line width=0.8pt] ([xshift=-1.4cm]main.south) -- (m1.north);
+\draw[->, line width=0.8pt] ([xshift=-0.85cm]main.south) -- (m2.north);
+\draw[->, line width=0.8pt] ([xshift=-0.3cm]main.south) -- (m3.north);
+\draw[->, line width=0.8pt] ([xshift=0.3cm]main.south) -- (m4.north);
+\draw[->, line width=0.8pt] ([xshift=0.85cm]main.south) -- (m5.north);
+\draw[->, line width=0.8pt] ([xshift=1.4cm]main.south) -- (m6.north);
+
+% 连线：模块到子模块（并列关系）
+\draw[->, line width=0.6pt] ([xshift=-0.3cm]m1.south) -- (s1a.north);
+\draw[->, line width=0.6pt] ([xshift=0.3cm]m1.south) -- (s1b.north);
+
+\draw[->, line width=0.6pt] ([xshift=-0.3cm]m2.south) -- (s2a.north);
+\draw[->, line width=0.6pt] ([xshift=0.3cm]m2.south) -- (s2b.north);
+
+\draw[->, line width=0.6pt] (m3.south) -- (s3.north);
+
+\draw[->, line width=0.6pt] (m4.south) -- (s4.north);
+
+\draw[->, line width=0.6pt] ([xshift=-0.3cm]m5.south) -- (s5a.north);
+\draw[->, line width=0.6pt] ([xshift=0.3cm]m5.south) -- (s5b.north);
+
+\draw[->, line width=0.6pt] (m6.south) -- (s6.north);
+
+\end{tikzpicture}
+\caption{系统模块结构图}
+\label{fig:system_arch}
+
+\end{figure}
+\end{tcolorbox}
+
+\subsection{核心模块详细说明}
+
+\subsubsection{直线绘制模块}
+
+\begin{tcolorbox}
+\textbf{模块功能}：
+
+本模块负责实现直线段的光栅化绘制，是图形系统中最基础的图元绘制功能。直线绘制是所有图形系统的核心，其他复杂图形（如多边形、曲线）都依赖于直线的绘制。模块提供了两种经典的直线绘制算法，用户可以通过菜单选择使用中点画线法或Bresenham画线法，两种算法各有特点但效果相同。
+
+\textbf{主要功能}：
+\begin{itemize}
+    \item \textbf{任意方向直线}：支持任意起点和终点的直线绘制，自动处理8个方向（水平、垂直、斜向）
+    \item \textbf{整数运算}：完全使用整数运算，避免浮点误差，保证绘制精度
+    \item \textbf{连续性保证}：生成连续的像素点序列，保证直线的连通性，无断点
+    \item \textbf{算法切换}：支持中点法和Bresenham法实时切换，便于算法对比学习
+    \item \textbf{模块协作}：输出标准像素点坐标，可与线宽、线型模块无缝配合
+    \item \textbf{性能优化}：采用增量算法，每步只需简单加减运算，效率极高
+\end{itemize}
+
+\textbf{用户交互}：
+\begin{itemize}
+    \item 通过"直线算法"菜单选择中点法或Bresenham法，菜单显示当前算法
+    \item 在画布上点击鼠标左键确定起点，拖动鼠标到目标位置
+    \item 拖动过程中实时预览直线效果（橡皮筋技术）
+    \item 释放鼠标左键完成绘制，直线固定在画布上
+    \item 支持撤销/重做操作，可删除或修改已绘制的直线
+\end{itemize}
+
+\textbf{技术特点}：
+\begin{itemize}
+    \item 两种算法本质相同，都基于增量决策参数
+    \item 完全使用整数运算，效率高
+    \item 通过坐标变换统一处理8个象限
+    \item 输出像素点坐标，便于后续处理
+\end{itemize}
+\end{tcolorbox}
+
+\subsubsection{圆绘制模块}
+
+\begin{tcolorbox}
+\textbf{模块功能}：
+
+本模块实现圆的光栅化绘制，是图形系统中另一个重要的基本图元。圆形在图形设计、工程制图、游戏开发中应用广泛。模块通过利用圆的八对称性特点，将计算量降低到原来的1/8，大幅提高绘制效率。提供中点画圆法和Bresenham画圆法两种经典算法供用户选择和对比学习。
+
+\textbf{主要功能}：
+\begin{itemize}
+    \item \textbf{圆形绘制}：根据圆心坐标和半径值绘制完整的圆形
+    \item \textbf{八对称性优化}：利用圆的对称性，只需计算1/8圆弧（45度）即可得到完整圆形，效率提升8倍
+    \item \textbf{任意半径}：支持从1像素到屏幕尺寸的任意半径圆形绘制
+    \item \textbf{均匀分布}：生成均匀分布的圆周像素点，避免出现断点或聚集
+    \item \textbf{样式支持}：可与线宽、线型模块配合，实现粗圆、虚线圆等不同样式
+    \item \textbf{算法对比}：支持两种算法切换，便于学习和性能对比
+\end{itemize}
+
+\textbf{用户交互}：
+\begin{itemize}
+    \item 通过"圆算法"菜单选择中点法或Bresenham法
+    \item 在画布上点击鼠标左键确定圆心位置
+    \item 拖动鼠标，圆的半径随鼠标距离实时变化
+    \item 实时显示圆的预览效果，可精确控制圆的大小
+    \item 释放鼠标完成绘制，支持撤销/重做操作
+\end{itemize}
+
+\textbf{技术特点}：
+\begin{itemize}
+    \item 八对称性使效率提升8倍，只需计算45度圆弧
+    \item 完全整数运算，无浮点误差
+    \item 通过增量决策参数判断下一个像素位置
+    \item 生成的圆形像素分布均匀，视觉效果好
+\end{itemize}
+\end{tcolorbox}
+
+\subsubsection{线宽修改模块}
+
+\begin{tcolorbox}
+\textbf{模块功能}：
+
+本模块实现直线和圆的线宽控制功能，采用扫描线填充法将细线转换为具有指定宽度的粗线。这是实验要求的核心功能之一，体现了扫描线填充算法的实际应用。
+
+\textbf{主要功能}：
+\begin{itemize}
+    \item 支持1-20像素的线宽设置
+    \item 粗线绘制：将线段转换为矩形区域并填充
+    \item 粗圆绘制：将圆转换为环形区域并填充
+    \item 自动处理线宽为1时的特殊情况（直接绘制细线）
+    \item 保持线段端点和圆形的几何精度
+\end{itemize}
+
+\textbf{用户交互}：
+\begin{itemize}
+    \item 通过"线宽"菜单选择1、3、5、10等预设线宽
+    \item 也可通过对话框输入自定义线宽值
+    \item 线宽设置对后续绘制的所有图形生效
+    \item 可实时看到不同线宽的效果
+\end{itemize}
+
+\textbf{技术特点}：
+\begin{itemize}
+    \item 粗线通过计算垂直方向向量构造矩形
+    \item 粗圆通过内外圆半径差构造环形
+    \item 使用Direct2D的PathGeometry和FillGeometry实现高效填充
+    \item 支持GPU硬件加速，性能优异
+\end{itemize}
+\end{tcolorbox}
+
+\subsubsection{线型修改模块}
+
+\begin{tcolorbox}
+\textbf{模块功能}：
+
+本模块实现图形的线型样式控制，提供实线、虚线、点线、点划线四种常用线型。通过控制像素的绘制模式，实现不同的视觉效果。
+
+\textbf{主要功能}：
+\begin{itemize}
+    \item 实线（SOLID）：连续绘制所有像素，默认线型
+    \item 虚线（DASH）：长短相间的虚线效果，适合表示辅助线
+    \item 点线（DOT）：点状线型，适合表示参考线
+    \item 点划线（DASHDOT）：点划结合的线型，适合表示中心线
+    \item 线型设置对所有图形（直线、圆、矩形等）生效
+\end{itemize}
+
+\textbf{用户交互}：
+\begin{itemize}
+    \item 通过"线型"菜单选择四种线型之一
+    \item 线型设置立即应用到后续绘制的图形
+    \item 可与线宽设置组合使用，实现多样化效果
+    \item 菜单中显示当前选中的线型
+\end{itemize}
+
+\textbf{技术特点}：
+\begin{itemize}
+    \item 算法级实现：根据像素索引和模式数组控制绘制
+    \item Direct2D实现：使用ID2D1StrokeStyle接口设置线型
+    \item 模式数组定义灵活，易于扩展新线型
+    \item 与硬件加速兼容，性能不受影响
+\end{itemize}
+\end{tcolorbox}
+
+\subsubsection{区域填充模块}
+
+\begin{tcolorbox}
+\textbf{模块功能}：
+
+本模块实现封闭区域的颜色填充功能，提供栅栏填充法（扫描线填充）和种子填充法两种算法，满足不同场景的填充需求。
+
+\textbf{主要功能}：
+\begin{itemize}
+    \item 栅栏填充法：适用于已知顶点的多边形填充（矩形、三角形、多边形等）
+    \item 种子填充法：适用于任意形状的封闭区域填充，用户点击区域内部即可填充
+    \item 支持自定义填充颜色
+    \item 自动识别封闭区域边界
+    \item 处理复杂多边形（凸多边形和凹多边形）
+\end{itemize}
+
+\textbf{用户交互}：
+\begin{itemize}
+    \item 栅栏填充：绘制多边形时自动填充，或通过菜单对已有多边形填充
+    \item 种子填充：选择"填充→种子填充"菜单，然后点击封闭区域内部任意点
+    \item 可通过颜色对话框选择填充颜色
+    \item 填充操作支持撤销/重做
+\end{itemize}
+
+\textbf{技术特点}：
+\begin{itemize}
+    \item 栅栏填充使用Direct2D的PathGeometry，支持GPU加速
+    \item 种子填充使用扫描线算法，避免递归栈溢出
+    \item 颜色容差匹配处理Direct2D抗锯齿边界
+    \item 使用队列数据结构，效率高于简单递归
+\end{itemize}
+\end{tcolorbox}
+
+\subsubsection{Bezier曲线模块}
+
+\begin{tcolorbox}
+\textbf{模块功能}：
+
+本模块实现Bezier曲线的绘制功能，采用de Casteljau递推算法，支持通过多个控制点绘制平滑的参数曲线。Bezier曲线广泛应用于计算机图形学、CAD和动画设计中。
+
+\textbf{主要功能}：
+\begin{itemize}
+    \item 支持任意数量控制点的Bezier曲线绘制（2个点以上）
+    \item 实时显示控制多边形（灰色虚线）和Bezier曲线（蓝色实线）
+    \item 曲线通过起点和终点，受中间控制点影响
+    \item 支持交互式添加控制点
+    \item 曲线平滑连续，无尖角
+\end{itemize}
+
+\textbf{用户交互}：
+\begin{itemize}
+    \item 选择"绘图工具→Bezier曲线"菜单
+    \item 在画布上依次点击添加控制点
+    \item 实时预览控制多边形和曲线效果
+    \item 右键完成曲线绘制
+    \item 可通过移动控制点调整曲线形状
+\end{itemize}
+
+\textbf{技术特点}：
+\begin{itemize}
+    \item 使用de Casteljau递推算法，数值稳定性好
+    \item 避免高次幂计算，适合高阶Bezier曲线
+    \item 默认100个采样点，曲线平滑度高
+    \item 几何意义清晰，控制点直观影响曲线形状
+    \item 时间复杂度$O(n^2 \times samples)$，$n$为控制点数
+\end{itemize}
+\end{tcolorbox}
+
+\clearpage
+
+\section{实验算法及程序流程}
+\begin{tcolorbox}
+\subsection{直线绘制算法}
+
+\subsubsection{中点画线法}
+
+\textbf{输入}：直线起点$(x_0, y_0)$，终点$(x_1, y_1)$
+
+\textbf{输出}：直线上所有像素点的坐标集合
+
+\textbf{算法流程}（以$0 < k < 1$为例）：
+\begin{enumerate}
+    \item 计算$dx = x_1 - x_0$，$dy = y_1 - y_0$
+    \item 初始化决策参数$d = 2dy - dx$
+    \item 设置起始点$(x, y) = (x_0, y_0)$，绘制该点
+    \item 当$x < x_1$时，重复以下步骤：
+    \begin{enumerate}
+        \item 若$d < 0$，选择E点，$d = d + 2dy$，$x = x + 1$
+        \item 若$d \geq 0$，选择NE点，$d = d + 2dy - 2dx$，$x = x + 1$，$y = y + 1$
+        \item 绘制点$(x, y)$
+    \end{enumerate}
+    \item 算法结束
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=2.8cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    decision/.style={diamond, aspect=2, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=green!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (init) [process, below=of start] {输入$(x_0,y_0),(x_1,y_1)$\\计算$dx,dy$};
+\node (initd) [process, below=of init] {初始化$d=2dy-dx$};
+\node (plot) [process, below=of initd] {绘制$(x,y)$};
+\node (check) [decision, below=of plot] {$x<x_1$?};
+\node (checkd) [decision, below=1.5cm of check] {$d<0$?};
+\node (chooseE) [process, left=2.5cm of checkd] {选E点\\$d=d+2dy$};
+\node (chooseNE) [process, right=2.5cm of checkd] {选NE点\\$d=d+2dy-2dx$};
+\node (incx) [process, below=1.5cm of checkd] {$x=x+1$};
+\node (end) [startstop, right=4cm of check] {结束};
+
+\draw [arrow] (start) -- (init);
+\draw [arrow] (init) -- (initd);
+\draw [arrow] (initd) -- (plot);
+\draw [arrow] (plot) -- (check);
+\draw [arrow] (check) -- node[right] {是} (checkd);
+\draw [arrow] (check) -- node[above] {否} (end);
+\draw [arrow] (checkd) -- node[above] {是} (chooseE);
+\draw [arrow] (checkd) -- node[above] {否} (chooseNE);
+\draw [arrow] (chooseE) |- (incx);
+\draw [arrow] (chooseNE) |- (incx);
+\draw [arrow] (incx.west) -- ++(-5.5,0) |- (plot);
+\end{tikzpicture}
+\caption{中点画线法流程图}
+\label{fig:midpoint_line}
+\end{figure}
+
+\subsubsection{Bresenham画线法}
+
+\textbf{输入}：直线起点$(x_0, y_0)$，终点$(x_1, y_1)$
+
+\textbf{输出}：直线上所有像素点的坐标集合
+
+\textbf{算法流程}：
+\begin{enumerate}
+    \item 计算$dx = |x_1 - x_0|$，$dy = |y_1 - y_0|$
+    \item 确定步进方向$sx = (x_0 < x_1) ? 1 : -1$，$sy = (y_0 < y_1) ? 1 : -1$
+    \item 初始化误差项$err = dx - dy$
+    \item 设置当前点$(x, y) = (x_0, y_0)$
+    \item 循环执行直到$(x, y) = (x_1, y_1)$：
+    \begin{enumerate}
+        \item 绘制点$(x, y)$
+        \item 计算$e2 = 2 \times err$
+        \item 若$e2 > -dy$，则$err = err - dy$，$x = x + sx$
+        \item 若$e2 < dx$，则$err = err + dx$，$y = y + sy$
+    \end{enumerate}
+    \item 算法结束
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=2.8cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    decision/.style={diamond, aspect=2, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=green!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (init) [process, below=of start] {输入$(x_0,y_0),(x_1,y_1)$\\计算$dx,dy$};
+\node (inite) [process, below=of init] {初始化$e=2dy-dx$};
+\node (plot) [process, below=of inite] {绘制$(x,y)$};
+\node (check) [decision, below=of plot] {$x<x_1$?};
+\node (incx) [process, below=1.5cm of check] {$x=x+1$, $e=e+2dy$};
+\node (checke) [decision, below=1.5cm of incx] {$e \geq 0$?};
+\node (incy) [process, right=3cm of checke] {$y=y+1$, $e=e-2dx$};
+\node (end) [startstop, right=4cm of check] {结束};
+
+\draw [arrow] (start) -- (init);
+\draw [arrow] (init) -- (inite);
+\draw [arrow] (inite) -- (plot);
+\draw [arrow] (plot) -- (check);
+\draw [arrow] (check) -- node[right] {是} (incx);
+\draw [arrow] (check) -- node[above] {否} (end);
+\draw [arrow] (incx) -- (checke);
+\draw [arrow] (checke) -- node[above] {是} (incy);
+\draw [arrow] (checke.west) -- node[above] {否} ++(-3,0) |- (plot);
+\draw [arrow] (incy.west) -- ++(-0.5,0) |- (plot);
+\end{tikzpicture}
+\caption{Bresenham画线法流程图}
+\label{fig:bresenham_line}
+\end{figure}
+
+\clearpage
+
+\end{tcolorbox}
+\begin{tcolorbox}
+\subsection{圆绘制算法}
+
+\subsubsection{中点画圆法}
+
+\textbf{输入}：圆心坐标$(x_c, y_c)$，半径$r$
+
+\textbf{输出}：圆上所有像素点的坐标集合
+
+\textbf{算法流程}：
+\begin{enumerate}
+    \item 初始化$x = 0$，$y = r$，$d = 1 - r$
+    \item 利用八对称性绘制8个对称点：$(x_c \pm x, y_c \pm y)$和$(x_c \pm y, y_c \pm x)$
+    \item 当$x < y$时，重复以下步骤：
+    \begin{enumerate}
+        \item 若$d < 0$，选择E点，$d = d + 2x + 3$
+        \item 若$d \geq 0$，选择SE点，$d = d + 2(x - y) + 5$，$y = y - 1$
+        \item $x = x + 1$
+        \item 绘制8个对称点
+    \end{enumerate}
+    \item 算法结束
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=2.8cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    decision/.style={diamond, aspect=2, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=green!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (init) [process, below=of start] {输入圆心$(x_c,y_c)$, 半径$r$};
+\node (initd) [process, below=of init] {$x=0,y=r,d=1-r$};
+\node (plot) [process, below=of initd] {绘制8个对称点};
+\node (check) [decision, below=of plot] {$x<y$?};
+\node (checkd) [decision, below=1.5cm of check] {$d<0$?};
+\node (chooseE) [process, left=2.5cm of checkd] {选E点\\$d=d+2x+3$};
+\node (chooseSE) [process, right=2.5cm of checkd] {选SE点\\$d=d+2x-2y+5$};
+\node (incx) [process, below=1.5cm of checkd] {$x=x+1$};
+\node (end) [startstop, right=4cm of check] {结束};
+
+\draw [arrow] (start) -- (init);
+\draw [arrow] (init) -- (initd);
+\draw [arrow] (initd) -- (plot);
+\draw [arrow] (plot) -- (check);
+\draw [arrow] (check) -- node[right] {是} (checkd);
+\draw [arrow] (check) -- node[above] {否} (end);
+\draw [arrow] (checkd) -- node[above] {是} (chooseE);
+\draw [arrow] (checkd) -- node[above] {否} (chooseSE);
+\draw [arrow] (chooseE) |- (incx);
+\draw [arrow] (chooseSE) |- (incx);
+\draw [arrow] (incx.west) -- ++(-5.5,0) |- (plot);
+\end{tikzpicture}
+\caption{中点画圆法流程图}
+\label{fig:midpoint_circle}
+\end{figure}
+
+\subsubsection{Bresenham画圆法}
+
+\textbf{输入}：圆心坐标$(x_c, y_c)$，半径$r$
+
+\textbf{输出}：圆上所有像素点的坐标集合
+
+\textbf{算法流程}：
+\begin{enumerate}
+    \item 初始化$x = 0$，$y = r$，$d = 3 - 2r$
+    \item 利用八对称性绘制8个对称点
+    \item 当$x \leq y$时，重复以下步骤：
+    \begin{enumerate}
+        \item 若$d < 0$，选择E点，$d = d + 4x + 6$
+        \item 若$d \geq 0$，选择SE点，$y = y - 1$，$d = d + 4(x - y) + 10$
+        \item $x = x + 1$
+        \item 若$x \leq y$，绘制8个对称点
+    \end{enumerate}
+    \item 算法结束
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=2.8cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    decision/.style={diamond, aspect=2, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=green!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (init) [process, below=of start] {输入圆心$(x_c,y_c)$, 半径$r$};
+\node (initd) [process, below=of init] {$x=0,y=r,d=3-2r$};
+\node (plot) [process, below=of initd] {绘制8个对称点};
+\node (incx) [process, below=of plot] {$x=x+1$};
+\node (check) [decision, below=of incx] {$x<y$?};
+\node (checkd) [decision, below=1.5cm of check] {$d<0$?};
+\node (chooseE) [process, left=2.5cm of checkd] {选E点\\$d=d+4x+6$};
+\node (chooseSE) [process, right=2.5cm of checkd] {选SE点\\$y=y-1$\\$d=d+4(x-y)+10$};
+\node (end) [startstop, right=4cm of check] {结束};
+
+\draw [arrow] (start) -- (init);
+\draw [arrow] (init) -- (initd);
+\draw [arrow] (initd) -- (plot);
+\draw [arrow] (plot) -- (incx);
+\draw [arrow] (incx) -- (check);
+\draw [arrow] (check) -- node[right] {是} (checkd);
+\draw [arrow] (check) -- node[above] {否} (end);
+\draw [arrow] (checkd) -- node[above] {是} (chooseE);
+\draw [arrow] (checkd) -- node[above] {否} (chooseSE);
+\draw [arrow] (chooseE.north) |- (plot);
+\draw [arrow] (chooseSE.north) |- (plot);
+\end{tikzpicture}
+\caption{Bresenham画圆法流程图}
+\label{fig:bresenham_circle}
+\end{figure}
+
+\clearpage
+
+\end{tcolorbox}
+\begin{tcolorbox}
+\subsection{种子填充算法}
+
+\textbf{输入}：种子点坐标$(x_{seed}, y_{seed})$，填充颜色$fillColor$，目标颜色$targetColor$
+
+\textbf{输出}：填充后的图像
+
+\textbf{算法流程}：
+\begin{enumerate}
+    \item 获取种子点的颜色作为目标颜色$targetColor$
+    \item 从种子点向左右扩展，找到当前扫描线上的可填充区间$[x_l, x_r]$
+    \item 填充区间$[x_l, x_r]$内的所有像素
+    \item 将区间信息$\{x_l, x_r, y, +1\}$和$\{x_l, x_r, y, -1\}$加入队列
+    \item 当队列不为空时，重复以下步骤：
+    \begin{enumerate}
+        \item 从队列取出一个区间$\{x_l, x_r, y, dy\}$
+        \item 计算相邻扫描线$y' = y + dy$
+        \item 在$[x_l, x_r]$范围内扫描$y'$行，找到所有可填充区间
+        \item 填充找到的区间，并将新区间加入队列
+    \end{enumerate}
+    \item 算法结束
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=3cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    decision/.style={diamond, aspect=2, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=green!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (init) [process, below=of start] {创建WIC位图\\重绘所有图形};
+\node (seed) [process, below=of init] {获取种子点颜色\\初始化队列};
+\node (empty) [decision, below=of seed] {队列为空?};
+\node (pop) [process, below=1.5cm of empty] {取出线段$(x_l, x_r, y)$};
+\node (fill) [process, below=of pop] {填充线段};
+\node (scan) [process, below=of fill] {扫描上下相邻行};
+\node (push) [process, below=of scan] {新区域入队};
+\node (convert) [process, right=4cm of empty] {转换为D2D位图};
+\node (end) [startstop, below=of convert] {结束};
+
+\draw [arrow] (start) -- (init);
+\draw [arrow] (init) -- (seed);
+\draw [arrow] (seed) -- (empty);
+\draw [arrow] (empty) -- node[right] {否} (pop);
+\draw [arrow] (pop) -- (fill);
+\draw [arrow] (fill) -- (scan);
+\draw [arrow] (scan) -- (push);
+\draw [arrow] (push.west) -- ++(-3.5,0) |- (empty);
+\draw [arrow] (empty) -- node[above] {是} (convert);
+\draw [arrow] (convert) -- (end);
+\end{tikzpicture}
+\caption{种子填充算法流程图}
+\label{fig:seed_fill_flow}
+\end{figure}
+
+\end{tcolorbox}
+\begin{tcolorbox}
+\subsection{扫描线填充算法}
+
+\textbf{输入}：多边形顶点数组$\{P_0, P_1, \ldots, P_{n-1}\}$，填充颜色$fillColor$
+
+\textbf{输出}：填充后的多边形
+
+\textbf{算法流程}：
+\begin{enumerate}
+    \item 计算多边形的$y$坐标范围$[y_{min}, y_{max}]$
+    \item 对于每条扫描线$y$（从$y_{min}$到$y_{max}$）：
+    \begin{enumerate}
+        \item 计算扫描线与多边形各边的交点
+        \item 将所有交点按$x$坐标排序
+        \item 按奇偶规则填充：第1-2个交点之间填充，第3-4个交点之间填充，依此类推
+    \end{enumerate}
+    \item 算法结束
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=3cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    decision/.style={diamond, aspect=2, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=green!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (input) [process, below=of start] {输入多边形顶点};
+\node (yrange) [process, below=of input] {求$y_{min}$和$y_{max}$};
+\node (init) [process, below=of yrange] {$y = y_{min}$};
+\node (check) [decision, below=of init] {$y \leq y_{max}$?};
+\node (intersect) [process, below=1.5cm of check] {计算扫描线与各边交点};
+\node (sort) [process, below=of intersect] {交点按$x$排序};
+\node (fill) [process, below=of sort] {奇偶规则填充};
+\node (inc) [process, below=of fill] {$y = y + 1$};
+\node (end) [startstop, right=4cm of check] {结束};
+
+\draw [arrow] (start) -- (input);
+\draw [arrow] (input) -- (yrange);
+\draw [arrow] (yrange) -- (init);
+\draw [arrow] (init) -- (check);
+\draw [arrow] (check) -- node[right] {是} (intersect);
+\draw [arrow] (check) -- node[above] {否} (end);
+\draw [arrow] (intersect) -- (sort);
+\draw [arrow] (sort) -- (fill);
+\draw [arrow] (fill) -- (inc);
+\draw [arrow] (inc.west) -- ++(-3.5,0) |- (check);
+\end{tikzpicture}
+\caption{扫描线填充多边形流程图}
+\label{fig:scanline_fill_flow}
+\end{figure}
+
+\clearpage
+
+\end{tcolorbox}
+\begin{tcolorbox}
+\subsection{粗线绘制算法}
+
+\textbf{输入}：线段起点$(x_1, y_1)$，终点$(x_2, y_2)$，线宽$width$
+
+\textbf{输出}：指定宽度的粗线
+
+\textbf{算法流程}：
+\begin{enumerate}
+    \item 若$width \leq 1$，直接使用细线绘制算法，结束
+    \item 计算线段方向向量$\vec{V} = (dx, dy) = (x_2-x_1, y_2-y_1)$
+    \item 计算线段长度$len = \sqrt{dx^2 + dy^2}$
+    \item 计算垂直方向的单位向量$\vec{V}_{\perp} = (-dy/len, dx/len)$
+    \item 计算偏移量$offset = \vec{V}_{\perp} \times (width/2)$
+    \item 计算矩形4个顶点：$v_0 = (x_1, y_1) + offset$，$v_1 = (x_1, y_1) - offset$，$v_2 = (x_2, y_2) - offset$，$v_3 = (x_2, y_2) + offset$
+    \item 调用FillPolygon填充矩形
+    \item 算法结束
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=3cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    decision/.style={diamond, aspect=2, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=green!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (input) [process, below=of start] {输入起点A、终点B、线宽};
+\node (check) [decision, below=of input] {$width \leq 1$?};
+\node (thin) [process, right=4cm of check] {直接绘制细线};
+\node (calc) [process, below=1.5cm of check] {计算方向向量$\vec{V}$};
+\node (perp) [process, below=of calc] {计算垂直向量$\vec{V}_\perp$};
+\node (vertex) [process, below=of perp] {计算矩形4个顶点};
+\node (fill) [process, below=of vertex] {FillPolygon填充};
+\node (end) [startstop, below=of fill] {结束};
+
+\draw [arrow] (start) -- (input);
+\draw [arrow] (input) -- (check);
+\draw [arrow] (check) -- node[above] {是} (thin);
+\draw [arrow] (check) -- node[right] {否} (calc);
+\draw [arrow] (thin) |- (end);
+\draw [arrow] (calc) -- (perp);
+\draw [arrow] (perp) -- (vertex);
+\draw [arrow] (vertex) -- (fill);
+\draw [arrow] (fill) -- (end);
+\end{tikzpicture}
+\caption{粗线绘制流程图}
+\label{fig:thick_line_flow}
+\end{figure}
+
+\end{tcolorbox}
+\begin{tcolorbox}
+\subsection{粗圆绘制算法}
+
+\textbf{输入}：圆心$(x_c, y_c)$，半径$r$，线宽$width$
+
+\textbf{输出}：指定宽度的粗圆
+
+\textbf{算法流程}：
+\begin{enumerate}
+    \item 若$width \leq 1$，直接使用细圆绘制算法，结束
+    \item 计算外圆半径$r_{outer} = r + width/2$
+    \item 计算内圆半径$r_{inner} = r - width/2$（若$r_{inner} < 0$则设为0）
+    \item 创建PathGeometry路径对象
+    \item 绘制外圆（顺时针方向）
+    \item 若$r_{inner} > 0$，绘制内圆（逆时针方向，形成环形）
+    \item 调用FillGeometry填充环形区域
+    \item 算法结束
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=3cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    decision/.style={diamond, aspect=2, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=green!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (input) [process, below=of start] {输入圆心、半径$r$、线宽};
+\node (check) [decision, below=of input] {$width \leq 1$?};
+\node (thin) [process, right=4cm of check] {直接绘制细圆};
+\node (calc) [process, below=1.5cm of check] {计算$r_{outer}=r+width/2$};
+\node (inner) [process, below=of calc] {计算$r_{inner}=r-width/2$};
+\node (path) [process, below=of inner] {创建PathGeometry};
+\node (outer) [process, below=of path] {绘制外圆和内圆};
+\node (fill) [process, below=of outer] {FillGeometry填充};
+\node (end) [startstop, below=of fill] {结束};
+
+\draw [arrow] (start) -- (input);
+\draw [arrow] (input) -- (check);
+\draw [arrow] (check) -- node[above] {是} (thin);
+\draw [arrow] (check) -- node[right] {否} (calc);
+\draw [arrow] (thin) |- (end);
+\draw [arrow] (calc) -- (inner);
+\draw [arrow] (inner) -- (path);
+\draw [arrow] (path) -- (outer);
+\draw [arrow] (outer) -- (fill);
+\draw [arrow] (fill) -- (end);
+\end{tikzpicture}
+\caption{粗圆绘制流程图}
+\label{fig:thick_circle_flow}
+\end{figure}
+
+\clearpage
+
+\end{tcolorbox}
+\begin{tcolorbox}
+\subsection{Bezier曲线算法}
+
+\subsubsection{de Casteljau递推算法}
+
+\textbf{输入}：$n$个控制点$\{P_0, P_1, \ldots, P_{n-1}\}$，参数$t \in [0,1]$
+
+\textbf{输出}：Bezier曲线上参数$t$对应的点$B(t)$
+
+\textbf{算法流程}：
+\begin{enumerate}
+    \item 复制控制点数组到临时数组$points$
+    \item 对于递推层次$r$从1到$n-1$：
+    \begin{enumerate}
+        \item 对于索引$i$从0到$n-r-1$：
+        \begin{enumerate}
+            \item 计算$points[i] = (1-t) \times points[i] + t \times points[i+1]$
+        \end{enumerate}
+    \end{enumerate}
+    \item 返回$points[0]$作为曲线上的点$B(t)$
+    \item 算法结束
+\end{enumerate}
+
+\textbf{递推公式}：$P_i^r(t) = (1-t) \cdot P_i^{r-1}(t) + t \cdot P_{i+1}^{r-1}(t)$，最终结果$B(t) = P_0^{n-1}(t)$
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=3cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    decision/.style={diamond, aspect=2, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=green!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (init) [process, below=of start] {输入控制点数组、参数$t$};
+\node (copy) [process, below=of init] {复制控制点, $r=1$};
+\node (rloop) [decision, below=of copy] {$r < n$?};
+\node (iloop) [process, below=1.5cm of rloop] {for $i=0$ to $n-r-1$};
+\node (calc) [process, below=of iloop] {$P_i = (1-t)P_i + tP_{i+1}$};
+\node (incr) [process, below=of calc] {$r = r + 1$};
+\node (result) [process, right=4cm of rloop] {返回$P_0$};
+\node (end) [startstop, below=of result] {结束};
+
+\draw [arrow] (start) -- (init);
+\draw [arrow] (init) -- (copy);
+\draw [arrow] (copy) -- (rloop);
+\draw [arrow] (rloop) -- node[right] {是} (iloop);
+\draw [arrow] (iloop) -- (calc);
+\draw [arrow] (calc) -- (incr);
+\draw [arrow] (incr.west) -- ++(-3.5,0) |- (rloop);
+\draw [arrow] (rloop) -- node[above] {否} (result);
+\draw [arrow] (result) -- (end);
+\end{tikzpicture}
+\caption{de Casteljau递推算法流程图}
+\label{fig:bezier_flow}
+\end{figure}
+
+\subsubsection{Bezier曲线生成流程}
+
+\textbf{输入}：$n$个控制点$\{P_0, P_1, \ldots, P_{n-1}\}$，采样数$samples$
+
+\textbf{输出}：Bezier曲线的绘制
+
+\textbf{算法流程}：
+\begin{enumerate}
+    \item 初始化曲线点数组$curvePoints$
+    \item 对于$i$从0到$samples$：
+    \begin{enumerate}
+        \item 计算参数$t = i / samples$
+        \item 调用de Casteljau算法计算$B(t)$
+        \item 将$B(t)$添加到$curvePoints$
+    \end{enumerate}
+    \item 用直线段连接$curvePoints$中相邻的点，绘制曲线
+    \item 算法结束
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm,
+    startstop/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=red!30, font=\small},
+    process/.style={rectangle, minimum width=3cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30, font=\small, align=center},
+    decision/.style={diamond, aspect=2, minimum width=2.5cm, minimum height=0.8cm, text centered, draw=black, fill=green!30, font=\small, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+\node (start) [startstop] {开始};
+\node (init) [process, below=of start] {输入控制点、采样数};
+\node (initcurve) [process, below=of init] {初始化曲线点数组, $i=0$};
+\node (loop) [decision, below=of initcurve] {$i \leq samples$?};
+\node (calct) [process, below=1.5cm of loop] {$t = i/samples$};
+\node (decast) [process, below=of calct] {de Casteljau计算$B(t)$};
+\node (add) [process, below=of decast] {添加$B(t)$, $i=i+1$};
+\node (draw) [process, right=4cm of loop] {绘制曲线点};
+\node (end) [startstop, below=of draw] {结束};
+
+\draw [arrow] (start) -- (init);
+\draw [arrow] (init) -- (initcurve);
+\draw [arrow] (initcurve) -- (loop);
+\draw [arrow] (loop) -- node[right] {是} (calct);
+\draw [arrow] (calct) -- (decast);
+\draw [arrow] (decast) -- (add);
+\draw [arrow] (add.west) -- ++(-3.5,0) |- (loop);
+\draw [arrow] (loop) -- node[above] {否} (draw);
+\draw [arrow] (draw) -- (end);
+\end{tikzpicture}
+\caption{Bezier曲线生成流程图}
+\label{fig:bezier_generate}
+\end{figure}
+\end{tcolorbox}
+\clearpage
+
+\begin{tcolorbox}
+\section{实验结果}
+
+
+本实验成功实现了以下功能：
+
+\begin{enumerate}
+    \item \textbf{直线绘制}：实现了中点画线法和Bresenham画线法，支持任意斜率的直线绘制，通过分8个象限处理实现了完整的直线绘制功能
+    \item \textbf{圆绘制}：实现了中点画圆法和Bresenham画圆法，利用八对称性只需计算1/8圆弧即可得到完整的圆，大大提高了绘制效率
+    \item \textbf{线型控制}：支持实线、虚线、点线、点划线四种线型，通过Direct2D的StrokeStyle实现
+    \item \textbf{线宽控制}：使用扫描线填充法实现粗线和粗圆的绘制，粗线转换为矩形多边形填充，粗圆转换为环形填充
+    \item \textbf{区域填充}：实现了种子填充算法和扫描线填充算法，种子填充适合任意形状的封闭区域，扫描线填充适合已知顶点的多边形
+    \item \textbf{Bezier曲线}：使用de Casteljau递推算法绘制任意阶数的Bezier曲线，通过对参数t进行采样得到曲线上的点
+\end{enumerate}
+
+\section{实验总结}
+
+
+通过本次实验，深入理解了计算机图形学中基本图元生成算法的原理和实现方法：
+
+\begin{enumerate}
+    \item \textbf{中点画线法和Bresenham算法}：两种算法本质相同，都是通过整数运算避免浮点计算，提高了绘制效率。中点法从几何角度推导，Bresenham法从误差累积角度推导。
+    
+    \item \textbf{圆的绘制}：利用圆的八对称性，只需计算1/8圆弧即可得到完整的圆。中点画圆法和Bresenham画圆法的决策参数不同，但都能高效地绘制圆。
+    
+    \item \textbf{区域填充}：种子填充算法适合填充任意形状的封闭区域，但需要访问像素数据；扫描线填充算法适合已知顶点的多边形，可以利用GPU加速。
+    
+    \item \textbf{Bezier曲线}：de Casteljau算法具有数值稳定性好、几何意义清晰的优点，通过递推计算可以得到曲线上任意参数对应的点。
+    
+    \item \textbf{粗线绘制}：将线段转换为矩形多边形，使用扫描线填充法实现，这种方法可以绘制任意宽度的线段。
+\end{enumerate}
+
+本实验加深了对计算机图形学基础算法的理解，提高了使用Direct2D进行图形编程的能力。
+\end{tcolorbox}
+
+\end{document}

@@ -1,0 +1,3500 @@
+\documentclass[12pt,a4paper]{ctexart}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\geometry{left=2cm,right=2cm,top=2cm,bottom=2cm}
+\hypersetup{colorlinks=true,linkcolor=blue}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,frame=single,backgroundcolor=\color{gray!10}}
+
+% 设置目录深度（显示到subsection级别）
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{3}
+
+\newtcolorbox{keybox}{colback=blue!5,colframe=blue!75!black,title=重点,fonttitle=\bfseries,breakable}
+\newtcolorbox{cmdbox}{colback=green!5,colframe=green!75!black,title=命令,fonttitle=\bfseries,breakable}
+\newtcolorbox{exambox}[1][]{colback=yellow!5,colframe=orange!75!black,title=#1,fonttitle=\bfseries,breakable}
+
+\title{\Huge\textbf{计算机网络实验复习}}
+\author{考试知识点整理}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% 生成详细目录
+\tableofcontents
+\newpage
+
+%========================================
+\section{网络设备基础}
+%========================================
+
+\subsection{集线器(HUB)与交换机(Switch)}
+
+\begin{keybox}
+\textbf{集线器的特点}（常考易错）：
+\begin{itemize}[itemsep=0pt]
+    \item 集线器工作在\textbf{物理层}，不是基于MAC地址转发
+    \item 连接到集线器的节点发送数据时，执行\textbf{CSMA/CD}介质访问控制
+    \item 通过在网络链路中串接集线器可以\textbf{监听}该链路中的数据包
+    \item 连接到同一个集线器的所有节点共享\textbf{同一个冲突域}
+\end{itemize}
+\end{keybox}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{特性} & \textbf{集线器} & \textbf{交换机} \\
+\midrule
+工作层次 & 物理层 & 数据链路层 \\
+转发依据 & 无（广播） & MAC地址表 \\
+冲突域 & 所有端口共享 & 每端口独立 \\
+通信方式 & 半双工 & 全双工 \\
+\bottomrule
+\end{tabular}
+\caption{集线器与交换机对比}
+\end{table}
+
+\subsection{二层交换机与三层交换机}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{二层交换机}：根据\textbf{MAC地址}转发数据帧
+    \item \textbf{三层交换机}：二层交换+三层路由，可实现VLAN间路由
+    \item \textbf{路由器}：根据\textbf{路由表}和\textbf{目的IP地址}转发IP分组
+\end{itemize}
+
+\subsection{交换机管理方式}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{Console口}：通过串口线本地配置
+    \item \textbf{Telnet}：远程命令行配置
+    \item \textbf{Web管理}：通过浏览器访问交换机的\textbf{IP地址}进行配置
+\end{itemize}
+
+%========================================
+\section{VLAN虚拟局域网}
+%========================================
+
+\subsection{VLAN的作用}
+
+\begin{keybox}
+\textbf{VLAN的好处}：
+\begin{itemize}[itemsep=0pt]
+    \item 广播可以得到控制（减小广播域）
+    \item 网络安全可以得到保护
+    \item 实现虚拟工作组
+    \item 灵活的网络管理
+\end{itemize}
+\textbf{注意}：增加VLAN\textbf{不能}使交换机不需要再配置！
+\end{keybox}
+
+\subsection{VLAN划分方法}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{基于端口划分}（实验课采用的方法）
+    \item 基于MAC地址划分（主机位置变动时无需重新分配）
+    \item 基于IP地址划分
+    \item 基于协议划分
+\end{itemize}
+
+\subsection{VLAN配置命令}
+
+\begin{cmdbox}
+\textbf{创建VLAN}：
+\begin{lstlisting}
+Switch(config)# vlan 2
+! 2: VLAN编号(1-4094)
+Switch(config-vlan)# name vlan2
+! vlan2: VLAN名称(可选)
+Switch(config-vlan)# exit
+\end{lstlisting}
+
+\textbf{将端口划入VLAN}：
+\begin{lstlisting}
+Switch(config)# interface fastEthernet 0/1
+Switch(config-if)# switchport access vlan 2
+! access: 接入模式(连接终端设备)
+! vlan 2: 将该端口划入VLAN 2
+Switch(config-if)# exit
+\end{lstlisting}
+
+\textbf{配置Trunk端口}（交换机互连）：
+\begin{lstlisting}
+Switch(config)# interface fastEthernet 0/24
+Switch(config-if)# switchport mode trunk
+! trunk: 中继模式(连接交换机,允许多个VLAN通过)
+Switch(config-if)# exit
+\end{lstlisting}
+\end{cmdbox}
+
+\subsection{VLAN间通信}
+
+\begin{keybox}
+不同VLAN之间通信需要\textbf{三层设备}（路由器或三层交换机）。
+
+\textbf{三层交换机配置VLAN间路由}：
+\begin{lstlisting}
+! 创建VLAN接口并配置IP
+Switch(config)# interface vlan 2
+! vlan 2: 虚拟VLAN接口
+Switch(config-if)# ip address 10.1.1.254 255.0.0.0
+! 10.1.1.254: IP地址(作为该VLAN的网关)
+! 255.0.0.0: 子网掩码
+Switch(config-if)# exit
+
+Switch(config)# interface vlan 3
+Switch(config-if)# ip address 10.2.1.254 255.0.0.0
+Switch(config-if)# exit
+
+! 启用路由功能
+Switch(config)# ip routing
+! 启用三层交换机的路由功能,实现VLAN间通信
+\end{lstlisting}
+\end{keybox}
+
+%========================================
+\section{IP地址与子网划分}
+%========================================
+
+\subsection{子网掩码计算}
+
+\begin{exambox}[常考题型]
+\textbf{题目}：一个主机的IP地址是11.0.11.3/24，该主机所属的网络地址和反掩码为？
+
+\textbf{解答}：
+\begin{itemize}[itemsep=0pt]
+    \item /24表示子网掩码为255.255.255.0
+    \item 网络地址 = 11.0.11.3 AND 255.255.255.0 = \textbf{11.0.11.0}
+    \item 反掩码（通配符掩码）= 255.255.255.255 - 255.255.255.0 = \textbf{0.0.0.255}
+\end{itemize}
+\end{exambox}
+
+\begin{exambox}[常考题型]
+\textbf{题目}：一个局域网中某台主机的IP地址为176.68.160.12，使用22位作为网络地址，求子网掩码。
+
+\textbf{解答}：
+\begin{itemize}[itemsep=0pt]
+    \item 22位网络地址 = 11111111.11111111.11111100.00000000
+    \item 子网掩码 = \textbf{255.255.252.0}
+\end{itemize}
+\end{exambox}
+
+\subsection{默认网关}
+
+\begin{keybox}
+默认网关地址是\textbf{通往其他网络传输路径上的第一跳路由器地址}。
+
+当主机要访问不在同一网段的目标时，数据包会发送给默认网关。
+\end{keybox}
+
+%========================================
+\section{路由器配置}
+%========================================
+
+\subsection{路由类型}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{直连路由}：路由器接口直接连接的网络，自动生成
+    \item \textbf{静态路由}：必须由网络管理员\textbf{手动配置}
+    \item \textbf{动态路由}：通过路由协议自动学习
+\end{itemize}
+
+\subsection{静态路由配置}
+
+\begin{cmdbox}
+\textbf{配置静态路由}：
+\begin{lstlisting}
+! 格式：ip route 目的网络 子网掩码 下一跳地址
+Router(config)# ip route 目的网络 子网掩码 下一跳地址
+! 目的网络: 要到达的目标网络地址
+! 子网掩码: 目标网络的子网掩码
+! 下一跳地址: 转发数据包的下一个路由器接口IP地址
+\end{lstlisting}
+
+\textbf{配置默认路由}：
+\begin{lstlisting}
+Router(config)# ip route 0.0.0.0 0.0.0.0 下一跳地址
+! 0.0.0.0 0.0.0.0: 匹配所有网络(默认路由)
+! 下一跳地址: 当路由表中没有匹配项时,转发到此地址
+\end{lstlisting}
+
+\textbf{示例}：
+\begin{lstlisting}
+Router(config)# ip route 10.10.10.0 255.255.255.0 192.168.11.1
+! 到达10.10.10.0/24网络,下一跳为192.168.11.1
+Router(config)# ip route 0.0.0.0 0.0.0.0 192.168.10.1
+! 默认路由,所有未匹配的数据包转发到192.168.10.1
+\end{lstlisting}
+\end{cmdbox}
+
+\subsection{路由器接口配置}
+
+\begin{cmdbox}
+\textbf{配置以太网接口}：
+\begin{lstlisting}
+Router(config)# interface fastEthernet 0/0
+! interface: 进入接口配置模式
+! fastEthernet: 快速以太网接口类型(100Mbps)
+! 0/0: 插槽号/端口号(格式: 插槽/端口)
+Router(config-if)# ip address 192.168.1.1 255.255.255.0
+! ip address: 配置接口IP地址命令
+! 192.168.1.1: 接口IP地址
+! 255.255.255.0: 子网掩码(/24)
+Router(config-if)# no shutdown
+! no shutdown: 启用接口(接口默认是关闭状态)
+Router(config-if)# exit
+! exit: 退出接口配置模式
+\end{lstlisting}
+
+\textbf{配置串口}：
+\begin{lstlisting}
+Router(config)# interface serial 0/0
+! serial: 串行接口类型(用于WAN连接)
+! 0/0: 插槽号/端口号
+Router(config-if)# ip address 192.168.2.1 255.255.255.0
+Router(config-if)# clock rate 64000
+! clock rate: 配置时钟速率(单位: bps)
+! 64000: 64kbps的时钟速率
+! 注意: 仅DCE端需要配置,DTE端不需要
+Router(config-if)# no shutdown
+Router(config-if)# exit
+\end{lstlisting}
+\end{cmdbox}
+
+\subsection{查看路由表}
+
+\begin{cmdbox}
+\begin{lstlisting}
+Router# show ip route
+\end{lstlisting}
+\end{cmdbox}
+
+%========================================
+\section{访问控制列表(ACL)}
+%========================================
+
+\subsection{ACL类型}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{标准ACL}：编号1-99，只能根据\textbf{源地址}过滤
+    \item \textbf{扩展ACL}：编号100-199，可根据源地址、目的地址、协议、端口过滤
+\end{itemize}
+
+\subsection{ACL配置命令}
+
+\begin{cmdbox}
+\textbf{标准ACL}：
+\begin{lstlisting}
+Router(config)# access-list 1 permit 192.168.1.1
+! access-list: 创建访问控制列表
+! 1: ACL编号(1-99为标准ACL)
+! permit: 允许(deny为拒绝)
+! 192.168.1.1: 源IP地址
+
+Router(config)# access-list 1 permit 192.168.1.0 0.0.0.255
+! 192.168.1.0: 源网络地址
+! 0.0.0.255: 反掩码(wildcard mask),0表示必须匹配,1表示任意
+! 此规则匹配192.168.1.0-192.168.1.255
+
+Router(config)# access-list 1 deny any
+! any: 匹配所有地址(等同于0.0.0.0 255.255.255.255)
+! 注意: ACL末尾有隐含的deny any规则
+\end{lstlisting}
+
+\textbf{扩展ACL}（限制Web服务访问）：
+\begin{lstlisting}
+Router(config)# access-list 101 deny tcp 192.168.1.0 0.0.0.255 any eq 80
+! 101: ACL编号(100-199为扩展ACL)
+! deny: 拒绝
+! tcp: 协议类型(可选: tcp/udp/icmp/ip等)
+! 192.168.1.0 0.0.0.255: 源地址和反掩码
+! any: 任意目的地址
+! eq 80: 等于80端口(HTTP服务)
+! eq: 等于, gt: 大于, lt: 小于, neq: 不等于
+
+Router(config)# access-list 101 permit ip any any
+! ip: 匹配所有IP协议
+! any any: 任意源地址到任意目的地址
+\end{lstlisting}
+
+\textbf{应用ACL到接口}：
+\begin{lstlisting}
+Router(config)# interface fastEthernet 0/0
+Router(config-if)# ip access-group 1 in
+! ip access-group: 将ACL应用到接口
+! 1: ACL编号
+! in: 对进入接口的数据流进行过滤
+Router(config-if)# ip access-group 1 out
+! out: 对离开接口的数据流进行过滤
+\end{lstlisting}
+\end{cmdbox}
+
+\begin{keybox}
+\textbf{ACL规则}：
+\begin{itemize}[itemsep=0pt]
+    \item 如果分组不匹配当前规则，则检查下一条语句
+    \item 如果所有规则都不匹配，则\textbf{隐含拒绝}（deny any）
+    \item 标准ACL应用在\textbf{靠近目的地}的位置
+    \item 扩展ACL应用在\textbf{靠近源地址}的位置
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{NAT网络地址转换}
+%========================================
+
+\subsection{NAT工作原理}
+
+\begin{keybox}
+NAT将内部私有IP地址转换为外部公网IP地址，使内网主机能访问Internet。
+
+\textbf{地址术语}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{内部本地地址}：内网主机的私有IP（如192.168.1.3）
+    \item \textbf{内部全局地址}：转换后的公网IP（如59.67.148.3）
+\end{itemize}
+\end{keybox}
+
+\subsection{NAT转换过程}
+
+\begin{exambox}[NAT转换示例]
+内网主机192.168.1.3:3105访问外网服务器202.113.64.2:8080
+
+\textbf{出站数据包}（内→外）：
+\begin{itemize}[itemsep=0pt]
+    \item 原始：源IP=192.168.1.3:3105，目的IP=202.113.64.2:8080
+    \item 转换后：源IP=59.67.148.3:5234，目的IP=202.113.64.2:8080
+\end{itemize}
+
+\textbf{入站数据包}（外→内）：
+\begin{itemize}[itemsep=0pt]
+    \item 原始：源IP=202.113.64.2:8080，目的IP=59.67.148.3:5234
+    \item 转换后：源IP=202.113.64.2:8080，目的IP=192.168.1.3:3105
+\end{itemize}
+\end{exambox}
+
+\subsection{NAT配置命令}
+
+\begin{cmdbox}
+\begin{lstlisting}
+Router(config)# access-list 11 permit 192.168.1.0 0.0.0.255
+! access-list 11: 创建ACL编号11
+! permit: 允许转换
+! 192.168.1.0 0.0.0.255: 允许转换的内网地址范围
+
+Router(config)# ip nat pool abc 59.67.148.3 59.67.148.3 netmask 255.255.255.0
+! ip nat pool: 定义NAT地址池
+! abc: 地址池名称(自定义)
+! 59.67.148.3 59.67.148.3: 地址池起始IP和结束IP(可以是范围)
+! netmask 255.255.255.0: 地址池的子网掩码
+
+Router(config)# ip nat inside source list 11 pool abc overload
+! ip nat inside source: 配置内部源地址转换
+! list 11: 使用ACL 11定义的地址范围
+! pool abc: 使用名为abc的地址池
+! overload: 启用PAT(端口地址转换),允许多个内网IP共享一个公网IP
+
+Router(config)# interface fastEthernet 0/0
+Router(config-if)# ip nat inside
+! ip nat inside: 定义为内部接口(连接内网)
+
+Router(config)# interface serial 0/0
+Router(config-if)# ip nat outside
+! ip nat outside: 定义为外部接口(连接外网/Internet)
+\end{lstlisting}
+\end{cmdbox}
+
+%========================================
+\section{生成树协议(STP)}
+%========================================
+
+\subsection{STP作用}
+
+防止交换机之间形成环路，避免广播风暴。
+
+\subsection{STP选举规则}
+
+\begin{keybox}
+\textbf{根交换机选举}：选择\textbf{最小的交换机优先级}（优先级相同则选最小MAC地址）
+
+\textbf{根端口选举}：非根交换机上选择到根交换机\textbf{路径开销最小}的端口（开销相同则选最小端口编号）
+\end{keybox}
+
+%========================================
+\section{Windows网络命令}
+%========================================
+
+\subsection{常用命令}
+
+\begin{cmdbox}
+\textbf{查看IP配置}：
+\begin{lstlisting}
+ipconfig              ! 查看IP地址
+ipconfig /all         ! 查看详细信息（包括MAC地址）
+\end{lstlisting}
+
+\textbf{测试连通性}：
+\begin{lstlisting}
+ping 目标IP           ! 测试连通性
+ping -t 目标IP        ! 持续测试
+ping -n 4 目标IP      ! 指定发送4个包
+\end{lstlisting}
+
+\textbf{DNS相关}：
+\begin{lstlisting}
+nslookup 域名         ! DNS解析
+ipconfig /flushdns    ! 清空DNS缓存
+\end{lstlisting}
+
+\textbf{ARP相关}：
+\begin{lstlisting}
+arp -a                ! 查看ARP缓存
+arp -d                ! 清空ARP缓存
+arp -s IP MAC         ! 手动添加静态ARP条目
+\end{lstlisting}
+
+\textbf{路由相关}：
+\begin{lstlisting}
+route print           ! 查看路由表
+tracert 目标IP        ! 路由跟踪
+\end{lstlisting}
+
+\textbf{网络统计}：
+\begin{lstlisting}
+netstat -an           ! 查看网络连接状态
+\end{lstlisting}
+\end{cmdbox}
+
+\subsection{Ping命令详解}
+
+\begin{keybox}
+\textbf{ping命令使用ICMP协议}，类型为Echo Request/Echo Reply。
+
+\textbf{测试顺序}（排查网络故障）：
+\begin{enumerate}[itemsep=0pt]
+    \item ping 127.0.0.1 — 测试本机TCP/IP协议栈
+    \item ping 本机IP — 测试本机网卡
+    \item ping 默认网关 — 测试本网段连通性
+    \item ping 远程主机 — 测试跨网段连通性
+\end{enumerate}
+\end{keybox}
+
+%========================================
+\section{常用协议与端口}
+%========================================
+
+\subsection{协议功能}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{协议} & \textbf{功能} & \textbf{端口/协议} \\
+\midrule
+DNS & 域名解析为IP地址 & UDP 53 \\
+ARP & IP地址解析为MAC地址 & — \\
+RARP & MAC地址解析为IP地址 & — \\
+ICMP & 网络控制报文（ping使用） & — \\
+FTP & 文件传输 & TCP 20(数据)/21(控制) \\
+HTTP & Web服务 & TCP 80 \\
+HTTPS & 安全Web服务 & TCP 443 \\
+Telnet & 远程登录 & TCP 23 \\
+SMTP & 发送邮件 & TCP 25 \\
+\bottomrule
+\end{tabular}
+\caption{常用协议与端口}
+\end{table}
+
+\subsection{FTP命令}
+
+\begin{cmdbox}
+\begin{lstlisting}
+ftp 服务器IP          ! 连接FTP服务器
+ls                    ! 列出文件
+get 文件名            ! 下载文件
+put 文件名            ! 上传文件
+quit                  ! 退出
+\end{lstlisting}
+
+\textbf{匿名登录}：用户名输入\texttt{anonymous}
+\end{cmdbox}
+
+%========================================
+\section{TCP三次握手}
+%========================================
+
+\begin{keybox}
+\textbf{TCP建立连接的三次握手}：
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{报文} & \textbf{Sequence Number} & \textbf{Ack Number} & \textbf{SYN} & \textbf{ACK} \\
+\hline
+第一次握手 & x（随机） & 0 & 1 & 0 \\
+\hline
+第二次握手 & y（随机） & x+1 & 1 & 1 \\
+\hline
+第三次握手 & x+1 & y+1 & 0 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{请求连接报文标志}：SYN=1
+\end{keybox}
+
+%========================================
+\section{双绞线制作}
+%========================================
+
+\subsection{线序标准}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{T568A}：白绿、绿、白橙、蓝、白蓝、橙、白棕、棕
+    \item \textbf{T568B}：白橙、橙、白绿、蓝、白蓝、绿、白棕、棕
+\end{itemize}
+
+\subsection{线缆类型}
+
+\begin{keybox}
+\textbf{直连线}（两端相同标准）：连接\textbf{不同类型}设备
+\begin{itemize}[itemsep=0pt]
+    \item 计算机 ↔ 交换机
+    \item 计算机 ↔ 路由器
+    \item 交换机 ↔ 路由器
+\end{itemize}
+
+\textbf{交叉线}（一端T568A，一端T568B）：连接\textbf{相同类型}设备
+\begin{itemize}[itemsep=0pt]
+    \item 计算机 ↔ 计算机
+    \item 交换机 ↔ 交换机
+    \item 路由器 ↔ 路由器
+\end{itemize}
+\end{keybox}
+
+\subsection{双绞线使用的线对}
+
+\begin{keybox}
+10/100Mbps以太网只使用\textbf{1、2、3、6}号线（两对）。
+
+因此，如果4、5、7、8号线不通，网线\textbf{仍可使用}。
+
+如果1、2、3、6任一根不通，网线\textbf{不能使用}。
+
+\textbf{双绞线最大长度}：100米（超过可能因\textbf{信号衰减}导致不能正常工作）
+\end{keybox}
+
+%========================================
+\section{数据包分析}
+%========================================
+
+\subsection{协议层次}
+
+\begin{keybox}
+分析抓包数据时，识别各层协议：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{数据链路层}：Ethernet II
+    \item \textbf{网络层}：IP、ICMP、ARP
+    \item \textbf{传输层}：TCP、UDP
+    \item \textbf{应用层}：HTTP、DNS、FTP等
+\end{itemize}
+\end{keybox}
+
+\subsection{常见抓包分析}
+
+\begin{exambox}[DNS查询分析]
+执行\texttt{nslookup www.baidu.com}时抓包：
+\begin{itemize}[itemsep=0pt]
+    \item 应用层协议：DNS
+    \item 传输层协议：UDP
+    \item 目的端口：53
+    \item 目的IP：DNS服务器地址
+\end{itemize}
+\end{exambox}
+
+\begin{exambox}[Ping命令分析]
+执行\texttt{ping 目标IP}时抓包：
+\begin{itemize}[itemsep=0pt]
+    \item 网络层协议：ICMP
+    \item ICMP类型：Echo Request（请求）/ Echo Reply（回复）
+\end{itemize}
+\end{exambox}
+
+%========================================
+\section{综合题型总结}
+%========================================
+
+\subsection{VLAN配置题}
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 创建VLAN并命名
+    \item 将端口划入VLAN
+    \item 配置Trunk端口（交换机互连）
+    \item 配置VLAN间路由（三层交换机）
+\end{enumerate}
+
+\subsection{路由器配置题}
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 配置接口IP地址
+    \item 配置静态路由或默认路由
+    \item 配置ACL（如需要）
+    \item 配置NAT（如需要）
+\end{enumerate}
+
+\subsection{故障排查顺序}
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 检查物理层（网线、接口）
+    \item 检查IP配置（地址、掩码、网关）
+    \item 检查路由配置
+    \item 检查ACL配置
+\end{enumerate}
+
+%========================================
+\section{链路聚合技术}
+%========================================
+
+\begin{keybox}
+\textbf{链路聚合}（Link Aggregation）：将\textbf{多个物理链路}组成\textbf{一个逻辑链路}。
+
+\textbf{作用}：
+\begin{itemize}[itemsep=0pt]
+    \item 增加带宽（多条链路同时传输）
+    \item 提高可靠性（一条链路故障，其他链路继续工作）
+    \item 负载均衡
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{路由器接口类型}
+%========================================
+
+\begin{keybox}
+\textbf{路由器常见接口}：
+
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{以太网口}（FastEthernet/GigabitEthernet）：连接局域网
+    \item \textbf{串口}（Serial）：点对点连接，需要配置时钟速率（DCE端）
+    \item \textbf{Console口}：本地配置管理
+\end{itemize}
+
+\textbf{串口连接}：
+\begin{itemize}[itemsep=0pt]
+    \item 串口之间必须\textbf{成对}连接（一端DCE，一端DTE）
+    \item DCE端需要配置\texttt{clock rate}
+    \item 串口IP地址通常在\textbf{同一网段}
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{网络故障排查}
+%========================================
+
+\subsection{常见故障现象与原因}
+
+\begin{exambox}[故障1：无法访问域名]
+\textbf{现象}：ping域名超时，但ping IP地址正常
+
+\textbf{原因}：DNS解析故障
+
+\textbf{解决}：
+\begin{itemize}[itemsep=0pt]
+    \item 检查DNS服务器配置
+    \item 使用\texttt{nslookup}测试DNS解析
+    \item 清空DNS缓存：\texttt{ipconfig /flushdns}
+\end{itemize}
+\end{exambox}
+
+\begin{exambox}[故障2：无法访问外网]
+\textbf{现象}：ping本网段正常，ping外网超时
+
+\textbf{可能原因}：
+\begin{itemize}[itemsep=0pt]
+    \item 默认网关未设置或设置错误
+    \item 路由器上未配置路由
+    \item 路由器接口未启用（shutdown状态）
+\end{itemize}
+\end{exambox}
+
+\begin{exambox}[故障3：Destination Host Unreachable]
+\textbf{现象}：ping时显示"Destination Host Unreachable"
+
+\textbf{原因}：
+\begin{itemize}[itemsep=0pt]
+    \item 本机到目标主机的路由不通
+    \item 目标主机不存在或未开机
+    \item 中间路由器无法转发
+\end{itemize}
+\end{exambox}
+
+\subsection{故障排查工具}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{ping}：测试连通性
+    \item \textbf{tracert}：跟踪路由路径
+    \item \textbf{ipconfig}：查看IP配置
+    \item \textbf{nslookup}：测试DNS解析
+    \item \textbf{arp -a}：查看ARP缓存
+    \item \textbf{netstat}：查看网络连接状态
+\end{itemize}
+
+\subsection{测试连接的正确顺序}
+
+\begin{cmdbox}
+\textbf{测试网络连通性的步骤}：
+\begin{lstlisting}
+1. ping 127.0.0.1        # 测试TCP/IP协议栈
+2. ping 本机IP           # 测试网卡
+3. ping 默认网关         # 测试本网段
+4. ping 外网IP           # 测试路由
+5. ping 外网域名         # 测试DNS
+\end{lstlisting}
+\end{cmdbox}
+
+%========================================
+\section{以太网链路聚合}
+%========================================
+
+\begin{keybox}
+\textbf{测试链路聚合}：
+
+如果两台交换机之间有多条链路聚合：
+\begin{itemize}[itemsep=0pt]
+    \item 断开其中一条链路，网络\textbf{仍能正常通信}（其他链路继续工作）
+    \item 所有链路同时工作，带宽叠加
+\end{itemize}
+
+\textbf{注意}：如果没有配置链路聚合，多条链路会形成环路，需要STP阻塞部分端口。
+\end{keybox}
+
+%========================================
+\section{ARP缓存}
+%========================================
+
+\begin{keybox}
+\textbf{ARP缓存类型}：
+
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{dynamic}（动态）：通过ARP协议自动学习，有老化时间
+    \item \textbf{static}（静态）：手动添加，不会老化
+\end{itemize}
+
+\textbf{查看ARP缓存}：
+\begin{lstlisting}
+arp -a
+\end{lstlisting}
+
+\textbf{手动添加静态ARP}：
+\begin{lstlisting}
+arp -s 192.168.5.7 00-52-18-45-a2-67
+\end{lstlisting}
+\end{keybox}
+
+%========================================
+\section{交换机端口状态}
+%========================================
+
+\begin{keybox}
+\textbf{交换机端口默认状态}：
+
+在缺省配置下，交换机的所有端口：
+\begin{itemize}[itemsep=0pt]
+    \item 处于\textbf{启用状态}（up）
+    \item 属于\textbf{VLAN 1}（默认VLAN）
+    \item 可以互相通信
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{网络设备功能对比}
+%========================================
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{功能} & \textbf{中继器} & \textbf{集线器} & \textbf{网桥} & \textbf{路由器} \\
+\midrule
+工作层次 & 物理层 & 物理层 & 数据链路层 & 网络层 \\
+隔离冲突域 & 否 & 否 & 是 & 是 \\
+隔离广播域 & 否 & 否 & 否 & 是 \\
+转发依据 & — & — & MAC地址 & IP地址 \\
+\bottomrule
+\end{tabular}
+\caption{网络设备功能对比}
+\end{table}
+
+\begin{keybox}
+\textbf{抑制广播风暴}：只有\textbf{路由器}能隔离广播域，从而抑制广播风暴。
+\end{keybox}
+
+%========================================
+\section{传输时延}
+%========================================
+
+\begin{keybox}
+\textbf{传输时延}：信号从介质一端传到另一端所需的时间。
+
+\textbf{影响因素}：
+\begin{itemize}[itemsep=0pt]
+    \item 介质长度
+    \item 信号传播速度（光纤 > 双绞线）
+\end{itemize}
+
+\textbf{与传输时延相关的问题}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{近端串扰}：信号在传输过程中相互干扰
+    \item \textbf{衰减}：信号强度随距离增加而减弱
+    \item \textbf{远端串扰}：远端的信号干扰
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{Windows网络组件}
+%========================================
+
+\begin{keybox}
+\textbf{访问Web无关的组件}：\textbf{WINS}（Windows Internet Name Service）
+
+WINS用于NetBIOS名称解析，与Web访问无关。
+
+\textbf{Web访问相关组件}：
+\begin{itemize}[itemsep=0pt]
+    \item DNS：域名解析
+    \item TCP：传输层协议
+    \item IIS：Web服务器
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{路由器配置实验}
+%========================================
+
+\subsection{实验拓扑规划}
+
+\begin{exambox}[典型实验拓扑]
+\textbf{设备}：
+\begin{itemize}[itemsep=0pt]
+    \item 路由器RA：R3740（接口：s0/0, s0/1, s0/2, g0/0, g0/1）
+    \item 路由器RB：R2692A（接口：s1/2, s1/3, f1/0, f1/1）
+    \item 计算机PC1、PC2
+\end{itemize}
+
+\textbf{IP规划}（202.115.0.0-202.115.255.255，/24）：
+\begin{itemize}[itemsep=0pt]
+    \item PC1网段：202.115.10.0/24
+    \item PC2网段：202.115.20.0/24
+    \item 串口互连：202.115.30.0/24
+\end{itemize}
+\end{exambox}
+
+\subsection{配置步骤}
+
+\begin{cmdbox}
+\textbf{1. 配置路由器接口}：
+\begin{lstlisting}
+RA(config)# interface gigabitEthernet 0/0
+RA(config-if)# ip address 202.115.10.1 255.255.255.0
+RA(config-if)# no shutdown
+RA(config-if)# exit
+
+RA(config)# interface serial 0/0
+RA(config-if)# ip address 202.115.30.1 255.255.255.0
+RA(config-if)# clock rate 64000
+RA(config-if)# no shutdown
+RA(config-if)# exit
+\end{lstlisting}
+
+\textbf{2. 配置静态路由}：
+\begin{lstlisting}
+RA(config)# ip route 202.115.20.0 255.255.255.0 202.115.30.2
+\end{lstlisting}
+
+\textbf{3. 配置计算机}：
+\begin{itemize}[itemsep=0pt]
+    \item PC1：IP=202.115.10.2，网关=202.115.10.1
+    \item PC2：IP=202.115.20.2，网关=202.115.20.1
+\end{itemize}
+\end{cmdbox}
+
+\subsection{测试串口连接}
+
+\begin{keybox}
+\textbf{测试串口是否接好}：
+
+在路由器上执行：
+\begin{lstlisting}
+Router# show interfaces serial 0/0
+\end{lstlisting}
+
+查看接口状态：
+\begin{itemize}[itemsep=0pt]
+    \item \texttt{Serial0/0 is up, line protocol is up}：连接正常
+    \item \texttt{Serial0/0 is up, line protocol is down}：物理连接正常，但协议未建立（可能时钟未配置）
+    \item \texttt{Serial0/0 is down}：物理连接故障
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{VLAN实验}
+%========================================
+
+\subsection{实验要求}
+
+\begin{exambox}[VLAN实验典型题]
+\textbf{场景}：某单位有40台计算机，财务部4台，其他部门36台。使用两台交换机S3760和S2126。
+
+\textbf{要求}：
+\begin{itemize}[itemsep=0pt]
+    \item 财务部划入VLAN2
+    \item 其他部门划入VLAN3
+    \item 使用私有IP地址10.0.0.0/8
+    \item 财务部：10.1.1.0/24
+    \item 其他部门：10.2.1.0/24
+\end{itemize}
+\end{exambox}
+
+\subsection{配置命令}
+
+\begin{cmdbox}
+\textbf{S3760配置}：
+\begin{lstlisting}
+! 创建VLAN
+S3760(config)# vlan 2
+S3760(config-vlan)# name vlan2
+S3760(config-vlan)# exit
+S3760(config)# vlan 3
+S3760(config-vlan)# name vlan3
+S3760(config-vlan)# exit
+
+! 指定端口属于VLAN
+S3760(config)# interface fastEthernet 0/1
+S3760(config-if)# switchport access vlan 2
+S3760(config-if)# exit
+S3760(config)# interface range fastEthernet 0/2-21
+S3760(config-if-range)# switchport access vlan 3
+S3760(config-if-range)# exit
+
+! 配置Trunk端口
+S3760(config)# interface fastEthernet 0/24
+S3760(config-if)# switchport mode trunk
+S3760(config-if)# exit
+\end{lstlisting}
+
+\textbf{配置VLAN间路由}（三层交换机）：
+\begin{lstlisting}
+! 进入VLAN 2的虚拟接口
+S3760(config)# interface vlan 2
+! 配置IP地址：10.1.1.254是网关地址，255.0.0.0是子网掩码
+S3760(config-if)# ip address 10.1.1.254 255.0.0.0
+S3760(config-if)# exit
+
+! 进入VLAN 3的虚拟接口
+S3760(config)# interface vlan 3
+! 配置IP地址：10.2.1.254是网关地址，255.0.0.0是子网掩码
+S3760(config-if)# ip address 10.2.1.254 255.0.0.0
+S3760(config-if)# exit
+
+! 启用三层交换机的路由功能，实现VLAN间通信
+S3760(config)# ip routing
+\end{lstlisting}
+\end{cmdbox}
+
+%========================================
+\section{访问控制列表实验}
+%========================================
+
+\subsection{ACL配置实例}
+
+\begin{exambox}[ACL实验题]
+\textbf{要求}：使部门B不能访问部门A，其他访问不受限。
+
+\textbf{假设}：
+\begin{itemize}[itemsep=0pt]
+    \item 部门A：172.16.12.0/24
+    \item 部门B：172.16.13.0/24
+\end{itemize}
+\end{exambox}
+
+\begin{cmdbox}
+\textbf{配置扩展ACL}：
+\begin{lstlisting}
+! 创建ACL规则
+Router(config)# access-list 101 deny ip 172.16.13.0 0.0.0.255 172.16.12.0 0.0.0.255
+Router(config)# access-list 101 permit ip any any
+
+! 应用到接口（部门B的接口）
+Router(config)# interface fastEthernet 0/1
+Router(config-if)# ip access-group 101 in
+Router(config-if)# exit
+\end{lstlisting}
+\end{cmdbox}
+
+\subsection{限制FTP访问}
+
+\begin{exambox}[限制FTP访问]
+\textbf{要求}：禁止内网访问外网的FTP服务器。
+\end{exambox}
+
+\begin{cmdbox}
+\begin{lstlisting}
+! FTP使用TCP端口21（控制）和20（数据）
+Router(config)# access-list 102 deny tcp 192.168.1.0 0.0.0.255 any eq 21
+Router(config)# access-list 102 deny tcp 192.168.1.0 0.0.0.255 any eq 20
+Router(config)# access-list 102 permit ip any any
+
+! 应用到内网接口的出方向
+Router(config)# interface fastEthernet 0/0
+Router(config-if)# ip access-group 102 out
+\end{lstlisting}
+\end{cmdbox}
+
+%========================================
+\section{NAT实验}
+%========================================
+
+\subsection{NAT配置完整示例}
+
+\begin{exambox}[NAT实验]
+\textbf{拓扑}：
+\begin{itemize}[itemsep=0pt]
+    \item 内网：192.168.1.0/24
+    \item 路由器内部接口：f0/0 = 192.168.1.1
+    \item 路由器外部接口：s0/0 = 59.67.148.3
+    \item 外网服务器：202.113.64.2
+\end{itemize}
+\end{exambox}
+
+\begin{cmdbox}
+\textbf{完整NAT配置}：
+\begin{lstlisting}
+! 定义允许转换的内网地址
+Router(config)# access-list 11 permit 192.168.1.0 0.0.0.255
+
+! 定义内部全局地址池
+Router(config)# ip nat pool abc 59.67.148.3 59.67.148.3 netmask 255.255.255.0
+
+! 配置动态NAT（PAT）
+Router(config)# ip nat inside source list 11 pool abc overload
+
+! 指定内部接口
+Router(config)# interface fastEthernet 0/0
+Router(config-if)# ip nat inside
+Router(config-if)# exit
+
+! 指定外部接口
+Router(config)# interface serial 0/0
+Router(config-if)# ip nat outside
+Router(config-if)# exit
+\end{lstlisting}
+
+\textbf{查看NAT转换表}：
+\begin{lstlisting}
+Router# show ip nat translations
+\end{lstlisting}
+\end{cmdbox}
+
+%========================================
+\section{数据包分析实验}
+%========================================
+
+\subsection{Wireshark抓包分析}
+
+\begin{exambox}[DNS查询抓包]
+\textbf{执行命令}：\texttt{nslookup www.baidu.com}
+
+\textbf{抓包分析}：
+\begin{itemize}[itemsep=0pt]
+    \item 数据链路层：Ethernet II
+    \item 网络层：IP
+    \item 传输层：UDP
+    \item 应用层：DNS
+    \item 源IP：本机IP（如118.114.175.86）
+    \item 目的IP：DNS服务器IP（如61.139.2.69）
+    \item 源端口：随机高端口
+    \item 目的端口：53
+    \item 源MAC：本机MAC
+    \item 目的MAC：网关MAC
+\end{itemize}
+\end{exambox}
+
+\begin{exambox}[HTTP访问抓包]
+\textbf{执行命令}：访问网页
+
+\textbf{抓包分析}：
+\begin{itemize}[itemsep=0pt]
+    \item 应用层：HTTP
+    \item 传输层：TCP
+    \item 目的端口：80（HTTP）或443（HTTPS）
+    \item 包含三次握手过程
+\end{itemize}
+\end{exambox}
+
+\subsection{TCP连接分析}
+
+\begin{keybox}
+\textbf{TCP三次握手抓包特征}：
+
+\textbf{第一次握手}：
+\begin{itemize}[itemsep=0pt]
+    \item SYN=1, ACK=0
+    \item Sequence Number=x（随机初始值）
+\end{itemize}
+
+\textbf{第二次握手}：
+\begin{itemize}[itemsep=0pt]
+    \item SYN=1, ACK=1
+    \item Sequence Number=y（服务器随机初始值）
+    \item Acknowledgement Number=x+1
+\end{itemize}
+
+\textbf{第三次握手}：
+\begin{itemize}[itemsep=0pt]
+    \item SYN=0, ACK=1
+    \item Sequence Number=x+1
+    \item Acknowledgement Number=y+1
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{综合实验题}
+%========================================
+
+\subsection{完整网络配置实验}
+
+\begin{exambox}[综合实验]
+\textbf{场景}：某单位内部局域网通过路由器连接Internet。
+
+\textbf{要求}：
+\begin{enumerate}[itemsep=0pt]
+    \item 配置VLAN划分部门
+    \item 配置路由器实现内网互通
+    \item 配置NAT实现内网访问外网
+    \item 配置ACL限制FTP访问
+\end{enumerate}
+
+\textbf{配置步骤}：
+\begin{enumerate}[itemsep=0pt]
+    \item 交换机：创建VLAN，划分端口，配置Trunk
+    \item 三层交换机：配置VLAN接口IP，启用路由
+    \item 路由器：配置接口IP，配置静态路由
+    \item 路由器：配置NAT（ACL+地址池+inside/outside）
+    \item 路由器：配置ACL限制访问
+    \item 计算机：配置IP、掩码、网关、DNS
+    \item 测试：ping、tracert、访问网页
+\end{enumerate}
+\end{exambox}
+
+
+%========================================
+\section{DHCP动态主机配置协议}
+%========================================
+
+\subsection{DHCP工作原理}
+
+\begin{keybox}
+\textbf{DHCP四步过程}（重要考点）：
+
+\begin{enumerate}[itemsep=0pt]
+    \item \textbf{DHCP Discover}：客户端广播寻找DHCP服务器
+    \item \textbf{DHCP Offer}：服务器提供IP地址
+    \item \textbf{DHCP Request}：客户端请求使用该IP
+    \item \textbf{DHCP ACK}：服务器确认分配
+\end{enumerate}
+
+\textbf{DHCP使用UDP协议}：
+\begin{itemize}[itemsep=0pt]
+    \item 客户端端口：68
+    \item 服务器端口：67
+\end{itemize}
+\end{keybox}
+
+\subsection{DHCP配置}
+
+\begin{cmdbox}
+\textbf{路由器作为DHCP服务器}：
+\begin{lstlisting}
+! 创建DHCP地址池
+Router(config)# ip dhcp pool mypool
+Router(dhcp-config)# network 192.168.1.0 255.255.255.0
+Router(dhcp-config)# default-router 192.168.1.1
+Router(dhcp-config)# dns-server 8.8.8.8
+Router(dhcp-config)# exit
+
+! 排除不分配的地址
+Router(config)# ip dhcp excluded-address 192.168.1.1 192.168.1.10
+\end{lstlisting}
+\end{cmdbox}
+
+\begin{exambox}[DHCP抓包分析]
+\textbf{执行}：计算机设置为自动获取IP
+
+\textbf{抓包特征}：
+\begin{itemize}[itemsep=0pt]
+    \item 传输层协议：UDP
+    \item 源端口：68，目的端口：67
+    \item 源IP：0.0.0.0（初始状态）
+    \item 目的IP：255.255.255.255（广播）
+    \item 包含四个报文：Discover、Offer、Request、ACK
+\end{itemize}
+\end{exambox}
+
+%========================================
+\section{交换机MAC地址表}
+%========================================
+
+\subsection{MAC地址学习}
+
+\begin{keybox}
+\textbf{交换机自学习过程}：
+
+\begin{enumerate}[itemsep=0pt]
+    \item 交换机收到数据帧，记录\textbf{源MAC地址}和\textbf{进入端口}
+    \item 查找MAC地址表中的\textbf{目的MAC地址}
+    \item 如果找到，从对应端口转发
+    \item 如果未找到，\textbf{泛洪}（除接收端口外的所有端口）
+\end{enumerate}
+
+\textbf{MAC地址表项类型}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{动态}：自动学习，有老化时间（默认300秒）
+    \item \textbf{静态}：手动配置，不会老化
+\end{itemize}
+\end{keybox}
+
+\subsection{查看MAC地址表}
+
+\begin{cmdbox}
+\begin{lstlisting}
+Switch# show mac-address-table
+Switch# show mac-address-table dynamic
+Switch# show mac-address-table static
+\end{lstlisting}
+\end{cmdbox}
+
+%========================================
+\section{端口镜像(Port Mirroring)}
+%========================================
+
+\begin{keybox}
+\textbf{端口镜像作用}：将一个或多个端口的流量复制到监控端口，用于\textbf{网络监控和故障排查}。
+
+\textbf{应用场景}：
+\begin{itemize}[itemsep=0pt]
+    \item 使用Wireshark抓包分析
+    \item 网络安全监控
+    \item 流量分析
+\end{itemize}
+\end{keybox}
+
+\begin{cmdbox}
+\textbf{配置端口镜像}：
+\begin{lstlisting}
+! 将f0/1的流量镜像到f0/24
+Switch(config)# monitor session 1 source interface f0/1
+Switch(config)# monitor session 1 destination interface f0/24
+\end{lstlisting}
+\end{cmdbox}
+
+%========================================
+\section{路由协议基础}
+%========================================
+
+\subsection{静态路由vs动态路由}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{特性} & \textbf{静态路由} & \textbf{动态路由} \\
+\midrule
+配置方式 & 手动配置 & 自动学习 \\
+适用场景 & 小型网络 & 大型网络 \\
+网络变化 & 需手动更新 & 自动适应 \\
+资源消耗 & 低 & 高 \\
+管理难度 & 简单网络易，复杂网络难 & 配置后自动维护 \\
+\bottomrule
+\end{tabular}
+\caption{静态路由与动态路由对比}
+\end{table}
+
+\subsection{RIP协议}
+
+\begin{keybox}
+\textbf{RIP特点}：
+\begin{itemize}[itemsep=0pt]
+    \item 距离矢量路由协议
+    \item 以\textbf{跳数}作为度量（最大15跳，16跳表示不可达）
+    \item 每30秒更新一次路由表
+    \item 使用UDP端口520
+\end{itemize}
+\end{keybox}
+
+\begin{cmdbox}
+\textbf{配置RIP}：
+\begin{lstlisting}
+Router(config)# router rip
+Router(config-router)# version 2
+Router(config-router)# network 192.168.1.0
+Router(config-router)# network 192.168.2.0
+Router(config-router)# exit
+\end{lstlisting}
+\end{cmdbox}
+
+\subsection{OSPF协议}
+
+\begin{keybox}
+\textbf{OSPF特点}：
+\begin{itemize}[itemsep=0pt]
+    \item 链路状态路由协议
+    \item 以\textbf{带宽}作为度量（开销cost）
+    \item 收敛速度快
+    \item 支持大型网络
+    \item 使用IP协议号89
+\end{itemize}
+\end{keybox}
+
+\begin{cmdbox}
+\textbf{配置OSPF}：
+\begin{lstlisting}
+Router(config)# router ospf 1
+Router(config-router)# network 192.168.1.0 0.0.0.255 area 0
+Router(config-router)# network 192.168.2.0 0.0.0.255 area 0
+Router(config-router)# exit
+\end{lstlisting}
+\end{cmdbox}
+
+%========================================
+\section{网络安全基础}
+%========================================
+
+\subsection{端口安全}
+
+\begin{keybox}
+\textbf{端口安全作用}：限制交换机端口上允许的MAC地址，防止未授权设备接入。
+
+\textbf{违规处理方式}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{protect}：丢弃非法流量，不记录
+    \item \textbf{restrict}：丢弃非法流量，记录日志
+    \item \textbf{shutdown}：关闭端口（默认）
+\end{itemize}
+\end{keybox}
+
+\begin{cmdbox}
+\textbf{配置端口安全}：
+\begin{lstlisting}
+Switch(config)# interface f0/1
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport port-security
+Switch(config-if)# switchport port-security maximum 2
+Switch(config-if)# switchport port-security violation shutdown
+Switch(config-if)# switchport port-security mac-address sticky
+Switch(config-if)# exit
+\end{lstlisting}
+\end{cmdbox}
+
+\subsection{常见网络攻击}
+
+\begin{keybox}
+\textbf{ARP欺骗}：攻击者发送伪造的ARP响应，将网关MAC地址映射到攻击者MAC。
+
+\textbf{防御措施}：
+\begin{itemize}[itemsep=0pt]
+    \item 配置静态ARP绑定
+    \item 使用ARP防火墙
+    \item 启用端口安全
+\end{itemize}
+
+\textbf{MAC地址泛洪攻击}：攻击者发送大量不同源MAC的数据帧，填满交换机MAC地址表。
+
+\textbf{防御措施}：
+\begin{itemize}[itemsep=0pt]
+    \item 配置端口安全
+    \item 限制每端口MAC地址数量
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{网络性能测试}
+%========================================
+
+\subsection{带宽测试}
+
+\begin{keybox}
+\textbf{理论传输时间计算}：
+
+传输时间 = 数据大小 / 带宽
+
+\textbf{示例}：100MB文件通过100Mbps链路传输
+\begin{itemize}[itemsep=0pt]
+    \item 数据大小 = 100MB = 100 × 8 = 800Mb
+    \item 传输时间 = 800Mb / 100Mbps = 8秒
+\end{itemize}
+
+\textbf{注意}：实际传输时间会因协议开销、网络拥塞等因素增加。
+\end{keybox}
+
+\subsection{时延类型}
+
+\begin{keybox}
+\textbf{网络时延组成}：
+
+\begin{enumerate}[itemsep=0pt]
+    \item \textbf{发送时延}：数据从主机发送到链路所需时间 = 数据长度 / 发送速率
+    \item \textbf{传播时延}：信号在链路上传播所需时间 = 链路长度 / 传播速度
+    \item \textbf{处理时延}：路由器处理分组所需时间
+    \item \textbf{排队时延}：分组在路由器队列中等待的时间
+\end{enumerate}
+
+\textbf{总时延} = 发送时延 + 传播时延 + 处理时延 + 排队时延
+\end{keybox}
+
+%========================================
+\section{IPv6基础}
+%========================================
+
+\subsection{IPv6地址格式}
+
+\begin{keybox}
+\textbf{IPv6地址}：128位，用冒号分隔的8组十六进制数。
+
+\textbf{示例}：2001:0db8:85a3:0000:0000:8a2e:0370:7334
+
+\textbf{简化规则}：
+\begin{itemize}[itemsep=0pt]
+    \item 每组前导0可省略：2001:db8:85a3:0:0:8a2e:370:7334
+    \item 连续的0组可用::表示（只能用一次）：2001:db8:85a3::8a2e:370:7334
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{无线网络基础}
+%========================================
+
+\subsection{无线网络标准}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lccc}
+\toprule
+\textbf{标准} & \textbf{频段} & \textbf{最大速率} & \textbf{特点} \\
+\midrule
+802.11b & 2.4GHz & 11Mbps & 早期标准 \\
+802.11g & 2.4GHz & 54Mbps & 兼容11b \\
+802.11n & 2.4/5GHz & 600Mbps & 双频，MIMO \\
+802.11ac & 5GHz & 1.3Gbps & 高速 \\
+\bottomrule
+\end{tabular}
+\caption{无线网络标准对比}
+\end{table}
+
+\subsection{无线安全}
+
+\begin{keybox}
+\textbf{无线加密方式}（安全性从低到高）：
+
+\begin{enumerate}[itemsep=0pt]
+    \item \textbf{开放}：无加密（不安全）
+    \item \textbf{WEP}：已被破解（不推荐）
+    \item \textbf{WPA}：较安全
+    \item \textbf{WPA2}：推荐使用
+    \item \textbf{WPA3}：最新标准
+\end{enumerate}
+
+\textbf{认证方式}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{PSK}（预共享密钥）：家庭/小型网络
+    \item \textbf{802.1X}：企业级认证
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{网络管理协议}
+%========================================
+
+\subsection{SNMP简单网络管理协议}
+
+\begin{keybox}
+\textbf{SNMP组成}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{管理站}：网络管理系统
+    \item \textbf{代理}：运行在被管理设备上
+    \item \textbf{MIB}：管理信息库
+\end{itemize}
+
+\textbf{SNMP版本}：
+\begin{itemize}[itemsep=0pt]
+    \item SNMPv1：基础版本
+    \item SNMPv2c：增加批量操作
+    \item SNMPv3：增加安全认证
+\end{itemize}
+
+\textbf{使用UDP端口161（代理）和162（trap）}
+\end{keybox}
+
+\subsection{Syslog日志}
+
+\begin{keybox}
+\textbf{Syslog严重级别}（0-7）：
+
+\begin{itemize}[itemsep=0pt]
+    \item 0 - Emergency：系统不可用
+    \item 1 - Alert：需要立即处理
+    \item 2 - Critical：严重错误
+    \item 3 - Error：错误
+    \item 4 - Warning：警告
+    \item 5 - Notice：通知
+    \item 6 - Informational：信息
+    \item 7 - Debug：调试
+\end{itemize}
+
+\textbf{使用UDP端口514}
+\end{keybox}
+
+\subsection{易错点总结}
+
+\begin{keybox}
+\textbf{常见错误}：
+
+\begin{enumerate}[itemsep=0pt]
+    \item 混淆集线器和交换机的工作层次
+    \item 认为VLAN可以自动配置
+    \item 忘记配置默认网关导致无法跨网段通信
+    \item ACL规则顺序错误（应该先具体后宽泛）
+    \item NAT的inside/outside接口配置反了
+    \item 串口忘记配置clock rate（DCE端）
+    \item 接口配置后忘记no shutdown
+    \item 子网掩码计算错误（注意/24、/16等表示法）
+    \item 混淆源端口和目的端口
+    \item 认为交换机能隔离广播域（只有路由器能）
+\end{enumerate}
+\end{keybox}
+
+%========================================
+\section{交换机配置模式详解}
+%========================================
+
+\subsection{交换机配置模式}
+
+交换机命令行操作模式主要包括：用户模式、特权模式、全局配置模式和端口配置模式等几种。
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{模式} & \textbf{提示符} \\
+\midrule
+用户模式 & Switch> \\
+特权模式 & Switch\# \\
+全局配置模式 & Switch(config)\# \\
+端口配置模式 & Switch(config-if)\# \\
+VLAN配置模式 & Switch(config-vlan)\# \\
+\bottomrule
+\end{tabular}
+\caption{交换机配置模式}
+\end{table}
+
+\subsection{模式切换命令}
+
+\begin{cmdbox}
+\textbf{用户模式进入特权模式}：
+\begin{lstlisting}
+Switch> enable
+Password:
+\end{lstlisting}
+密码输入时在屏幕上不显示。
+
+\textbf{特权模式进入全局配置模式}：
+\begin{lstlisting}
+Switch# configure terminal
+Switch(config)# exit
+\end{lstlisting}
+
+\textbf{全局模式进入端口配置模式}：
+\begin{lstlisting}
+Switch(config)# interface port-type mod-num/port-num
+! port-type: 接口类型(fastEthernet/gigabitEthernet/serial等)
+! mod-num: 接口模块号
+! port-num: 接口号
+Switch(config-if)# exit
+\end{lstlisting}
+
+\textbf{示例}：
+\begin{lstlisting}
+Switch(config)# interface fastEthernet 0/1
+! 进入快速以太网接口0/1的配置模式
+\end{lstlisting}
+\end{cmdbox}
+
+\subsection{获得帮助}
+
+\begin{cmdbox}
+\begin{lstlisting}
+Switch# ?                    ! 显示当前模式下所有命令
+Switch# show ?               ! 显示所有以show开头的命令
+\end{lstlisting}
+\end{cmdbox}
+
+
+%========================================
+\section{生成树协议(STP)配置实验}
+%========================================
+
+\subsection{实验目的}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 理解生成树协议的作用
+    \item 掌握生成树协议的配置方法
+    \item 理解根交换机和根端口的选举规则
+\end{itemize}
+
+\subsection{实验背景}
+
+当交换机之间有多条链路连接时，会形成环路，造成广播风暴。生成树协议可以消除环路，使只有一条线路处于工作状态。
+
+\subsection{配置步骤}
+
+\begin{cmdbox}
+\textbf{1. 在交换机Sa上开启生成树协议}：
+\begin{lstlisting}
+Sa(config)# spanning-tree
+! spanning-tree: 启用生成树协议
+! 交换机默认情况下生成树协议没有工作
+\end{lstlisting}
+
+\textbf{停止生成树协议}：
+\begin{lstlisting}
+Sa(config)# no spanning-tree
+! no spanning-tree: 关闭生成树协议
+\end{lstlisting}
+
+\textbf{2. 设置生成树协议类型}：
+\begin{lstlisting}
+Sa(config)# spanning-tree mode rstp
+! spanning-tree mode: 设置生成树协议类型
+! rstp: 快速生成树协议(Rapid Spanning Tree Protocol)
+! 其他选项: stp(标准生成树), mstp(多生成树)
+\end{lstlisting}
+
+\textbf{3. 设置交换机Sa的优先级}（使它成为根交换机）：
+\begin{lstlisting}
+Sa(config)# spanning-tree priority 4096
+! spanning-tree priority: 设置交换机优先级
+! 4096: 优先级值(必须是4096的倍数)
+! 范围: 0-61440, 默认值32768
+! 数值越小,优先级越高,越可能成为根交换机
+\end{lstlisting}
+
+\textbf{4. 设置端口优先级}：
+\begin{lstlisting}
+Sa(config)# interface fastEthernet 0/3
+Sa(config-if)# spanning-tree port-priority 0
+! spanning-tree port-priority: 设置端口优先级
+! 0: 端口优先级值(必须是16的倍数)
+! 范围: 0-240
+! 数值越小,优先级越高,越可能成为根端口
+\end{lstlisting}
+
+\textbf{5. 查看生成树配置信息}：
+\begin{lstlisting}
+Sa# show spanning-tree
+! show spanning-tree: 显示生成树协议状态和配置
+! 包括: 根桥ID、端口状态、优先级等信息
+\end{lstlisting}
+\end{cmdbox}
+
+\begin{keybox}
+\textbf{生成树选举规则}：
+
+\textbf{根交换机选举}：
+\begin{itemize}[itemsep=0pt]
+    \item 选择最小的交换机优先级
+    \item 优先级相同则选最小MAC地址
+\end{itemize}
+
+\textbf{根端口选举}：
+\begin{itemize}[itemsep=0pt]
+    \item 非根交换机上选择到根交换机路径开销最小的端口
+    \item 开销相同则选最小端口编号
+\end{itemize}
+
+\textbf{重要参数}：
+\begin{itemize}[itemsep=0pt]
+    \item Priority：优先级
+    \item RootCost：到根交换机的开销
+    \item RootPort：根端口
+    \item DesignatedRoot：根交换机ID
+\end{itemize}
+\end{keybox}
+
+
+%========================================
+\section{链路聚合配置实验}
+%========================================
+
+\subsection{实验目的}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 理解链路聚合的作用
+    \item 掌握链路聚合的配置方法
+    \item 理解流量均衡的配置
+\end{itemize}
+
+\subsection{配置前准备}
+
+配置链路聚合前要先删除生成树配置。默认情况下，交换机中不存在AggregatePort(AP)。
+
+\subsection{配置步骤}
+
+\begin{cmdbox}
+\textbf{1. 在交换机Sa创建链路聚合接口AP1}：
+\begin{lstlisting}
+Sa(config)# interface aggregatePort 1
+! interface aggregatePort: 创建聚合端口(AP)
+! 1: AP编号(锐捷交换机支持1-6)
+Sa(config-if)# switchport mode trunk
+! switchport mode trunk: 设置AP工作模式为trunk
+! trunk模式允许多个VLAN的数据通过
+Sa(config-if)# exit
+\end{lstlisting}
+
+\textbf{2. 将网络接口F0/3和F0/4加入AP1}：
+\begin{lstlisting}
+Sa(config)# interface fastEthernet 0/3
+Sa(config-if)# port-group 1
+! port-group: 将接口加入指定的聚合端口组
+! 1: AP编号,与上面创建的AP1对应
+Sa(config)# interface fastEthernet 0/4
+Sa(config-if)# port-group 1
+! 将F0/4也加入AP1
+! 注意: 加入AP后,接口属性将被AP属性覆盖
+\end{lstlisting}
+
+\textbf{3. 从AP中删除接口}：
+\begin{lstlisting}
+Sa(config-if)# no port-group
+! no port-group: 将接口从聚合端口组中移除
+! 移除后接口恢复加入AP前的属性
+\end{lstlisting}
+
+\textbf{4. 在交换机Sb上进行相同配置}：
+\begin{lstlisting}
+Sb(config)# interface aggregatePort 1
+Sb(config-if)# switchport mode trunk
+Sb(config-if)# exit
+Sb(config)# interface fastEthernet 0/3
+Sb(config-if)# port-group 1
+Sb(config)# interface fastEthernet 0/4
+Sb(config-if)# port-group 1
+\end{lstlisting}
+
+\textbf{5. 查看链路聚合配置信息}：
+\begin{lstlisting}
+Sb# show aggregatePort summary
+! show aggregatePort summary: 显示聚合端口摘要信息
+! 包括: 端口模式、成员端口、最大端口数等
+\end{lstlisting}
+
+\textbf{6. 配置聚合端口的流量均衡}：
+\begin{lstlisting}
+Sa# aggregateport load-balance dst-mac
+! aggregateport load-balance: 配置流量均衡算法
+! dst-mac: 按目的MAC地址分配流量
+! 其他选项: src-mac(源MAC), src-ip(源IP)
+! 默认为src-mac(源MAC地址)
+Sa# aggregateport load-balance src-ip
+! src-ip: 按源IP地址分配流量
+\end{lstlisting}
+
+\textbf{7. 查看流量均衡配置}：
+\begin{lstlisting}
+Sa# show aggregateport load-balance
+! 显示当前使用的流量均衡算法
+\end{lstlisting}
+\end{cmdbox}
+
+\begin{keybox}
+\textbf{链路聚合测试}：
+
+将交换机间的两条连线都连上，在PC1上执行：
+\begin{lstlisting}
+C:\> ping -t 192.168.10.12
+\end{lstlisting}
+
+拔掉F0/3口的连线，PC1与PC3之间仍然连通，一般没有丢包的情况。这说明链路聚合配置成功。
+\end{keybox}
+
+
+%========================================
+\section{路由器基本配置实验}
+%========================================
+
+\subsection{路由器命令模式}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{命令模式} & \textbf{路由器提示符} & \textbf{访问/退出方法} \\
+\midrule
+用户EXEC & R2600-A> & 登录/使用exit命令 \\
+特权EXEC & R2600-A\# & enable/disable或exit \\
+全局配置 & R2600-A(config)\# & configure terminal/exit或end \\
+接口配置 & R2600-A(config-if)\# & interface 接口/exit或end \\
+\bottomrule
+\end{tabular}
+\caption{路由器命令模式及切换}
+\end{table}
+
+\subsection{路由器命令行基本功能}
+
+\begin{cmdbox}
+\textbf{1. 帮助信息}：
+\begin{lstlisting}
+R2600-A> ?                   ! 显示当前模式下所有可执行的命令
+R2600-A# co?                 ! 显示所有以co开头的命令
+R2600-A# configure ?         ! 显示configure命令后可执行的参数
+\end{lstlisting}
+
+\textbf{2. 命令的简写}：
+\begin{lstlisting}
+R2600-A# conf t              ! 代表configure terminal
+\end{lstlisting}
+只要和其他命令不引起歧义即可。
+
+\textbf{3. 命令的自动补齐}：
+\begin{lstlisting}
+R2600-A# com<Tab>            ! 按Tab键自动补齐为configure
+\end{lstlisting}
+
+\textbf{4. 命令的快捷键功能}：
+\begin{lstlisting}
+Ctrl+Z                       ! 直接退回到特权模式
+↑键                          ! 重新输入上一条命令
+\end{lstlisting}
+\end{cmdbox}
+
+\subsection{路由器基本配置}
+
+\begin{cmdbox}
+\textbf{1. 配置设备名称}：
+\begin{lstlisting}
+R2600-A> enable
+R2600-A# configure terminal
+R2600-A(config)# hostname RA
+\end{lstlisting}
+注意：设备名称的有效字符是22个字节。
+
+\textbf{2. 配置以太网接口IP地址}：
+\begin{lstlisting}
+RA(config)# interface fastEthernet 1/0
+RA(config-if)# ip address 17.1.0.1 255.255.0.0
+RA(config-if)# no shutdown
+RA(config-if)# exit
+\end{lstlisting}
+
+\textbf{3. 配置串口IP地址}：
+\begin{lstlisting}
+RA(config)# interface serial 1/3
+RA(config-if)# ip address 17.2.0.1 255.255.0.0
+RA(config-if)# clock rate 64000    ! DCE端需要配置时钟速率
+RA(config-if)# no shutdown
+RA(config-if)# exit
+\end{lstlisting}
+
+\textbf{4. 查看路由器接口参数}：
+\begin{lstlisting}
+RA# show ip interface brief
+\end{lstlisting}
+
+\textbf{5. 查看当前生效的配置}：
+\begin{lstlisting}
+RA# show running-config
+\end{lstlisting}
+
+\textbf{6. 查看保存在NVRAM里的配置}：
+\begin{lstlisting}
+RA# show startup-config
+\end{lstlisting}
+
+\textbf{7. 保存配置}：
+\begin{lstlisting}
+RA# copy running-config startup-config
+\end{lstlisting}
+\end{cmdbox}
+
+\begin{keybox}
+\textbf{串口连接注意事项}：
+
+\begin{itemize}[itemsep=0pt]
+    \item 串口之间必须成对连接（一端DCE，一端DTE）
+    \item DCE端需要配置clock rate
+    \item 串口IP地址通常在同一网段
+    \item 使用show interface命令查看接口状态
+\end{itemize}
+
+\textbf{接口状态说明}：
+\begin{itemize}[itemsep=0pt]
+    \item Serial is up, line protocol is up：连接正常
+    \item Serial is up, line protocol is down：物理连接正常，但协议未建立
+    \item Serial is down：物理连接故障
+\end{itemize}
+\end{keybox}
+
+
+%========================================
+\section{PPP协议配置}
+%========================================
+
+\subsection{PPP协议简介}
+
+PPP协议分为LCP和NCP两个子层：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{LCP}：负责链路的协商、建立、回拨、认证、数据的压缩、多链路捆绑等功能
+    \item \textbf{NCP}：主要负责和上层协议进行协商，为网络层协议提供服务
+\end{itemize}
+
+\subsection{PPP配置命令}
+
+\begin{cmdbox}
+\textbf{配置广域网接口的封装类型为PPP}：
+\begin{lstlisting}
+Router(config)# interface serial 1/3
+Router(config-if)# encapsulation ppp
+Router(config-if)# exit
+\end{lstlisting}
+\end{cmdbox}
+
+%========================================
+\section{NAPT配置实验}
+%========================================
+
+\subsection{实验拓扑}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 内网：10.0.0.0/16
+    \item LAN-R的F1/0：10.0.0.1（内网接口）
+    \item LAN-R的S1/3：202.115.12.1（外网接口）
+    \item Internet-R的S1/3：202.115.12.2
+    \item Internet-R的F1/0：200.2.0.1
+    \item Web Server：200.2.0.2
+    \item PC：10.0.0.2
+\end{itemize}
+
+\subsection{实验目的}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 理解NAT/NAPT的工作原理
+    \item 掌握NAT配置方法
+    \item 理解内部本地地址和内部全局地址的概念
+\end{itemize}
+
+\subsection{配置步骤}
+
+\begin{cmdbox}
+\textbf{1. 在LAN-R上配置缺省路由}：
+\begin{lstlisting}
+LAN-R(config)# ip route 0.0.0.0 0.0.0.0 serial 1/3
+\end{lstlisting}
+
+\textbf{2. 在LAN-R上配置NAPT}：
+\begin{lstlisting}
+! 定义F1/0为内网接口
+LAN-R(config)# interface fastEthernet 1/0
+LAN-R(config-if)# ip nat inside
+LAN-R(config-if)# exit
+
+! 定义S1/3为外网接口
+LAN-R(config)# interface serial 1/3
+LAN-R(config-if)# ip nat outside
+LAN-R(config-if)# exit
+
+! 定义内部全局地址池
+LAN-R(config)# ip nat pool to_internet 202.115.12.1 202.115.12.1 netmask 255.255.255.0
+
+! 定义允许转换的地址
+LAN-R(config)# access-list 10 permit 10.0.0.0 0.0.255.255
+
+! 为内部本地地址转换地址池（overload表示PAT）
+LAN-R(config)# ip nat inside source list 10 pool to_internet overload
+\end{lstlisting}
+
+\textbf{3. 验证测试}：
+\begin{lstlisting}
+! 在PC1上测试访问Web服务器
+! 在路由器LAN-R上查看NAPT映射关系
+LAN-R# show ip nat translation
+\end{lstlisting}
+
+输出结果示例：
+\begin{lstlisting}
+Outside global  Pro  Inside global      Inside local       Outside local
+200.2.0.2:80    tcp  202.115.12.1:4924  10.0.0.2:4924     200.2.0.2:80
+\end{lstlisting}
+
+结果显示，10.0.0.2访问200.2.0.2的80端口，路由器将私有地址10.0.0.2转换为合法的外网地址202.115.12.1。
+\end{cmdbox}
+
+
+%========================================
+\section{访问控制列表(ACL)扩展实验}
+%========================================
+
+\subsection{标准IP访问控制列表配置}
+
+\begin{exambox}[实验要求]
+配置标准IP访问控制列表，禁止202.115.12.0网络访问Web Server主机。
+\end{exambox}
+
+\begin{cmdbox}
+\textbf{1. 在Internet-R上配置标准IP访问控制列表}：
+\begin{lstlisting}
+! 网络掩码是反掩码
+Internet-R(config)# access-list 1 deny 202.115.12.0 0.0.0.255
+! 其他网络互访不受限制
+Internet-R(config)# access-list 1 permit any
+\end{lstlisting}
+
+\textbf{2. 把访问控制列表应用在接口上}：
+\begin{lstlisting}
+! 应用在尽量靠近目的地址的接口
+Internet-R(config)# interface fastEthernet 1/0
+! 检查该接口上方向为out的数据流量
+Internet-R(config-if)# ip access-group 1 out
+Internet-R(config-if)# end
+\end{lstlisting}
+
+\textbf{3. 查看访问控制列表}：
+\begin{lstlisting}
+Internet-R# show access-list 1
+\end{lstlisting}
+
+\textbf{4. 查看接口配置信息}：
+\begin{lstlisting}
+Internet-R# show ip interface fastEthernet 1/0
+\end{lstlisting}
+
+\textbf{5. 删除访问控制列表}：
+\begin{lstlisting}
+Internet-R(config)# interface fastEthernet 1/0
+Internet-R(config-if)# no ip access-group 1 out
+\end{lstlisting}
+\end{cmdbox}
+
+\subsection{扩展IP访问控制列表配置}
+
+\begin{exambox}[实验要求]
+配置扩展IP访问控制列表，禁止202.115.12.0网络访问Web Server主机的Web服务，其他网络互访不受限制。
+\end{exambox}
+
+\begin{cmdbox}
+\textbf{1. 在Internet-R上配置扩展IP访问控制列表}：
+\begin{lstlisting}
+! eq www指示目的端口为80
+Internet-R(config)# access-list 101 deny tcp 202.115.12.0 0.0.0.255 host 200.2.0.2 eq www
+! 网络掩码是反掩码
+Internet-R(config)# access-list 101 permit ip any any
+\end{lstlisting}
+
+\textbf{2. 把访问控制列表应用在接口上}：
+\begin{lstlisting}
+! 应用在尽量靠近目的地址的接口
+Internet-R(config)# interface fastEthernet 1/0
+! 检查该接口上方向为out的数据流量
+Internet-R(config-if)# ip access-group 101 out
+Internet-R(config-if)# end
+\end{lstlisting}
+
+\textbf{3. 验证测试}：
+
+PC1不能访问Web Server的主页，但能PING通Web Server。
+\end{cmdbox}
+
+%========================================
+\section{三层交换机VLAN间路由实验}
+%========================================
+
+\subsection{实验目的}
+
+使分别属于两个不同静态VLAN（Vlan10和Vlan20）的计算机能够相互通信。
+
+\subsection{配置步骤}
+
+\begin{cmdbox}
+\textbf{1. 配置VLAN}（参考前面VLAN配置实验）
+
+\textbf{2. 配置Trunk}（参考前面Trunk配置）
+
+\textbf{3. 配置三层交换机实现VLAN间通信}：
+
+在三层交换机上创建虚拟VLAN接口，配置其IP，使不同VLAN间的计算机能够通信。
+
+\begin{lstlisting}
+! 创建虚拟Vlan10接口并配置其IP
+S3760(config)# interface vlan 10
+S3760(config-if)# ip address 192.168.10.1 255.255.255.0
+S3760(config-if)# exit
+
+! 创建虚拟Vlan20接口并配置其IP
+S3760(config)# interface vlan 20
+S3760(config-if)# ip address 192.168.20.1 255.255.255.0
+S3760(config-if)# exit
+\end{lstlisting}
+
+\textbf{注意}：给VLAN配置的IP地址就是这个网段的网关地址，在该网段中计算机的网关地址应该设置为这个地址。
+
+\textbf{4. 启动路由选择协议}：
+
+在三层交换机上需要激活路由协议。只有这样当目的地址在本地VLAN上时，三层交换机才会使用路由协议来转发分组。
+
+\begin{lstlisting}
+S3760# configure terminal
+S3760(config)# ip routing        ! 启动IP路由选择
+S3760(config)# end
+\end{lstlisting}
+
+这一命令通常在默认情况下是启动的，生成的路由表也与路由器中基本相同。
+
+\textbf{5. 查看配置结果}：
+\begin{lstlisting}
+S3760# show running-config
+\end{lstlisting}
+
+\textbf{6. 验证实验结果}：
+
+配置完成后，任意两台计算机之间都应能通信。在任意一台计算机上执行ping另外三台主机的命令。
+\end{cmdbox}
+
+
+%========================================
+\section{RIPv2路由协议配置实验}
+%========================================
+
+\subsection{实验目的}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 理解距离矢量路由协议的工作原理
+    \item 掌握RIPv2路由协议的配置方法
+    \item 理解路由表的生成过程
+\end{itemize}
+
+\subsection{RIP协议特点}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 距离矢量路由协议
+    \item 使用跳数作为度量值
+    \item 最大跳数为15
+    \item 每30秒发送一次路由更新
+    \item RIPv2支持VLSM和CIDR
+\end{itemize}
+
+\subsection{配置步骤}
+
+\begin{cmdbox}
+\textbf{1. 配置路由器接口}（参考前面路由器基本配置）
+
+\textbf{2. 在路由器r2632-a上启用RIPv2协议}：
+\begin{lstlisting}
+r2632-a> enable
+r2632-a# configure terminal
+r2632-a(config)# router rip
+! router rip: 进入RIP路由协议配置模式
+r2632-a(config-router)# network 192.168.10.0
+! network: 指定要启用RIP协议的网络
+! 192.168.10.0: 网络地址(使用主类网络地址)
+! RIP将在该网络的所有接口上发送和接收RIP更新
+r2632-a(config-router)# network 192.168.12.0
+r2632-a(config-router)# network 192.168.1.0
+r2632-a(config-router)# version 2
+! version 2: 指定使用RIPv2协议
+! 默认为RIPv1, RIPv2支持VLSM和CIDR
+\end{lstlisting}
+
+\textbf{3. 在路由器r3740上启用RIPv2协议}：
+\begin{lstlisting}
+r3740> enable
+r3740# configure terminal
+r3740(config)# router rip
+r3740(config-router)# network 192.168.10.0
+r3740(config-router)# network 192.168.13.0
+r3740(config-router)# network 192.168.0.0
+r3740(config-router)# version 2
+\end{lstlisting}
+
+\textbf{4. 在其他路由器上进行类似配置}
+
+\textbf{5. 查看路由表}：
+\begin{lstlisting}
+r3740# show ip route
+\end{lstlisting}
+
+输出结果说明：
+\begin{itemize}[itemsep=0pt]
+    \item C代表直连路由
+    \item R表示通过RIP协议学到的可达的路由
+    \item Via后面的IP地址表示要到达可达的网络经过的端口的IP地址
+    \item [120/1]表示管理距离为120，跳数为1
+\end{itemize}
+
+\textbf{6. 查看RIP协议运行状态}：
+\begin{lstlisting}
+r3740# show ip protocols
+\end{lstlisting}
+\end{cmdbox}
+
+\begin{keybox}
+\textbf{RIPv2协议特点}：
+
+\begin{itemize}[itemsep=0pt]
+    \item 距离矢量路由协议
+    \item 使用跳数作为度量值，最大跳数为15
+    \item 每30秒发送一次路由更新
+    \item 支持VLSM和CIDR
+    \item 管理距离为120
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{OSPF路由协议配置实验}
+%========================================
+
+\subsection{实验目的}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 理解链路状态路由协议的工作原理
+    \item 掌握OSPF路由协议的配置方法
+    \item 理解OSPF区域划分的概念
+\end{itemize}
+
+\subsection{OSPF协议特点}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 链路状态路由协议
+    \item 使用开销作为度量值
+    \item 支持区域划分
+    \item 收敛速度快
+    \item 无路由环路问题
+\end{itemize}
+
+\subsection{OSPF区域划分}
+
+OSPF协议支持区域划分，以减少资源消耗。本实验中将构建一个骨干区域Area 0，并把网络划分为多个区域。
+
+\subsection{配置步骤}
+
+\begin{cmdbox}
+\textbf{1. 配置路由器接口}（参考前面路由器基本配置）
+
+\textbf{2. 在r2632-b上进行Area 0区域OSPF配置}：
+\begin{lstlisting}
+r2632-b(config)# router ospf
+! router ospf: 进入OSPF路由协议配置模式
+r2632-b(config-router)# network 192.168.12.0 0.0.0.255 area 0
+! network: 指定启用OSPF的网络
+! 192.168.12.0: 网络地址
+! 0.0.0.255: 反掩码(wildcard mask), 0表示必须匹配,1表示任意
+! area 0: 指定区域号(0为骨干区域,所有区域必须连接到骨干区域)
+r2632-b(config-router)# network 192.168.13.0 0.0.0.255 area 0
+\end{lstlisting}
+
+\textbf{3. 在r2632-a上进行Area 0和Area 1的配置}：
+\begin{lstlisting}
+r2632-a(config)# router ospf
+! 进入OSPF协议配置模式
+r2632-a(config-router)# network 192.168.12.0 0.0.0.255 area 0
+! 将192.168.12.0网络划入骨干区域Area 0
+r2632-a(config-router)# network 192.168.10.0 0.0.0.255 area 0
+r2632-a(config-router)# network 192.168.1.0 0.0.0.255 area 1
+! 将192.168.1.0网络划入Area 1
+! 此路由器连接多个区域,成为ABR(区域边界路由器)
+\end{lstlisting}
+
+\textbf{4. 在r3740上进行Area 0和Area 2的配置}：
+\begin{lstlisting}
+r3740(config)# router ospf
+r3740(config-router)# network 192.168.10.0 0.0.0.255 area 0
+r3740(config-router)# network 192.168.13.0 0.0.0.255 area 0
+r3740(config-router)# network 192.168.0.0 0.0.0.255 area 2
+! 将192.168.0.0网络划入Area 2
+\end{lstlisting}
+
+\textbf{5. 在r1762上进行Area 2的配置}：
+\begin{lstlisting}
+r1762(config)# router ospf
+r1762(config-router)# network 192.168.14.0 0.0.0.255 area 2
+r1762(config-router)# network 192.168.0.0 0.0.0.255 area 2
+! 所有接口都在Area 2中
+\end{lstlisting}
+
+\textbf{6. 查看OSPF协议运行状态}：
+\begin{lstlisting}
+r3740# show ip protocols
+\end{lstlisting}
+
+输出结果说明：
+\begin{itemize}[itemsep=0pt]
+    \item Router ID：路由器ID
+    \item Number of areas：区域数量
+    \item Routing for Networks：启用OSPF的网络
+\end{itemize}
+
+\textbf{7. 查看路由表}：
+\begin{lstlisting}
+r3740# show ip route
+\end{lstlisting}
+
+输出结果说明：
+\begin{itemize}[itemsep=0pt]
+    \item C代表直连路由
+    \item O表示通过OSPF协议学到的路由
+    \item O IA表示OSPF区域间路由
+    \item [110/51]表示管理距离为110，开销为51
+\end{itemize}
+
+\textbf{8. 查看OSPF数据库}：
+\begin{lstlisting}
+r3740# show ip ospf database
+\end{lstlisting}
+
+\textbf{9. 验证主机连通性}：
+
+在主机A上PING主机B，输出结果显示两台计算机可以连通。
+\end{cmdbox}
+
+\begin{keybox}
+\textbf{OSPF协议特点}：
+
+\begin{itemize}[itemsep=0pt]
+    \item 链路状态路由协议
+    \item 使用开销作为度量值
+    \item 支持区域划分，减少资源消耗
+    \item 收敛速度快
+    \item 支持VLSM和CIDR
+    \item 管理距离为110
+    \item 使用Hello报文维护邻居关系
+\end{itemize}
+
+\textbf{OSPF报文类型}：
+\begin{itemize}[itemsep=0pt]
+    \item Hello报文：发现和维护邻居关系
+    \item DBD报文：数据库描述报文
+    \item LSR报文：链路状态请求报文
+    \item LSU报文：链路状态更新报文
+    \item LSAck报文：链路状态确认报文
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{路由表解读}
+%========================================
+
+\subsection{路由表标识符}
+
+\begin{keybox}
+\textbf{路由表中常见标识符}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{C} - Connected，直连路由
+    \item \textbf{S} - Static，静态路由
+    \item \textbf{R} - RIP，通过RIP协议学习的路由
+    \item \textbf{O} - OSPF，通过OSPF协议学习的路由
+    \item \textbf{O IA} - OSPF Inter Area，OSPF区域间路由
+    \item \textbf{B} - BGP，通过BGP协议学习的路由
+    \item \textbf{*} - candidate default，候选默认路由
+\end{itemize}
+\end{keybox}
+
+\subsection{路由表输出示例}
+
+\begin{cmdbox}
+\begin{lstlisting}
+Router# show ip route
+Codes: C-connected, S-static, R-RIP
+       O-OSPF, IA-OSPF inter area
+       
+Gateway of last resort is not set
+
+C    192.168.1.0/24 is directly connected, FastEthernet 1/0
+! C表示直连路由，该网络直接连接在F1/0接口
+
+S    192.168.2.0/24 [1/0] via 192.168.1.1
+! S表示静态路由，[1/0]表示管理距离/度量值
+! via 192.168.1.1表示下一跳地址
+
+R    192.168.3.0/24 [120/1] via 192.168.1.2, 00:00:18, serial 1/3
+! R表示RIP路由，[120/1]表示管理距离120，跳数1
+! 00:00:18表示路由更新时间
+
+O    192.168.4.0/24 [110/51] via 192.168.1.3, 00:03:50, serial 1/3
+! O表示OSPF路由，[110/51]表示管理距离110，开销51
+\end{lstlisting}
+\end{cmdbox}
+
+\subsection{管理距离对比}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lc}
+\toprule
+\textbf{路由来源} & \textbf{管理距离} \\
+\midrule
+直连路由 & 0 \\
+静态路由 & 1 \\
+OSPF & 110 \\
+RIP & 120 \\
+\bottomrule
+\end{tabular}
+\caption{常见路由协议管理距离}
+\end{table}
+
+\begin{keybox}
+\textbf{管理距离说明}：
+\begin{itemize}[itemsep=0pt]
+    \item 管理距离越小，路由优先级越高
+    \item 当多个路由协议都有到达同一网络的路由时，选择管理距离最小的
+    \item 直连路由管理距离为0，优先级最高
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{接口状态查看}
+%========================================
+
+\subsection{show ip interface brief}
+
+\begin{cmdbox}
+\begin{lstlisting}
+Router# show ip interface brief
+Interface         IP-Address      OK?  Status    Protocol
+FastEthernet1/0   192.168.1.1     YES  UP        UP
+FastEthernet1/1   unassigned      YES  DOWN      DOWN
+Serial1/2         192.168.2.1     YES  UP        UP
+Serial1/3         unassigned      YES  DOWN      DOWN
+\end{lstlisting}
+
+\textbf{字段说明}：
+\begin{itemize}[itemsep=0pt]
+    \item Interface: 接口名称
+    \item IP-Address: 接口IP地址（unassigned表示未配置）
+    \item OK?: 配置是否有效
+    \item Status: 物理层状态（UP/DOWN）
+    \item Protocol: 数据链路层协议状态（UP/DOWN）
+\end{itemize}
+\end{cmdbox}
+
+\subsection{接口状态组合含义}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Status} & \textbf{Protocol} & \textbf{含义} \\
+\midrule
+UP & UP & 接口正常工作 \\
+UP & DOWN & 物理连接正常，协议未建立 \\
+DOWN & DOWN & 物理连接故障或接口被shutdown \\
+administratively down & DOWN & 接口被管理员手动关闭 \\
+\bottomrule
+\end{tabular}
+\caption{接口状态组合}
+\end{table}
+
+%========================================
+\section{show running-config详解}
+%========================================
+
+\begin{cmdbox}
+\begin{lstlisting}
+Router# show running-config
+Building configuration...
+
+Current configuration: 540 bytes
+!
+version 8.51
+!
+hostname RA                    ! 设备名称
+!
+no service password-encryption
+!
+interface Serial 1/2
+ clock rate 64000              ! DCE端时钟速率
+!
+interface Serial 1/3
+ ip address 17.2.0.1 255.255.0.0  ! 接口IP地址
+!
+interface FastEthernet 1/0
+ ip address 17.1.0.1 255.255.0.0
+ duplex auto                   ! 双工模式自动协商
+ speed auto                    ! 速率自动协商
+!
+ip route 17.3.0.0 255.255.0.0 17.2.0.2  ! 静态路由
+!
+end
+\end{lstlisting}
+\end{cmdbox}
+
+\begin{keybox}
+\textbf{配置文件说明}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{show running-config}：查看当前生效的配置（存储在RAM中）
+    \item \textbf{show startup-config}：查看保存的配置（存储在NVRAM中）
+    \item 路由器启动时，将NVRAM里的配置文件加载至RAM里生效
+    \item 修改配置后需要保存：\texttt{copy running-config startup-config}
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{DCE与DTE配置}
+%========================================
+
+\begin{keybox}
+\textbf{串口连接说明}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{DCE}（Data Circuit-terminating Equipment）：数据电路终端设备，提供时钟信号
+    \item \textbf{DTE}（Data Terminal Equipment）：数据终端设备，接收时钟信号
+    \item 串口之间连接时，一端为DCE，一端为DTE
+    \item \textbf{只有DCE端需要配置clock rate}
+\end{itemize}
+
+\textbf{判断DCE/DTE}：
+\begin{lstlisting}
+Router# show controllers serial 1/2
+...
+V35 DCE cable    ! 显示DCE表示该端为DCE
+...
+\end{lstlisting}
+
+\textbf{配置DCE时钟速率}：
+\begin{lstlisting}
+Router(config)# interface serial 1/2
+Router(config-if)# clock rate 64000
+! clock rate: 时钟速率，单位bps
+! 常用值: 64000, 128000, 256000, 512000, 1024000, 2048000
+\end{lstlisting}
+\end{keybox}
+
+%========================================
+\section{思考题汇总}
+%========================================
+
+\subsection{交换机相关}
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 简述交换机的工作原理，与集线器相比，其优势在什么地方？
+    \item 交换机是如何感知其周围网络环境变化的（如计算机增加、减少等）？
+    \item 从一个网络管理员角度看，交换机提供了哪些功能供管理员方便、高效的管理所有网络用户？
+    \item 什么是VLAN？该技术有哪些优点？如何实现VLAN？
+    \item 什么是中继（Trunk）技术？如何实现Trunk？
+\end{enumerate}
+
+\subsection{路由器相关}
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 简述路由器的工作原理，它对收到的数据包做哪些处理？
+    \item 描述当用户访问Internet中某一服务器的过程中，源站发出的数据包是如何到达目的服务器的？中间经过了哪些封装与解封装，以及是如何选择路径的？
+\end{enumerate}
+
+\subsection{三层交换相关}
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 说明三层交换技术产生的原因与技术特点
+    \item 简述两种三层交换技术的工作原理
+    \item 简述NHRP和MPLS各自的工作原理
+\end{enumerate}
+
+\subsection{路由协议相关}
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 比较链路状态路由协议和距离矢量路由协议的优缺点
+    \item 什么是管理距离AD（Administrative Distance）？OSPF的管理距离AD是多少？和RIP相比，有什么特点？
+    \item 什么是OSPF的邻居？什么是OSPF的邻接关系？
+    \item OSPF报文的5种类型是什么？每一种类型的用途是什么？
+    \item 什么是LSA？怎样区分一个LSA和一个OSPF更新报文？
+    \item 简述Hello报文协议的作用
+    \item 在多区域OSPF实验中，如果在4个路由器上同时也配置了RIPv2协议，路由表是否会有变化？为什么？
+\end{enumerate}
+
+%========================================
+\section{实验考试题型总结}
+%========================================
+
+\subsection{选择题常考点}
+
+\begin{keybox}
+\textbf{网络设备相关}：
+\begin{itemize}[itemsep=0pt]
+    \item 集线器工作在物理层，交换机工作在数据链路层，路由器工作在网络层
+    \item 集线器所有端口共享冲突域，交换机每端口独立冲突域
+    \item 只有路由器能隔离广播域
+    \item 交换机根据MAC地址转发，路由器根据IP地址转发
+\end{itemize}
+
+\textbf{VLAN相关}：
+\begin{itemize}[itemsep=0pt]
+    \item VLAN可以减小广播域、提高安全性
+    \item 不同VLAN之间通信需要三层设备
+    \item Trunk端口用于交换机互连，允许多个VLAN通过
+    \item Access端口用于连接终端设备
+\end{itemize}
+
+\textbf{路由相关}：
+\begin{itemize}[itemsep=0pt]
+    \item 静态路由需要手动配置，动态路由自动学习
+    \item RIP使用跳数作为度量，最大15跳
+    \item OSPF使用开销作为度量，收敛速度快
+    \item 管理距离：直连0 > 静态1 > OSPF 110 > RIP 120
+\end{itemize}
+\end{keybox}
+
+\subsection{填空题常考点}
+
+\begin{keybox}
+\textbf{协议端口}：
+\begin{itemize}[itemsep=0pt]
+    \item DNS：UDP 53
+    \item FTP：TCP 20(数据)/21(控制)
+    \item HTTP：TCP 80
+    \item HTTPS：TCP 443
+    \item Telnet：TCP 23
+    \item SMTP：TCP 25
+    \item DHCP：UDP 67(服务器)/68(客户端)
+\end{itemize}
+
+\textbf{子网掩码}：
+\begin{itemize}[itemsep=0pt]
+    \item /24 = 255.255.255.0
+    \item /16 = 255.255.0.0
+    \item /8 = 255.0.0.0
+    \item /22 = 255.255.252.0
+\end{itemize}
+
+\textbf{双绞线}：
+\begin{itemize}[itemsep=0pt]
+    \item 10/100Mbps使用1、2、3、6号线
+    \item 最大传输距离100米
+    \item T568A：白绿、绿、白橙、蓝、白蓝、橙、白棕、棕
+    \item T568B：白橙、橙、白绿、蓝、白蓝、绿、白棕、棕
+\end{itemize}
+\end{keybox}
+
+\subsection{综合题常考点}
+
+\begin{keybox}
+\textbf{IP地址计算}：
+\begin{itemize}[itemsep=0pt]
+    \item 网络地址 = IP地址 AND 子网掩码
+    \item 反掩码 = 255.255.255.255 - 子网掩码
+    \item 广播地址 = 网络地址 OR 反掩码
+\end{itemize}
+
+\textbf{NAT转换}：
+\begin{itemize}[itemsep=0pt]
+    \item 出站：源IP从内部本地转换为内部全局
+    \item 入站：目的IP从内部全局转换为内部本地
+    \item PAT(NAPT)：多个内网IP共享一个公网IP，通过端口区分
+\end{itemize}
+
+\textbf{TCP三次握手}：
+\begin{itemize}[itemsep=0pt]
+    \item 第一次：SYN=1, ACK=0, Seq=x
+    \item 第二次：SYN=1, ACK=1, Seq=y, Ack=x+1
+    \item 第三次：SYN=0, ACK=1, Seq=x+1, Ack=y+1
+\end{itemize}
+\end{keybox}
+
+\subsection{实验操作题常考点}
+
+\begin{keybox}
+\textbf{VLAN配置}：
+\begin{lstlisting}
+vlan 10                           ! 创建VLAN
+interface f0/1                    ! 进入接口
+switchport access vlan 10         ! 划入VLAN
+switchport mode trunk             ! 配置Trunk
+\end{lstlisting}
+
+\textbf{路由器接口配置}：
+\begin{lstlisting}
+interface f0/0                    ! 进入接口
+ip address 192.168.1.1 255.255.255.0  ! 配置IP
+no shutdown                       ! 启用接口
+\end{lstlisting}
+
+\textbf{静态路由配置}：
+\begin{lstlisting}
+ip route 目的网络 子网掩码 下一跳地址
+ip route 0.0.0.0 0.0.0.0 下一跳地址  ! 默认路由
+\end{lstlisting}
+
+\textbf{ACL配置}：
+\begin{lstlisting}
+access-list 1 permit 192.168.1.0 0.0.0.255  ! 标准ACL
+access-list 101 deny tcp any any eq 80      ! 扩展ACL
+ip access-group 1 in                        ! 应用ACL
+\end{lstlisting}
+
+\textbf{NAT配置}：
+\begin{lstlisting}
+ip nat inside                     ! 内部接口
+ip nat outside                    ! 外部接口
+ip nat pool 名称 起始IP 结束IP netmask 掩码
+ip nat inside source list ACL号 pool 名称 overload
+\end{lstlisting}
+\end{keybox}
+
+%========================================
+\section{常见错误与注意事项}
+%========================================
+
+\begin{exambox}[配置常见错误]
+\textbf{1. 接口未启用}：
+\begin{itemize}[itemsep=0pt]
+    \item 配置接口后忘记执行\texttt{no shutdown}
+    \item 接口状态显示administratively down
+\end{itemize}
+
+\textbf{2. 串口时钟未配置}：
+\begin{itemize}[itemsep=0pt]
+    \item DCE端忘记配置\texttt{clock rate}
+    \item 导致line protocol is down
+\end{itemize}
+
+\textbf{3. 默认网关未配置}：
+\begin{itemize}[itemsep=0pt]
+    \item 计算机能ping通本网段，但无法访问其他网段
+    \item 需要配置默认网关为路由器接口IP
+\end{itemize}
+
+\textbf{4. ACL规则顺序错误}：
+\begin{itemize}[itemsep=0pt]
+    \item ACL按顺序匹配，先匹配的规则先生效
+    \item 应该先写具体规则，后写宽泛规则
+    \item 末尾有隐含的deny any
+\end{itemize}
+
+\textbf{5. NAT接口方向配置错误}：
+\begin{itemize}[itemsep=0pt]
+    \item inside/outside配置反了
+    \item 导致NAT转换不生效
+\end{itemize}
+
+\textbf{6. VLAN间通信问题}：
+\begin{itemize}[itemsep=0pt]
+    \item 忘记配置Trunk端口
+    \item 三层交换机忘记执行\texttt{ip routing}
+    \item 计算机网关配置错误
+\end{itemize}
+\end{exambox}
+
+%========================================
+\section{快速查询命令表}
+%========================================
+
+\subsection{交换机命令}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{功能} & \textbf{命令} \\
+\midrule
+创建VLAN & \texttt{vlan 编号} \\
+命名VLAN & \texttt{name 名称} \\
+端口划入VLAN & \texttt{switchport access vlan 编号} \\
+配置Trunk & \texttt{switchport mode trunk} \\
+查看VLAN & \texttt{show vlan} \\
+启用生成树 & \texttt{spanning-tree} \\
+设置优先级 & \texttt{spanning-tree priority 值} \\
+创建聚合端口 & \texttt{interface aggregatePort 编号} \\
+加入聚合组 & \texttt{port-group 编号} \\
+查看MAC表 & \texttt{show mac-address-table} \\
+\bottomrule
+\end{tabular}
+\caption{交换机常用命令}
+\end{table}
+
+\subsection{路由器命令}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{功能} & \textbf{命令} \\
+\midrule
+进入接口 & \texttt{interface 类型 编号} \\
+配置IP & \texttt{ip address IP 掩码} \\
+启用接口 & \texttt{no shutdown} \\
+配置时钟 & \texttt{clock rate 速率} \\
+静态路由 & \texttt{ip route 网络 掩码 下一跳} \\
+默认路由 & \texttt{ip route 0.0.0.0 0.0.0.0 下一跳} \\
+查看路由表 & \texttt{show ip route} \\
+查看接口 & \texttt{show ip interface brief} \\
+查看配置 & \texttt{show running-config} \\
+保存配置 & \texttt{copy running-config startup-config} \\
+\bottomrule
+\end{tabular}
+\caption{路由器常用命令}
+\end{table}
+
+\subsection{ACL与NAT命令}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{功能} & \textbf{命令} \\
+\midrule
+标准ACL & \texttt{access-list 1-99 permit/deny 源地址 反掩码} \\
+扩展ACL & \texttt{access-list 100-199 permit/deny 协议 源 目的} \\
+应用ACL & \texttt{ip access-group 编号 in/out} \\
+查看ACL & \texttt{show access-list} \\
+NAT内部接口 & \texttt{ip nat inside} \\
+NAT外部接口 & \texttt{ip nat outside} \\
+NAT地址池 & \texttt{ip nat pool 名称 起始IP 结束IP netmask 掩码} \\
+NAT转换 & \texttt{ip nat inside source list ACL pool 名称 overload} \\
+查看NAT & \texttt{show ip nat translations} \\
+\bottomrule
+\end{tabular}
+\caption{ACL与NAT常用命令}
+\end{table}
+
+\subsection{Windows网络命令}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{功能} & \textbf{命令} \\
+\midrule
+查看IP配置 & \texttt{ipconfig /all} \\
+测试连通性 & \texttt{ping 目标IP} \\
+路由跟踪 & \texttt{tracert 目标IP} \\
+DNS解析 & \texttt{nslookup 域名} \\
+清空DNS缓存 & \texttt{ipconfig /flushdns} \\
+查看ARP缓存 & \texttt{arp -a} \\
+清空ARP缓存 & \texttt{arp -d} \\
+查看路由表 & \texttt{route print} \\
+查看网络连接 & \texttt{netstat -an} \\
+\bottomrule
+\end{tabular}
+\caption{Windows网络命令}
+\end{table}
+
+\subsection{RIP与OSPF命令}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{功能} & \textbf{命令} \\
+\midrule
+启用RIP & \texttt{router rip} \\
+RIP版本2 & \texttt{version 2} \\
+RIP网络 & \texttt{network 网络地址} \\
+启用OSPF & \texttt{router ospf} \\
+OSPF网络 & \texttt{network 网络 反掩码 area 区域号} \\
+查看路由协议 & \texttt{show ip protocols} \\
+查看OSPF邻居 & \texttt{show ip ospf neighbor} \\
+查看OSPF数据库 & \texttt{show ip ospf database} \\
+\bottomrule
+\end{tabular}
+\caption{RIP与OSPF命令}
+\end{table}
+
+%========================================
+\section{Trunk与Access端口详解}
+%========================================
+
+\subsection{端口工作模式}
+
+\begin{keybox}
+\textbf{Access端口}：
+\begin{itemize}[itemsep=0pt]
+    \item 用于连接终端设备（计算机、打印机等）
+    \item 只能属于一个VLAN
+    \item 发送数据时不带VLAN标签
+    \item 接收数据时添加所属VLAN标签
+\end{itemize}
+
+\textbf{Trunk端口}：
+\begin{itemize}[itemsep=0pt]
+    \item 用于交换机之间互连
+    \item 可以传输多个VLAN的数据
+    \item 发送数据时带VLAN标签（802.1Q）
+    \item 接收数据时根据标签转发到对应VLAN
+\end{itemize}
+\end{keybox}
+
+\subsection{Trunk配置详解}
+
+\begin{cmdbox}
+\textbf{配置Trunk端口}：
+\begin{lstlisting}
+Switch(config)# interface fastEthernet 0/24
+Switch(config-if)# switchport mode trunk
+! switchport mode trunk: 设置端口为Trunk模式
+! Trunk端口允许所有VLAN通过(默认)
+Switch(config-if)# exit
+\end{lstlisting}
+
+\textbf{重新设置为Access模式}：
+\begin{lstlisting}
+Switch(config-if)# switchport mode access
+! 将端口从Trunk模式改回Access模式
+\end{lstlisting}
+
+\textbf{查看VLAN配置}：
+\begin{lstlisting}
+Switch# show vlan
+! 显示VLAN信息和端口分配
+! 注意: Trunk端口不会显示在VLAN列表中
+\end{lstlisting}
+\end{cmdbox}
+
+\begin{keybox}
+\textbf{重要说明}：
+\begin{itemize}[itemsep=0pt]
+    \item 如果没有给VLAN指定名称，系统会自动命名
+    \item 查看VLAN配置时，Trunk端口不会显示在任何VLAN的端口列表中
+    \item 两台交换机互连时，两端都要配置为Trunk模式
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{广播风暴与环路问题}
+%========================================
+
+\subsection{环路产生原因}
+
+\begin{keybox}
+当交换机之间有多条链路连接时，会形成环路，造成以下问题：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{广播风暴}：广播帧在环路中无限循环
+    \item \textbf{MAC地址表不稳定}：同一MAC地址从不同端口学习
+    \item \textbf{重复帧}：同一帧被多次接收
+    \item \textbf{网络瘫痪}：交换机CPU占用过高，无法正常工作
+\end{itemize}
+
+\textbf{现象}：
+\begin{itemize}[itemsep=0pt]
+    \item 交换机配置无法操作，类似死机现象
+    \item 交换机端口指示灯频繁闪烁
+    \item 断开任一条连线，恢复正常
+\end{itemize}
+\end{keybox}
+
+\subsection{解决方案}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{生成树协议(STP)}：自动阻塞冗余链路，消除环路
+    \item \textbf{链路聚合}：将多条物理链路捆绑为一条逻辑链路
+\end{itemize}
+
+\begin{keybox}
+\textbf{注意}：在生成树或链路聚合配置之前，不要把交换机间两条连线全连上！
+\end{keybox}
+
+%========================================
+\section{生成树协议深入理解}
+%========================================
+
+\subsection{STP工作原理}
+
+\begin{keybox}
+\textbf{生成树协议选举过程}：
+
+\textbf{1. 选举根桥(Root Bridge)}：
+\begin{itemize}[itemsep=0pt]
+    \item 比较Bridge ID（优先级 + MAC地址）
+    \item 优先级越小越优先（默认32768）
+    \item 优先级相同则比较MAC地址，越小越优先
+\end{itemize}
+
+\textbf{2. 选举根端口(Root Port)}：
+\begin{itemize}[itemsep=0pt]
+    \item 非根桥上到根桥开销最小的端口
+    \item 开销相同则选端口优先级最小的
+    \item 每个非根桥只有一个根端口
+\end{itemize}
+
+\textbf{3. 选举指定端口(Designated Port)}：
+\begin{itemize}[itemsep=0pt]
+    \item 每个网段上到根桥开销最小的端口
+    \item 根桥的所有端口都是指定端口
+\end{itemize}
+
+\textbf{4. 阻塞非指定端口}：
+\begin{itemize}[itemsep=0pt]
+    \item 既不是根端口也不是指定端口的端口被阻塞
+    \item 阻塞端口不转发数据，但接收BPDU
+\end{itemize}
+\end{keybox}
+
+\subsection{STP端口状态}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{状态} & \textbf{学习MAC} & \textbf{转发数据} \\
+\midrule
+Blocking（阻塞） & 否 & 否 \\
+Listening（监听） & 否 & 否 \\
+Learning（学习） & 是 & 否 \\
+Forwarding（转发） & 是 & 是 \\
+Disabled（禁用） & 否 & 否 \\
+\bottomrule
+\end{tabular}
+\caption{STP端口状态}
+\end{table}
+
+\subsection{show spanning-tree输出解读}
+
+\begin{cmdbox}
+\begin{lstlisting}
+Switch# show spanning-tree
+StpVersion: RSTP              ! 生成树协议版本
+SysStpStatus: Enabled         ! 生成树状态：已启用
+BaseNumPorts: 24              ! 端口数量
+MaxAge: 20                    ! 最大老化时间(秒)
+HelloTime: 2                  ! Hello报文间隔(秒)
+ForwardDelay: 15              ! 转发延迟(秒)
+BridgeAddr: 00d0.f87b.ed31    ! 交换机MAC地址
+Priority: 0                   ! 优先级(已设置为最高)
+DesignatedRoot: 000000D0F87BED31  ! 根桥ID
+RootCost: 0                   ! 到根桥的开销(0表示自己是根桥)
+RootPort: 0                   ! 根端口(0表示自己是根桥)
+\end{lstlisting}
+
+\textbf{判断根桥}：
+\begin{itemize}[itemsep=0pt]
+    \item RootCost = 0 表示自己是根桥
+    \item RootPort = 0 表示自己是根桥
+    \item DesignatedRoot = 自己的BridgeAddr
+\end{itemize}
+\end{cmdbox}
+
+%========================================
+\section{链路聚合深入理解}
+%========================================
+
+\subsection{链路聚合优势}
+
+\begin{keybox}
+\textbf{链路聚合(Link Aggregation)的优势}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{增加带宽}：多条链路带宽叠加
+    \item \textbf{提高可靠性}：一条链路故障，其他链路继续工作
+    \item \textbf{负载均衡}：流量分散到多条链路
+    \item \textbf{无需STP阻塞}：聚合后视为一条逻辑链路，不会形成环路
+\end{itemize}
+\end{keybox}
+
+\subsection{流量均衡算法}
+
+\begin{keybox}
+\textbf{流量均衡方式}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{src-mac}：根据源MAC地址分配（默认）
+    \item \textbf{dst-mac}：根据目的MAC地址分配
+    \item \textbf{src-ip}：根据源IP地址分配
+    \item \textbf{dst-ip}：根据目的IP地址分配
+\end{itemize}
+
+\textbf{配置命令}：
+\begin{lstlisting}
+Switch# aggregateport load-balance dst-mac
+! 按目的MAC地址进行流量分配
+Switch# aggregateport load-balance src-ip
+! 按源IP地址进行流量分配
+\end{lstlisting}
+\end{keybox}
+
+\subsection{链路聚合与生成树对比}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{特性} & \textbf{生成树} & \textbf{链路聚合} \\
+\midrule
+带宽利用 & 只用一条链路 & 所有链路同时使用 \\
+故障切换 & 有短暂中断 & 几乎无中断 \\
+配置复杂度 & 简单 & 稍复杂 \\
+适用场景 & 冗余备份 & 高带宽需求 \\
+\bottomrule
+\end{tabular}
+\caption{生成树与链路聚合对比}
+\end{table}
+
+%========================================
+\section{静态路由配置详解}
+%========================================
+
+\subsection{静态路由命令格式}
+
+\begin{cmdbox}
+\textbf{静态路由配置格式}：
+\begin{lstlisting}
+Router(config)# ip route 网络地址 子网掩码 下一跳地址
+! 或
+Router(config)# ip route 网络地址 子网掩码 出接口
+\end{lstlisting}
+
+\textbf{参数说明}：
+\begin{itemize}[itemsep=0pt]
+    \item 网络地址：目的网络的网络号
+    \item 子网掩码：目的网络的子网掩码
+    \item 下一跳地址：转发数据包的下一个路由器接口IP
+    \item 出接口：本地路由器转发数据的接口
+\end{itemize}
+
+\textbf{示例}：
+\begin{lstlisting}
+! 方式1：指定下一跳IP地址
+RA(config)# ip route 17.3.0.0 255.255.0.0 17.2.0.2
+! 到达17.3.0.0/16网络，下一跳为17.2.0.2
+
+! 方式2：指定出接口
+RA(config)# ip route 17.3.0.0 255.255.0.0 serial 1/3
+! 到达17.3.0.0/16网络，从serial 1/3接口转发
+\end{lstlisting}
+\end{cmdbox}
+
+\subsection{默认路由}
+
+\begin{keybox}
+\textbf{默认路由}：当路由表中没有匹配的路由时使用。
+
+\begin{lstlisting}
+Router(config)# ip route 0.0.0.0 0.0.0.0 下一跳地址
+! 0.0.0.0 0.0.0.0 表示匹配所有网络
+\end{lstlisting}
+
+\textbf{应用场景}：
+\begin{itemize}[itemsep=0pt]
+    \item 连接Internet的边界路由器
+    \item 只有一个出口的网络
+    \item 简化路由配置
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{ACL应用位置原则}
+%========================================
+
+\begin{keybox}
+\textbf{ACL应用位置原则}：
+
+\textbf{标准ACL}：
+\begin{itemize}[itemsep=0pt]
+    \item 只能根据源地址过滤
+    \item 应用在\textbf{靠近目的地}的位置
+    \item 原因：避免过早丢弃数据包，影响其他目的地的访问
+\end{itemize}
+
+\textbf{扩展ACL}：
+\begin{itemize}[itemsep=0pt]
+    \item 可以根据源地址、目的地址、协议、端口过滤
+    \item 应用在\textbf{靠近源地址}的位置
+    \item 原因：尽早丢弃不需要的数据包，节省网络带宽
+\end{itemize}
+\end{keybox}
+
+\subsection{ACL方向说明}
+
+\begin{keybox}
+\textbf{in和out的含义}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{in}：检查进入该接口的数据流量
+    \item \textbf{out}：检查离开该接口的数据流量
+\end{itemize}
+
+\textbf{示例}：
+\begin{lstlisting}
+! 在F1/0接口上，检查出方向的流量
+Router(config)# interface fastEthernet 1/0
+Router(config-if)# ip access-group 101 out
+! 数据包从路由器通过F1/0发出时被检查
+\end{lstlisting}
+\end{keybox}
+
+%========================================
+\section{NAT地址术语}
+%========================================
+
+\begin{keybox}
+\textbf{NAT四种地址类型}：
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{术语} & \textbf{含义} & \textbf{示例} \\
+\midrule
+内部本地地址 & 内网主机的私有IP & 192.168.1.3 \\
+内部全局地址 & 转换后的公网IP & 59.67.148.3 \\
+外部本地地址 & 外网主机在内网看到的IP & 202.113.64.2 \\
+外部全局地址 & 外网主机的真实IP & 202.113.64.2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{NAT转换过程}：
+\begin{itemize}[itemsep=0pt]
+    \item 出站：源IP从内部本地 → 内部全局
+    \item 入站：目的IP从内部全局 → 内部本地
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{路由器接口类型详解}
+%========================================
+
+\subsection{常见接口类型}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{接口类型} & \textbf{缩写} & \textbf{速率} & \textbf{用途} \\
+\midrule
+FastEthernet & F/Fa & 100Mbps & 局域网连接 \\
+GigabitEthernet & G/Gi & 1Gbps & 高速局域网 \\
+Serial & S & 可配置 & 广域网连接 \\
+Console & Con & - & 本地管理 \\
+\bottomrule
+\end{tabular}
+\caption{路由器接口类型}
+\end{table}
+
+\subsection{接口编号格式}
+
+\begin{keybox}
+\textbf{接口编号格式}：类型 插槽号/端口号
+
+\textbf{示例}：
+\begin{itemize}[itemsep=0pt]
+    \item \texttt{fastEthernet 1/0}：插槽1的第0个快速以太网口
+    \item \texttt{serial 1/3}：插槽1的第3个串口
+    \item \texttt{gigabitEthernet 0/0}：插槽0的第0个千兆以太网口
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{实验拓扑IP规划方法}
+%========================================
+
+\begin{keybox}
+\textbf{IP地址规划原则}：
+
+\textbf{1. 网段划分}：
+\begin{itemize}[itemsep=0pt]
+    \item 每个LAN网段使用独立的子网
+    \item 路由器之间的串口连接使用独立的子网
+    \item 子网掩码根据主机数量选择
+\end{itemize}
+
+\textbf{2. 地址分配}：
+\begin{itemize}[itemsep=0pt]
+    \item 路由器接口通常使用网段的第一个或最后一个可用地址
+    \item 计算机使用网段中间的地址
+    \item 预留部分地址用于扩展
+\end{itemize}
+
+\textbf{3. 网关配置}：
+\begin{itemize}[itemsep=0pt]
+    \item 计算机的默认网关 = 所在网段的路由器接口IP
+    \item 不同网段的计算机网关不同
+\end{itemize}
+\end{keybox}
+
+\subsection{IP规划示例}
+
+\begin{exambox}[典型实验IP规划]
+\textbf{场景}：两台路由器RA、RB，两台PC
+
+\textbf{IP规划}（使用202.115.0.0/16）：
+\begin{itemize}[itemsep=0pt]
+    \item PC1网段：202.115.10.0/24
+    \item PC2网段：202.115.20.0/24
+    \item 串口互连：202.115.30.0/24
+\end{itemize}
+
+\textbf{地址分配}：
+\begin{itemize}[itemsep=0pt]
+    \item RA的F1/0：202.115.10.1（PC1的网关）
+    \item RA的S1/3：202.115.30.1
+    \item RB的S1/3：202.115.30.2
+    \item RB的F1/0：202.115.20.1（PC2的网关）
+    \item PC1：202.115.10.2，网关202.115.10.1
+    \item PC2：202.115.20.2，网关202.115.20.1
+\end{itemize}
+\end{exambox}
+
+%========================================
+\section{Wireshark抓包分析要点}
+%========================================
+
+\subsection{协议层次识别}
+
+\begin{keybox}
+\textbf{Wireshark显示的协议层次}：
+
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{Frame}：物理层帧信息
+    \item \textbf{Ethernet II}：数据链路层（源/目的MAC）
+    \item \textbf{Internet Protocol}：网络层（源/目的IP）
+    \item \textbf{TCP/UDP}：传输层（源/目的端口）
+    \item \textbf{HTTP/DNS/FTP等}：应用层协议
+\end{itemize}
+\end{keybox}
+
+\subsection{常见抓包场景分析}
+
+\begin{exambox}[Ping命令抓包]
+\textbf{执行}：\texttt{ping 192.168.1.1}
+
+\textbf{抓包特征}：
+\begin{itemize}[itemsep=0pt]
+    \item 协议：ICMP
+    \item 类型：Echo Request（请求）/ Echo Reply（回复）
+    \item 无传输层（ICMP直接封装在IP中）
+\end{itemize}
+\end{exambox}
+
+\begin{exambox}[FTP连接抓包]
+\textbf{执行}：FTP连接服务器
+
+\textbf{抓包特征}：
+\begin{itemize}[itemsep=0pt]
+    \item 协议：TCP + FTP
+    \item 控制连接：目的端口21
+    \item 数据连接：目的端口20
+    \item 可以看到用户名和密码（明文传输）
+\end{itemize}
+\end{exambox}
+
+\begin{exambox}[ARP请求抓包]
+\textbf{场景}：首次访问同网段主机
+
+\textbf{抓包特征}：
+\begin{itemize}[itemsep=0pt]
+    \item 协议：ARP
+    \item 目的MAC：ff:ff:ff:ff:ff:ff（广播）
+    \item Opcode：1（请求）/ 2（回复）
+    \item 包含目标IP和发送方IP/MAC
+\end{itemize}
+\end{exambox}
+
+%========================================
+\section{实验操作注意事项}
+%========================================
+
+\begin{keybox}
+\textbf{实验前准备}：
+\begin{enumerate}[itemsep=0pt]
+    \item 检查设备连线是否正确
+    \item 确认Console线连接正常
+    \item 打开终端软件（如SecureCRT）
+    \item 设置正确的串口参数（9600, 8, N, 1）
+\end{enumerate}
+
+\textbf{配置过程注意}：
+\begin{enumerate}[itemsep=0pt]
+    \item 每配置一步，及时验证
+    \item 使用show命令查看配置结果
+    \item 配置完成后保存配置
+    \item 记录配置命令，便于排错
+\end{enumerate}
+
+\textbf{故障排查步骤}：
+\begin{enumerate}[itemsep=0pt]
+    \item 检查物理连接（网线、接口指示灯）
+    \item 检查接口状态（show ip interface brief）
+    \item 检查IP配置（ipconfig、show running-config）
+    \item 检查路由配置（show ip route）
+    \item 使用ping逐段测试连通性
+\end{enumerate}
+\end{keybox}
+
+%========================================
+\section{私有IP地址范围}
+%========================================
+
+\begin{keybox}
+\textbf{RFC 1918定义的私有IP地址}：
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{类别} & \textbf{地址范围} & \textbf{CIDR表示} \\
+\midrule
+A类 & 10.0.0.0 - 10.255.255.255 & 10.0.0.0/8 \\
+B类 & 172.16.0.0 - 172.31.255.255 & 172.16.0.0/12 \\
+C类 & 192.168.0.0 - 192.168.255.255 & 192.168.0.0/16 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{特点}：
+\begin{itemize}[itemsep=0pt]
+    \item 私有地址不能在Internet上路由
+    \item 内网使用私有地址，通过NAT访问外网
+    \item 不同组织可以使用相同的私有地址
+\end{itemize}
+\end{keybox}
+
+%========================================
+\section{子网划分计算}
+%========================================
+
+\subsection{子网划分公式}
+
+\begin{keybox}
+\textbf{子网划分计算}：
+
+\begin{itemize}[itemsep=0pt]
+    \item 子网数 = $2^n$（n为借用的主机位数）
+    \item 每个子网主机数 = $2^m - 2$（m为剩余主机位数，减2是去掉网络地址和广播地址）
+\end{itemize}
+
+\textbf{常用子网掩码}：
+\begin{itemize}[itemsep=0pt]
+    \item /24 = 255.255.255.0，主机数254
+    \item /25 = 255.255.255.128，主机数126
+    \item /26 = 255.255.255.192，主机数62
+    \item /27 = 255.255.255.224，主机数30
+    \item /28 = 255.255.255.240，主机数14
+    \item /30 = 255.255.255.252，主机数2（点对点链路常用）
+\end{itemize}
+\end{keybox}
+
+\subsection{子网计算示例}
+
+\begin{exambox}[子网划分题]
+\textbf{题目}：将192.168.1.0/24划分为4个子网
+
+\textbf{解答}：
+\begin{itemize}[itemsep=0pt]
+    \item 需要借用2位（$2^2=4$）
+    \item 新子网掩码：/26 = 255.255.255.192
+    \item 子网1：192.168.1.0/26（可用：.1-.62）
+    \item 子网2：192.168.1.64/26（可用：.65-.126）
+    \item 子网3：192.168.1.128/26（可用：.129-.190）
+    \item 子网4：192.168.1.192/26（可用：.193-.254）
+\end{itemize}
+\end{exambox}
+
+\end{document}

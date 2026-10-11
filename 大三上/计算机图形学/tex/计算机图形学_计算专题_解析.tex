@@ -1,0 +1,663 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{enumerate}
+\usepackage{booktabs}
+\usepackage{longtable}
+\geometry{a4paper, margin=1in}
+
+\title{计算机图形学计算专题全解析（110题完整版）}
+\author{整理：Antigravity}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{DDA 直线生成算法详细解析}
+DDA（数值微分分析）算法核心：$\Delta x = (x_1-x_0)/L, \Delta y = (y_1-y_0)/L$，其中 $L = \max(|dx|, |dy|)$。
+
+\begin{enumerate}
+    \item \textbf{(0,0) 到 (8,3)}: $dx=8, dy=3, L=8, \Delta x=1, \Delta y=0.375$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $x$ & $y$ & $Round(x,y)$ & Pixel \\ \midrule
+    0 & 0 & 0 & (0, 0) & (0,0) \\
+    1 & 1 & 0.375 & (1, 0) & (1,0) \\ 2 & 2 & 0.75 & (2, 1) & (2,1) \\
+    3 & 3 & 1.125 & (3, 1) & (3,1) \\ 4 & 4 & 1.5 & (4, 2) & (4,2) \\
+    5 & 5 & 1.875 & (5, 2) & (5,2) \\ 6 & 6 & 2.25 & (6, 2) & (6,2) \\
+    7 & 7 & 2.625 & (7, 3) & (7,3) \\ 8 & 8 & 3.0 & (8, 3) & (8,3) \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(2,1) 到 (10,5)}: $dx=8, dy=4, L=8, \Delta x=1, \Delta y=0.5$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $x$ & $y$ & $Round(x,y)$ & Pixel \\ \midrule
+    0 & 2 & 1 & (2, 1) & (2,1) \\
+    1 & 3 & 1.5 & (3, 2) & (3,2) \\ 2 & 4 & 2.0 & (4, 2) & (4,2) \\
+    3 & 5 & 2.5 & (5, 3) & (5,3) \\ 4 & 6 & 3.0 & (6, 3) & (6,3) \\
+    5 & 7 & 3.5 & (7, 4) & (7,4) \\ 6 & 8 & 4.0 & (8, 4) & (8,4) \\
+    7 & 9 & 4.5 & (9, 5) & (9,5) \\ 8 & 10 & 5.0 & (10, 5) & (10,5) \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(-2,-1) 到 (3,2)}: $dx=5, dy=3, L=5, \Delta x=1, \Delta y=0.6$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $x$ & $y$ & $Round(x,y)$ & Pixel \\ \midrule
+    0 & -2 & -1 & (-2, -1) & (-2,-1) \\
+    1 & -1 & -0.4 & (-1, 0) & (-1,0) \\ 2 & 0 & 0.2 & (0, 0) & (0,0) \\
+    3 & 1 & 0.8 & (1, 1) & (1,1) \\ 4 & 2 & 1.4 & (2, 1) & (2,1) \\
+    5 & 3 & 2.0 & (3, 2) & (3,2) \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(0,0) 到 (3,8)}: $dx=3, dy=8, L=8, \Delta x=0.375, \Delta y=1$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $x$ & $y$ & $Round(x,y)$ & Pixel \\ \midrule
+    0 & 0 & 0 & (0, 0) & (0,0) \\
+    1 & 0.375 & 1 & (0, 1) & (0,1) \\ 2 & 0.75 & 2 & (1, 2) & (1,2) \\
+    3 & 1.125 & 3 & (1, 3) & (1,3) \\ 4 & 1.5 & 4 & (2, 4) & (2,4) \\
+    5 & 1.875 & 5 & (2, 5) & (2,5) \\ 6 & 2.25 & 6 & (2, 6) & (2,6) \\
+    7 & 2.625 & 7 & (3, 7) & (3,7) \\ 8 & 3 & 8 & (3, 8) & (3,8) \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(5,5) 到 (2,2)}: $dx=-3, dy=-3, L=3, \Delta x=-1, \Delta y=-1$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $x$ & $y$ & $Round(x,y)$ & Pixel \\ \midrule
+    0 & 5 & 5 & (5, 5) & (5,5) \\
+    1 & 4 & 4 & (4, 4) & (4,4) \\ 2 & 3 & 3 & (3, 3) & (3,3) \\
+    3 & 2 & 2 & (2, 2) & (2,2) \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(0,0) 到 (-5,2)}: $dx=-5, dy=2, L=5, \Delta x=-1, \Delta y=0.4$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $x$ & $y$ & $Round(x,y)$ & Pixel \\ \midrule
+    0 & 0 & 0 & (0, 0) & (0,0) \\
+    1 & -1 & 0.4 & (-1, 0) & (-1,0) \\ 2 & -2 & 0.8 & (-2, 1) & (-2,1) \\
+    3 & -3 & 1.2 & (-3, 1) & (-3,1) \\ 4 & -4 & 1.6 & (-4, 2) & (-4,2) \\
+    5 & -5 & 2.0 & (-5, 2) & (-5,2) \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(1,2) 到 (6,1)}: $dx=5, dy=-1, L=5, \Delta x=1, \Delta y=-0.2$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $x$ & $y$ & $Round(x,y)$ & Pixel \\ \midrule
+    0 & 1 & 2 & (1, 2) & (1,2) \\
+    1 & 2 & 1.8 & (2, 2) & (2,2) \\ 2 & 3 & 1.6 & (3, 2) & (3,2) \\
+    3 & 4 & 1.4 & (4, 1) & (4,1) \\ 4 & 5 & 1.2 & (5, 1) & (5,1) \\
+    5 & 6 & 1.0 & (6, 1) & (6,1) \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(0,0) 到 (4,4)}: $dx=4, dy=4, L=4, \Delta x=1, \Delta y=1$。点：(0,0), (1,1), (2,2), (3,3), (4,4)。
+    \item \textbf{(10,10) 到 (15,12)}: $dx=5, dy=2, L=5, \Delta x=1, \Delta y=0.4$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $x$ & $y$ & $Round(x,y)$ & Pixel \\ \midrule
+    0 & 10 & 10 & (10, 10) & (10,10) \\
+    1 & 11 & 10.4 & (11, 10) & (11,10) \\ 2 & 12 & 10.8 & (12, 11) & (12,11) \\
+    3 & 13 & 11.2 & (13, 11) & (13,11) \\ 4 & 14 & 11.6 & (14, 12) & (14,12) \\
+    5 & 15 & 12.0 & (15, 12) & (15,12) \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{理论题}: 当斜率 $|k| > 1$ 时，按 $x$ 步进会导致 $\Delta y > 1$，像素点不连续。应交换方向，按 $|dy|$ 作为步数 $L$，此时 $\Delta y = 1, \Delta x = 1/k \le 1$。
+\end{enumerate}
+
+\section{中点画线法详细解析}
+参数：$a=y_0-y_1, b=x_1-x_0$。初始 $d = 2a+b$. $d \ge 0 \to P_1, d = d+2a$; $d < 0 \to P_2, d = d+2a+2b$.
+
+\begin{enumerate}
+    \item \textbf{(0,0) 到 (5,2)}: $a=-2, b=5, d_0=1$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & Choice & Pixel & Next $d$ \\ \midrule
+    0 & 1 & $P_1$ & (0,0) & -3 \\
+    1 & -3 & $P_2$ & (1,0) & 3 \\ 2 & 3 & $P_1$ & (2,1) & -1 \\
+    3 & -1 & $P_2$ & (3,1) & 5 \\ 4 & 5 & $P_1$ & (4,2) & 1 \\
+    5 & - & - & (5,2) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(1,1) 到 (6,4)}: $a=-3, b=5, d_0=-1$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & Choice & Pixel & Next $d$ \\ \midrule
+    0 & -1 & $P_2$ & (1,1) & 3 \\
+    1 & 3 & $P_1$ & (2,2) & -3 \\ 2 & -3 & $P_2$ & (3,2) & 1 \\
+    3 & 1 & $P_1$ & (4,3) & -5 \\ 4 & -5 & $P_2$ & (5,3) & -1 \\
+    5 & - & - & (6,4) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(0,0) 到 (7,3)}: $a=-3, b=7, d_0=1$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & Choice & Pixel & Next $d$ \\ \midrule
+    0 & 1 & $P_1$ & (0,0) & -5 \\
+    1 & -5 & $P_2$ & (1,0) & 3 \\ 2 & 3 & $P_1$ & (2,1) & -3 \\
+    3 & -3 & $P_2$ & (3,1) & 5 \\ 4 & 5 & $P_1$ & (4,2) & -1 \\
+    5 & -1 & $P_2$ & (5,2) & 7 \\ 6 & 7 & $P_1$ & (6,3) & 1 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(2,2) 到 (8,5)}: $a=-3, b=6, d_0=0$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & Choice & Pixel & Next $d$ \\ \midrule
+    0 & 0 & $P_1$ & (2,2) & -6 \\
+    1 & -6 & $P_2$ & (3,2) & 0 \\ 2 & 0 & $P_1$ & (4,3) & -6 \\
+    3 & -6 & $P_2$ & (5,3) & 0 \\ 4 & 0 & $P_1$ & (6,4) & -6 \\
+    5 & -6 & $P_2$ & (7,4) & 0 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{斜率 0.5, (0,0)起}: $a=-1, b=2, d_0=0$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & Choice & Pixel & Next $d$ \\ \midrule
+    0 & 0 & $P_1$ & (0,0) & -2 \\
+    1 & -2 & $P_2$ & (1,0) & 0 \\ 2 & 0 & $P_1$ & (2,1) & -2 \\
+    3 & -2 & $P_2$ & (3,1) & 0 \\ 4 & 0 & $P_1$ & (4,2) & -2 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{递归公式}: 若 $d \ge 0$, $\Delta d = 2a$; 若 $d < 0$, $\Delta d = 2a+2b$。
+    \item \textbf{消除浮点}: 利用 $2d_0 = 2a+b$，因为只需符号一致，所有判别式及增量扩大 2 倍即可。
+    \item \textbf{(-1,-1) 到 (4,1)}: $a=-2, b=5, d_0=1$。
+    Step 1: (0,-1), $d=-3$; Step 2: (1,0), $d=3$; Step 3: (2,0), $d=-1$; Step 4: (3,1), $d=5$; Step 5: (4,1)。
+    \item \textbf{(0,0) 到 (5,5)}: $a=-5, b=5, d_0=-5$。斜率 $k=1$。
+    Step 1: (1,1), $d=-5$; Step 2: (2,2), $d=-5$; Step 3: (3,3), $d=-5$; Step 4: (4,4), $d=-5$; Step 5: (5,5)。
+    \item \textbf{(10,5) 到 (15,7)}: $a=-2, b=5, d_0=1$。
+    Step 1: (11,5), $d=-3$; Step 2: (12,6), $d=3$; Step 3: (13,6), $d=-1$; Step 4: (14,7), $d=5$; Step 5: (15,7)。
+\end{enumerate}
+
+\section{Bresenham 直线生成算法详细解析}
+参数：$d = 2\Delta y - \Delta x$。 若 $d < 0$, 选 $(x+1,y), d=d+2\Delta y$; 若 $d \ge 0$, 选 $(x+1,y+1), d=d+2(\Delta y-\Delta x)$。
+
+\begin{enumerate}
+    \item \textbf{(0,0) 到 (5,2)}: $\Delta x=5, \Delta y=2, d_0=-1$。
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & $y$ Change? & Pixel & Next $d$ \\ \midrule
+    0 & -1 & No & (0,0) & 3 \\
+    1 & 3 & Yes & (1,0) & -3 \\ 2 & -3 & No & (2,1) & 1 \\
+    3 & 1 & Yes & (3,1) & -5 \\ 4 & -5 & No & (4,2) & -1 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(0,0) 到 (2,5)}: $|k|>1$, 交换轴. $\Delta x'=5, \Delta y'=2, d_0=-1$.
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & $x$ Change? & Pixel & Next $d$ \\ \midrule
+    0 & -1 & No & (0,0) & 3 \\
+    1 & 3 & Yes & (0,1) & -3 \\ 2 & -3 & No & (1,2) & 1 \\
+    3 & 1 & Yes & (1,3) & -5 \\ 4 & -5 & No & (2,4) & -1 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(0,0) 到 (-5,2)}: $sx=-1, sy=1$. $\Delta x=5, \Delta y=2$.
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & $y$ Change? & Pixel & Next $d$ \\ \midrule
+    0 & -1 & No & (0,0) & 3 \\
+    1 & 3 & Yes & (-1,0) & -3 \\ 2 & -3 & No & (-2,1) & 1 \\
+    3 & 1 & Yes & (-3,1) & -5 \\ 4 & -5 & No & (-4,2) & -1 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{(0,0) 到 (5,-2)}: $sx=1, sy=-1$. $\Delta x=5, \Delta y=2$.
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & $y$ Change? & Pixel & Next $d$ \\ \midrule
+    0 & -1 & No & (0,0) & 3 \\
+    1 & 3 & Yes & (1,0) & -3 \\ 2 & -3 & No & (2,-1) & 1 \\
+    3 & 1 & Yes & (3,-1) & -5 \\ 4 & -5 & No & (4,-2) & -1 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{(0,0) 到 (-2,-5)}: $|k|>1$, 交换轴. $sx=-1, sy=-1$. $\Delta x'=5, \Delta y'=2, d_0=-1$.
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & $x$ Change? & Pixel & Next $d$ \\ \midrule
+    0 & -1 & No & (0,0) & 3 \\
+    1 & 3 & Yes & (0,-1) & -3 \\ 2 & -3 & No & (-1,-2) & 1 \\
+    3 & 1 & Yes & (-1,-3) & -5 \\ 4 & -5 & No & (-2,-4) & -1 \\
+    5 & -1 & - & (-2,-5) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{(1,1) 到 (6,3)}: $\Delta x=5, \Delta y=2, d_0=-1$.
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & $y$ Change? & Pixel & Next $d$ \\ \midrule
+    0 & -1 & No & (1,1) & 3 \\
+    1 & 3 & Yes & (2,1) & -3 \\ 2 & -3 & No & (3,2) & 1 \\
+    3 & 1 & Yes & (4,2) & -5 \\ 4 & -5 & No & (5,3) & -1 \\
+    5 & -1 & - & (6,3) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{(2,1) 到 (7,5)}: $\Delta x=5, \Delta y=4, d_0=2\times 4-5=3$.
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & $y$ Change? & Pixel & Next $d$ \\ \midrule
+    0 & 3 & Yes & (2,1) & -3 \\
+    1 & -3 & No & (3,2) & 5 \\ 2 & 5 & Yes & (4,3) & -1 \\
+    3 & -1 & No & (5,3) & 7 \\ 4 & 7 & Yes & (6,4) & 1 \\
+    5 & 1 & Yes & (7,5) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{算法优点总结}: 
+    \begin{itemize}
+        \item 纯整数运算,无需浮点数
+        \item 无舍入误差累积
+        \item 硬件实现简单高效
+        \item 适合所有象限和斜率
+    \end{itemize}
+    
+    \item \textbf{象限变换说明}: 
+    \begin{itemize}
+        \item 第一象限($0<k<1$): 直接使用
+        \item 第二象限: 设置$sx=-1$
+        \item 第三/四象限: 设置$sy=-1$或$sx=-1,sy=-1$
+        \item $|k|>1$: 交换$x,y$坐标
+    \end{itemize}
+    
+    \item \textbf{(-3,2) 到 (2,4)}: $\Delta x=5, \Delta y=2, d_0=-1$. $sx=1, sy=1$.
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & $y$ Change? & Pixel & Next $d$ \\ \midrule
+    0 & -1 & No & (-3,2) & 3 \\
+    1 & 3 & Yes & (-2,2) & -3 \\ 2 & -3 & No & (-1,3) & 1 \\
+    3 & 1 & Yes & (0,3) & -5 \\ 4 & -5 & No & (1,4) & -1 \\
+    5 & -1 & - & (2,4) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+\end{enumerate}
+
+\section{中点画圆法详细解析}
+参数：$d=1-R$。$d<0 \to (x+1,y), d=d+2x+3$; $d \ge 0 \to (x+1,y-1), d=d+2(x-y)+5$。
+
+\begin{enumerate}
+    \item \textbf{R=5}: $d_0=-4$.
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & Pixel & Next $d$ \\ \midrule
+    0 & -4 & (0,5) & -1 ($d+2(0)+3$) \\
+    1 & -1 & (1,5) & 4 ($d+2(1)+3$) \\ 2 & 4 & (2,5) & 3 ($d+2(2-5)+5$) \\
+    3 & 3 & (3,4) & 5 ($d+2(3-4)+5$) \\ 4 & 5 & (4,3) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{R=10}: $d_0=-9$.
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule Step & $d$ & Pixel & Next $d$ \\ \midrule
+    0 & -9 & (0,10) & -6 \\
+    1 & -6 & (1,10) & -1 \\ 2 & -1 & (2,10) & 6 \\
+    3 & 6 & (3,10) & -3 \\ 4 & -3 & (4,9) & 8 \\
+    5 & 8 & (5,9) & 5 \\ 6 & 5 & (6,8) & 10 \\
+    7 & 10 & (7,7) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{圆心(2,3), R=5}: 先计(0,5).
+    \begin{center}
+    \begin{tabular}{ccc}
+    \toprule 原点点 & 偏移过程 & 最终点 \\ \midrule
+    (0,5) & $(0+2, 5+3)$ & (2,8) \\
+    (1,5) & $(1+2, 5+3)$ & (3,8) \\ (2,5) & $(2+2, 5+3)$ & (4,8) \\
+    (3,4) & $(3+2, 4+3)$ & (5,7) \\ (4,3) & $(4+2, 3+3)$ & (6,6) \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \item \textbf{8对称性应用}: 对于圆上任意点$(x,y)$,利用对称性可得8个点:
+    \begin{center}
+    \begin{tabular}{cccc}
+    \toprule 象限 & 点1 & 点2 & 说明 \\ \midrule
+    I & $(x,y)$ & $(y,x)$ & 第一象限及其对称 \\
+    II & $(-x,y)$ & $(-y,x)$ & 第二象限及其对称 \\
+    III & $(-x,-y)$ & $(-y,-x)$ & 第三象限及其对称 \\
+    IV & $(x,-y)$ & $(y,-x)$ & 第四象限及其对称 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{R=6}: $d_0=1-6=-5$.
+    \begin{center}
+    \begin{tabular}{cccc}
+    \toprule Step & $d$ & Pixel & Next $d$ \\ \midrule
+    0 & -5 & (0,6) & -2 \\
+    1 & -2 & (1,6) & 3 \\ 2 & 3 & (2,6) & 2 \\
+    3 & 2 & (3,5) & 5 \\ 4 & 5 & (4,4) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{R=7}: $d_0=-6$.
+    \begin{center}
+    \begin{tabular}{cccc}
+    \toprule Step & $d$ & Pixel & Next $d$ \\ \midrule
+    0 & -6 & (0,7) & -3 \\
+    1 & -3 & (1,7) & 2 \\ 2 & 2 & (2,7) & -1 \\
+    3 & -1 & (3,6) & 8 \\ 4 & 8 & (4,6) & 11 \\
+    5 & 11 & (5,5) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{算法原理}: 在第一象限的$45^\circ$范围内($0 \le x \le y$),圆弧斜率从0变化到-1,此时$x$每步增加1,$y$保持不变或减1,最易控制。其余部分通过8对称性获得。
+    
+    \item \textbf{R=12}: $d_0=-11$.
+    \begin{center}
+    \begin{tabular}{cccc}
+    \toprule Step & $d$ & Pixel & Next $d$ \\ \midrule
+    0 & -11 & (0,12) & -8 \\
+    1 & -8 & (1,12) & -3 \\ 2 & -3 & (2,12) & 4 \\
+    3 & 4 & (3,12) & -5 \\ 4 & -5 & (4,11) & 6 \\
+    5 & 6 & (5,11) & 11 \\ 6 & 11 & (6,10) & 10 \\
+    7 & 10 & (7,9) & 13 \\ 8 & 13 & (8,8) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{判别式推导}: 
+    \begin{align*}
+    F(x,y) &= x^2+y^2-R^2 \\
+    d &= F(x+1, y-0.5) = (x+1)^2+(y-0.5)^2-R^2 \\
+    &= x^2+2x+1+y^2-y+0.25-R^2 \\
+    d_0 &= F(1, R-0.5) = 1.25-R \approx 1-R
+    \end{align*}
+    若选$E$点$(x+1,y)$: $d_{new} = F(x+2,y-0.5) = d+2x+3$ \\
+    若选$SE$点$(x+1,y-1)$: $d_{new} = F(x+2,y-1.5) = d+2(x-y)+5$
+\end{enumerate}
+
+\section{Bresenham 画圆算法详细解析}
+\textbf{算法原理}: 初始$d=2(1-R)$。根据$d$的符号判断走向:
+\begin{itemize}
+    \item 若$d<0$: 计算$\delta=2(d+y)-1$,若$\delta \le 0$选右$(H)$,否则选右下$(D)$
+    \item 若$d>0$: 计算$\delta=2(d-x)-1$,若$\delta \le 0$选右下$(D)$,否则选下$(V)$
+    \item 若$d=0$: 直接选右下$(D)$
+\end{itemize}
+
+\begin{enumerate}
+    \item \textbf{R=5}: $d_0=2(1-5)=-8$.
+    \begin{center}
+    \begin{tabular}{ccccccc}
+    \toprule Step & $(x,y)$ & $d$ & $\delta$ & 方向 & 新点 & 新$d$ \\ \midrule
+    0 & (0,5) & -8 & $2(-8+5)-1=-7$ & $H$ & (1,5) & $-8+2(1)+1=-5$ \\
+    1 & (1,5) & -5 & $2(-5+5)-1=-1$ & $H$ & (2,5) & $-5+2(2)+1=0$ \\
+    2 & (2,5) & 0 & - & $D$ & (3,4) & $0+2(2)-2(5)+2=-4$ \\
+    3 & (3,4) & -4 & $2(-4+4)-1=-1$ & $H$ & (4,3) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{R=4}: $d_0=-6$.
+    \begin{center}
+    \begin{tabular}{ccccccc}
+    \toprule Step & $(x,y)$ & $d$ & $\delta$ & 方向 & 新点 & 新$d$ \\ \midrule
+    0 & (0,4) & -6 & $-3$ & $H$ & (1,4) & -3 \\
+    1 & (1,4) & -3 & $3$ & $D$ & (2,3) & 0 \\
+    2 & (2,3) & 0 & - & $D$ & (3,2) & 1 \\
+    3 & (3,2) & 1 & $-3$ & $D$ & (4,1) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{R=10}: $d_0=-18$.
+    \begin{center}
+    \begin{tabular}{cccc}
+    \toprule Step & Pixel & $d$ & 说明 \\ \midrule
+    0 & (0,10) & -18 & \\
+    1 & (1,10) & -15 & $H$: $d+2(1)+1$ \\
+    2 & (2,10) & -12 & $H$ \\
+    3 & (3,10) & -7 & $H$ \\
+    4 & (4,10) & 0 & $H$ \\
+    5 & (5,9) & -9 & $D$: $d+2(5)-2(10)+2$ \\
+    6 & (6,8) & -6 & $D$ \\
+    7 & (7,7) & - & 停止($x=y$) \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{走向判断规则总结}:
+    \begin{center}
+    \begin{tabular}{ccc}
+    \toprule $d$符号 & $\delta$判断 & 选择方向 \\ \midrule
+    $d<0$ & $\delta=2(d+y)-1 \le 0$ & 右$(H)$: $(x+1,y)$ \\
+    $d<0$ & $\delta=2(d+y)-1 > 0$ & 右下$(D)$: $(x+1,y-1)$ \\
+    $d=0$ & - & 右下$(D)$: $(x+1,y-1)$ \\
+    $d>0$ & $\delta=2(d-x)-1 \le 0$ & 右下$(D)$: $(x+1,y-1)$ \\
+    $d>0$ & $\delta=2(d-x)-1 > 0$ & 下$(V)$: $(x,y-1)$ \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{与中点法对比}:
+    \begin{itemize}
+        \item 相同点: 均为整数运算,无浮点误差
+        \item 不同点: 中点法判别式固定为$d+2x+3$或$d+2(x-y)+5$
+        \item Bresenham通过$\delta$动态选择$H/D/V$三个候选点,更灵活
+    \end{itemize}
+    
+    \item \textbf{R=6}: $d_0=-10$.
+    \begin{center}
+    \begin{tabular}{cccc}
+    \toprule Step & Pixel & $d$ & $\delta$ \\ \midrule
+    0 & (0,6) & -10 & $2(-10+6)-1=-9$ \\
+    1 & (1,6) & -7 & $2(-7+6)-1=-3$ \\
+    2 & (2,6) & -2 & $2(-2+6)-1=7>0$ \\
+    3 & (3,5) & -3 & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{R=8}: $d_0=-14$.
+    \begin{center}
+    \begin{tabular}{ccc}
+    \toprule Step & Pixel & $d$ \\ \midrule
+    0 & (0,8) & -14 \\
+    1 & (1,8) & -11 \\
+    2 & (2,8) & -6 \\
+    3 & (3,8) & 1 \\
+    4 & (4,7) & 0 \\
+    5 & (5,6) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{R=3}: $d_0=-4$.
+    \begin{center}
+    \begin{tabular}{ccc}
+    \toprule Step & Pixel & $d$ \\ \midrule
+    0 & (0,3) & -4 \\
+    1 & (1,3) & -1 \\
+    2 & (2,2) & 0 \\
+    3 & (3,1) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{判别式更新公式}:
+    \begin{align*}
+    \text{选}H\text{时}: & \quad d_{new} = d + 2x + 1 \\
+    \text{选}D\text{时}: & \quad d_{new} = d + 2x - 2y + 2 \\
+    \text{选}V\text{时}: & \quad d_{new} = d - 2y + 1
+    \end{align*}
+    
+    \item \textbf{R=9}: $d_0=-16$.
+    \begin{center}
+    \begin{tabular}{ccc}
+    \toprule Step & Pixel & $d$ \\ \midrule
+    0 & (0,9) & -16 \\
+    1 & (1,9) & -13 \\
+    2 & (2,9) & -8 \\
+    3 & (3,9) & -1 \\
+    4 & (4,9) & 8 \\
+    5 & (5,8) & 3 \\
+    6 & (6,7) & 2 \\
+    7 & (7,6) & - \\ \bottomrule
+    \end{tabular}
+    \end{center}
+\end{enumerate}
+
+\section{扫描线填充详细解析}
+\textbf{算法原理}: 扫描线填充算法通过构建边表(ET)和活性边表(AET)来实现多边形填充。
+\begin{itemize}
+    \item \textbf{ET表项}: $(x_{min}, \Delta x, y_{max})$,其中$\Delta x = 1/k$为斜率的倒数
+    \item \textbf{AET更新}: 每扫描一行,$x = x + \Delta x$
+    \item \textbf{填充规则}: 将AET中的$x$值排序,两两配对填充
+\end{itemize}
+
+\begin{enumerate}
+    \item \textbf{矩形(2,2)-(8,2)-(8,8)-(2,8), y=4}:
+    \begin{center}
+    \begin{tabular}{cccc}
+    \toprule 边 & $x_{min}$ & $\Delta x$ & $y_{max}$ \\ \midrule
+    左边(2,2)-(2,8) & 2 & 0 & 8 \\
+    右边(8,2)-(8,8) & 8 & 0 & 8 \\
+    上下边 & - & - & 水平边不计 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    $y=4$时AET: $\{(2,0,8), (8,0,8)\}$。填充区间: $[2,8]$。
+    
+    \item \textbf{三角形(1,1)-(5,1)-(3,5)}:
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule 边 & 起点 & 终点 & $\Delta x$ & ET项 \\ \midrule
+    左边 & (1,1) & (3,5) & $(3-1)/(5-1)=0.5$ & $(1, 0.5, 5)$ \\
+    右边 & (5,1) & (3,5) & $(3-5)/(5-1)=-0.5$ & $(5, -0.5, 5)$ \\
+    底边 & (1,1) & (5,1) & - & 水平边 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    \begin{center}
+    \begin{tabular}{cccc}
+    \toprule $y$ & 左$x$ & 右$x$ & 填充区间 \\ \midrule
+    1 & 1 & 5 & [1,5] \\
+    2 & 1.5 & 4.5 & [2,4] \\
+    3 & 2 & 4 & [2,4] \\
+    4 & 2.5 & 3.5 & [3,3] \\
+    5 & 3 & 3 & [3,3] \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{水平边处理原理}: 扫描线填充是沿$y$方向扫描,水平边对于某个$y$值来说不构成边界变化,因此不放入ET表。该扫描线的填充区间由其他非水平边的交点决定。
+    
+    \item \textbf{四边形(0,0)-(4,0)-(6,4)-(2,4), y=2}:
+    \begin{center}
+    \begin{tabular}{ccccc}
+    \toprule 边 & 起点 & 终点 & $\Delta x$ & ET项 \\ \midrule
+    左边 & (0,0) & (2,4) & $2/4=0.5$ & $(0, 0.5, 4)$ \\
+    右边 & (4,0) & (6,4) & $2/4=0.5$ & $(4, 0.5, 4)$ \\
+    底边 & (0,0) & (4,0) & - & 水平 \\
+    顶边 & (2,4) & (6,4) & - & 水平 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    $y=2$时: 左$x=0+2\times 0.5=1$, 右$x=4+2\times 0.5=5$。填充区间: $[1,5]$。
+    
+    \item \textbf{下闭上开原则}: 为避免相邻多边形共享顶点时重复填充,采用下闭上开原则:
+    \begin{itemize}
+        \item 边的下端点包含在边内(闭)
+        \item 边的上端点不包含在边内(开)
+        \item 即: $y_{min} \le y < y_{max}$
+    \end{itemize}
+    
+    \item \textbf{凹多边形(1,1)-(5,1)-(5,5)-(3,3)-(1,5)}:
+    \begin{center}
+    \begin{tabular}{cccc}
+    \toprule $y_{min}$ & ET项 & 说明 \\ \midrule
+    1 & $(1,0,5), (5,0,5)$ & 外边界两条竖直边 \\
+    3 & $(3,1,5), (3,-1,5)$ & 内凹陷的两条斜边 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    $y=4$时AET: $\{(1,0,5), (4,1,5), (2,-1,5), (5,0,5)\}$排序后: $1,2,4,5$。填充: $[1,2]\cup[4,5]$。
+    
+    \item \textbf{取整规则}: 对于浮点坐标的交点:
+    \begin{itemize}
+        \item 左边界: $x_{left} = \lceil x \rceil$ (向上取整)
+        \item 右边界: $x_{right} = \lfloor x \rfloor$ (向下取整)
+        \item 或: $x_{left} = round(x), x_{right} = round(x)-1$
+    \end{itemize}
+    
+    \item \textbf{算法对比}:
+    \begin{center}
+    \begin{tabular}{ccc}
+    \toprule 算法 & 适用场景 & 特点 \\ \midrule
+    扫描线填充 & 大面积多边形 & 有序扫描,适合硬件 \\
+    种子填充 & 复杂连通域 & 递归搜索,灵活但慢 \\
+    边界填充 & 边界明确区域 & 从边界向内填充 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{区间取整示例}:
+    \begin{center}
+    \begin{tabular}{ccc}
+    \toprule 浮点区间 & 取整后 & 说明 \\ \midrule
+    [2.5, 8.2] & [3, 8] & $\lceil 2.5 \rceil=3, \lfloor 8.2 \rfloor=8$ \\
+    [10.1, 15.7] & [11, 15] & $\lceil 10.1 \rceil=11, \lfloor 15.7 \rfloor=15$ \\
+    [1.0, 5.0] & [1, 5] & 整数边界不变 \\ \bottomrule
+    \end{tabular}
+    \end{center}
+    
+    \item \textbf{奇偶规则}: 判断点是否在多边形内的原理:
+    \begin{itemize}
+        \item 从该点向某一方向作射线
+        \item 统计与多边形边的交点个数
+        \item 奇数个交点 $\implies$ 点在多边形内
+        \item 偶数个交点 $\implies$ 点在多边形外
+    \end{itemize}
+\end{enumerate}
+
+\section{2D 几何变换详细解析}
+\begin{enumerate}
+    \item \textbf{(1,1)平移(2,3)}: $\begin{bmatrix} 1&0&2 \\ 0&1&3 \\ 0&0&1 \end{bmatrix} \begin{bmatrix} 1\\1\\1 \end{bmatrix} = \begin{bmatrix} 3\\4\\1 \end{bmatrix}$。
+    \item \textbf{(2,2)绕原点逆90}: $\begin{bmatrix} 0&-1&0 \\ 1&0&0 \\ 0&0&1 \end{bmatrix} \begin{bmatrix} 2\\2\\1 \end{bmatrix} = \begin{bmatrix} -2\\2\\1 \end{bmatrix}$。
+    \item \textbf{缩放2倍}: $\begin{bmatrix} 2&0&0 \\ 0&2&0 \\ 0&0&1 \end{bmatrix} \begin{bmatrix} 1&3 \\ 1&1 \\ 1&1 \end{bmatrix} = \begin{bmatrix} 2&6 \\ 2&2 \\ 1&1 \end{bmatrix}$。
+    \item \textbf{(1,1)绕(2,2)顺时针90}: $T(2,2)R(-90)T(-2,-2) = \begin{bmatrix} 0&1&0 \\ -1&0&4 \\ 0&0&1 \end{bmatrix}$. 结果 (1,3).
+    \item \textbf{错切 $sh_x=2$}: $\begin{bmatrix} 1&2&0 \\ 0&1&0 \\ 0&0&1 \end{bmatrix} \begin{bmatrix} 1\\2\\1 \end{bmatrix} = \begin{bmatrix} 5\\2\\1 \end{bmatrix}$。
+    \item \textbf{y=x对称}: $\begin{bmatrix} 0&1&0 \\ 1&0&0 \\ 0&0&1 \end{bmatrix} \begin{bmatrix} 3\\4\\1 \end{bmatrix} = \begin{bmatrix} 4\\3\\1 \end{bmatrix}$。
+    \item \textbf{平移交换律}: $T_1 T_2 = \begin{bmatrix} 1&0&x_1+x_2 \\ 0&1&y_1+y_2 \\ 0&0&1 \end{bmatrix}$，成立。
+    \item \textbf{缩放旋转交换}: $S R \ne R S$ 一般成立。反例：$S(2,1), R(90)$。
+    \item \textbf{原点镜像}: $\begin{bmatrix} -1&0&0 \\ 0&-1&0 \\ 0&0&1 \end{bmatrix}$。三角形变 (-0,-0), (-2,-0), (-1,-2)。
+    \item \textbf{窗视映射}: $T(v_{min}) \cdot S(v/w) \cdot T(-w_{min})$。
+\end{enumerate}
+
+\section{3D 几何变换详细解析}
+\begin{enumerate}
+    \item \textbf{Rz}: $\begin{bmatrix} \cos & -\sin & 0 & 0 \\ \sin & \cos & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix}$。
+    \item \textbf{平移}: $(1+1, 1+2, 1+3) = (2,3,4)$。
+    \item \textbf{Ry(90)}: $\begin{bmatrix} 0&0&1&0 \\ 0&1&0&0 \\ -1&0&0&0 \\ 0&0&0&1 \end{bmatrix} \begin{bmatrix} 1\\0\\0\\1 \end{bmatrix} = \begin{bmatrix} 0\\0\\-1\\1 \end{bmatrix}$。
+    \item \textbf{平行轴旋转}: $T(1,1,0) R_z(180) T(-1,-1,0)$。
+    \item \textbf{Rx角度}: $(0,1,0) \to (0,0,1)$ 为顺向旋转 $90^\circ$。
+    \item \textbf{左右手系}: 右手系 $X \times Y = Z$，左手系 $x \times y = -z$。
+    \item \textbf{Sz}: $diag(1, 1, s_z, 1)$。
+    \item \textbf{xoy镜像}: $diag(1, 1, -1, 1)$。
+    \item \textbf{透视投影}: $\begin{bmatrix} 1&0&0&0 \\ 0&1&0&0 \\ 0&0&1&0 \\ 0&0&1/d&0 \end{bmatrix}$。
+    \item \textbf{复合}: $M = R_z T R_x = \begin{bmatrix} 0&-1&0&1 \\ 1&0&0&1 \\ 0&0&1&1 \\ 0&0&0&1 \end{bmatrix} \begin{bmatrix} 1&0&0&0 \\ 0&0&-1&0 \\ 0&1&0&0 \\ 0&0&0&1 \end{bmatrix}$。
+\end{enumerate}
+
+\section{Cohen-Sutherland 裁剪详细解析}
+\begin{enumerate}
+    \item \textbf{P(-1,5)}: $x < 0 \implies 0001$。
+    \item \textbf{0001, 1000}: $AND = 0, OR \ne 0 \implies$ 需分段判断。
+    \item \textbf{P1(-1,2), P2(6,2)}: 左界 $x=0 \to (0,2)$，右界 $x=5 \to (5,2)$。结果 (0,2)-(5,2)。
+    \item \textbf{与非零}: 线段两端都在某边界同侧外 $\implies$ 简弃。
+    \item \textbf{编码}: 内0000; 上1000; 左0001; 右下0110; 左上1001。
+    \item \textbf{P1(1,1), P2(8,8), [0,5]x[0,5]}: $P2$被右/上裁。$x=5 \to (5,5)$。结果 (1,1)-(5,5)。
+    \item \textbf{顺序意义}: 决定求交的逻辑回路优先级。
+    \item \textbf{垂直处理}: 斜率 $\infty$，交点 $x$ 坐标固定，仅判断 $y$。
+    \item \textbf{局限}: 不适合非矩形窗，对多边形需处理闭合闭。
+    \item \textbf{P1(12,12), P2(15,8)}: $P1=1010, P2=0010, AND=0010 \ne 0 \implies$ 简弃。
+\end{enumerate}
+
+\section{Liang-Barsky 裁剪详细解析}
+\begin{enumerate}
+    \item \textbf{意义}: $p<0$ 进, $p>0$ 出, $p=0$ 平行。
+    \item \textbf{P1(1,1), P2(4,3)}: $\Delta x=3, \Delta y=2. p_1=-3, q_1=1; p_2=3, q_2=1; p_3=-2, q_3=1; p_4=2, q_4=1$。
+    \item \textbf{判定}: $u_1 > u_2 \implies$ Outside。
+    \item \textbf{平行}: $p=0$, 若 $q<0 \implies$ Outside。
+    \item \textbf{P1(-1,5), P2(3,-2)}: $dx=4, p_1=-4, q_1=x_1-0=-1, u=1/4=0.25$. $u_1 = \max(0, 0.25) = 0.25$.
+    \item \textbf{效率}: LB 避免了多次求交及重复编码，适合线段较多时。
+    \item \textbf{公式}: $u = q_k/p_k$。
+    \item \textbf{初值}: $u1=0, u2=1$。
+    \item \textbf{(0,0)-(10,10), [2,5]}: $dx=10, p1=-10, q1=2, u1=0.2; p2=10, q2=3, u2=0.5$. 结果 (2,2)-(5,5)。
+    \item \textbf{逻辑}: 循环 4 边，更新 $u1, u2$，最后若 $u1 \le u2$ 则按 $P(u1), P(u2)$ 绘图。
+\end{enumerate}
+
+\section{Bezier 曲线详细解析}
+\begin{enumerate}
+    \item \textbf{P0(0,0), P1(2,4), P2(4,0), t=0.5}: (1,2), (3,2) $\to$ (2,2)。
+    \item \textbf{三阶t=0.5}: $P_{01}=0.5(P_0+P_1), P_{12}=0.5(P_1+P_2), P_{23}=0.5(P_2+P_3) \dots \to P_{final}$。
+    \item \textbf{t=0,1}: $P(0)=P_0, P(1)=P_n$。端点插值性。
+    \item \textbf{凸包性}: Bernstein基函数和为1且为正 $\implies$ 曲线必在点集围成的凸多边形内。
+    \item \textbf{P0(0,0), P1(1,2), P2(2,0), t=0.25}: $P_{01}=(0.25, 0.5), P_{12}=(1.25, 1.5) \to P(0.25)=(0.5, 0.75)$。
+    \item \textbf{Bernstein3}: $B_{03}=(1-t)^3, B_{13}=3t(1-t)^2, B_{23}=3t^2(1-t), B_{33}=t^3$。
+    \item \textbf{起点切线}: $P_1-P_0$。
+    \item \textbf{示意图描述}: 特征多边形为 $P_0P_1P_2P_3$，曲线从 $P_0$ 出发向 $P_1$ 偏移。
+    \item \textbf{平移P1}: 曲线全段位置发生偏移（无局部控制性）。
+    \item \textbf{共线点}: 曲线退化为直线段 (0,0)-(3,3)。
+\end{enumerate}
+
+\end{document}

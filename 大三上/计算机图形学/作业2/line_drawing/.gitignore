@@ -1,0 +1,18 @@
+# Rust编译输出
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo.lock (对于库项目，通常不提交)
+# Cargo.lock
+
+# IDE配置文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+Thumbs.db

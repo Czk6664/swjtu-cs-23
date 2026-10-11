@@ -1,0 +1,91 @@
+\contentsline {section}{\numberline {1}绪论}{4}{section.1}%
+\contentsline {subsection}{\numberline {1.1}符号定义}{4}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}机器学习三要素详解}{4}{subsection.1.2}%
+\contentsline {section}{\numberline {2}模型评估与选择}{5}{section.2}%
+\contentsline {subsection}{\numberline {2.1}性能评估指标详解}{5}{subsection.2.1}%
+\contentsline {subsubsection}{\numberline {2.1.1}回归问题指标}{5}{subsubsection.2.1.1}%
+\contentsline {subsubsection}{\numberline {2.1.2}分类问题指标}{6}{subsubsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.2}偏差-方差分解详细推导}{7}{subsection.2.2}%
+\contentsline {section}{\numberline {3}线性模型}{9}{section.3}%
+\contentsline {subsection}{\numberline {3.1}凸优化基础详解}{9}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}海森矩阵与凸性判定}{9}{subsubsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.2}一元线性回归完整推导}{10}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}问题设定}{10}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}损失函数展开}{10}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}求解最优参数}{10}{subsubsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.3}多元线性回归矩阵推导}{12}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}矩阵形式损失函数}{12}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.2}矩阵求导}{12}{subsubsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.4}逻辑回归详细推导}{14}{subsection.3.4}%
+\contentsline {subsubsection}{\numberline {3.4.1}从线性回归到逻辑回归}{14}{subsubsection.3.4.1}%
+\contentsline {subsubsection}{\numberline {3.4.2}Sigmoid函数性质详解}{14}{subsubsection.3.4.2}%
+\contentsline {subsubsection}{\numberline {3.4.3}逻辑回归要素详解}{15}{subsubsection.3.4.3}%
+\contentsline {subsubsection}{\numberline {3.4.4}似然函数推导（详细版）}{16}{subsubsection.3.4.4}%
+\contentsline {subsubsection}{\numberline {3.4.5}梯度推导}{16}{subsubsection.3.4.5}%
+\contentsline {subsection}{\numberline {3.5}线性判别分析（LDA）详细推导}{19}{subsection.3.5}%
+\contentsline {subsubsection}{\numberline {3.5.1}问题设定}{19}{subsubsection.3.5.1}%
+\contentsline {subsubsection}{\numberline {3.5.2}投影分析}{19}{subsubsection.3.5.2}%
+\contentsline {subsubsection}{\numberline {3.5.3}目标函数推导}{19}{subsubsection.3.5.3}%
+\contentsline {subsubsection}{\numberline {3.5.4}最优解推导}{20}{subsubsection.3.5.4}%
+\contentsline {section}{\numberline {4}决策树}{21}{section.4}%
+\contentsline {subsection}{\numberline {4.1}信息论基础}{21}{subsection.4.1}%
+\contentsline {subsubsection}{\numberline {4.1.1}信息量}{21}{subsubsection.4.1.1}%
+\contentsline {subsubsection}{\numberline {4.1.2}信息熵详解}{22}{subsubsection.4.1.2}%
+\contentsline {subsection}{\numberline {4.2}信息增益完整计算}{23}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}信息熵与纯度 (Intuition)}{24}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}基尼指数完整计算}{25}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}决策树构建完整示例}{26}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}连续属性处理详解}{27}{subsection.4.6}%
+\contentsline {section}{\numberline {5}神经网络}{28}{section.5}%
+\contentsline {subsection}{\numberline {5.1}感知机学习算法}{28}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}多层神经网络前向传播}{29}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}反向传播 (BP) 算法标量演示（掌握版）}{31}{subsection.5.3}%
+\contentsline {subsubsection}{\numberline {5.3.1}符号与前向传播流程}{31}{subsubsection.5.3.1}%
+\contentsline {subsubsection}{\numberline {5.3.2}标量链式更新推导全程}{31}{subsubsection.5.3.2}%
+\contentsline {section}{\numberline {6}支持向量机}{33}{section.6}%
+\contentsline {subsection}{\numberline {6.1}间隔与支持向量详解}{33}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}点到超平面距离推导}{33}{subsubsection.6.1.1}%
+\contentsline {subsubsection}{\numberline {6.1.2}间隔推导}{34}{subsubsection.6.1.2}%
+\contentsline {subsection}{\numberline {6.2}硬间隔SVM完整求解}{34}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}核函数详解}{38}{subsection.6.3}%
+\contentsline {section}{\numberline {7}贝叶斯分类器}{40}{section.7}%
+\contentsline {subsection}{\numberline {7.1}贝叶斯定理与分类问题}{40}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}贝叶斯决策论 (Bayesian Decision Theory)}{41}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}判别式模型与生成式模型}{41}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}朴素贝叶斯分类器 (Naive Bayes)}{42}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}朴素贝叶斯完整计算}{42}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}拉普拉斯平滑详解}{44}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.7}连续属性贝叶斯详解}{45}{subsection.7.7}%
+\contentsline {section}{\numberline {8}集成学习}{47}{section.8}%
+\contentsline {subsection}{\numberline {8.1}集成学习基本概念}{47}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Bagging与随机森林}{47}{subsection.8.2}%
+\contentsline {subsubsection}{\numberline {8.2.1}Bootstrap采样}{47}{subsubsection.8.2.1}%
+\contentsline {subsubsection}{\numberline {8.2.2}随机森林}{48}{subsubsection.8.2.2}%
+\contentsline {subsection}{\numberline {8.3}Boosting}{49}{subsection.8.3}%
+\contentsline {subsubsection}{\numberline {8.3.1}AdaBoost算法}{49}{subsubsection.8.3.1}%
+\contentsline {subsection}{\numberline {8.4}结合策略}{53}{subsection.8.4}%
+\contentsline {subsubsection}{\numberline {8.4.1}投票法}{53}{subsubsection.8.4.1}%
+\contentsline {subsubsection}{\numberline {8.4.2}平均法}{53}{subsubsection.8.4.2}%
+\contentsline {section}{\numberline {9}聚类算法}{54}{section.9}%
+\contentsline {subsection}{\numberline {9.1}聚类任务}{54}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}k 均值聚类算法 (k-means)}{54}{subsection.9.2}%
+\contentsline {subsubsection}{\numberline {9.2.1}算法原理}{54}{subsubsection.9.2.1}%
+\contentsline {subsubsection}{\numberline {9.2.2}k 均值的改进}{56}{subsubsection.9.2.2}%
+\contentsline {subsection}{\numberline {9.3}聚类结果评价指标}{56}{subsection.9.3}%
+\contentsline {subsubsection}{\numberline {9.3.1}外部指标 (External Indices)}{56}{subsubsection.9.3.1}%
+\contentsline {subsubsection}{\numberline {9.3.2}内部指标 (Internal Indices)}{57}{subsubsection.9.3.2}%
+\contentsline {section}{\numberline {A}西瓜数据集 2.0}{58}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}完整数据}{58}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}统计信息汇总}{59}{subsection.A.2}%
+\contentsline {subsubsection}{\numberline {A.2.1}类别分布}{59}{subsubsection.A.2.1}%
+\contentsline {subsubsection}{\numberline {A.2.2}各属性条件概率表}{59}{subsubsection.A.2.2}%
+\contentsline {subsubsection}{\numberline {A.2.3}信息增益汇总}{60}{subsubsection.A.2.3}%
+\contentsline {subsection}{\numberline {A.3}常用计算公式速查}{60}{subsection.A.3}%
+\contentsline {subsection}{\numberline {A.4}决策树补充例题}{61}{subsection.A.4}%
+\contentsline {subsection}{\numberline {A.5}神经网络补充}{63}{subsection.A.5}%
+\contentsline {subsection}{\numberline {A.6}软间隔SVM详解}{64}{subsection.A.6}%
+\contentsline {subsection}{\numberline {A.7}贝叶斯分类器补充}{64}{subsection.A.7}%
+\contentsline {section}{\numberline {B}集成学习补充}{65}{appendix.B}%
+\contentsline {subsection}{\numberline {B.1}Bagging详解}{65}{subsection.B.1}%
+\contentsline {subsection}{\numberline {B.2}Boosting详解}{65}{subsection.B.2}%
+\contentsline {subsection}{\numberline {B.3}随机森林}{66}{subsection.B.3}%

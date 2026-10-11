@@ -1,0 +1,49 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{listings}
+\geometry{a4paper, margin=1in}
+
+\title{计算机图形学模拟试卷（二）}
+\author{考试时间：120分钟 \quad 总分：100分}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{简答题（每题 10 分，共 30 分）}
+\begin{enumerate}
+    \item 简述显存（Frame Buffer）的物理作用，以及显存大小如何决定屏幕分辨率？
+    \item 什么是 GPU 堆（Heap）？请列举 Direct3D 12 中常用的几类堆及其特点。
+    \item 简述纹理多级映射（Mipmapping）的基本原理及其在反走样中的作用。
+\end{enumerate}
+
+\section{计算题（每题 15 分，共 45 分）}
+\begin{enumerate}
+    \item \textbf{Bresenham 画线算法（负斜率）}：
+    已知直线起点为 $(0, 0)$，终点为 $(-8, 4)$。请判断主位移方向，并利用对称性写出计算该线段像素点的步骤。
+    
+    \item \textbf{B 样条曲线计算}：
+    已知二次 B 样条曲线由控制点 $P_0(0,0), P_1(1,2), P_2(2,0)$ 定义。请根据 B 样条曲线的参数方程，计算当 $t = 0.5$ 时曲线上的点 $P(0.5)$ 的坐标。
+    
+    \item \textbf{坐标变换}：
+    已知一个三维顶点 $V(1, 1, 1)$。请将其先绕 $X$ 轴旋转 $90^\circ$，再沿着 $Z$ 轴方向平移 $5$ 个单位。请写出变换矩阵及计算结果（列向量或行向量表示）。
+\end{enumerate}
+
+\section{画图与分析题（共 15 分）}
+\begin{enumerate}
+    \item \textbf{画图题：中点画圆算法}：
+    已知半径 $R=5$。请使用中点画圆法，列出从起点 $(0, 5)$ 到 $45^\circ$ 位置的所有中间点及判别式 $d$ 的变化表。
+    \item \textbf{分析题：Sutherland-Hodgman 裁剪}：
+    现有一个三角形多边形，使用 Sutherland-Hodgman 流水线裁剪算法。请分别描述当多边形边与裁剪窗口边界发生“由内到外”和“由外到内”两种情况时，输出的顶点序列。
+\end{enumerate}
+
+\section{算法题（10 分）}
+\begin{enumerate}
+    \item \textbf{代码实现}：
+    编写一段 C++ 函数，输入三个点 $P_0, P_1, P_2$，实现二阶 Bezier 曲线的计算过程，并将结果存储在 `std::vector<Point>` 中。
+\end{enumerate}
+
+\end{document}

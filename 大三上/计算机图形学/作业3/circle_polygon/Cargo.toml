@@ -1,0 +1,14 @@
+[package]
+name = "circle_polygon"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[[bin]]
+name = "circle_polygon"
+path = "src/main.rs"
+
+[lib]
+name = "circle_polygon"
+path = "src/lib.rs"

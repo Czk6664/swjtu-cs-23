@@ -1,0 +1,84 @@
+// 实验3 菜单定义 - 需要手动添加到 shiyan3project.rc 文件中
+
+// 在 MENU 部分添加以下内容：
+
+IDC_SHIYAN3PROJECT MENU
+BEGIN
+    POPUP "文件(&F)"
+    BEGIN
+        MENUITEM "新建\tCtrl+N",                IDM_NEW
+        MENUITEM "打开\tCtrl+O",                IDM_OPEN
+        MENUITEM "保存\tCtrl+S",                IDM_SAVE
+        MENUITEM SEPARATOR
+        MENUITEM "退出\tAlt+F4",                IDM_EXIT
+    END
+    POPUP "绘图工具(&D)"
+    BEGIN
+        MENUITEM "直线",                        IDM_DRAW_LINE
+        MENUITEM "圆形",                        IDM_DRAW_CIRCLE
+        MENUITEM "矩形",                        IDM_DRAW_RECTANGLE
+        MENUITEM "三角形",                      IDM_DRAW_TRIANGLE
+        MENUITEM "菱形",                        IDM_DRAW_DIAMOND
+        MENUITEM "平行四边形",                  IDM_DRAW_PARALLELOGRAM
+        MENUITEM "曲线",                        IDM_DRAW_CURVE
+        MENUITEM "折线",                        IDM_DRAW_POLYLINE
+        MENUITEM SEPARATOR
+        MENUITEM "多边形（用于填充）",          IDM_DRAW_POLYGON
+        MENUITEM "Bezier曲线",                  IDM_DRAW_BEZIER
+    END
+    POPUP "直线算法(&L)"
+    BEGIN
+        MENUITEM "中点画线法",                  IDM_LINE_MIDPOINT
+        MENUITEM "Bresenham画线法",             IDM_LINE_BRESENHAM
+    END
+    POPUP "圆算法(&C)"
+    BEGIN
+        MENUITEM "中点画圆法",                  IDM_CIRCLE_MIDPOINT
+        MENUITEM "Bresenham画圆法",             IDM_CIRCLE_BRESENHAM
+    END
+    POPUP "线宽(&W)"
+    BEGIN
+        MENUITEM "1像素",                       IDM_LINEWIDTH_1
+        MENUITEM "3像素",                       IDM_LINEWIDTH_3
+        MENUITEM "5像素",                       IDM_LINEWIDTH_5
+        MENUITEM "10像素（扫描线填充）",        IDM_LINEWIDTH_SCANLINE
+    END
+    POPUP "线型(&S)"
+    BEGIN
+        MENUITEM "实线",                        IDM_LINESTYLE_SOLID
+        MENUITEM "虚线",                        IDM_LINESTYLE_DASH
+        MENUITEM "点线",                        IDM_LINESTYLE_DOT
+        MENUITEM "点划线",                      IDM_LINESTYLE_DASHDOT
+    END
+    POPUP "填充(&F)"
+    BEGIN
+        MENUITEM "栅栏填充",                    IDM_FILL_FENCE
+        MENUITEM "种子填充",                    IDM_FILL_SEED
+    END
+    POPUP "编辑(&E)"
+    BEGIN
+        MENUITEM "选择",                        IDM_SELECT
+        MENUITEM "取消选择",                    IDM_DESELECT
+        MENUITEM "删除\tDel",                   IDM_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "移动",                        IDM_MOVE
+        MENUITEM "旋转",                        IDM_ROTATE
+        MENUITEM "缩放",                        IDM_SCALE
+        MENUITEM SEPARATOR
+        MENUITEM "撤销\tCtrl+Z",                IDM_UNDO
+        MENUITEM "重做\tCtrl+Y",                IDM_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "清空画布",                    IDM_CLEAR
+    END
+    POPUP "几何计算(&G)"
+    BEGIN
+        MENUITEM "求交点",                      IDM_INTERSECTION
+        MENUITEM "绘制垂线",                    IDM_PERPENDICULAR
+        MENUITEM "显示圆心",                    IDM_CENTER
+        MENUITEM "绘制切线",                    IDM_TANGENT
+    END
+    POPUP "帮助(&H)"
+    BEGIN
+        MENUITEM "关于",                        IDM_ABOUT
+    END
+END

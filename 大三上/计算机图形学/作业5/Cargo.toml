@@ -1,0 +1,12 @@
+[package]
+name = "homework5"
+version = "0.1.0"
+edition = "2021"
+authors = ["程泽凯 <2023112621>"]
+description = "计算机图形学作业5 - Rust实现"
+
+[dependencies]
+
+[[bin]]
+name = "homework5"
+path = "src/main.rs"

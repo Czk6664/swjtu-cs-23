@@ -1,0 +1,1797 @@
+\documentclass[12pt,a4paper]{ctexart}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{float}
+
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+% 定义定理环境
+\newtheorem{definition}{定义}[section]
+\newtheorem{theorem}{定理}[section]
+\newtheorem{example}{例}[section]
+\newtheorem{exercise}{例题}[section]
+
+% 定义彩色框
+\tcbuselibrary{skins,breakable}
+\newtcolorbox{notebox}[1][]{
+  colback=blue!5!white,
+  colframe=blue!75!black,
+  fonttitle=\bfseries,
+  title=#1,
+  breakable
+}
+
+\newtcolorbox{examplebox}[1][]{
+  colback=green!5!white,
+  colframe=green!50!black,
+  fonttitle=\bfseries,
+  title=#1,
+  breakable
+}
+
+\title{\textbf{机器学习核心知识总结}}
+\author{基于西瓜书整理}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%========================================
+% 第1章 绪论
+%========================================
+\section{绪论}
+
+\subsection{符号定义}
+
+在机器学习中，我们需要统一使用数学符号来描述数据和模型。
+
+\begin{definition}[标量]
+标量是单个数值，用小写字母表示，如 $x = 1$，$y = 5.2$。
+\end{definition}
+
+\begin{definition}[向量]
+向量是一组有序数值的集合，用粗体小写字母或带箭头表示：
+\[
+\mathbf{x} = [x_1, x_2, \cdots, x_d]^T = \begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_d \end{bmatrix}
+\]
+其中 $d$ 称为向量的维度。
+\end{definition}
+
+\begin{definition}[矩阵]
+矩阵是二维数组，用大写字母表示：
+\[
+X = \begin{bmatrix}
+x_{11} & x_{12} & \cdots & x_{1d} \\
+x_{21} & x_{22} & \cdots & x_{2d} \\
+\vdots & \vdots & \ddots & \vdots \\
+x_{m1} & x_{m2} & \cdots & x_{md}
+\end{bmatrix}_{m \times d}
+\]
+其中 $m$ 为行数（样本数），$d$ 为列数（特征数）。
+\end{definition}
+
+\begin{definition}[随机变量]
+随机变量用大写字母表示，如 $X \sim N(\mu, \sigma^2)$ 表示 $X$ 服从均值为 $\mu$、方差为 $\sigma^2$ 的正态分布。
+\end{definition}
+
+\subsection{机器学习定义}
+
+\begin{notebox}[阿瑟·萨缪尔的定义]
+机器学习是不通过显式编程赋予机器学习能力的学科。
+\end{notebox}
+
+\subsubsection{核心目标}
+以自动驾驶为例：
+\begin{itemize}
+    \item \textbf{输入}：$d_1$、$d_2$、$d_3$（3个距离参数）
+    \item \textbf{输出}：$v$（速度）、$\theta$（转向角）
+    \item \textbf{目标}：根据输入参数调节速度和转向角，实现在车道内自动行驶
+\end{itemize}
+
+\subsubsection{显式编程 vs 非显式编程}
+
+\textbf{显式编程示例}（传统规则方法）：
+\begin{verbatim}
+if d1 > d3:
+    theta = theta + 1
+    v = v - 1
+elif d1 < d3:
+    theta = theta - 1
+    v = v - 1
+...
+\end{verbatim}
+
+\textbf{非显式编程示例}（机器学习方法）：
+\[
+\begin{aligned}
+(d_{11}, d_{12}, d_{13}) &\to (v_1, \theta_1) \\
+(d_{21}, d_{22}, d_{23}) &\to (v_2, \theta_2) \\
+&\vdots \\
+(d_{n1}, d_{n2}, d_{n3}) &\to (v_n, \theta_n)
+\end{aligned}
+\]
+通过大量数据样本，让机器自动学习输入到输出的映射关系。
+
+\subsection{机器学习问题分类}
+
+\begin{table}[H]
+\centering
+\caption{机器学习问题分类}
+\begin{tabular}{cccc}
+\toprule
+\textbf{学习类型} & \textbf{问题类型} & \textbf{核心特征} & \textbf{典型算法} \\
+\midrule
+监督学习 & 回归问题 & 有标签、标签为连续值 & 线性回归 \\
+监督学习 & 分类问题 & 有标签、标签为离散值 & 逻辑回归、决策树、SVM \\
+无监督学习 & 聚类问题 & 无标签 & k均值、高斯混合聚类 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{examplebox}[西瓜数据集示例]
+以西瓜数据集为例，判断西瓜是否为"好瓜"是一个\textbf{二分类问题}：
+\begin{itemize}
+    \item 输入特征：色泽、根蒂、敲声、纹理、脐部、触感（6个离散特征）
+    \item 输出标签：好瓜（是/否）
+    \item 样本数量：17个
+\end{itemize}
+这是典型的监督学习分类问题。
+\end{examplebox}
+
+\subsection{机器学习三要素}
+
+机器学习的核心由三个要素组成：\textbf{模型}、\textbf{策略}、\textbf{算法}。
+
+\subsubsection{线性回归的三要素}
+
+\begin{enumerate}
+    \item \textbf{模型}：$f(x) = w_1 x + w_2$
+    
+    模型定义了假设空间，即所有可能的函数集合。
+    
+    \item \textbf{策略}：损失函数（评价模型好坏的指标）
+    \[
+    Loss = \sum_{i=1}^{n}(w_1 x_i + w_2 - y_i)^2
+    \]
+    
+    \item \textbf{算法}：求解最优参数的方法
+    \[
+    w^* = (X^T X)^{-1} X^T y \quad \text{（解析解）}
+    \]
+\end{enumerate}
+
+\subsubsection{神经网络的三要素}
+
+\begin{enumerate}
+    \item \textbf{模型}：$f = \phi(x, w)$（非线性函数）
+    
+    \item \textbf{策略}：
+    \[
+    Loss = \sum_{i=1}^{n}(\phi(x_i, w) - y_i)^2
+    \]
+    
+    \item \textbf{算法}：梯度下降法
+    \[
+    w^* = \arg\min_w Loss(w)
+    \]
+\end{enumerate}
+
+\subsection{没有免费午餐定理（No Free Lunch Theorem）}
+
+\begin{theorem}[NFL定理]
+考虑所有可能的学习问题，任意学习算法A和学习算法B的平均性能相同。
+\end{theorem}
+
+\textbf{关键推论}：
+\begin{enumerate}
+    \item 如果在一个问题上模型A比模型B好，总能找到另一个问题使得模型A比模型B差
+    \item 没有一种模型可以解决所有机器学习问题
+    \item 需根据具体问题和数据特点选取合适模型
+    \item 简单模型（如线性回归）参数少，倾向于\textbf{欠拟合}；复杂模型（如神经网络）参数多，倾向于\textbf{过拟合}
+\end{enumerate}
+
+%========================================
+% 第2章 模型评估与选择
+%========================================
+\section{模型评估与选择}
+
+\subsection{机器学习核心流程}
+
+\begin{enumerate}
+    \item \textbf{基础流程}：训练集训练模型 $\to$ 测试集测试模型
+    \item \textbf{完整流程}：训练集 $\to$ 模型选择与超参数调优 $\to$ 完整训练 $\to$ 交付使用
+\end{enumerate}
+
+\subsection{模型选择与超参数选择}
+
+\subsubsection{超参数定义}
+
+\begin{definition}[超参数]
+超参数是在训练前需要人为设定的参数，不能通过训练数据直接学习得到。例如多项式模型：
+\[
+f = \sum_{i=1}^{k} w_i x^i + w_{k+1}
+\]
+其中 $k$（多项式次数）就是超参数。
+\end{definition}
+
+\subsubsection{欠拟合与过拟合}
+
+\begin{notebox}[关键矛盾]
+\begin{itemize}
+    \item \textbf{欠拟合}：模型复杂度不足，训练误差和测试误差均高
+    \item \textbf{过拟合}：模型复杂度过高，训练误差低但测试误差高
+\end{itemize}
+\end{notebox}
+
+\subsubsection{验证集划分方法}
+
+\begin{enumerate}
+    \item \textbf{留出法}：直接划分训练集、验证集、测试集（如7:1.5:1.5）
+    
+    \item \textbf{交叉验证法}：如k折交叉验证
+    \begin{itemize}
+        \item 将数据分成k份
+        \item 每次用k-1份训练，1份验证
+        \item 计算k次验证误差的平均值
+    \end{itemize}
+    
+    比较模型A和B：若 $\frac{1}{k}\sum_{i=1}^{k}e_{Ai} < \frac{1}{k}\sum_{i=1}^{k}e_{Bi}$，则模型A更优。
+    
+    \item \textbf{自助法}：有放回抽样，适用于小样本数据
+\end{enumerate}
+
+
+\begin{examplebox}[西瓜数据集：交叉验证示例]
+使用西瓜数据集（17个样本）进行4折交叉验证：
+\begin{enumerate}
+    \item 将17个样本分成4份（约4-5个样本/份）
+    \item 第1折：用样本1-4验证，5-17训练
+    \item 第2折：用样本5-8验证，其余训练
+    \item 第3折：用样本9-12验证，其余训练
+    \item 第4折：用样本13-17验证，其余训练
+    \item 计算4次验证准确率的平均值作为模型性能估计
+\end{enumerate}
+\end{examplebox}
+
+\subsection{性能评估指标}
+
+\subsubsection{回归问题指标}
+
+设有 $m$ 个样本，预测值为 $f_i$，真实值为 $y_i$。
+
+\begin{enumerate}
+    \item \textbf{平方和误差（SSE）}：
+    \[
+    SSE = \sum_{i=1}^{m}(f_i - y_i)^2
+    \]
+    
+    \item \textbf{均方误差（MSE）}：
+    \[
+    MSE = \frac{1}{m}\sum_{i=1}^{m}(f_i - y_i)^2
+    \]
+    
+    \item \textbf{均方根误差（RMSE）}：
+    \[
+    RMSE = \sqrt{\frac{1}{m}\sum_{i=1}^{m}(f_i - y_i)^2}
+    \]
+    
+    \item \textbf{平均绝对误差（MAE）}：
+    \[
+    MAE = \frac{1}{m}\sum_{i=1}^{m}|f_i - y_i|
+    \]
+\end{enumerate}
+
+\subsubsection{分类问题通用指标}
+
+\begin{definition}[准确率与错误率]
+\begin{align}
+acc &= \frac{1}{m}\sum_{i=1}^{m}\mathbb{I}(f_i = y_i) \quad \text{（预测正确样本占比）} \\
+err &= \frac{1}{m}\sum_{i=1}^{m}\mathbb{I}(f_i \neq y_i) \quad \text{（预测错误样本占比）}
+\end{align}
+其中 $\mathbb{I}(\cdot)$ 为指示函数，条件成立时为1，否则为0。
+
+显然有：$acc + err = 1$
+\end{definition}
+
+\subsubsection{二分类问题专用指标}
+
+\textbf{（1）混淆矩阵}
+
+\begin{table}[H]
+\centering
+\caption{混淆矩阵}
+\begin{tabular}{c|cc}
+\toprule
+真实$\backslash$预测 & 正例 & 反例 \\
+\midrule
+正例 & TP（真阳性） & FN（假阴性） \\
+反例 & FP（假阳性） & TN（真阴性） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{（2）核心指标}
+
+\begin{definition}[查准率、查全率与F1值]
+\begin{align}
+P &= \frac{TP}{TP + FP} \quad \text{（查准率：预测为正例中真实正例占比）} \\
+R &= \frac{TP}{TP + FN} \quad \text{（查全率：真实正例中被正确预测的占比）} \\
+F_1 &= \frac{2PR}{P + R} \quad \text{（F1值：P和R的调和平均）}
+\end{align}
+\end{definition}
+
+\begin{exercise}[混淆矩阵计算]
+某分类器在西瓜数据集上的预测结果如下：
+\begin{itemize}
+    \item 真实好瓜8个，预测为好瓜6个，预测为坏瓜2个
+    \item 真实坏瓜9个，预测为好瓜1个，预测为坏瓜8个
+\end{itemize}
+
+\textbf{解}：构建混淆矩阵：
+\begin{center}
+\begin{tabular}{c|cc}
+真实$\backslash$预测 & 好瓜 & 坏瓜 \\
+\hline
+好瓜 & TP=6 & FN=2 \\
+坏瓜 & FP=1 & TN=8 \\
+\end{tabular}
+\end{center}
+
+计算各指标：
+\begin{align*}
+P &= \frac{TP}{TP+FP} = \frac{6}{6+1} = \frac{6}{7} \approx 85.7\% \\
+R &= \frac{TP}{TP+FN} = \frac{6}{6+2} = \frac{6}{8} = 75\% \\
+F_1 &= \frac{2PR}{P+R} = \frac{2 \times \frac{6}{7} \times \frac{6}{8}}{\frac{6}{7} + \frac{6}{8}} = \frac{2 \times \frac{36}{56}}{\frac{48+42}{56}} = \frac{72}{90} = 80\% \\
+acc &= \frac{TP+TN}{TP+FN+FP+TN} = \frac{6+8}{17} \approx 82.4\%
+\end{align*}
+\end{exercise}
+
+\subsection{偏差与方差（泛化误差分解）}
+
+\subsubsection{基础前提}
+
+假设数据生成过程为：
+\[
+y_D(x) = y(x) + \epsilon
+\]
+其中 $y(x)$ 是真实函数，$\epsilon \sim N(0, \sigma^2)$ 是噪声。
+
+\subsubsection{核心概念}
+
+\begin{definition}[偏差与方差]
+\begin{itemize}
+    \item \textbf{期望泛化误差}：模型在所有可能数据集上的平均误差
+    \[
+    \mathbb{E}_D\left[(f_D - y_D)^2\right]
+    \]
+    
+    \item \textbf{偏差（Bias）}：模型预测均值与真实值的偏离
+    \[
+    bias^2 = \left(y - \mathbb{E}_D[f_D]\right)^2
+    \]
+    反映模型的\textbf{欠拟合}倾向。
+    
+    \item \textbf{方差（Variance）}：不同数据集训练的模型预测值的波动
+    \[
+    var = \mathbb{E}_D\left[(f_D - \mathbb{E}_D[f_D])^2\right]
+    \]
+    反映模型的\textbf{过拟合}倾向。
+\end{itemize}
+\end{definition}
+
+\subsubsection{泛化误差分解公式}
+
+\begin{theorem}[偏差-方差分解]
+\[
+\mathbb{E}_D\left[(f_D - y_D)^2\right] = \underbrace{\left(y - \mathbb{E}_D[f_D]\right)^2}_{bias^2} + \underbrace{Var[f_D]}_{variance} + \underbrace{\sigma^2}_{noise}
+\]
+即：泛化误差 = 偏差² + 方差 + 噪声
+\end{theorem}
+
+\textbf{推导过程}：
+
+设 $\bar{f} = \mathbb{E}_D[f_D]$，则：
+\begin{align*}
+\mathbb{E}_D[(f_D - y_D)^2] &= \mathbb{E}_D[(f_D - y + y - y_D)^2] \\
+&= \mathbb{E}_D[(f_D - y)^2] + \mathbb{E}_D[(y - y_D)^2] + 2\mathbb{E}_D[(f_D - y)(y - y_D)]
+\end{align*}
+
+由于 $\mathbb{E}[\epsilon] = 0$，交叉项为0，继续展开：
+\begin{align*}
+\mathbb{E}_D[(f_D - y)^2] &= \mathbb{E}_D[(f_D - \bar{f} + \bar{f} - y)^2] \\
+&= \mathbb{E}_D[(f_D - \bar{f})^2] + (\bar{f} - y)^2 \\
+&= Var[f_D] + bias^2
+\end{align*}
+
+而 $\mathbb{E}_D[(y - y_D)^2] = \mathbb{E}[\epsilon^2] = \sigma^2$，得证。
+
+
+%========================================
+% 第3章 线性模型
+%========================================
+\section{线性模型}
+
+\subsection{凸优化基础}
+
+\subsubsection{向量范数}
+
+\begin{definition}[向量范数]
+向量范数是衡量向量"大小"的函数，满足正定性、齐次性、三角不等式。常见范数：
+\begin{align}
+\|x\|_1 &= \sum_{i=1}^{d}|x_i| \quad \text{（1范数/曼哈顿距离）} \\
+\|x\|_2 &= \sqrt{\sum_{i=1}^{d}x_i^2} \quad \text{（2范数/欧氏距离）} \\
+\|x\|_\infty &= \max_{i=1}^{d}|x_i| \quad \text{（无穷范数）}
+\end{align}
+\end{definition}
+
+\begin{example}[范数计算]
+设 $x = [3, -4, 0]^T$，计算各范数：
+\begin{align*}
+\|x\|_1 &= |3| + |-4| + |0| = 7 \\
+\|x\|_2 &= \sqrt{3^2 + (-4)^2 + 0^2} = \sqrt{25} = 5 \\
+\|x\|_\infty &= \max\{|3|, |-4|, |0|\} = 4
+\end{align*}
+\end{example}
+
+\subsubsection{凸集与凸函数}
+
+\begin{definition}[凸集]
+集合 $C$ 是凸集，当且仅当对任意 $x, y \in C$ 和 $\lambda \in [0,1]$：
+\[
+\lambda x + (1-\lambda)y \in C
+\]
+即任意两点的连线仍在集合内。例如：$\mathbb{R}^d$、半空间 $\{x: a^Tx \leq b\}$ 都是凸集。
+\end{definition}
+
+\begin{definition}[凸函数]
+函数 $f$ 是凸函数，当且仅当对任意 $x, y$ 和 $\lambda \in [0,1]$：
+\[
+f(\lambda x + (1-\lambda)y) \leq \lambda f(x) + (1-\lambda)f(y)
+\]
+
+\textbf{二阶判定条件}：若 $f$ 二阶可微，则 $f$ 是凸函数当且仅当海森矩阵 $\nabla^2 f(x)$ 半正定。
+\end{definition}
+
+\begin{theorem}[凸优化性质]
+凸优化问题的局部最优解即为全局最优解。
+\end{theorem}
+
+\subsection{一元线性回归}
+
+\subsubsection{模型形式}
+
+\[
+f(x) = w_1 x + w_2
+\]
+其中 $w_1$ 为斜率，$w_2$ 为截距。
+
+\subsubsection{损失函数}
+
+给定训练数据 $\{(x_i, y_i)\}_{i=1}^{n}$，平方和损失函数为：
+\[
+Loss(w_1, w_2) = \sum_{i=1}^{n}(w_1 x_i + w_2 - y_i)^2
+\]
+
+\subsubsection{求解过程}
+
+\textbf{步骤1}：展开损失函数
+\begin{align*}
+Loss &= \sum_{i=1}^{n}(w_1 x_i + w_2 - y_i)^2 \\
+&= \sum_{i=1}^{n}(w_1^2 x_i^2 + w_2^2 + y_i^2 + 2w_1w_2x_i - 2w_1x_iy_i - 2w_2y_i) \\
+&= w_1^2\sum x_i^2 + nw_2^2 + \sum y_i^2 + 2w_1w_2\sum x_i - 2w_1\sum x_iy_i - 2w_2\sum y_i
+\end{align*}
+
+\textbf{步骤2}：计算梯度
+\begin{align*}
+\frac{\partial Loss}{\partial w_1} &= 2w_1\sum x_i^2 + 2w_2\sum x_i - 2\sum x_iy_i = 0 \\
+\frac{\partial Loss}{\partial w_2} &= 2nw_2 + 2w_1\sum x_i - 2\sum y_i = 0
+\end{align*}
+
+\textbf{步骤3}：解方程组得最优解
+\begin{align}
+w_1^* &= \frac{n\sum x_iy_i - \sum x_i \sum y_i}{n\sum x_i^2 - (\sum x_i)^2} \\
+w_2^* &= \frac{\sum y_i - w_1^*\sum x_i}{n} = \bar{y} - w_1^*\bar{x}
+\end{align}
+
+\begin{exercise}[一元线性回归]
+给定5组训练数据：$x = [1, 2, 3, 4, 5]$，$y = [4.5, 7.1, 9.9, 11.9, 12.3]$，求最优线性模型。
+
+\textbf{解}：计算中间量：
+\begin{align*}
+n &= 5, \quad \sum x_i = 15, \quad \sum y_i = 45.7 \\
+\sum x_i^2 &= 1 + 4 + 9 + 16 + 25 = 55 \\
+\sum x_iy_i &= 1 \times 4.5 + 2 \times 7.1 + 3 \times 9.9 + 4 \times 11.9 + 5 \times 12.3 \\
+&= 4.5 + 14.2 + 29.7 + 47.6 + 61.5 = 157.5
+\end{align*}
+
+代入公式：
+\begin{align*}
+w_1^* &= \frac{5 \times 157.5 - 15 \times 45.7}{5 \times 55 - 15^2} = \frac{787.5 - 685.5}{275 - 225} = \frac{102}{50} = 2.04 \\
+w_2^* &= \frac{45.7 - 2.04 \times 15}{5} = \frac{45.7 - 30.6}{5} = \frac{15.1}{5} = 3.02
+\end{align*}
+
+最终模型：$\boxed{f(x) = 2.04x + 3.02}$
+
+\textbf{验证凸性}：海森矩阵
+\[
+\nabla^2 Loss = \begin{bmatrix} 2\sum x_i^2 & 2\sum x_i \\ 2\sum x_i & 2n \end{bmatrix} = \begin{bmatrix} 110 & 30 \\ 30 & 10 \end{bmatrix}
+\]
+特征值均为正，故损失函数是凸函数，所求为全局最优解。
+\end{exercise}
+
+\subsection{多元线性回归}
+
+\subsubsection{模型形式}
+
+\[
+f(\mathbf{x}) = w_1x_1 + w_2x_2 + \cdots + w_dx_d + w_{d+1} = \mathbf{w}^T\mathbf{x}
+\]
+
+\subsubsection{矩阵表示}
+
+设计矩阵（增广矩阵）：
+\[
+X = \begin{bmatrix}
+x_{11} & x_{12} & \cdots & x_{1d} & 1 \\
+x_{21} & x_{22} & \cdots & x_{2d} & 1 \\
+\vdots & \vdots & \ddots & \vdots & \vdots \\
+x_{m1} & x_{m2} & \cdots & x_{md} & 1
+\end{bmatrix}_{m \times (d+1)}
+\]
+
+参数向量：$\mathbf{w} = [w_1, w_2, \cdots, w_d, w_{d+1}]^T$
+
+标签向量：$\mathbf{y} = [y_1, y_2, \cdots, y_m]^T$
+
+\subsubsection{损失函数与解析解}
+
+\begin{align}
+Loss(\mathbf{w}) &= (X\mathbf{w} - \mathbf{y})^T(X\mathbf{w} - \mathbf{y}) \\
+&= \mathbf{w}^TX^TX\mathbf{w} - 2\mathbf{w}^TX^T\mathbf{y} + \mathbf{y}^T\mathbf{y}
+\end{align}
+
+\textbf{求解}：令梯度为零
+\[
+\nabla Loss = 2X^TX\mathbf{w} - 2X^T\mathbf{y} = 0
+\]
+
+\begin{theorem}[多元线性回归解析解]
+\[
+\mathbf{w}^* = (X^TX)^{-1}X^T\mathbf{y}
+\]
+前提：$X^TX$ 可逆（即 $X$ 列满秩）。
+\end{theorem}
+
+\textbf{凸性验证}：海森矩阵 $\nabla^2 Loss = 2X^TX$ 半正定，故损失函数是凸函数。
+
+
+\subsection{多项式回归}
+
+\subsubsection{模型形式}
+
+\[
+f(x) = w_1x^k + w_2x^{k-1} + \cdots + w_kx + w_{k+1}
+\]
+其中 $k$ 为多项式次数，是\textbf{超参数}。
+
+\subsubsection{转化为多元线性回归}
+
+将 $x^k, x^{k-1}, \cdots, x, 1$ 视为新特征，构造设计矩阵：
+\[
+X = \begin{bmatrix}
+x_1^k & x_1^{k-1} & \cdots & x_1 & 1 \\
+x_2^k & x_2^{k-1} & \cdots & x_2 & 1 \\
+\vdots & \vdots & \ddots & \vdots & \vdots \\
+x_m^k & x_m^{k-1} & \cdots & x_m & 1
+\end{bmatrix}
+\]
+
+解析解同样为：$\mathbf{w}^* = (X^TX)^{-1}X^T\mathbf{y}$
+
+\subsection{正则化（防止过拟合）}
+
+\subsubsection{Lasso回归（L1正则化）}
+
+\[
+Loss(\mathbf{w}) = (X\mathbf{w} - \mathbf{y})^T(X\mathbf{w} - \mathbf{y}) + \lambda\|\mathbf{w}\|_1
+\]
+
+\textbf{特点}：可实现特征选择（部分权重变为0）。
+
+\subsubsection{岭回归（L2正则化）}
+
+\[
+Loss(\mathbf{w}) = (X\mathbf{w} - \mathbf{y})^T(X\mathbf{w} - \mathbf{y}) + \lambda\|\mathbf{w}\|_2^2
+\]
+
+\textbf{解析解}：
+\[
+\mathbf{w}^* = (X^TX + \lambda I)^{-1}X^T\mathbf{y}
+\]
+
+\textbf{特点}：稳定参数估计，防止 $X^TX$ 奇异。
+
+\begin{notebox}[正则化参数 $\lambda$]
+\begin{itemize}
+    \item $\lambda$ 越大，正则化越强，模型越简单，偏向欠拟合
+    \item $\lambda$ 越小，正则化越弱，模型越复杂，偏向过拟合
+    \item $\lambda$ 是超参数，需通过验证集调优
+\end{itemize}
+\end{notebox}
+
+\subsection{逻辑回归（二分类）}
+
+\subsubsection{模型核心}
+
+逻辑回归用于二分类问题，输出样本属于正类的概率。
+
+\textbf{线性部分}：
+\[
+z = \mathbf{w}^T\mathbf{x} = w_1x_1 + w_2x_2 + \cdots + w_dx_d + w_{d+1}
+\]
+
+\textbf{Sigmoid映射}：
+\[
+\sigma(z) = \frac{1}{1 + e^{-z}}
+\]
+
+\textbf{概率输出}：
+\begin{align}
+P(Y=1|\mathbf{x}) &= \sigma(\mathbf{w}^T\mathbf{x}) = \frac{1}{1 + e^{-\mathbf{w}^T\mathbf{x}}} \\
+P(Y=0|\mathbf{x}) &= 1 - P(Y=1|\mathbf{x}) = \frac{e^{-\mathbf{w}^T\mathbf{x}}}{1 + e^{-\mathbf{w}^T\mathbf{x}}}
+\end{align}
+
+\subsubsection{Sigmoid函数性质}
+
+\begin{enumerate}
+    \item 值域：$(0, 1)$，适合表示概率
+    \item 单调递增
+    \item 导数：$\sigma'(z) = \sigma(z)(1 - \sigma(z))$
+    \item 对称性：$\sigma(-z) = 1 - \sigma(z)$
+\end{enumerate}
+
+\subsubsection{损失函数推导}
+
+\textbf{似然函数}（最大化样本出现概率）：
+\[
+L(\mathbf{w}) = \prod_{i=1}^{m} P(Y=y_i|\mathbf{x}_i) = \prod_{i=1}^{m} \sigma(\mathbf{x}_i)^{y_i}(1-\sigma(\mathbf{x}_i))^{1-y_i}
+\]
+
+\textbf{对数似然}：
+\[
+\log L(\mathbf{w}) = \sum_{i=1}^{m}\left[y_i\log\sigma(\mathbf{x}_i) + (1-y_i)\log(1-\sigma(\mathbf{x}_i))\right]
+\]
+
+\textbf{负对数似然（交叉熵损失）}：
+\[
+H(\mathbf{w}) = -\log L(\mathbf{w}) = \sum_{i=1}^{m}\left[-y_i\log\sigma(\mathbf{x}_i) - (1-y_i)\log(1-\sigma(\mathbf{x}_i))\right]
+\]
+
+\subsubsection{梯度计算}
+
+\begin{align*}
+\frac{\partial H}{\partial \mathbf{w}} &= \sum_{i=1}^{m}\left[-y_i\frac{\sigma'(\mathbf{x}_i)}{\sigma(\mathbf{x}_i)} + (1-y_i)\frac{\sigma'(\mathbf{x}_i)}{1-\sigma(\mathbf{x}_i)}\right]\mathbf{x}_i \\
+&= \sum_{i=1}^{m}\left[-y_i(1-\sigma(\mathbf{x}_i)) + (1-y_i)\sigma(\mathbf{x}_i)\right]\mathbf{x}_i \\
+&= \sum_{i=1}^{m}\left[\sigma(\mathbf{x}_i) - y_i\right]\mathbf{x}_i
+\end{align*}
+
+\subsubsection{梯度下降求解}
+
+由于无解析解，使用梯度下降法迭代：
+\[
+\mathbf{w}^{(t+1)} = \mathbf{w}^{(t)} - \eta \nabla H(\mathbf{w}^{(t)})
+\]
+其中 $\eta$ 为学习率。
+
+\begin{exercise}[逻辑回归预测]
+已知逻辑回归模型：
+\[
+P(Y=1|\mathbf{x}) = \frac{1}{1 + e^{-(1.2x_1 + 0.6x_2 - 10)}}
+\]
+对以下样本进行预测（阈值0.5）：
+
+\textbf{解}：
+\begin{enumerate}
+    \item $\mathbf{x} = [3, 4]^T$：
+    \[
+    z = 1.2 \times 3 + 0.6 \times 4 - 10 = 3.6 + 2.4 - 10 = -4
+    \]
+    \[
+    P(Y=1) = \frac{1}{1+e^4} \approx 0.018 < 0.5 \Rightarrow \text{预测标签} = 0
+    \]
+    
+    \item $\mathbf{x} = [5, 6]^T$：
+    \[
+    z = 1.2 \times 5 + 0.6 \times 6 - 10 = 6 + 3.6 - 10 = -0.4
+    \]
+    \[
+    P(Y=1) = \frac{1}{1+e^{0.4}} \approx 0.401 < 0.5 \Rightarrow \text{预测标签} = 0
+    \]
+    
+    \item $\mathbf{x} = [7, 8]^T$：
+    \[
+    z = 1.2 \times 7 + 0.6 \times 8 - 10 = 8.4 + 4.8 - 10 = 3.2
+    \]
+    \[
+    P(Y=1) = \frac{1}{1+e^{-3.2}} \approx 0.961 > 0.5 \Rightarrow \text{预测标签} = 1
+    \]
+\end{enumerate}
+\end{exercise}
+
+\subsection{线性判别分析（LDA）}
+
+\subsubsection{核心思想}
+
+通过投影向量 $\mathbf{w}$ 将样本投影到一维空间，使投影后\textbf{两类均值差最大、类内方差和最小}。
+
+\subsubsection{投影计算}
+
+样本 $\mathbf{x}$ 的投影值：$z = \mathbf{w}^T\mathbf{x}$
+
+\subsubsection{均值与方差}
+
+设两类样本的原始均值为 $\tilde{\mu}_0, \tilde{\mu}_1$，协方差矩阵为 $\Sigma_0, \Sigma_1$。
+
+投影后：
+\begin{align}
+\text{类均值：} \quad \mu_i &= \mathbf{w}^T\tilde{\mu}_i \\
+\text{类方差：} \quad \sigma_i^2 &= \mathbf{w}^T\Sigma_i\mathbf{w}
+\end{align}
+
+\subsubsection{目标函数}
+
+最大化类间分离度：
+\[
+J(\mathbf{w}) = \frac{(\mu_1 - \mu_0)^2}{\sigma_1^2 + \sigma_0^2} = \frac{\mathbf{w}^T(\tilde{\mu}_1 - \tilde{\mu}_0)(\tilde{\mu}_1 - \tilde{\mu}_0)^T\mathbf{w}}{\mathbf{w}^T(\Sigma_1 + \Sigma_0)\mathbf{w}}
+\]
+
+定义：
+\begin{itemize}
+    \item 类间散度矩阵：$S_b = (\tilde{\mu}_1 - \tilde{\mu}_0)(\tilde{\mu}_1 - \tilde{\mu}_0)^T$
+    \item 类内散度矩阵：$S_w = \Sigma_0 + \Sigma_1$
+\end{itemize}
+
+则目标函数为：
+\[
+J(\mathbf{w}) = \frac{\mathbf{w}^TS_b\mathbf{w}}{\mathbf{w}^TS_w\mathbf{w}}
+\]
+
+\subsubsection{最优解}
+
+\[
+\mathbf{w}^* = S_w^{-1}(\tilde{\mu}_1 - \tilde{\mu}_0)
+\]
+
+\subsection{多分类扩展策略}
+
+\begin{table}[H]
+\centering
+\caption{二分类器扩展多分类策略}
+\begin{tabular}{ccc}
+\toprule
+\textbf{策略} & \textbf{核心思路} & \textbf{分类器数量} \\
+\midrule
+一对一（OvO） & 每两类训练一个分类器，投票 & $C_k^2 = \frac{k(k-1)}{2}$ \\
+一对多（OvR） & 每类对其他所有类，取概率最大 & $k$ \\
+多对多（MvM） & 类别划分为子集组合 & 自定义 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%========================================
+% 第4章 决策树
+%========================================
+\section{决策树}
+
+\subsection{基本概念}
+
+\begin{definition}[决策树结构]
+决策树由以下部分组成：
+\begin{itemize}
+    \item \textbf{根节点}：最顶层节点，对应第一个划分属性
+    \item \textbf{内部节点}：对应特征属性
+    \item \textbf{叶节点}：对应类别标签
+    \item \textbf{分支}：对应属性的取值
+\end{itemize}
+一条从根到叶的路径对应一条分类规则。
+\end{definition}
+
+\begin{examplebox}[西瓜数据集决策树示例]
+以西瓜数据集为例，一个可能的决策树：
+\begin{verbatim}
+            [纹理]
+           /  |  \
+        清晰 稍糊 模糊
+         /    |    \
+      [根蒂] [触感]  坏瓜
+       / \    / \
+    蜷缩 其他 硬滑 软粘
+     /    \    |    |
+   好瓜  [色泽] 坏瓜 好瓜
+\end{verbatim}
+\end{examplebox}
+
+\subsection{属性划分准则}
+
+决策树构建的关键是选择最优属性，核心目标是\textbf{降低样本标签的不确定性}。
+
+\subsubsection{信息熵}
+
+\begin{definition}[信息熵]
+信息熵衡量样本集合的不确定性：
+\[
+Ent(D) = -\sum_{i=1}^{k} p_i \log_2 p_i
+\]
+其中 $p_i$ 为第 $i$ 类样本占比，$k$ 为类别数。
+
+\textbf{性质}：
+\begin{itemize}
+    \item $Ent(D) \geq 0$
+    \item 当所有样本属于同一类时，$Ent(D) = 0$（最确定）
+    \item 当各类样本均匀分布时，$Ent(D)$ 最大（最不确定）
+\end{itemize}
+\end{definition}
+
+\begin{example}[信息熵计算]
+设样本集 $D$ 有15个样本，其中9个正例、6个反例。
+\begin{align*}
+p_+ &= \frac{9}{15} = 0.6, \quad p_- = \frac{6}{15} = 0.4 \\
+Ent(D) &= -0.6\log_2 0.6 - 0.4\log_2 0.4 \\
+&= -0.6 \times (-0.737) - 0.4 \times (-1.322) \\
+&= 0.442 + 0.529 = 0.971
+\end{align*}
+\end{example}
+
+\subsubsection{信息增益}
+
+\begin{definition}[信息增益]
+信息增益衡量属性划分后样本集信息熵的减少量：
+\[
+Gain(D, a) = Ent(D) - \sum_{v=1}^{V} \frac{|D^v|}{|D|} Ent(D^v)
+\]
+其中 $V$ 为属性 $a$ 的取值数，$D^v$ 为属性 $a$ 取第 $v$ 个值的样本子集。
+
+\textbf{选择准则}：选择信息增益最大的属性进行划分。
+\end{definition}
+
+\begin{exercise}[西瓜数据集：信息增益计算]
+使用西瓜数据集（17个样本，8个好瓜，9个坏瓜），计算"色泽"属性的信息增益。
+
+\textbf{解}：
+
+\textbf{步骤1}：计算根节点信息熵
+\[
+Ent(D) = -\frac{8}{17}\log_2\frac{8}{17} - \frac{9}{17}\log_2\frac{9}{17} = 0.998
+\]
+
+\textbf{步骤2}：按"色泽"划分
+\begin{itemize}
+    \item 青绿（6个）：好瓜3个，坏瓜3个
+    \[
+    Ent(D^{\text{青绿}}) = -\frac{3}{6}\log_2\frac{3}{6} - \frac{3}{6}\log_2\frac{3}{6} = 1.0
+    \]
+    
+    \item 乌黑（6个）：好瓜4个，坏瓜2个
+    \[
+    Ent(D^{\text{乌黑}}) = -\frac{4}{6}\log_2\frac{4}{6} - \frac{2}{6}\log_2\frac{2}{6} = 0.918
+    \]
+    
+    \item 浅白（5个）：好瓜1个，坏瓜4个
+    \[
+    Ent(D^{\text{浅白}}) = -\frac{1}{5}\log_2\frac{1}{5} - \frac{4}{5}\log_2\frac{4}{5} = 0.722
+    \]
+\end{itemize}
+
+\textbf{步骤3}：计算信息增益
+\begin{align*}
+Gain(D, \text{色泽}) &= Ent(D) - \sum_{v} \frac{|D^v|}{|D|} Ent(D^v) \\
+&= 0.998 - \left(\frac{6}{17} \times 1.0 + \frac{6}{17} \times 0.918 + \frac{5}{17} \times 0.722\right) \\
+&= 0.998 - (0.353 + 0.324 + 0.212) \\
+&= 0.998 - 0.889 = \boxed{0.109}
+\end{align*}
+\end{exercise}
+
+\subsubsection{信息增益率}
+
+\begin{definition}[信息增益率]
+信息增益偏向取值多的属性，引入属性固有值进行修正：
+\[
+IV(a) = -\sum_{v=1}^{V} \frac{|D^v|}{|D|} \log_2 \frac{|D^v|}{|D|}
+\]
+
+信息增益率：
+\[
+Gain\_ratio(D, a) = \frac{Gain(D, a)}{IV(a)}
+\]
+\end{definition}
+
+\begin{example}[信息增益率计算]
+继续上例，计算"色泽"的信息增益率：
+\begin{align*}
+IV(\text{色泽}) &= -\frac{6}{17}\log_2\frac{6}{17} - \frac{6}{17}\log_2\frac{6}{17} - \frac{5}{17}\log_2\frac{5}{17} \\
+&= -0.353 \times (-1.503) - 0.353 \times (-1.503) - 0.294 \times (-1.766) \\
+&= 0.530 + 0.530 + 0.519 = 1.579
+\end{align*}
+
+\[
+Gain\_ratio(D, \text{色泽}) = \frac{0.109}{1.579} = 0.069
+\]
+\end{example}
+
+\subsubsection{基尼指数}
+
+\begin{definition}[基尼值与基尼指数]
+基尼值衡量随机抽取两个样本标签不同的概率：
+\[
+Gini(D) = 1 - \sum_{i=1}^{k} p_i^2
+\]
+
+基尼指数（划分后加权平均）：
+\[
+Gini\_index(D, a) = \sum_{v=1}^{V} \frac{|D^v|}{|D|} Gini(D^v)
+\]
+
+\textbf{选择准则}：选择基尼指数最小的属性进行划分。
+\end{definition}
+
+\begin{exercise}[西瓜数据集：基尼指数计算]
+计算西瓜数据集按"纹理"属性划分的基尼指数。
+
+\textbf{解}：
+
+\textbf{步骤1}：按"纹理"划分
+\begin{itemize}
+    \item 清晰（9个）：好瓜7个，坏瓜2个
+    \[
+    Gini(D^{\text{清晰}}) = 1 - \left(\frac{7}{9}\right)^2 - \left(\frac{2}{9}\right)^2 = 1 - 0.605 - 0.049 = 0.346
+    \]
+    
+    \item 稍糊（5个）：好瓜1个，坏瓜4个
+    \[
+    Gini(D^{\text{稍糊}}) = 1 - \left(\frac{1}{5}\right)^2 - \left(\frac{4}{5}\right)^2 = 1 - 0.04 - 0.64 = 0.32
+    \]
+    
+    \item 模糊（3个）：好瓜0个，坏瓜3个
+    \[
+    Gini(D^{\text{模糊}}) = 1 - 0^2 - 1^2 = 0
+    \]
+\end{itemize}
+
+\textbf{步骤2}：计算基尼指数
+\begin{align*}
+Gini\_index(D, \text{纹理}) &= \frac{9}{17} \times 0.346 + \frac{5}{17} \times 0.32 + \frac{3}{17} \times 0 \\
+&= 0.183 + 0.094 + 0 = \boxed{0.277}
+\end{align*}
+\end{exercise}
+
+\subsection{决策树构建流程}
+
+\begin{enumerate}
+    \item 计算所有属性的划分准则（信息增益/增益率/基尼指数）
+    \item 选择最优属性作为当前节点
+    \item 按属性取值划分样本，生成子节点
+    \item 对每个子节点递归执行步骤1-3
+    \item 终止条件：
+    \begin{itemize}
+        \item 子集样本属于同一类（叶节点标记为该类）
+        \item 无属性可用（叶节点标记为多数类）
+        \item 子集为空（叶节点标记为父节点多数类）
+    \end{itemize}
+\end{enumerate}
+
+\subsection{决策树剪枝}
+
+\begin{table}[H]
+\centering
+\caption{决策树剪枝策略}
+\begin{tabular}{ccc}
+\toprule
+\textbf{类型} & \textbf{核心思路} & \textbf{优缺点} \\
+\midrule
+预剪枝 & 生长过程中提前停止 & 训练快，有欠拟合风险 \\
+后剪枝 & 先生成完整树，再剪去冗余分支 & 泛化好，训练开销大 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{连续值处理}
+
+\begin{definition}[连续属性离散化]
+对连续属性 $a$，将样本按 $a$ 排序后，取相邻值的中点作为候选划分点：
+\[
+t_i = \frac{a_i + a_{i+1}}{2}, \quad i = 1, 2, \cdots, n-1
+\]
+
+选择最优划分点：
+\[
+t^* = \arg\max_{t_i} Gain(D, a, t_i)
+\]
+\end{definition}
+
+\subsection{缺失值处理}
+
+计算信息增益时，仅考虑有该属性值的样本，权重为"无缺失值样本占比"：
+\[
+Gain(D, a) = \rho \times Gain(\tilde{D}, a)
+\]
+其中 $\rho = \frac{|\tilde{D}|}{|D|}$，$\tilde{D}$ 为无缺失值的样本子集。
+
+
+%========================================
+% 第5章 神经网络
+%========================================
+\section{神经网络}
+
+\subsection{感知机模型}
+
+\subsubsection{核心前提}
+
+感知机仅适用于\textbf{线性可分}问题，是最简单的神经网络模型。
+
+\subsubsection{模型公式}
+
+\begin{align}
+y &= f\left(w_1x_1 + w_2x_2 + \cdots + w_dx_d - \theta\right) \\
+&= f\left(\sum_{i=1}^{d} w_ix_i - \theta\right) \\
+&= f\left(\mathbf{w}^T\mathbf{x} - \theta\right)
+\end{align}
+
+其中：
+\begin{itemize}
+    \item $\mathbf{w} = [w_1, w_2, \cdots, w_d]^T$ 为权重向量
+    \item $\theta$ 为阈值（偏置）
+    \item $f(\cdot)$ 为激活函数
+\end{itemize}
+
+\subsubsection{常用激活函数}
+
+\begin{enumerate}
+    \item \textbf{符号函数}（阶跃函数）：
+    \[
+    sgn(z) = \begin{cases} 1, & z \geq 0 \\ -1, & z < 0 \end{cases}
+    \]
+    输出离散值，用于简单分类。
+    
+    \item \textbf{Sigmoid函数}：
+    \[
+    \sigma(z) = \frac{1}{1 + e^{-z}}
+    \]
+    输出 $(0, 1)$ 区间值，适用于概率输出。
+    
+    \item \textbf{ReLU函数}：
+    \[
+    ReLU(z) = \max(0, z)
+    \]
+    计算简单，缓解梯度消失问题。
+    
+    \item \textbf{Tanh函数}：
+    \[
+    \tanh(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}}
+    \]
+    输出 $(-1, 1)$ 区间值，零中心化。
+\end{enumerate}
+
+\subsection{神经网络基本结构}
+
+\begin{table}[H]
+\centering
+\caption{神经网络各层特点}
+\begin{tabular}{cc}
+\toprule
+\textbf{层级} & \textbf{核心特点} \\
+\midrule
+输入层 & 无神经元，节点数 = 输入特征数 $d$ \\
+隐层 & 有神经元，层数和节点数为超参数 \\
+输出层 & 有神经元，回归问题1个节点，$k$分类问题$k$个节点 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{前向传播}
+
+前向传播是输入数据从输入层经隐层到输出层的计算过程。
+
+\subsubsection{单隐层网络}
+
+设输入 $\mathbf{x} \in \mathbb{R}^d$，隐层有 $q$ 个节点。
+
+\textbf{隐层计算}：
+\begin{align}
+\text{线性变换：} \quad \mathbf{z} &= W^T\mathbf{x} - \mathbf{b} \\
+\text{激活变换：} \quad \mathbf{a} &= \sigma(\mathbf{z})
+\end{align}
+
+其中 $W \in \mathbb{R}^{d \times q}$ 为隐层权重矩阵，$\mathbf{b} \in \mathbb{R}^q$ 为隐层偏置向量。
+
+\textbf{输出层计算}：
+\begin{align}
+\text{线性变换：} \quad t &= \mathbf{v}^T\mathbf{a} - \theta \\
+\text{激活变换：} \quad y &= \sigma(t)
+\end{align}
+
+其中 $\mathbf{v} \in \mathbb{R}^q$ 为输出层权重向量，$\theta$ 为输出层阈值。
+
+\textbf{整体公式}：
+\[
+y = \sigma\left(\mathbf{v}^T\sigma\left(W^T\mathbf{x} - \mathbf{b}\right) - \theta\right)
+\]
+
+\begin{exercise}[前向传播计算]
+给定神经网络参数：
+\begin{itemize}
+    \item 输入：$\mathbf{x} = [1, 2, 3]^T$
+    \item 隐层权重：$w_{11}=2, w_{21}=1, w_{31}=4; w_{12}=-2, w_{22}=-3, w_{32}=1$
+    \item 隐层偏置：$b_1=14, b_2=-4$
+    \item 输出层权重：$v_1=1, v_2=2$
+    \item 输出层阈值：$\theta=2$
+    \item 激活函数：Sigmoid $\sigma(z) = \frac{1}{1+e^{-z}}$
+\end{itemize}
+
+计算网络输出。
+
+\textbf{解}：
+
+\textbf{步骤1}：隐层输入
+\begin{align*}
+z_1 &= w_{11}x_1 + w_{21}x_2 + w_{31}x_3 - b_1 \\
+&= 2 \times 1 + 1 \times 2 + 4 \times 3 - 14 \\
+&= 2 + 2 + 12 - 14 = 2 \\
+z_2 &= w_{12}x_1 + w_{22}x_2 + w_{32}x_3 - b_2 \\
+&= -2 \times 1 + (-3) \times 2 + 1 \times 3 - (-4) \\
+&= -2 - 6 + 3 + 4 = -1
+\end{align*}
+
+\textbf{步骤2}：隐层输出
+\begin{align*}
+a_1 &= \sigma(z_1) = \sigma(2) = \frac{1}{1+e^{-2}} \approx 0.8808 \\
+a_2 &= \sigma(z_2) = \sigma(-1) = \frac{1}{1+e^{1}} \approx 0.2689
+\end{align*}
+
+\textbf{步骤3}：输出层输入
+\begin{align*}
+t &= v_1a_1 + v_2a_2 - \theta \\
+&= 1 \times 0.8808 + 2 \times 0.2689 - 2 \\
+&= 0.8808 + 0.5378 - 2 = -0.5814
+\end{align*}
+
+\textbf{步骤4}：最终输出
+\[
+y = \sigma(t) = \sigma(-0.5814) = \frac{1}{1+e^{0.5814}} \approx \boxed{0.3586}
+\]
+\end{exercise}
+
+\subsection{反向传播算法（BP算法）}
+
+\subsubsection{核心思想}
+
+利用链式法则，从输出层向输入层逐层计算损失函数对各参数的梯度，然后用梯度下降更新参数。
+
+\subsubsection{损失函数}
+
+对于单个样本 $(\mathbf{x}, y)$，均方误差损失：
+\[
+E = \frac{1}{2}(\hat{y} - y)^2
+\]
+
+\subsubsection{梯度计算（输出层）}
+
+设输出层输入为 $t$，输出为 $\hat{y} = \sigma(t)$。
+
+\begin{align}
+\frac{\partial E}{\partial v_j} &= \frac{\partial E}{\partial \hat{y}} \cdot \frac{\partial \hat{y}}{\partial t} \cdot \frac{\partial t}{\partial v_j} \\
+&= (\hat{y} - y) \cdot \sigma'(t) \cdot a_j
+\end{align}
+
+定义输出层误差项：
+\[
+\delta_o = (\hat{y} - y) \cdot \sigma'(t) = (\hat{y} - y) \cdot \hat{y}(1-\hat{y})
+\]
+
+则：$\frac{\partial E}{\partial v_j} = \delta_o \cdot a_j$
+
+\subsubsection{梯度计算（隐层）}
+
+\begin{align}
+\frac{\partial E}{\partial w_{ij}} &= \frac{\partial E}{\partial a_j} \cdot \frac{\partial a_j}{\partial z_j} \cdot \frac{\partial z_j}{\partial w_{ij}} \\
+&= \delta_o \cdot v_j \cdot \sigma'(z_j) \cdot x_i
+\end{align}
+
+定义隐层误差项：
+\[
+\delta_j = \delta_o \cdot v_j \cdot \sigma'(z_j) = \delta_o \cdot v_j \cdot a_j(1-a_j)
+\]
+
+则：$\frac{\partial E}{\partial w_{ij}} = \delta_j \cdot x_i$
+
+\subsubsection{参数更新}
+
+\begin{align}
+v_j &\leftarrow v_j - \eta \cdot \delta_o \cdot a_j \\
+w_{ij} &\leftarrow w_{ij} - \eta \cdot \delta_j \cdot x_i \\
+\theta &\leftarrow \theta + \eta \cdot \delta_o \\
+b_j &\leftarrow b_j + \eta \cdot \delta_j
+\end{align}
+
+其中 $\eta$ 为学习率。
+
+\subsection{梯度下降变体}
+
+\begin{enumerate}
+    \item \textbf{批量梯度下降（BGD）}：使用全部样本计算梯度
+    \[
+    \mathbf{w} \leftarrow \mathbf{w} - \eta \cdot \frac{1}{m}\sum_{i=1}^{m}\nabla E_i
+    \]
+    
+    \item \textbf{随机梯度下降（SGD）}：每次使用单个样本
+    \[
+    \mathbf{w} \leftarrow \mathbf{w} - \eta \cdot \nabla E_i
+    \]
+    
+    \item \textbf{小批量梯度下降（Mini-batch）}：使用小批量样本
+    \[
+    \mathbf{w} \leftarrow \mathbf{w} - \eta \cdot \frac{1}{|B|}\sum_{i \in B}\nabla E_i
+    \]
+\end{enumerate}
+
+
+%========================================
+% 第6章 支持向量机
+%========================================
+\section{支持向量机}
+
+\subsection{线性支持向量机（硬间隔）}
+
+\subsubsection{核心目标}
+
+找到最大化"间隔"的分隔超平面，使两类样本被正确分开且距离超平面最远。
+
+\subsubsection{模型形式}
+
+决策函数：
+\[
+f(\mathbf{x}) = sign(\mathbf{w}^T\mathbf{x} + b)
+\]
+
+其中 $\mathbf{w}$ 为权重向量，$b$ 为偏置。
+
+\subsubsection{间隔推导}
+
+\textbf{点到超平面距离}：
+
+对于超平面 $\mathbf{w}^T\mathbf{x} + b = 0$，样本 $\mathbf{x}_i$ 到超平面的距离为：
+\[
+d_i = \frac{|\mathbf{w}^T\mathbf{x}_i + b|}{\|\mathbf{w}\|}
+\]
+
+\textbf{函数间隔与几何间隔}：
+
+定义函数间隔：$\hat{\gamma}_i = y_i(\mathbf{w}^T\mathbf{x}_i + b)$
+
+几何间隔：$\gamma_i = \frac{y_i(\mathbf{w}^T\mathbf{x}_i + b)}{\|\mathbf{w}\|} = \frac{\hat{\gamma}_i}{\|\mathbf{w}\|}$
+
+\textbf{间隔}：
+
+令最小函数间隔为1（归一化），则间隔为：
+\[
+\gamma = \frac{2}{\|\mathbf{w}\|}
+\]
+
+\subsubsection{优化问题}
+
+\textbf{原始问题}：
+\begin{align}
+\min_{\mathbf{w}, b} \quad & \frac{1}{2}\|\mathbf{w}\|^2 \\
+\text{s.t.} \quad & y_i(\mathbf{w}^T\mathbf{x}_i + b) \geq 1, \quad i = 1, 2, \cdots, m
+\end{align}
+
+这是一个凸二次规划问题。
+
+\begin{exercise}[硬间隔SVM]
+训练样本：正例 $[3,3]^T$、$[4,3]^T$，负例 $[1,1]^T$。求最优分隔超平面。
+
+\textbf{解}：
+
+\textbf{步骤1}：建立优化问题
+\begin{align*}
+\min \quad & \frac{1}{2}(w_1^2 + w_2^2) \\
+\text{s.t.} \quad & 3w_1 + 3w_2 + b \geq 1 \quad \text{（正例1）} \\
+& 4w_1 + 3w_2 + b \geq 1 \quad \text{（正例2）} \\
+& -(w_1 + w_2 + b) \geq 1 \quad \text{（负例）}
+\end{align*}
+
+\textbf{步骤2}：利用KKT条件求解
+
+由对称性和约束条件，可得：
+\begin{align*}
+w_1^* &= 0.5 \\
+w_2^* &= 0.5 \\
+b^* &= -2
+\end{align*}
+
+\textbf{步骤3}：决策函数
+\[
+\boxed{f(\mathbf{x}) = sign(0.5x_1 + 0.5x_2 - 2)}
+\]
+
+\textbf{验证}：
+\begin{itemize}
+    \item $[3,3]^T$：$0.5 \times 3 + 0.5 \times 3 - 2 = 1 \geq 1$ ✓
+    \item $[4,3]^T$：$0.5 \times 4 + 0.5 \times 3 - 2 = 1.5 \geq 1$ ✓
+    \item $[1,1]^T$：$0.5 \times 1 + 0.5 \times 1 - 2 = -1 \leq -1$ ✓
+\end{itemize}
+\end{exercise}
+
+\subsection{对偶问题}
+
+\subsubsection{拉格朗日函数}
+
+引入拉格朗日乘子 $\alpha_i \geq 0$：
+\[
+L(\mathbf{w}, b, \boldsymbol{\alpha}) = \frac{1}{2}\|\mathbf{w}\|^2 - \sum_{i=1}^{m}\alpha_i\left[y_i(\mathbf{w}^T\mathbf{x}_i + b) - 1\right]
+\]
+
+\subsubsection{对偶问题推导}
+
+对 $\mathbf{w}$ 和 $b$ 求偏导并令其为零：
+\begin{align}
+\frac{\partial L}{\partial \mathbf{w}} &= \mathbf{w} - \sum_{i=1}^{m}\alpha_i y_i \mathbf{x}_i = 0 \Rightarrow \mathbf{w} = \sum_{i=1}^{m}\alpha_i y_i \mathbf{x}_i \\
+\frac{\partial L}{\partial b} &= -\sum_{i=1}^{m}\alpha_i y_i = 0 \Rightarrow \sum_{i=1}^{m}\alpha_i y_i = 0
+\end{align}
+
+代入拉格朗日函数，得对偶问题：
+\begin{align}
+\max_{\boldsymbol{\alpha}} \quad & \sum_{i=1}^{m}\alpha_i - \frac{1}{2}\sum_{i=1}^{m}\sum_{j=1}^{m}\alpha_i\alpha_j y_i y_j \mathbf{x}_i^T\mathbf{x}_j \\
+\text{s.t.} \quad & \sum_{i=1}^{m}\alpha_i y_i = 0 \\
+& \alpha_i \geq 0, \quad i = 1, 2, \cdots, m
+\end{align}
+
+\subsubsection{KKT条件}
+
+\[
+\alpha_i^*\left[y_i(\mathbf{w}^{*T}\mathbf{x}_i + b^*) - 1\right] = 0
+\]
+
+\textbf{关键性质}：
+\begin{itemize}
+    \item $\alpha_i^* > 0$ 的样本称为\textbf{支持向量}，位于间隔边界上
+    \item $\alpha_i^* = 0$ 的样本不影响决策函数
+\end{itemize}
+
+\subsubsection{参数求解}
+
+\begin{align}
+\mathbf{w}^* &= \sum_{i=1}^{m}\alpha_i^* y_i \mathbf{x}_i \\
+b^* &= y_j - \sum_{i=1}^{m}\alpha_i^* y_i \mathbf{x}_i^T\mathbf{x}_j \quad \text{（任选 $\alpha_j^* > 0$ 的样本）}
+\end{align}
+
+\subsection{核函数方法（非线性SVM）}
+
+\subsubsection{核心思路}
+
+对于线性不可分问题，将样本映射到高维空间，使其线性可分。
+
+设映射函数 $\phi: \mathbb{R}^d \to \mathbb{R}^D$（$D \gg d$），则在高维空间中：
+\[
+f(\mathbf{x}) = sign\left(\mathbf{w}^T\phi(\mathbf{x}) + b\right)
+\]
+
+\subsubsection{核技巧}
+
+定义核函数：
+\[
+\kappa(\mathbf{x}_i, \mathbf{x}_j) = \phi(\mathbf{x}_i)^T\phi(\mathbf{x}_j)
+\]
+
+核函数直接计算高维空间内积，无需显式定义映射函数。
+
+\subsubsection{常用核函数}
+
+\begin{table}[H]
+\centering
+\caption{常用核函数}
+\begin{tabular}{cc}
+\toprule
+\textbf{核函数} & \textbf{表达式} \\
+\midrule
+线性核 & $\kappa(\mathbf{x}_i, \mathbf{x}_j) = \mathbf{x}_i^T\mathbf{x}_j$ \\
+多项式核 & $\kappa(\mathbf{x}_i, \mathbf{x}_j) = (\mathbf{x}_i^T\mathbf{x}_j)^d$ \\
+高斯核（RBF） & $\kappa(\mathbf{x}_i, \mathbf{x}_j) = \exp\left(-\frac{\|\mathbf{x}_i - \mathbf{x}_j\|^2}{2\sigma^2}\right)$ \\
+拉普拉斯核 & $\kappa(\mathbf{x}_i, \mathbf{x}_j) = \exp\left(-\frac{\|\mathbf{x}_i - \mathbf{x}_j\|}{\sigma}\right)$ \\
+Sigmoid核 & $\kappa(\mathbf{x}_i, \mathbf{x}_j) = \tanh(\beta\mathbf{x}_i^T\mathbf{x}_j + \theta)$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{核化对偶问题}
+
+\begin{align}
+\max_{\boldsymbol{\alpha}} \quad & \sum_{i=1}^{m}\alpha_i - \frac{1}{2}\sum_{i=1}^{m}\sum_{j=1}^{m}\alpha_i\alpha_j y_i y_j \kappa(\mathbf{x}_i, \mathbf{x}_j) \\
+\text{s.t.} \quad & \sum_{i=1}^{m}\alpha_i y_i = 0, \quad \alpha_i \geq 0
+\end{align}
+
+\subsubsection{决策函数}
+
+\[
+f(\mathbf{x}) = sign\left(\sum_{i=1}^{m}\alpha_i^* y_i \kappa(\mathbf{x}_i, \mathbf{x}) + b^*\right)
+\]
+
+\subsection{软间隔支持向量机}
+
+\subsubsection{核心改进}
+
+引入松弛变量 $\xi_i \geq 0$，允许部分样本跨越间隔线（容错）。
+
+\subsubsection{优化问题}
+
+\begin{align}
+\min_{\mathbf{w}, b, \boldsymbol{\xi}} \quad & \frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^{m}\xi_i \\
+\text{s.t.} \quad & y_i(\mathbf{w}^T\mathbf{x}_i + b) \geq 1 - \xi_i \\
+& \xi_i \geq 0, \quad i = 1, 2, \cdots, m
+\end{align}
+
+其中 $C > 0$ 为惩罚系数：
+\begin{itemize}
+    \item $C$ 越大，对误分类惩罚越重，间隔越小
+    \item $C$ 越小，对误分类容忍度越高，间隔越大
+\end{itemize}
+
+\subsubsection{对偶问题}
+
+\begin{align}
+\max_{\boldsymbol{\alpha}} \quad & \sum_{i=1}^{m}\alpha_i - \frac{1}{2}\sum_{i=1}^{m}\sum_{j=1}^{m}\alpha_i\alpha_j y_i y_j \mathbf{x}_i^T\mathbf{x}_j \\
+\text{s.t.} \quad & \sum_{i=1}^{m}\alpha_i y_i = 0 \\
+& 0 \leq \alpha_i \leq C, \quad i = 1, 2, \cdots, m
+\end{align}
+
+与硬间隔的区别：约束条件变为 $0 \leq \alpha_i \leq C$。
+
+
+%========================================
+% 第7章 贝叶斯分类器
+%========================================
+\section{贝叶斯分类器}
+
+\subsection{贝叶斯定理}
+
+\begin{theorem}[贝叶斯定理]
+对于分类问题，样本 $\mathbf{x}$ 属于类别 $c$ 的后验概率为：
+\[
+P(Y=c | X=\mathbf{x}) = \frac{P(Y=c) \cdot P(X=\mathbf{x} | Y=c)}{P(X=\mathbf{x})}
+\]
+
+其中：
+\begin{itemize}
+    \item $P(Y=c)$：类先验概率（类别 $c$ 的样本占比）
+    \item $P(X=\mathbf{x} | Y=c)$：类条件概率（类别 $c$ 下观测到 $\mathbf{x}$ 的概率）
+    \item $P(X=\mathbf{x})$：证据因子（所有类别共享，比较时可忽略）
+\end{itemize}
+\end{theorem}
+
+\textbf{贝叶斯决策规则}：
+\[
+\hat{y} = \arg\max_{c} P(Y=c | X=\mathbf{x}) = \arg\max_{c} P(Y=c) \cdot P(X=\mathbf{x} | Y=c)
+\]
+
+\subsection{朴素贝叶斯假设}
+
+\begin{definition}[属性条件独立性假设]
+给定类别标签时，各特征属性相互独立：
+\[
+P(X=\mathbf{x} | Y=c) = \prod_{i=1}^{d} P(X_i=x_i | Y=c)
+\]
+
+这大幅简化了类条件概率的计算。
+\end{definition}
+
+\subsection{离散属性朴素贝叶斯}
+
+\subsubsection{核心思想}
+
+离散特征的概率通过训练样本的\textbf{频次统计}估算。
+
+\subsubsection{计算步骤}
+
+\begin{enumerate}
+    \item \textbf{计算类先验概率}：
+    \[
+    P(Y=c) = \frac{|D_c|}{|D|}
+    \]
+    其中 $|D_c|$ 为类别 $c$ 的样本数，$|D|$ 为总样本数。
+    
+    \item \textbf{计算属性条件概率}：
+    \[
+    P(X_i=x_i | Y=c) = \frac{|D_{c,x_i}|}{|D_c|}
+    \]
+    其中 $|D_{c,x_i}|$ 为类别 $c$ 中属性 $X_i$ 取值为 $x_i$ 的样本数。
+    
+    \item \textbf{计算后验概率}：
+    \[
+    P(Y=c | X=\mathbf{x}) \propto P(Y=c) \prod_{i=1}^{d} P(X_i=x_i | Y=c)
+    \]
+    
+    \item \textbf{预测}：选择后验概率最大的类别。
+\end{enumerate}
+
+\begin{exercise}[西瓜数据集：朴素贝叶斯分类]
+使用西瓜数据集（17个样本），预测样本"色泽=青绿，根蒂=蜷缩，敲声=浊响"是否为好瓜。
+
+\textbf{解}：
+
+\textbf{步骤1}：统计类先验概率
+\begin{align*}
+P(Y=\text{好瓜}) &= \frac{8}{17} \approx 0.471 \\
+P(Y=\text{坏瓜}) &= \frac{9}{17} \approx 0.529
+\end{align*}
+
+\textbf{步骤2}：统计属性条件概率
+
+对于好瓜（8个样本）：
+\begin{align*}
+P(\text{色泽=青绿} | \text{好瓜}) &= \frac{3}{8} = 0.375 \\
+P(\text{根蒂=蜷缩} | \text{好瓜}) &= \frac{5}{8} = 0.625 \\
+P(\text{敲声=浊响} | \text{好瓜}) &= \frac{6}{8} = 0.75
+\end{align*}
+
+对于坏瓜（9个样本）：
+\begin{align*}
+P(\text{色泽=青绿} | \text{坏瓜}) &= \frac{3}{9} = 0.333 \\
+P(\text{根蒂=蜷缩} | \text{坏瓜}) &= \frac{3}{9} = 0.333 \\
+P(\text{敲声=浊响} | \text{坏瓜}) &= \frac{4}{9} = 0.444
+\end{align*}
+
+\textbf{步骤3}：计算后验概率
+\begin{align*}
+P(\text{好瓜}) \prod P(x_i | \text{好瓜}) &= 0.471 \times 0.375 \times 0.625 \times 0.75 \\
+&= 0.471 \times 0.176 = 0.083 \\
+P(\text{坏瓜}) \prod P(x_i | \text{坏瓜}) &= 0.529 \times 0.333 \times 0.333 \times 0.444 \\
+&= 0.529 \times 0.049 = 0.026
+\end{align*}
+
+\textbf{步骤4}：预测结果
+
+由于 $0.083 > 0.026$，预测该样本为\textbf{好瓜}。
+\end{exercise}
+
+\subsection{拉普拉斯平滑}
+
+\begin{notebox}[零概率问题]
+当某个属性值在训练集中未出现时，会导致 $P(X_i=x_i | Y=c) = 0$，使整个后验概率为0。
+\end{notebox}
+
+\begin{definition}[拉普拉斯平滑]
+为避免零概率问题，引入平滑：
+\begin{align}
+P(Y=c) &= \frac{|D_c| + 1}{|D| + K} \\
+P(X_i=x_i | Y=c) &= \frac{|D_{c,x_i}| + 1}{|D_c| + N_i}
+\end{align}
+
+其中 $K$ 为类别数，$N_i$ 为属性 $X_i$ 的取值数。
+\end{definition}
+
+\subsection{连续属性朴素贝叶斯}
+
+\subsubsection{核心思想}
+
+假设每个连续属性在各类别下服从\textbf{正态分布}，用概率密度函数替代离散概率。
+
+\subsubsection{计算步骤}
+
+\begin{enumerate}
+    \item \textbf{估算正态分布参数}：
+    
+    对每个类别 $c$ 和特征 $X_i$，计算均值和方差：
+    \begin{align}
+    \mu_{c,i} &= \frac{1}{|D_c|}\sum_{\mathbf{x} \in D_c} x_i \\
+    \sigma_{c,i}^2 &= \frac{1}{|D_c|}\sum_{\mathbf{x} \in D_c} (x_i - \mu_{c,i})^2
+    \end{align}
+    
+    \item \textbf{计算属性条件概率密度}：
+    \[
+    p(X_i=x_i | Y=c) = \frac{1}{\sqrt{2\pi}\sigma_{c,i}} \exp\left(-\frac{(x_i - \mu_{c,i})^2}{2\sigma_{c,i}^2}\right)
+    \]
+    
+    \item \textbf{计算后验概率}：
+    \[
+    P(Y=c | X=\mathbf{x}) \propto P(Y=c) \prod_{i=1}^{d} p(X_i=x_i | Y=c)
+    \]
+\end{enumerate}
+
+\begin{exercise}[连续属性朴素贝叶斯]
+给定训练数据（10个样本，2个连续特征）：
+
+\begin{center}
+\begin{tabular}{ccc|ccc}
+\toprule
+$X_1$ & $X_2$ & $Y$ & $X_1$ & $X_2$ & $Y$ \\
+\midrule
+0.1 & 5.0 & -1 & 0.5 & 4.5 & +1 \\
+0.2 & 5.5 & -1 & 0.6 & 4.0 & +1 \\
+0.15 & 5.2 & -1 & 0.55 & 4.2 & +1 \\
+0.25 & 5.3 & -1 & 0.45 & 4.8 & +1 \\
+0.18 & 5.1 & -1 & 0.52 & 4.3 & +1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+预测样本 $[0.21, 5.2]^T$ 的类别。
+
+\textbf{解}：
+
+\textbf{步骤1}：计算类先验概率
+\[
+P(Y=-1) = P(Y=+1) = \frac{5}{10} = 0.5
+\]
+
+\textbf{步骤2}：估算正态分布参数
+
+对于 $Y=-1$：
+\begin{align*}
+\mu_{-1,1} &= \frac{0.1+0.2+0.15+0.25+0.18}{5} = 0.176 \\
+\sigma_{-1,1}^2 &= \frac{(0.1-0.176)^2 + \cdots + (0.18-0.176)^2}{5} = 0.00283 \\
+\mu_{-1,2} &= \frac{5.0+5.5+5.2+5.3+5.1}{5} = 5.22 \\
+\sigma_{-1,2}^2 &= \frac{(5.0-5.22)^2 + \cdots + (5.1-5.22)^2}{5} = 0.0296
+\end{align*}
+
+对于 $Y=+1$：
+\begin{align*}
+\mu_{+1,1} &= \frac{0.5+0.6+0.55+0.45+0.52}{5} = 0.524 \\
+\sigma_{+1,1}^2 &= 0.00283 \\
+\mu_{+1,2} &= \frac{4.5+4.0+4.2+4.8+4.3}{5} = 4.36 \\
+\sigma_{+1,2}^2 &= 0.0824
+\end{align*}
+
+\textbf{步骤3}：计算概率密度
+
+对于 $Y=-1$，$\mathbf{x} = [0.21, 5.2]^T$：
+\begin{align*}
+p(X_1=0.21 | Y=-1) &= \frac{1}{\sqrt{2\pi \times 0.00283}} \exp\left(-\frac{(0.21-0.176)^2}{2 \times 0.00283}\right) \\
+&\approx 6.12 \\
+p(X_2=5.2 | Y=-1) &= \frac{1}{\sqrt{2\pi \times 0.0296}} \exp\left(-\frac{(5.2-5.22)^2}{2 \times 0.0296}\right) \\
+&\approx 2.31
+\end{align*}
+
+对于 $Y=+1$：
+\begin{align*}
+p(X_1=0.21 | Y=+1) &\approx 0.0001 \quad \text{（远离均值）} \\
+p(X_2=5.2 | Y=+1) &\approx 0.0003 \quad \text{（远离均值）}
+\end{align*}
+
+\textbf{步骤4}：计算后验概率
+\begin{align*}
+P(Y=-1) \cdot p(\mathbf{x} | Y=-1) &= 0.5 \times 6.12 \times 2.31 \approx 7.07 \\
+P(Y=+1) \cdot p(\mathbf{x} | Y=+1) &= 0.5 \times 0.0001 \times 0.0003 \approx 0
+\end{align*}
+
+\textbf{预测结果}：$\boxed{Y = -1}$
+\end{exercise}
+
+
+%========================================
+% 附录：西瓜数据集
+%========================================
+\appendix
+\section{西瓜数据集 2.0}
+
+西瓜数据集是机器学习领域常用的示例数据集，包含17个样本，6个离散特征，1个二分类标签。
+
+\begin{table}[H]
+\centering
+\caption{西瓜数据集 2.0}
+\begin{tabular}{cccccccc}
+\toprule
+\textbf{编号} & \textbf{色泽} & \textbf{根蒂} & \textbf{敲声} & \textbf{纹理} & \textbf{脐部} & \textbf{触感} & \textbf{好瓜} \\
+\midrule
+1 & 青绿 & 蜷缩 & 浊响 & 清晰 & 凹陷 & 硬滑 & 是 \\
+2 & 乌黑 & 蜷缩 & 沉闷 & 清晰 & 凹陷 & 硬滑 & 是 \\
+3 & 乌黑 & 蜷缩 & 浊响 & 清晰 & 凹陷 & 硬滑 & 是 \\
+4 & 青绿 & 蜷缩 & 沉闷 & 清晰 & 凹陷 & 硬滑 & 是 \\
+5 & 浅白 & 蜷缩 & 浊响 & 清晰 & 凹陷 & 硬滑 & 是 \\
+6 & 青绿 & 稍蜷 & 浊响 & 清晰 & 稍凹 & 软粘 & 是 \\
+7 & 乌黑 & 稍蜷 & 浊响 & 稍糊 & 稍凹 & 软粘 & 是 \\
+8 & 乌黑 & 稍蜷 & 浊响 & 清晰 & 稍凹 & 硬滑 & 是 \\
+9 & 乌黑 & 稍蜷 & 沉闷 & 稍糊 & 稍凹 & 硬滑 & 否 \\
+10 & 青绿 & 硬挺 & 清脆 & 清晰 & 平坦 & 软粘 & 否 \\
+11 & 浅白 & 硬挺 & 清脆 & 模糊 & 平坦 & 硬滑 & 否 \\
+12 & 浅白 & 蜷缩 & 浊响 & 模糊 & 平坦 & 软粘 & 否 \\
+13 & 青绿 & 稍蜷 & 浊响 & 稍糊 & 凹陷 & 硬滑 & 否 \\
+14 & 浅白 & 稍蜷 & 沉闷 & 稍糊 & 凹陷 & 硬滑 & 否 \\
+15 & 乌黑 & 稍蜷 & 浊响 & 清晰 & 稍凹 & 软粘 & 否 \\
+16 & 浅白 & 蜷缩 & 浊响 & 模糊 & 平坦 & 硬滑 & 否 \\
+17 & 青绿 & 蜷缩 & 沉闷 & 稍糊 & 稍凹 & 硬滑 & 否 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{数据集统计信息}
+
+\subsubsection{类别分布}
+\begin{itemize}
+    \item 好瓜（正例）：8个样本（编号1-8）
+    \item 坏瓜（反例）：9个样本（编号9-17）
+\end{itemize}
+
+\subsubsection{属性取值统计}
+
+\begin{table}[H]
+\centering
+\caption{属性取值分布}
+\begin{tabular}{ccc}
+\toprule
+\textbf{属性} & \textbf{取值} & \textbf{数量} \\
+\midrule
+\multirow{3}{*}{色泽} & 青绿 & 6 \\
+& 乌黑 & 6 \\
+& 浅白 & 5 \\
+\midrule
+\multirow{3}{*}{根蒂} & 蜷缩 & 8 \\
+& 稍蜷 & 7 \\
+& 硬挺 & 2 \\
+\midrule
+\multirow{3}{*}{敲声} & 浊响 & 10 \\
+& 沉闷 & 5 \\
+& 清脆 & 2 \\
+\midrule
+\multirow{3}{*}{纹理} & 清晰 & 9 \\
+& 稍糊 & 5 \\
+& 模糊 & 3 \\
+\midrule
+\multirow{3}{*}{脐部} & 凹陷 & 7 \\
+& 稍凹 & 6 \\
+& 平坦 & 4 \\
+\midrule
+\multirow{2}{*}{触感} & 硬滑 & 12 \\
+& 软粘 & 5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{各属性在不同类别下的分布}
+
+\begin{table}[H]
+\centering
+\caption{属性条件概率统计（用于朴素贝叶斯）}
+\begin{tabular}{cccc}
+\toprule
+\textbf{属性} & \textbf{取值} & \textbf{好瓜中数量} & \textbf{坏瓜中数量} \\
+\midrule
+\multirow{3}{*}{色泽} & 青绿 & 3 & 3 \\
+& 乌黑 & 4 & 2 \\
+& 浅白 & 1 & 4 \\
+\midrule
+\multirow{3}{*}{根蒂} & 蜷缩 & 5 & 3 \\
+& 稍蜷 & 3 & 4 \\
+& 硬挺 & 0 & 2 \\
+\midrule
+\multirow{3}{*}{敲声} & 浊响 & 6 & 4 \\
+& 沉闷 & 2 & 3 \\
+& 清脆 & 0 & 2 \\
+\midrule
+\multirow{3}{*}{纹理} & 清晰 & 7 & 2 \\
+& 稍糊 & 1 & 4 \\
+& 模糊 & 0 & 3 \\
+\midrule
+\multirow{3}{*}{脐部} & 凹陷 & 6 & 1 \\
+& 稍凹 & 2 & 4 \\
+& 平坦 & 0 & 4 \\
+\midrule
+\multirow{2}{*}{触感} & 硬滑 & 6 & 6 \\
+& 软粘 & 2 & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

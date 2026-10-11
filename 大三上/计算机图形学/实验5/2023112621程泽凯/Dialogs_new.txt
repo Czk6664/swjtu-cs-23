@@ -1,0 +1,255 @@
+INT_PTR CALLBACK ShapePropertiesDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    static wchar_t buffer[MAX_PATH];
+    static HWND hEdits[30];
+    static HWND hComboPreset, hComboTexMode, hEditTexPath;
+
+    switch (message)
+    {
+    case WM_INITDIALOG:
+    {
+        if (!g_selectedShape) { EndDialog(hDlg, IDCANCEL); return TRUE; }
+
+        int y = 10, editIdx = 0;
+        
+        // 变换属性
+        CreateWindowW(L"STATIC", L"=== \u53d8\u6362\u5c5e\u6027 ===", WS_CHILD | WS_VISIBLE | SS_CENTER, 10, y, 290, 18, hDlg, nullptr, nullptr, nullptr);
+        y += 20;
+
+        const wchar_t* transformLabels[] = { L"\u4f4d\u7f6e X:", L"Y:", L"Z:", L"\u65cb\u8f6c X\u00b0:", L"Y\u00b0:", L"Z\u00b0:", L"\u7f29\u653e X:", L"Y:", L"Z:" };
+        float transformValues[] = {
+            g_selectedShape->position.x, g_selectedShape->position.y, g_selectedShape->position.z,
+            XMConvertToDegrees(g_selectedShape->rotation.x), XMConvertToDegrees(g_selectedShape->rotation.y), XMConvertToDegrees(g_selectedShape->rotation.z),
+            g_selectedShape->scale.x, g_selectedShape->scale.y, g_selectedShape->scale.z };
+
+        for (int i = 0; i < 9; i++) {
+            CreateWindowW(L"STATIC", transformLabels[i], WS_CHILD | WS_VISIBLE, 10, y, 70, 18, hDlg, nullptr, nullptr, nullptr);
+            hEdits[editIdx] = CreateWindowW(L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+                90, y, 200, 18, hDlg, (HMENU)(UINT_PTR)(IDC_EDIT_POS_X + editIdx), nullptr, nullptr);
+            swprintf_s(buffer, L"%.2f", transformValues[i]);
+            SetWindowTextW(hEdits[editIdx++], buffer);
+            y += 20;
+        }
+
+        y += 5;
+        
+        // 材质预设
+        CreateWindowW(L"STATIC", L"=== \u6750\u8d28\u9884\u8bbe ===", WS_CHILD | WS_VISIBLE | SS_CENTER, 10, y, 290, 18, hDlg, nullptr, nullptr, nullptr);
+        y += 20;
+
+        CreateWindowW(L"STATIC", L"\u9884\u8bbe:", WS_CHILD | WS_VISIBLE, 10, y, 70, 18, hDlg, nullptr, nullptr, nullptr);
+        hComboPreset = CreateWindowW(L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST,
+            90, y, 200, 200, hDlg, (HMENU)(UINT_PTR)IDC_COMBO_PRESET, nullptr, nullptr);
+        
+        SendMessageW(hComboPreset, CB_ADDSTRING, 0, (LPARAM)L"\u81ea\u5b9a\u4e49");
+        SendMessageW(hComboPreset, CB_ADDSTRING, 0, (LPARAM)L"\u91d1\u5c5e");
+        SendMessageW(hComboPreset, CB_ADDSTRING, 0, (LPARAM)L"\u5851\u6599");
+        SendMessageW(hComboPreset, CB_ADDSTRING, 0, (LPARAM)L"\u73bb\u7483");
+        SendMessageW(hComboPreset, CB_ADDSTRING, 0, (LPARAM)L"\u6a61\u80f6");
+        SendMessageW(hComboPreset, CB_ADDSTRING, 0, (LPARAM)L"\u9ec4\u91d1");
+        SendMessageW(hComboPreset, CB_ADDSTRING, 0, (LPARAM)L"\u767d\u94f6");
+        SendMessageW(hComboPreset, CB_ADDSTRING, 0, (LPARAM)L"\u7d2b\u94dc");
+        SendMessageW(hComboPreset, CB_ADDSTRING, 0, (LPARAM)L"\u94ec");
+        SendMessageW(hComboPreset, CB_ADDSTRING, 0, (LPARAM)L"\u7fe1\u7fe0");
+        SendMessageW(hComboPreset, CB_ADDSTRING, 0, (LPARAM)L"\u7eff\u5b9d\u77f3");
+        SendMessageW(hComboPreset, CB_ADDSTRING, 0, (LPARAM)L"\u73cd\u73e0");
+        SendMessageW(hComboPreset, CB_SETCURSEL, g_selectedShape->presetStyle, 0);
+        y += 22;
+
+        // 材质参数
+        CreateWindowW(L"STATIC", L"=== \u6750\u8d28\u53c2\u6570 ===", WS_CHILD | WS_VISIBLE | SS_CENTER, 10, y, 290, 18, hDlg, nullptr, nullptr, nullptr);
+        y += 20;
+
+        const wchar_t* materialLabels[] = { 
+            L"\u73af\u5883\u5149 R:", L"G:", L"B:", L"\u6f2b\u53cd\u5c04 R:", L"G:", L"B:",
+            L"\u955c\u9762 R:", L"G:", L"B:", L"\u81ea\u53d1\u5149 R:", L"G:", L"B:",
+            L"\u5149\u6cfd\u5ea6:", L"\u900f\u660e\u5ea6:", L"\u53cd\u5c04\u7387:" };
+        float materialValues[] = {
+            g_selectedShape->material.ambient.x, g_selectedShape->material.ambient.y, g_selectedShape->material.ambient.z,
+            g_selectedShape->material.diffuse.x, g_selectedShape->material.diffuse.y, g_selectedShape->material.diffuse.z,
+            g_selectedShape->material.specular.x, g_selectedShape->material.specular.y, g_selectedShape->material.specular.z,
+            g_selectedShape->material.emissive.x, g_selectedShape->material.emissive.y, g_selectedShape->material.emissive.z,
+            g_selectedShape->material.shininess, g_selectedShape->material.transparency, g_selectedShape->material.reflectivity };
+
+        for (int i = 0; i < 15; i++) {
+            CreateWindowW(L"STATIC", materialLabels[i], WS_CHILD | WS_VISIBLE, 10, y, 70, 18, hDlg, nullptr, nullptr, nullptr);
+            hEdits[editIdx] = CreateWindowW(L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+                90, y, 200, 18, hDlg, (HMENU)(UINT_PTR)(IDC_EDIT_POS_X + editIdx), nullptr, nullptr);
+            swprintf_s(buffer, L"%.3f", materialValues[i]);
+            SetWindowTextW(hEdits[editIdx++], buffer);
+            y += 20;
+        }
+
+        y += 5;
+
+        // 纹理设置
+        CreateWindowW(L"STATIC", L"=== \u7eb9\u7406\u8bbe\u7f6e ===", WS_CHILD | WS_VISIBLE | SS_CENTER, 10, y, 290, 18, hDlg, nullptr, nullptr, nullptr);
+        y += 20;
+
+        CreateWindowW(L"STATIC", L"\u7eb9\u7406\u8def\u5f84:", WS_CHILD | WS_VISIBLE, 10, y, 70, 18, hDlg, nullptr, nullptr, nullptr);
+        y += 20;
+        hEditTexPath = CreateWindowW(L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+            10, y, 200, 18, hDlg, (HMENU)(UINT_PTR)IDC_EDIT_TEXTURE_PATH, nullptr, nullptr);
+        SetWindowTextW(hEditTexPath, g_selectedShape->texturePath.c_str());
+        CreateWindowW(L"BUTTON", L"\u6d4f\u89c8", WS_CHILD | WS_VISIBLE, 220, y, 70, 18, hDlg, (HMENU)(UINT_PTR)IDC_BUTTON_BROWSE, nullptr, nullptr);
+        y += 22;
+
+        CreateWindowW(L"STATIC", L"\u6620\u5c04\u65b9\u5f0f:", WS_CHILD | WS_VISIBLE, 10, y, 70, 18, hDlg, nullptr, nullptr, nullptr);
+        hComboTexMode = CreateWindowW(L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST,
+            90, y, 200, 80, hDlg, (HMENU)(UINT_PTR)IDC_COMBO_TEXTURE_MODE, nullptr, nullptr);
+        SendMessageW(hComboTexMode, CB_ADDSTRING, 0, (LPARAM)L"\u65e0\u7eb9\u7406");
+        SendMessageW(hComboTexMode, CB_ADDSTRING, 0, (LPARAM)L"\u989c\u8272\u6df7\u5408");
+        SendMessageW(hComboTexMode, CB_ADDSTRING, 0, (LPARAM)L"\u7eb9\u7406\u66ff\u6362");
+        SendMessageW(hComboTexMode, CB_SETCURSEL, g_selectedShape->textureMode, 0);
+        y += 25;
+
+        // 按钮
+        CreateWindowW(L"BUTTON", L"\u786e\u5b9a", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+            110, y, 80, 22, hDlg, (HMENU)IDOK, nullptr, nullptr);
+        CreateWindowW(L"BUTTON", L"\u53d6\u6d88", WS_CHILD | WS_VISIBLE,
+            200, y, 80, 22, hDlg, (HMENU)IDCANCEL, nullptr, nullptr);
+
+        return TRUE;
+    }
+
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDC_COMBO_PRESET && HIWORD(wParam) == CBN_SELCHANGE) {
+            int sel = (int)SendMessageW(hComboPreset, CB_GETCURSEL, 0, 0);
+            if (g_selectedShape && sel >= 0) {
+                Shape3D tempShape;
+                tempShape.ApplyPresetStyle((PresetStyle)sel);
+                
+                int matIdx = 9;
+                swprintf_s(buffer, L"%.3f", tempShape.material.ambient.x); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.ambient.y); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.ambient.z); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.diffuse.x); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.diffuse.y); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.diffuse.z); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.specular.x); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.specular.y); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.specular.z); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.emissive.x); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.emissive.y); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.emissive.z); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.shininess); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.transparency); SetWindowTextW(hEdits[matIdx++], buffer);
+                swprintf_s(buffer, L"%.3f", tempShape.material.reflectivity); SetWindowTextW(hEdits[matIdx++], buffer);
+            }
+            return TRUE;
+        }
+        else if (LOWORD(wParam) == IDC_BUTTON_BROWSE) {
+            OPENFILENAMEW ofn = {};
+            wchar_t filePath[MAX_PATH] = L"";
+            ofn.lStructSize = sizeof(ofn);
+            ofn.hwndOwner = hDlg;
+            ofn.lpstrFilter = L"\u56fe\u7247\u6587\u4ef6\0*.bmp;*.png;*.jpg;*.jpeg;*.gif;*.tiff\0\u6240\u6709\u6587\u4ef6\0*.*\0";
+            ofn.lpstrFile = filePath;
+            ofn.nMaxFile = MAX_PATH;
+            ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+            if (GetOpenFileNameW(&ofn)) {
+                SetWindowTextW(hEditTexPath, filePath);
+                // 自动选择"颜色混合"模式（索引2）
+                SendMessageW(hComboTexMode, CB_SETCURSEL, 2, 0);
+            }
+            return TRUE;
+        }
+        else if (LOWORD(wParam) == IDOK) {
+            if (!g_selectedShape) { EndDialog(hDlg, IDCANCEL); return TRUE; }
+
+            // 变换属性
+            GetWindowTextW(hEdits[0], buffer, 64); g_selectedShape->position.x = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[1], buffer, 64); g_selectedShape->position.y = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[2], buffer, 64); g_selectedShape->position.z = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[3], buffer, 64); g_selectedShape->rotation.x = XMConvertToRadians((float)_wtof(buffer));
+            GetWindowTextW(hEdits[4], buffer, 64); g_selectedShape->rotation.y = XMConvertToRadians((float)_wtof(buffer));
+            GetWindowTextW(hEdits[5], buffer, 64); g_selectedShape->rotation.z = XMConvertToRadians((float)_wtof(buffer));
+            GetWindowTextW(hEdits[6], buffer, 64); g_selectedShape->scale.x = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[7], buffer, 64); g_selectedShape->scale.y = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[8], buffer, 64); g_selectedShape->scale.z = (float)_wtof(buffer);
+
+            // 材质预设
+            int presetSel = (int)SendMessageW(hComboPreset, CB_GETCURSEL, 0, 0);
+            g_selectedShape->presetStyle = (PresetStyle)presetSel;
+
+            // 材质参数
+            GetWindowTextW(hEdits[9], buffer, 64); g_selectedShape->material.ambient.x = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[10], buffer, 64); g_selectedShape->material.ambient.y = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[11], buffer, 64); g_selectedShape->material.ambient.z = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[12], buffer, 64); g_selectedShape->material.diffuse.x = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[13], buffer, 64); g_selectedShape->material.diffuse.y = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[14], buffer, 64); g_selectedShape->material.diffuse.z = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[15], buffer, 64); g_selectedShape->material.specular.x = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[16], buffer, 64); g_selectedShape->material.specular.y = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[17], buffer, 64); g_selectedShape->material.specular.z = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[18], buffer, 64); g_selectedShape->material.emissive.x = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[19], buffer, 64); g_selectedShape->material.emissive.y = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[20], buffer, 64); g_selectedShape->material.emissive.z = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[21], buffer, 64); g_selectedShape->material.shininess = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[22], buffer, 64); g_selectedShape->material.transparency = (float)_wtof(buffer);
+            GetWindowTextW(hEdits[23], buffer, 64); g_selectedShape->material.reflectivity = (float)_wtof(buffer);
+
+            // 限制范围
+            g_selectedShape->material.ambient.x = max(0.0f, min(1.0f, g_selectedShape->material.ambient.x));
+            g_selectedShape->material.ambient.y = max(0.0f, min(1.0f, g_selectedShape->material.ambient.y));
+            g_selectedShape->material.ambient.z = max(0.0f, min(1.0f, g_selectedShape->material.ambient.z));
+            g_selectedShape->material.diffuse.x = max(0.0f, min(1.0f, g_selectedShape->material.diffuse.x));
+            g_selectedShape->material.diffuse.y = max(0.0f, min(1.0f, g_selectedShape->material.diffuse.y));
+            g_selectedShape->material.diffuse.z = max(0.0f, min(1.0f, g_selectedShape->material.diffuse.z));
+            g_selectedShape->material.specular.x = max(0.0f, min(1.0f, g_selectedShape->material.specular.x));
+            g_selectedShape->material.specular.y = max(0.0f, min(1.0f, g_selectedShape->material.specular.y));
+            g_selectedShape->material.specular.z = max(0.0f, min(1.0f, g_selectedShape->material.specular.z));
+            g_selectedShape->material.emissive.x = max(0.0f, min(1.0f, g_selectedShape->material.emissive.x));
+            g_selectedShape->material.emissive.y = max(0.0f, min(1.0f, g_selectedShape->material.emissive.y));
+            g_selectedShape->material.emissive.z = max(0.0f, min(1.0f, g_selectedShape->material.emissive.z));
+            g_selectedShape->material.shininess = max(1.0f, min(128.0f, g_selectedShape->material.shininess));
+            g_selectedShape->material.transparency = max(0.0f, min(1.0f, g_selectedShape->material.transparency));
+            g_selectedShape->material.reflectivity = max(0.0f, min(1.0f, g_selectedShape->material.reflectivity));
+
+            // 更新颜色
+            g_selectedShape->color = XMFLOAT4(
+                g_selectedShape->material.diffuse.x,
+                g_selectedShape->material.diffuse.y,
+                g_selectedShape->material.diffuse.z,
+                g_selectedShape->material.transparency);
+
+            // 纹理设置
+            GetWindowTextW(hEditTexPath, buffer, MAX_PATH);
+            std::wstring newPath = buffer;
+            int modeIndex = (int)SendMessageW(hComboTexMode, CB_GETCURSEL, 0, 0);
+
+            bool needReload = (newPath != g_selectedShape->texturePath) ||
+                (modeIndex > 0 && g_selectedShape->textureView == nullptr);
+
+            if (needReload && g_selectedShape->textureView) {
+                g_selectedShape->textureView->Release();
+                g_selectedShape->textureView = nullptr;
+            }
+
+            if (needReload && modeIndex > 0 && !newPath.empty()) {
+                if (!LoadTextureFromFile(newPath.c_str(), &g_selectedShape->textureView)) {
+                    MessageBoxW(hDlg, L"\u65e0\u6cd5\u52a0\u8f7d\u7eb9\u7406\uff01", L"\u9519\u8bef", MB_OK | MB_ICONERROR);
+                    g_selectedShape->textureMode = 0;
+                }
+            }
+
+            if (modeIndex == 0 && g_selectedShape->textureView) {
+                g_selectedShape->textureView->Release();
+                g_selectedShape->textureView = nullptr;
+            }
+
+            g_selectedShape->texturePath = newPath;
+            g_selectedShape->textureMode = modeIndex;
+
+            UpdateShapeVertexColor(g_selectedShape);
+            EndDialog(hDlg, IDOK);
+            return TRUE;
+        }
+        else if (LOWORD(wParam) == IDCANCEL) {
+            EndDialog(hDlg, IDCANCEL);
+            return TRUE;
+        }
+        break;
+    }
+    return FALSE;
+}

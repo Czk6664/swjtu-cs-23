@@ -1,0 +1,50 @@
+菜单结构 - 需要在Visual Studio资源编辑器中手动添加
+
+打开 WindowsProject2.rc -> Menu -> IDC_WINDOWSPROJECT2
+
+建议的菜单结构：
+
+IDC_WINDOWSPROJECT2 MENU
+BEGIN
+    POPUP "文件(&F)"
+    BEGIN
+        MENUITEM "新建(&N)",                    IDM_NEW
+        MENUITEM "打开(&O)...",                 IDM_OPEN
+        MENUITEM "保存(&S)...",                 IDM_SAVE
+        MENUITEM SEPARATOR
+        MENUITEM "退出(&X)",                    IDM_EXIT
+    END
+    POPUP "绘图工具(&D)"
+    BEGIN
+        MENUITEM "直线(&L)",                    IDM_DRAW_LINE
+        MENUITEM "圆(&C)",                      IDM_DRAW_CIRCLE
+        MENUITEM "矩形(&R)",                    IDM_DRAW_RECTANGLE
+        MENUITEM "三角形(&T)",                  IDM_DRAW_TRIANGLE
+        MENUITEM "菱形(&D)",                    IDM_DRAW_DIAMOND
+        MENUITEM "平行四边形(&P)",              IDM_DRAW_PARALLELOGRAM
+        MENUITEM "曲线(&U)",                    IDM_DRAW_CURVE
+        MENUITEM "多义线(&Y)",                  IDM_DRAW_POLYLINE
+    END
+    POPUP "编辑(&E)"
+    BEGIN
+        MENUITEM "选择(&S)",                    IDM_SELECT
+        MENUITEM "删除(&D)",                    IDM_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "移动(&M)",                    IDM_MOVE
+        MENUITEM "旋转(&R)",                    IDM_ROTATE
+        MENUITEM "缩放(&Z)",                    IDM_SCALE
+    END
+    POPUP "几何计算(&C)"
+    BEGIN
+        MENUITEM "求交(&I)",                    IDM_INTERSECTION
+        MENUITEM "垂线(&P)",                    IDM_PERPENDICULAR
+        MENUITEM "圆心(&C)",                    IDM_CENTER
+        MENUITEM "切线(&T)",                    IDM_TANGENT
+    END
+    POPUP "帮助(&H)"
+    BEGIN
+        MENUITEM "关于(&A)...",                 IDM_ABOUT
+    END
+END
+
+所有ID已在Resource.h中定义，直接在资源编辑器中使用即可。

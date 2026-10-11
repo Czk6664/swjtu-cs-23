@@ -1,0 +1,2095 @@
+\documentclass[12pt,a4paper,openany]{ctexbook}
+% 基础宏包
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc,decorations.pathreplacing}
+% 页面设置
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm,headheight=15pt}
+% 减少章节前后空白
+\usepackage{titlesec}
+\titlespacing*{\chapter}{0pt}{-20pt}{20pt}
+\titlespacing*{\section}{0pt}{10pt}{5pt}
+\titlespacing*{\subsection}{0pt}{8pt}{4pt}
+% 超链接设置
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+% 代码样式
+\lstset{basicstyle=\ttfamily\small,breaklines=true,frame=single,backgroundcolor=\color{gray!10}}
+% 页眉页脚
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+% 定义颜色盒子
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\newtcolorbox{notebox}{colback=blue!5,colframe=blue!75!black,title=注意,fonttitle=\bfseries}
+\newtcolorbox{tipbox}{colback=green!5,colframe=green!75!black,title=提示,fonttitle=\bfseries}
+\newtcolorbox{formulabox}{colback=yellow!5,colframe=orange!75!black,title=公式,fonttitle=\bfseries}
+\newtcolorbox{examplebox}[1][]{colback=gray!5,colframe=gray!75!black,title=#1,fonttitle=\bfseries}
+
+\title{\Huge\textbf{计算机网络教程}}
+\author{基于复习笔记整理}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+%========================================
+\chapter{计算机网络概述}
+%========================================
+\section{交换技术}
+计算机网络中的数据交换技术主要分为三种：电路交换、报文交换和分组交换。
+
+\subsection{三种交换方式对比图}
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm,>=stealth,thick]
+% 电路交换
+\node[draw,circle,minimum size=0.7cm] (A1) {A};
+\node[draw,rectangle,right=of A1,minimum width=0.9cm,minimum height=0.6cm] (S1) {\small 交换机};
+\node[draw,rectangle,right=of S1,minimum width=0.9cm,minimum height=0.6cm] (S2) {\small 交换机};
+\node[draw,circle,right=of S2,minimum size=0.7cm] (B1) {B};
+\draw[->,red,very thick] (A1) -- (S1);
+\draw[->,red,very thick] (S1) -- (S2);
+\draw[->,red,very thick] (S2) -- (B1);
+\node[above=0.2cm of S1] {\footnotesize 电路交换：建立专用通路};
+% 报文交换
+\node[draw,circle,minimum size=0.7cm,below=1.8cm of A1] (A2) {A};
+\node[draw,rectangle,right=of A2,minimum width=0.9cm,minimum height=0.6cm] (S3) {\small 节点1};
+\node[draw,rectangle,right=of S3,minimum width=0.9cm,minimum height=0.6cm] (S4) {\small 节点2};
+\node[draw,circle,right=of S4,minimum size=0.7cm] (B2) {B};
+\draw[->,blue] (A2) -- node[above]{\tiny 报文} (S3);
+\draw[->,blue] (S3) -- node[above]{\tiny 存储转发} (S4);
+\draw[->,blue] (S4) -- node[above]{\tiny 报文} (B2);
+\node[below=0.2cm of S3] {\footnotesize 报文交换：整个报文存储转发};
+% 分组交换
+\node[draw,circle,minimum size=0.7cm,below=1.8cm of A2] (A3) {A};
+\node[draw,rectangle,right=of A3,minimum width=0.9cm,minimum height=0.6cm] (S5) {\small 路由器};
+\node[draw,rectangle,right=of S5,minimum width=0.9cm,minimum height=0.6cm] (S6) {\small 路由器};
+\node[draw,circle,right=of S6,minimum size=0.7cm] (B3) {B};
+\draw[->,green!60!black] (A3) -- node[above]{\tiny P1,P2} (S5);
+\draw[->,green!60!black] (S5) -- node[above]{\tiny P1,P2} (S6);
+\draw[->,green!60!black] (S6) -- node[above]{\tiny P1,P2} (B3);
+\node[below=0.2cm of S5] {\footnotesize 分组交换：分组独立转发};
+\end{tikzpicture}
+\end{center}
+
+\subsection{电路交换}
+电路交换的特点是比特流直达终点，在通信前需要建立一条专用的物理通路。
+
+\textbf{工作过程}：电路交换分为三个阶段：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{建立连接}：发送方向网络发出连接请求，网络为通信双方分配专用的物理通路
+    \item \textbf{数据传输}：通信双方通过已建立的专用通路进行数据传输，比特流直达终点
+    \item \textbf{释放连接}：通信结束后，释放占用的物理通路资源
+\end{enumerate}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{优点}：通信时延小、有序传输、没有冲突、实时性强、控制简单
+    \item \textbf{缺点}：建立连接时间长、线路独占使用效率低、灵活性差
+    \item \textbf{典型应用}：传统电话网络
+\end{itemize}
+
+\subsection{报文交换}
+报文交换采用存储转发的方式，将整个报文作为传输单位。
+
+\textbf{工作过程}：发送方将整个报文发送给相邻节点，节点将报文完整存储后再转发给下一个节点，直到到达目的地。每个节点需要有足够的存储空间来缓存整个报文。
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{优点}：无需建立连接、动态分配线路、提高线路利用率
+    \item \textbf{缺点}：转发时延大、需要大存储空间、需要额外信息量
+    \item \textbf{典型应用}：早期电报系统
+\end{itemize}
+
+\subsection{分组交换}
+分组交换将报文分割成较小的数据块（分组）进行传输，是现代计算机网络的主流交换方式。
+
+\textbf{工作过程}：发送方将报文划分为多个较小的分组，每个分组独立地通过网络传输。分组可以走不同的路径，在目的地重新组装成完整的报文。
+
+\textbf{分组交换的两种方式}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{数据报方式}：每个分组独立选择路由，可能乱序到达，因特网采用此方式
+    \item \textbf{虚电路方式}：先建立虚电路，所有分组沿同一路径传输，按序到达
+\end{itemize}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{优点}：无需建立连接、线路利用率高、加速传输、减少出错概率
+    \item \textbf{缺点}：有转发时延、需要额外信息量、可能失序/丢失/重复
+    \item \textbf{典型应用}：因特网
+\end{itemize}
+
+\subsection{三种交换方式对比表}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{特性} & \textbf{电路交换} & \textbf{报文交换} & \textbf{分组交换} \\
+\midrule
+建立连接 & 需要 & 不需要 & 不需要 \\
+传输单位 & 比特流 & 整个报文 & 分组 \\
+存储转发 & 无 & 有 & 有 \\
+线路利用率 & 低 & 较高 & 高 \\
+时延 & 小（建立后） & 大 & 较小 \\
+可靠性 & 差 & 较好 & 好 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{交换方式例题}
+\begin{examplebox}[例题1.1 分组交换时延计算]
+\textbf{题目}：主机A向主机B发送一个大小为$10^6$bit的文件，链路传输速率为$10^6$bps，经过2个分组交换机。若采用报文交换，时延为多少？若将报文划分为1000个等长分组，采用分组交换，时延为多少？（忽略传播时延和处理时延）
+\tcblower
+\textbf{解答}：
+
+(1) \textbf{报文交换}：报文需要经过3段链路（A→交换机1→交换机2→B）
+\begin{center}
+\begin{tikzpicture}[node distance=2cm,>=stealth]
+\node (A) {A};
+\node[right=of A] (R1) {交换机1};
+\node[right=of R1] (R2) {交换机2};
+\node[right=of R2] (B) {B};
+\draw[->] (A) -- node[above]{\small 1s} (R1);
+\draw[->] (R1) -- node[above]{\small 1s} (R2);
+\draw[->] (R2) -- node[above]{\small 1s} (B);
+\end{tikzpicture}
+\end{center}
+每段链路发送时延 = $\frac{10^6}{10^6} = 1$s，总时延 = $3 \times 1 = \textbf{3s}$
+
+(2) \textbf{分组交换}：每个分组大小 = $\frac{10^6}{1000} = 1000$bit
+
+每个分组发送时延 = $\frac{1000}{10^6} = 1$ms
+
+采用流水线方式传输：
+\begin{itemize}[itemsep=0pt]
+    \item 第1个分组到达B的时间：$3 \times 1\text{ms} = 3$ms
+    \item 后续999个分组依次到达，每个间隔1ms
+    \item 总时延 = $3 + 999 = 1002$ms $\approx$ \textbf{1s}
+\end{itemize}
+
+\textbf{结论}：分组交换比报文交换快约3倍！
+\end{examplebox}
+
+\section{计算机网络性能指标}
+\subsection{基本概念}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{比特}：数据量单位，1 Byte = 8 bit，1 KB = $2^{10}$ B，1 MB = $2^{20}$ B
+    \item \textbf{速率}：比特率/数据率，单位bps。1 kbps = $10^3$ bps，1 Mbps = $10^6$ bps
+    \item \textbf{带宽}：通信线路的最高数据率，单位与速率相同
+    \item \textbf{吞吐量}：单位时间内实际通过的数据量
+\end{itemize}
+
+\begin{tipbox}
+\textbf{注意单位换算的区别}：
+\begin{itemize}[itemsep=0pt]
+    \item 数据量单位（KB、MB、GB）：采用$2^{10}$进制，1KB = 1024B
+    \item 速率单位（kbps、Mbps、Gbps）：采用$10^3$进制，1kbps = 1000bps
+\end{itemize}
+\end{tipbox}
+
+\subsection{网络时延}
+网络时延是数据从发送端到接收端所需的总时间，由以下几部分组成：
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{发送时延}：将数据从主机发送到链路上所需的时间，$T_s = \frac{\text{数据量}}{\text{发送速率}}$
+    \item \textbf{传播时延}：电磁波在信道中传播所需的时间，$T_p = \frac{\text{距离}}{\text{传播速度}}$
+    \item \textbf{处理时延}：路由器等设备处理分组所需的时间
+    \item \textbf{排队时延}：分组在路由器缓冲区中等待的时间
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.95]
+\node[draw,rectangle,minimum width=1.8cm,minimum height=0.8cm] (sender) {发送方};
+\node[draw,rectangle,minimum width=1.8cm,minimum height=0.8cm,right=4.5cm of sender] (receiver) {接收方};
+\draw[->] (sender.east) -- node[above]{\small 发送时延+传播时延} (receiver.west);
+\node[below=0.3cm of sender,align=center] {\footnotesize $T_s = \frac{\text{数据量}}{\text{发送速率}}$};
+\node[below=0.3cm of receiver,align=center] {\footnotesize $T_p = \frac{\text{距离}}{\text{传播速度}}$};
+\end{tikzpicture}
+\end{center}
+
+\begin{notebox}
+\textbf{发送时延与传播时延的区别}：
+\begin{itemize}[itemsep=0pt]
+    \item 发送时延：与数据量和发送速率有关，与距离无关
+    \item 传播时延：与距离和传播速度有关，与数据量无关
+    \item 短距离高速网络：发送时延占主导
+    \item 长距离低速网络：传播时延占主导
+\end{itemize}
+\end{notebox}
+
+\begin{formulabox}
+\textbf{总时延} = 发送时延 + 传播时延 + 处理时延 + 排队时延
+
+\textbf{时延带宽积} = 传播时延 $\times$ 带宽（表示链路可容纳的最大比特数）
+
+\textbf{往返时间RTT} = 数据从发送到收到确认的双向时间
+\end{formulabox}
+
+\begin{examplebox}[例题1.2 时延计算]
+\textbf{题目}：主机A向主机B发送1MB文件，距离2000km，速率10Mbps，传播速度$2\times10^8$m/s。求总时延。
+\tcblower
+发送时延：$T_s = \frac{1\times10^6\times8}{10\times10^6} = 0.8$s = 800ms
+
+传播时延：$T_p = \frac{2000\times10^3}{2\times10^8} = 0.01$s = 10ms
+
+\textbf{总时延} = 800 + 10 = \textbf{810ms}（发送时延占主导）
+\end{examplebox}
+
+\begin{examplebox}[例题1.3 时延带宽积]
+\textbf{题目}：某链路传播时延为20ms，带宽为100Mbps，求时延带宽积及其物理意义。
+\tcblower
+时延带宽积 = $20 \times 10^{-3} \times 100 \times 10^6 = 2 \times 10^6$ bit = 2Mbit
+
+\textbf{物理意义}：表示该链路可以容纳的最大比特数。当发送方连续发送数据时，在第一个比特到达接收方时，发送方已经发送了2Mbit数据。也称为"以比特为单位的链路长度"。
+\end{examplebox}
+
+\section{网络体系结构}
+\subsection{分层的必要性}
+计算机网络是一个非常复杂的系统，采用分层结构可以：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 将复杂问题分解为若干较小的、易于处理的问题
+    \item 各层独立实现，便于维护和升级
+    \item 促进标准化工作，实现不同厂商设备的互联
+\end{itemize}
+
+\subsection{TCP/IP四层模型}
+\begin{center}
+\begin{tikzpicture}[node distance=0cm]
+\node[draw,minimum width=5.5cm,minimum height=0.7cm,fill=red!10] (app) {应用层（HTTP、FTP、DNS、SMTP）};
+\node[draw,minimum width=5.5cm,minimum height=0.7cm,below=of app,fill=orange!10] (trans) {运输层（TCP、UDP）};
+\node[draw,minimum width=5.5cm,minimum height=0.7cm,below=of trans,fill=yellow!10] (net) {网际层（IP、ICMP、ARP）};
+\node[draw,minimum width=5.5cm,minimum height=0.7cm,below=of net,fill=green!10] (link) {网络接口层（以太网、WiFi）};
+\end{tikzpicture}
+\end{center}
+
+\textbf{各层功能}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{应用层}：为用户提供各种网络服务，如Web浏览、电子邮件、文件传输等
+    \item \textbf{运输层}：提供端到端的通信服务，TCP提供可靠传输，UDP提供快速传输
+    \item \textbf{网际层}：负责分组的路由选择和转发，实现不同网络之间的互联
+    \item \textbf{网络接口层}：负责在相邻节点之间传输数据帧
+\end{itemize}
+
+\begin{notebox}
+\textbf{IP协议的核心地位}：
+\begin{itemize}[itemsep=0pt]
+    \item IP over everything：IP可运行在任何网络接口上（以太网、WiFi、光纤等）
+    \item Everything over IP：所有应用都基于IP传输（HTTP、FTP、SMTP等）
+\end{itemize}
+这种设计使得因特网具有极强的扩展性和适应性。
+\end{notebox}
+
+\subsection{数据封装与解封装}
+数据在发送时，从上层向下层传递，每经过一层都会添加该层的控制信息（头部）：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 应用层：产生应用数据
+    \item 运输层：添加TCP/UDP头部，形成报文段/用户数据报
+    \item 网际层：添加IP头部，形成IP数据报
+    \item 网络接口层：添加帧头和帧尾，形成帧
+\end{itemize}
+
+接收时则相反，从下层向上层传递，逐层去除头部信息。
+
+
+%========================================
+\chapter{物理层}
+%========================================
+\section{物理层特性}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{特性} & \textbf{定义} & \textbf{示例} \\
+\midrule
+机械特性 & 接口形状、尺寸、引脚排列 & RJ45接口规格 \\
+电气特性 & 电压范围、阻抗等 & 以太网电压标准 \\
+功能特性 & 电压的逻辑含义 & 高电平表示1 \\
+过程特性 & 事件执行顺序 & 握手协议流程 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{传输媒体}
+\begin{center}
+\begin{tikzpicture}[
+    level 1/.style={sibling distance=4.5cm,level distance=1.2cm},
+    level 2/.style={sibling distance=2cm,level distance=1cm},
+    every node/.style={draw,rounded corners,minimum height=0.5cm,font=\small}
+]
+\node {传输媒体}
+    child {node {导引型}
+        child {node {双绞线}}
+        child {node {光纤}}
+    }
+    child {node {非导引型}
+        child {node {无线电波}}
+        child {node {微波}}
+    };
+\end{tikzpicture}
+\end{center}
+
+\textbf{导引型传输媒体}（有线）：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{双绞线}：成本低，易安装，是局域网最常用的传输媒体。分为屏蔽双绞线(STP)和非屏蔽双绞线(UTP)
+    \item \textbf{同轴电缆}：抗干扰能力强，曾用于有线电视和早期以太网
+    \item \textbf{光纤}：传输速率高，抗干扰能力极强，适用于长距离高速传输。分为单模光纤和多模光纤
+\end{itemize}
+
+\textbf{非导引型传输媒体}（无线）：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{无线电波}：覆盖范围广，用于移动通信、WiFi
+    \item \textbf{微波}：传输距离远，用于卫星通信、城域网
+    \item \textbf{红外线}：短距离通信，如遥控器
+\end{itemize}
+
+\section{编码与调制}
+\subsection{基本概念}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{码元}：代表不同离散值的基本波形，是数字通信中的最小单位
+    \item \textbf{波特率}：每秒传输的码元数，单位Baud
+    \item \textbf{比特率}：每秒传输的比特数，单位bps
+    \item \textbf{关系}：比特率 = 波特率 $\times$ 每码元比特数
+\end{itemize}
+
+\subsection{数字信号编码}
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+% 曼彻斯特编码示意
+\draw[->] (0,0) -- (8,0) node[right] {t};
+\draw[->] (0,-1.5) -- (0,1.5) node[above] {V};
+\foreach \x in {1,2,3,4,5,6,7} \draw (\x,0.1) -- (\x,-0.1);
+% 数据: 1 0 1 1 0 0 1
+\node at (0.5,1.8) {\small 1};
+\node at (1.5,1.8) {\small 0};
+\node at (2.5,1.8) {\small 1};
+\node at (3.5,1.8) {\small 1};
+\node at (4.5,1.8) {\small 0};
+\node at (5.5,1.8) {\small 0};
+\node at (6.5,1.8) {\small 1};
+% 曼彻斯特编码波形
+\draw[thick,blue] (0,1) -- (0.5,1) -- (0.5,-1) -- (1,-1);
+\draw[thick,blue] (1,-1) -- (1.5,-1) -- (1.5,1) -- (2,1);
+\draw[thick,blue] (2,1) -- (2.5,1) -- (2.5,-1) -- (3,-1);
+\draw[thick,blue] (3,-1) -- (3,1) -- (3.5,1) -- (3.5,-1) -- (4,-1);
+\draw[thick,blue] (4,-1) -- (4.5,-1) -- (4.5,1) -- (5,1);
+\draw[thick,blue] (5,1) -- (5,-1) -- (5.5,-1) -- (5.5,1) -- (6,1);
+\draw[thick,blue] (6,1) -- (6.5,1) -- (6.5,-1) -- (7,-1);
+\node at (3.5,-2) {\small 曼彻斯特编码：码元中间跳变，下跳=1，上跳=0};
+\end{tikzpicture}
+\end{center}
+
+\textbf{常见编码方式}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{不归零编码(NRZ)}：高电平表示1，低电平表示0，无自同步能力
+    \item \textbf{曼彻斯特编码}：码元中间跳变，下跳表示1，上跳表示0，自带时钟同步，用于传统以太网
+    \item \textbf{差分曼彻斯特编码}：码元中间跳变仅表示时钟，码元开始处有无跳变表示数据
+\end{itemize}
+
+\subsection{基本调制方法}
+调制是将数字信号转换为模拟信号的过程，用于在模拟信道上传输数字数据。
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{调幅(AM)}：改变载波振幅，有/无载波表示1/0
+    \item \textbf{调频(FM)}：改变载波频率，不同频率表示不同数据
+    \item \textbf{调相(PM)}：改变载波相位，不同相位表示不同数据
+    \item \textbf{QAM}：结合调幅和调相，提高传输效率。如QAM-16有16种码元，每码元携带4比特
+\end{itemize}
+
+\section{信道容量}
+信道容量是指信道能够传输的最大数据率，受到物理条件的限制。
+
+\begin{formulabox}
+\textbf{奈氏准则}（理想无噪声信道）：$B_{max} = 2W$ Baud，其中$W$为带宽(Hz)
+
+\textbf{香农公式}（有噪声信道）：$C = W \log_2(1 + \frac{S}{N})$ bps
+
+\textbf{信噪比转换}：信噪比(dB) = $10\log_{10}(\frac{S}{N})$
+\end{formulabox}
+
+\begin{notebox}
+\textbf{奈氏准则与香农公式的区别}：
+\begin{itemize}[itemsep=0pt]
+    \item 奈氏准则：限制码元传输速率，与噪声无关
+    \item 香农公式：限制比特传输速率，考虑噪声影响
+    \item 实际信道容量取两者中的较小值
+\end{itemize}
+\end{notebox}
+
+\begin{examplebox}[例题2.1 信道容量计算]
+\textbf{题目}：信道带宽4kHz，信噪比30dB，求极限传输速率。
+\tcblower
+信噪比转换：$30 = 10\log_{10}(\frac{S}{N})$ $\Rightarrow$ $\frac{S}{N} = 10^3 = 1000$
+
+香农公式：$C = 4000 \times \log_2(1001) \approx 4000 \times 9.97 \approx$ \textbf{40 kbps}
+\end{examplebox}
+
+\begin{examplebox}[例题2.2 综合计算]
+\textbf{题目}：带宽3kHz，采用QAM-16调制（16种码元），求最大数据率。
+\tcblower
+奈氏准则：$B = 2W = 2 \times 3000 = 6000$ Baud
+
+每码元比特数：$n = \log_2 16 = 4$ bit
+
+最大数据率：$R = 6000 \times 4 = $ \textbf{24 kbps}
+\end{examplebox}
+
+\begin{examplebox}[例题2.3 奈氏准则与香农公式综合]
+\textbf{题目}：某信道带宽为8kHz，信噪比为30dB，若使用256种不同的码元，该信道的最大数据率是多少？
+\tcblower
+\textbf{方法1}：根据奈氏准则
+
+最高码元传输速率：$B = 2W = 2 \times 8000 = 16000$ Baud
+
+每码元比特数：$n = \log_2 256 = 8$ bit
+
+数据率：$R_1 = 16000 \times 8 = 128$ kbps
+
+\textbf{方法2}：根据香农公式
+
+$\frac{S}{N} = 10^{30/10} = 1000$
+
+$C = 8000 \times \log_2(1001) \approx 8000 \times 9.97 \approx 80$ kbps
+
+\textbf{结论}：实际最大数据率取较小值，为\textbf{80 kbps}
+\end{examplebox}
+
+\section{信道复用技术}
+信道复用是指多个用户共享同一条物理信道的技术，可以提高信道利用率。
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.9]
+% FDM
+\draw (0,0) rectangle (3,2);
+\node at (1.5,2.3) {\small 频分复用FDM};
+\draw[fill=red!30] (0.2,0.2) rectangle (2.8,0.6);
+\draw[fill=green!30] (0.2,0.7) rectangle (2.8,1.1);
+\draw[fill=blue!30] (0.2,1.2) rectangle (2.8,1.6);
+\node at (1.5,0.4) {\tiny 用户1};
+\node at (1.5,0.9) {\tiny 用户2};
+\node at (1.5,1.4) {\tiny 用户3};
+% TDM
+\draw (4,0) rectangle (7,2);
+\node at (5.5,2.3) {\small 时分复用TDM};
+\draw[fill=red!30] (4.2,0.2) rectangle (4.7,1.8);
+\draw[fill=green!30] (4.9,0.2) rectangle (5.4,1.8);
+\draw[fill=blue!30] (5.6,0.2) rectangle (6.1,1.8);
+\draw[fill=red!30] (6.3,0.2) rectangle (6.8,1.8);
+% CDM
+\draw (8,0) rectangle (11,2);
+\node at (9.5,2.3) {\small 码分复用CDM};
+\node at (9.5,1) {\small 同时同频};
+\node at (9.5,0.5) {\small 用码区分};
+\end{tikzpicture}
+\end{center}
+
+\textbf{四种复用技术}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{频分复用(FDM)}：将信道带宽划分为多个子频带，每个用户占用一个子频带，所有用户同时通信
+    \item \textbf{时分复用(TDM)}：将时间划分为等长的时隙，每个用户轮流占用时隙，用户按时间顺序通信
+    \item \textbf{波分复用(WDM)}：光纤通信中的频分复用，不同波长的光信号在同一光纤中传输
+    \item \textbf{码分复用(CDM)}：每个用户分配唯一的码片序列，所有用户可同时同频通信，用于移动通信
+\end{itemize}
+
+\begin{tipbox}
+\textbf{码分多址(CDMA)原理}：
+\begin{itemize}[itemsep=0pt]
+    \item 每个用户分配一个唯一的m位码片序列（如64位或128位）
+    \item 发送1时发送码片序列，发送0时发送码片序列的反码
+    \item 各用户的码片序列相互正交（规格化内积为0）
+    \item 接收方通过计算内积来分离不同用户的信号
+\end{itemize}
+\end{tipbox}
+
+
+%========================================
+\chapter{数据链路层}
+%========================================
+\section{基本概念}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{链路}：一个节点到相邻节点的物理线路
+    \item \textbf{数据链路}：链路 + 通信协议（硬件+软件）
+    \item \textbf{帧}：数据链路层的传输单位
+\end{itemize}
+
+\subsection{三个核心问题}
+\begin{center}
+\begin{tikzpicture}[node distance=0cm,>=stealth]
+\node[draw,minimum width=1.2cm,minimum height=0.7cm,fill=gray!30] (head) {\small 帧头};
+\node[draw,minimum width=3.5cm,minimum height=0.7cm,right=of head,fill=white] (data) {\small 数据（来自网络层）};
+\node[draw,minimum width=1.2cm,minimum height=0.7cm,right=of data,fill=gray!30] (tail) {\small 帧尾};
+\draw[decorate,decoration={brace,amplitude=4pt,raise=2pt}] (head.north west) -- (tail.north east) node[midway,above=6pt] {\small 封装成帧};
+\node[below=0.2cm of head] {\footnotesize 帧定界};
+\node[below=0.2cm of tail] {\footnotesize FCS校验};
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{封装成帧}：添加帧头帧尾，实现帧定界
+    \item \textbf{透明传输}：数据中出现帧定界符时的处理（字节填充/比特填充）
+    \item \textbf{差错检测}：通过FCS检测比特错误（不纠错）
+\end{enumerate}
+
+\section{差错检测}
+\subsection{差错类型}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{比特差错}：传输过程中比特发生翻转（0变1或1变0）
+    \item \textbf{误码率(BER)}：传输错误的比特数与总传输比特数的比值
+\end{itemize}
+
+\subsection{奇偶校验}
+在数据后添加1位校验位，使整个数据中"1"的个数为奇数（奇校验）或偶数（偶校验）。
+
+\textbf{局限性}：只能检测奇数位错误，无法检测偶数位错误。
+
+\subsection{CRC循环冗余校验}
+CRC是一种强大的差错检测方法，基于多项式除法原理。
+
+\textbf{CRC计算步骤}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 确定生成多项式$G(x)$，将其转换为二进制除数
+    \item 在数据后补$n$个0（$n$为生成多项式最高次数）
+    \item 用模2除法（异或运算）计算余数
+    \item 将余数附加到原数据后发送
+\end{enumerate}
+
+\textbf{接收方验证}：将收到的数据除以生成多项式，余数为0则无差错。
+
+\begin{examplebox}[例题3.1 CRC计算]
+\textbf{题目}：生成多项式$G(x)=x^3+x^2+1$，数据为\texttt{101001}，求发送的比特序列。
+\tcblower
+\textbf{步骤}：
+\begin{enumerate}[itemsep=0pt]
+    \item 除数：$G(x)$对应\texttt{1101}（$x^3+x^2+0\cdot x+1$）
+    \item 被除数：数据后补3个0 $\rightarrow$ \texttt{101001000}
+    \item 模2除法（异或运算）：
+\end{enumerate}
+\begin{verbatim}
+    101001000 ÷ 1101
+    1101
+    ----
+     1110
+     1101
+     ----
+      0111
+      0000
+      ----
+       1110
+       1101
+       ----
+        0110
+        0000
+        ----
+         1100
+         1101
+         ----
+          001  ← 余数（冗余码）
+\end{verbatim}
+\textbf{发送序列}：\texttt{101001} + \texttt{001} = \texttt{101001001}
+\end{examplebox}
+
+\begin{notebox}
+\textbf{CRC的检错能力}：
+\begin{itemize}[itemsep=0pt]
+    \item 能检测所有单比特错误
+    \item 能检测所有双比特错误
+    \item 能检测所有奇数位错误
+    \item 能检测所有长度小于等于$n$的突发错误（$n$为CRC位数）
+\end{itemize}
+\end{notebox}
+
+\section{可靠传输协议}
+可靠传输是指发送方发送的数据能够无差错、按序、不丢失、不重复地到达接收方。
+
+\subsection{传输差错类型}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{比特差错}：数据位发生翻转
+    \item \textbf{分组丢失}：分组在传输过程中丢失
+    \item \textbf{分组失序}：分组到达顺序与发送顺序不一致
+    \item \textbf{分组重复}：同一分组被多次传输
+\end{itemize}
+
+\subsection{停止-等待协议(SW)}
+停止-等待协议是最简单的可靠传输协议，发送方每发送一个帧后必须等待接收方的确认。
+
+\textbf{关键机制}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{确认(ACK)}：接收方收到正确帧后发送确认
+    \item \textbf{超时重传}：发送方超时未收到确认则重传
+    \item \textbf{帧编号}：用0/1交替编号，防止重复接收
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.9]
+% 时间轴
+\draw[dashed] (0,0) -- (0,-5) node[below]{\small 发送方};
+\draw[dashed] (6,0) -- (6,-5) node[below]{\small 接收方};
+% 数据帧0
+\draw[->,blue,thick] (0,-0.5) -- node[above,sloped]{\small 数据帧0} (6,-1.5);
+% ACK0
+\draw[->,red,thick] (6,-1.8) -- node[above,sloped]{\small ACK0} (0,-2.8);
+% 数据帧1
+\draw[->,blue,thick] (0,-3.1) -- node[above,sloped]{\small 数据帧1} (6,-4.1);
+% 标注
+\node[left] at (0,-0.5) {\tiny 发送};
+\node[left] at (0,-1.5) {\tiny 等待};
+\node[left] at (0,-3.1) {\tiny 发送};
+\draw[<->] (-0.5,-0.5) -- node[left]{\tiny $T_D$} (-0.5,-0.8);
+\draw[<->] (6.5,-1.5) -- node[right]{\tiny RTT} (6.5,-2.8);
+\end{tikzpicture}
+\end{center}
+
+\begin{formulabox}
+\textbf{信道利用率}：$U = \frac{T_D}{T_D + RTT + T_A} \approx \frac{T_D}{T_D + RTT}$
+
+其中$T_D$为发送时延，RTT为往返时间
+\end{formulabox}
+
+\begin{examplebox}[例题3.2 停等协议效率]
+\textbf{题目}：帧长1000字节，速率1Mbps，单向传播时延250ms，求信道利用率。
+\tcblower
+发送时延：$T_D = \frac{1000 \times 8}{10^6} = 8$ms
+
+往返时间：$RTT = 2 \times 250 = 500$ms
+
+信道利用率：$U = \frac{8}{8+500} = \frac{8}{508} \approx$ \textbf{1.57\%}（效率很低！）
+\end{examplebox}
+
+\subsection{回退N帧协议(GBN)}
+GBN协议允许发送方连续发送多个帧，提高信道利用率。
+
+\textbf{核心特点}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 发送窗口$W_T$：$1 < W_T \leq 2^n - 1$（n为序号位数）
+    \item 接收窗口$W_R = 1$（只能按序接收）
+    \item \textbf{累积确认}：ACKn表示n及之前的帧都已收到
+    \item \textbf{出错处理}：重传出错帧及其后所有帧（回退N帧）
+\end{itemize}
+
+\subsection{选择重传协议(SR)}
+SR协议只重传出错的帧，效率更高。
+
+\textbf{核心特点}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 发送窗口$W_T$：$1 < W_T \leq 2^{n-1}$
+    \item 接收窗口$W_R$：$1 < W_R \leq W_T$
+    \item \textbf{逐个确认}：只确认正确收到的帧
+    \item \textbf{出错处理}：只重传出错的帧
+\end{itemize}
+
+\begin{tipbox}
+\textbf{三种协议的关系}：
+\begin{itemize}[itemsep=0pt]
+    \item 当$W_T = 1$时，SR退化为停止-等待协议
+    \item 当$W_R = 1$时，SR退化为GBN协议
+\end{itemize}
+\end{tipbox}
+
+\begin{examplebox}[例题3.3 GBN协议]
+\textbf{题目}：GBN协议，发送方发送了0-7号帧，收到ACK0、ACK2、ACK3，超时后需重发几帧？
+\tcblower
+累积确认：ACK3表示0、1、2、3号帧都已确认
+
+未确认帧：4、5、6、7号帧
+
+\textbf{需重发4帧}（4、5、6、7）
+\end{examplebox}
+
+\begin{examplebox}[例题3.3b 窗口大小计算]
+\textbf{题目}：数据链路层采用GBN协议，帧序号用3比特表示，发送窗口最大为多少？若采用SR协议呢？
+\tcblower
+序号范围：$0 \sim 2^3 - 1 = 0 \sim 7$，共8个序号
+
+\textbf{GBN协议}：$W_T \leq 2^n - 1 = 2^3 - 1 = 7$
+
+\textbf{SR协议}：$W_T \leq 2^{n-1} = 2^2 = 4$
+
+\textbf{原因}：窗口过大会导致接收方无法区分新帧和重传帧
+\end{examplebox}
+
+
+\section{PPP协议}
+PPP（Point-to-Point Protocol）是目前使用最广泛的点对点数据链路层协议，主要用于拨号上网和宽带接入。
+
+\subsection{PPP协议的特点}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{简单}：不提供可靠传输，不使用序号和确认机制
+    \item \textbf{封装成帧}：规定了特殊字符作为帧定界符
+    \item \textbf{透明传输}：支持字节填充和比特填充
+    \item \textbf{差错检测}：使用CRC校验，检测到错误直接丢弃
+    \item \textbf{多种网络层协议}：支持IP、IPX等多种网络层协议
+    \item \textbf{多种链路类型}：支持同步和异步链路
+\end{itemize}
+
+\subsection{PPP协议的组成}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{链路控制协议LCP}：建立、配置、测试和管理数据链路
+    \item \textbf{网络控制协议NCP}：为不同的网络层协议建立和配置连接
+    \item \textbf{PPP帧格式}：定义数据帧的封装格式
+\end{enumerate}
+
+\subsection{帧格式}
+\begin{center}
+\begin{tikzpicture}[node distance=0cm]
+\node[draw,minimum width=1cm,minimum height=0.8cm,fill=gray!30] (f1) {F};
+\node[draw,minimum width=1cm,minimum height=0.8cm,right=of f1] (a) {A};
+\node[draw,minimum width=1cm,minimum height=0.8cm,right=of a] (c) {C};
+\node[draw,minimum width=1.5cm,minimum height=0.8cm,right=of c] (p) {协议};
+\node[draw,minimum width=3cm,minimum height=0.8cm,right=of p,fill=yellow!20] (data) {数据};
+\node[draw,minimum width=1.5cm,minimum height=0.8cm,right=of data] (fcs) {FCS};
+\node[draw,minimum width=1cm,minimum height=0.8cm,right=of fcs,fill=gray!30] (f2) {F};
+\node[below=0.1cm of f1] {\tiny 7E};
+\node[below=0.1cm of a] {\tiny FF};
+\node[below=0.1cm of c] {\tiny 03};
+\node[below=0.1cm of p] {\tiny 2字节};
+\node[below=0.1cm of data] {\tiny $\leq$1500};
+\node[below=0.1cm of fcs] {\tiny 2字节};
+\node[below=0.1cm of f2] {\tiny 7E};
+\end{tikzpicture}
+\end{center}
+
+\textbf{各字段含义}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{F（标志字段）}：\texttt{0x7E}，表示帧的开始和结束
+    \item \textbf{A（地址字段）}：\texttt{0xFF}，广播地址（点对点无实际意义）
+    \item \textbf{C（控制字段）}：\texttt{0x03}，表示无编号帧
+    \item \textbf{协议字段}：标识数据部分的协议类型（如\texttt{0x0021}表示IP）
+    \item \textbf{数据字段}：上层数据，最大1500字节（MTU）
+    \item \textbf{FCS}：帧校验序列，使用CRC-16校验
+\end{itemize}
+
+\subsection{透明传输}
+当数据中出现与帧定界符相同的字节时，需要进行转义处理：
+
+\textbf{异步传输（字节填充）}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \texttt{7E}$\rightarrow$\texttt{7D 5E}（转义后发送）
+    \item \texttt{7D}$\rightarrow$\texttt{7D 5D}（转义字符本身也需转义）
+    \item 接收方进行逆变换恢复原始数据
+\end{itemize}
+
+\textbf{同步传输（比特填充）}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 发送方：数据中每遇到连续5个1，就插入一个0
+    \item 接收方：每收到连续5个1后，删除其后的0
+    \item 这样可以保证数据中不会出现6个连续的1（\texttt{01111110}是标志字段）
+\end{itemize}
+
+\subsection{PPP连接建立过程}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{链路建立}：通过LCP协商链路参数（MRU、认证方式等）
+    \item \textbf{身份认证}：可选，使用PAP或CHAP协议
+    \item \textbf{网络层配置}：通过NCP配置网络层（如IPCP分配IP地址）
+    \item \textbf{数据传输}：链路进入打开状态，开始传输数据
+    \item \textbf{链路终止}：通信结束后释放链路
+\end{enumerate}
+
+\section{CSMA/CD协议}
+CSMA/CD（Carrier Sense Multiple Access with Collision Detection）是以太网使用的介质访问控制协议，用于解决多个站点共享总线时的冲突问题。
+
+\subsection{工作原理}
+\begin{center}
+\fbox{\textbf{先听后说、边说边听、冲突停止、随机重发}}
+\end{center}
+
+\textbf{详细过程}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{载波监听（先听后说）}：发送前先监听信道，若信道空闲则发送，若信道忙则等待
+    \item \textbf{碰撞检测（边说边听）}：发送过程中持续监听，检测是否发生碰撞
+    \item \textbf{碰撞处理（冲突停止）}：检测到碰撞后立即停止发送，并发送强化碰撞信号（JAM）
+    \item \textbf{随机退避（随机重发）}：等待随机时间后重新尝试发送
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.85]
+% 总线
+\draw[very thick] (0,0) -- (9,0);
+\node[draw,circle,fill=blue!20,minimum size=0.6cm] (A) at (1,0.8) {\small A};
+\node[draw,circle,fill=green!20,minimum size=0.6cm] (B) at (4.5,0.8) {\small B};
+\node[draw,circle,fill=red!20,minimum size=0.6cm] (C) at (8,0.8) {\small C};
+\draw (A) -- (1,0);
+\draw (B) -- (4.5,0);
+\draw (C) -- (8,0);
+\node at (4.5,-0.4) {\footnotesize 共享总线（同一冲突域）};
+% 碰撞示意
+\draw[->,blue,dashed] (1.3,0.2) -- (3.8,0.2);
+\draw[->,red,dashed] (7.7,0.2) -- (5.2,0.2);
+\node[fill=white] at (4.5,0.4) {\footnotesize 碰撞!};
+\end{tikzpicture}
+\end{center}
+
+\subsection{关键概念}
+\begin{formulabox}
+\textbf{争用期}（碰撞窗口）：$2\tau$（往返传播时延），检测碰撞的最长时间
+
+\textbf{最小帧长} = 争用期 $\times$ 数据率 = $\frac{2d}{v} \times R$
+
+10Mbps以太网：争用期=51.2$\mu$s，最小帧长=64字节
+\end{formulabox}
+
+\textbf{争用期的意义}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 争用期是检测碰撞的最长时间，也称为碰撞窗口
+    \item 如果发送数据后经过争用期没有检测到碰撞，则本次发送一定成功
+    \item 以太网规定最小帧长为64字节，确保在争用期内能检测到碰撞
+    \item 小于64字节的帧被视为无效帧（碰撞碎片），直接丢弃
+\end{itemize}
+
+\textbf{最小帧长的计算原理}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 发送方必须在发送完最后一个比特之前检测到可能的碰撞
+    \item 最坏情况：碰撞发生在最远端，信号往返需要$2\tau$时间
+    \item 因此：发送时间 $\geq$ 争用期，即 $\frac{L_{min}}{R} \geq 2\tau$
+    \item 得到：$L_{min} = 2\tau \times R$
+\end{itemize}
+
+\begin{examplebox}[例题3.4 CSMA/CD计算]
+\textbf{题目}：以太网速率10Mbps，最大距离2500m，传播速度$2\times10^8$m/s，求争用期和最小帧长。
+\tcblower
+单向传播时延：$\tau = \frac{2500}{2\times10^8} = 12.5\mu$s
+
+争用期：$2\tau = 25\mu$s
+
+最小帧长：$L = 2\tau \times R = 25\times10^{-6} \times 10\times10^6 = 250$bit = \textbf{32字节}
+
+（实际以太网规定64字节，留有余量）
+\end{examplebox}
+
+\begin{examplebox}[例题3.4b 最小帧长与距离关系]
+\textbf{题目}：某以太网传输速率为1Gbps，信号传播速度为$2\times10^5$km/s。若最小帧长减少800bit，则最远站点距离减少多少？
+\tcblower
+由公式 $L_{min} = 2\tau \times R = \frac{2d}{v} \times R$
+
+得到 $d = \frac{L_{min} \times v}{2R}$
+
+距离变化量：$\Delta d = \frac{\Delta L \times v}{2R} = \frac{800 \times 2\times10^8}{2 \times 10^9} = \frac{800 \times 2\times10^8}{2\times10^9} = 80$m
+
+\textbf{答案}：最远站点距离减少\textbf{80m}
+\end{examplebox}
+
+\subsection{截断二进制指数退避算法}
+碰撞后等待时间 = 争用期 $\times$ 随机数$r$，其中$r \in \{0,1,...,2^k-1\}$，$k=\min(\text{重传次数},10)$
+
+\textbf{算法详解}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 第1次碰撞：$k=1$，$r \in \{0,1\}$，等待$0$或$1$个争用期
+    \item 第2次碰撞：$k=2$，$r \in \{0,1,2,3\}$
+    \item 第$n$次碰撞：$k=\min(n,10)$，$r \in \{0,1,...,2^k-1\}$
+    \item 重传16次仍失败，则放弃发送并报告错误
+\end{enumerate}
+
+\textbf{设计思想}：碰撞次数越多，说明网络越拥塞，退避范围越大，减少再次碰撞的概率。
+
+\begin{examplebox}[例题3.4c 碰撞检测时间]
+\textbf{题目}：在CSMA/CD协议中，最短碰撞检测时间和最长碰撞检测时间分别是多少？
+\tcblower
+\textbf{最短碰撞检测时间}：单程传播时延$\tau$
+
+发生情况：两站点同时发送，碰撞发生在中间位置
+
+\textbf{最长碰撞检测时间}：往返传播时延$2\tau$（争用期）
+
+发生情况：A开始发送，信号即将到达最远端B时，B也开始发送，碰撞信号返回A需要近$2\tau$时间
+\end{examplebox}
+
+\section{MAC地址}
+MAC地址（Media Access Control Address）是数据链路层使用的物理地址，用于在局域网中唯一标识网络设备。
+
+\subsection{MAC地址格式}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 48位（6字节），固化在网卡的ROM中
+    \item 格式：前3字节OUI（厂商标识）+ 后3字节设备标识
+    \item 表示方法：用十六进制表示，如\texttt{00-1A-2B-3C-4D-5E}或\texttt{00:1A:2B:3C:4D:5E}
+\end{itemize}
+
+\subsection{特殊MAC地址}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{单播地址}：第一字节最低位为0，表示单个目的站点
+    \item \textbf{多播地址}：第一字节最低位为1，表示一组目的站点
+    \item \textbf{广播地址}：\texttt{FF-FF-FF-FF-FF-FF}，表示所有站点
+\end{itemize}
+
+\subsection{MAC地址与IP地址的区别}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{特性} & \textbf{MAC地址} & \textbf{IP地址} \\
+\midrule
+层次 & 数据链路层 & 网络层 \\
+长度 & 48位 & 32位（IPv4） \\
+分配方式 & 厂商固化 & 网络管理员分配 \\
+作用范围 & 本地局域网 & 全球互联网 \\
+是否可变 & 通常不变 & 可以改变 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{ARP协议}
+ARP（Address Resolution Protocol）用于将IP地址解析为MAC地址。
+
+\textbf{工作过程}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 主机A要发送数据给主机B，已知B的IP地址
+    \item A检查本地ARP缓存，若有B的MAC地址则直接使用
+    \item 若没有，A广播ARP请求（包含B的IP地址）
+    \item B收到请求后，单播回复自己的MAC地址
+    \item A将B的IP-MAC映射存入ARP缓存
+\end{enumerate}
+
+\section{以太网交换机}
+以太网交换机是工作在数据链路层的网络设备，根据MAC地址进行帧的转发。
+
+\subsection{集线器vs交换机}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{特性} & \textbf{集线器} & \textbf{交换机} \\
+\midrule
+工作层级 & 物理层 & 数据链路层 \\
+转发依据 & 无（广播） & MAC地址 \\
+冲突域 & 所有端口共享 & 每端口独立 \\
+通信方式 & 半双工 & 全双工 \\
+带宽 & 共享 & 独享 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{集线器的特点}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 工作在物理层，只是简单地将信号放大并转发到所有端口
+    \item 所有端口共享带宽，属于同一个冲突域
+    \item 使用CSMA/CD协议，只能半双工通信
+\end{itemize}
+
+\textbf{交换机的特点}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 工作在数据链路层，根据MAC地址进行智能转发
+    \item 每个端口是独立的冲突域，可以全双工通信
+    \item 每个端口独享带宽，大大提高网络性能
+    \item 具有自学习能力，能够建立和维护MAC地址表
+\end{itemize}
+
+\subsection{交换机的帧交换表}
+交换机维护一张帧交换表（MAC地址表），记录MAC地址与端口的对应关系。
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.9]
+\node[draw,rectangle,minimum width=2.5cm,minimum height=1.5cm] (sw) {交换机};
+\node[left=1.2cm of sw] (A) {\small A};
+\node[right=1.2cm of sw] (B) {\small B};
+\node[above=0.8cm of sw] (C) {\small C};
+\node[below=0.8cm of sw] (D) {\small D};
+\draw (A) -- node[above]{\tiny 端口1} (sw.west);
+\draw (B) -- node[above]{\tiny 端口2} (sw.east);
+\draw (C) -- node[right]{\tiny 端口3} (sw.north);
+\draw (D) -- node[right]{\tiny 端口4} (sw.south);
+% 帧交换表
+\node[right=2.5cm of sw,draw,align=left] (table) {\footnotesize MAC地址表\\\footnotesize A - 端口1\\\footnotesize B - 端口2\\\footnotesize C - 端口3};
+\end{tikzpicture}
+\end{center}
+
+\subsection{自学习与转发}
+\textbf{转发规则}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{自学习}：记录源MAC与入端口的映射，更新帧交换表
+    \item \textbf{明确转发}：表中有目的MAC，转发到对应端口
+    \item \textbf{泛洪}：表中无目的MAC，转发到除入端口外所有端口
+    \item \textbf{过滤}：目的MAC对应入端口，直接丢弃（源和目的在同一端口）
+\end{enumerate}
+
+\textbf{帧交换表的老化}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 每个表项都有一个老化时间（通常300秒）
+    \item 如果在老化时间内没有收到该MAC地址的帧，则删除该表项
+    \item 这样可以适应网络拓扑的变化
+\end{itemize}
+
+\begin{examplebox}[例题3.5 交换机转发]
+\textbf{题目}：交换机初始表为空，依次发生：(1)A$\to$B (2)B$\to$A (3)C$\to$D，描述操作。
+\tcblower
+\begin{tabular}{|c|l|l|l|}
+\hline
+\textbf{通信} & \textbf{自学习} & \textbf{转发} & \textbf{帧交换表} \\
+\hline
+A$\to$B & 登记A-端口1 & 泛洪(2,3,4) & A:1 \\
+B$\to$A & 登记B-端口2 & 明确转发(1) & A:1, B:2 \\
+C$\to$D & 登记C-端口3 & 泛洪(1,2,4) & A:1, B:2, C:3 \\
+\hline
+\end{tabular}
+\end{examplebox}
+
+\begin{examplebox}[例题3.5b 交换机转发决策]
+\textbf{题目}：以太网交换机转发决策的依据是什么？数据帧转发时，若表中无目的MAC记录，会执行什么操作？
+\tcblower
+\textbf{转发依据}：目的物理地址（MAC地址）
+
+交换机根据帧的目的MAC地址查找帧交换表，决定从哪个端口转发。
+
+\textbf{无记录时的操作}：泛洪转发（Flooding）
+
+将帧转发到除入端口外的所有端口，让目的主机能够收到帧。同时，当目的主机回复时，交换机可以学习到该主机的MAC地址和端口映射。
+\end{examplebox}
+
+\begin{examplebox}[例题3.5c 多交换机自学习（综合题）]
+\textbf{题目}：如图所示网络拓扑，主机A-H的MAC地址与主机名相同。交换机1的端口1-4分别连接A、B、交换机2、C；交换机2的端口1-4分别连接交换机1、D、E、交换机3；交换机3的端口1-4分别连接F、交换机2、G、H。依次发生通信：(1)B→C (2)D→A (3)G→D (4)E→H (5)C→B (6)F→G，给出各交换机的自学习过程和最终帧交换表。
+\tcblower
+\textbf{通信过程分析}：
+
+\begin{center}\small
+\begin{tabular}{|c|l|l|l|}
+\hline
+\textbf{通信} & \textbf{交换机1} & \textbf{交换机2} & \textbf{交换机3} \\
+\hline
+B→C & 登记B:2，泛洪 & 登记B:1，泛洪 & 登记B:2，泛洪 \\
+D→A & 登记D:3，泛洪 & 登记D:2，泛洪 & 登记D:2，泛洪 \\
+G→D & 收不到 & 登记G:4，明确转发 & 登记G:3，明确转发 \\
+E→H & 登记E:3，泛洪 & 登记E:3，泛洪 & 登记E:2，泛洪 \\
+C→B & 登记C:4，明确转发 & 收不到 & 收不到 \\
+F→G & 收不到 & 收不到 & 登记F:1，明确转发 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{最终帧交换表}：
+\begin{center}\small
+\begin{tabular}{|c|c||c|c||c|c|}
+\hline
+\multicolumn{2}{|c||}{\textbf{交换机1}} & \multicolumn{2}{c||}{\textbf{交换机2}} & \multicolumn{2}{c|}{\textbf{交换机3}} \\
+\hline
+MAC & 端口 & MAC & 端口 & MAC & 端口 \\
+\hline
+B & 2 & B & 1 & B & 2 \\
+D & 3 & D & 2 & D & 2 \\
+E & 3 & G & 4 & G & 3 \\
+C & 4 & E & 3 & E & 2 \\
+  &   &   &   & F & 1 \\
+\hline
+\end{tabular}
+\end{center}
+\end{examplebox}
+
+\begin{examplebox}[例题3.5d 2014年真题]
+\textbf{题目}：某以太网拓扑及交换机当前转发表如下图所示，主机00-e1-d5-00-23-a1向主机00-e1-d5-00-23-c1发送1个数据帧，主机00-e1-d5-00-23-c1收到该帧后，向主机00-e1-d5-00-23-a1发送1个确认帧，交换机对这两个帧的转发端口分别是？
+
+\begin{center}\small
+\begin{tabular}{|c|c|}
+\hline
+目的地址 & 端口 \\
+\hline
+00-e1-d5-00-23-b1 & 2 \\
+00-e1-d5-00-23-a1 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+（交换机有3个端口，端口1连a1，端口2连b1，端口3连c1）
+
+A. \{3\}和\{1\} \quad B. \{2,3\}和\{1\} \quad C. \{2,3\}和\{1,2\} \quad D. \{1,2,3\}和\{1\}
+\tcblower
+\textbf{分析}：
+
+(1) a1→c1：查表，c1不在表中，执行\textbf{泛洪}，转发到端口\{2,3\}（除入端口1外所有端口）
+
+(2) c1→a1：查表，a1在端口1，执行\textbf{明确转发}，转发到端口\{1\}
+
+\textbf{答案}：B
+\end{examplebox}
+
+
+\section{生成树协议(STP)}
+\subsection{问题背景}
+冗余链路提高可靠性，但会形成环路，导致：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{广播风暴}：广播帧在环路中无限循环
+    \item \textbf{帧重复}：主机收到多份相同帧
+    \item \textbf{MAC表震荡}：地址映射不断变化
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.9]
+% 环路示意
+\node[draw,rectangle,minimum height=0.6cm] (S1) at (0,0) {\small 交换机1};
+\node[draw,rectangle,minimum height=0.6cm] (S2) at (3,0) {\small 交换机2};
+\node[draw,rectangle,minimum height=0.6cm] (S3) at (1.5,-1.8) {\small 交换机3};
+\draw[<->,red,thick] (S1) -- (S2);
+\draw[<->,red,thick] (S2) -- (S3);
+\draw[<->,red,thick] (S3) -- (S1);
+\node at (1.5,-2.6) {\footnotesize 环路：广播帧无限循环！};
+% 箭头表示广播方向
+\draw[->,blue,dashed,bend left=15] (S1) to (S2);
+\draw[->,blue,dashed,bend left=15] (S2) to (S3);
+\draw[->,blue,dashed,bend left=15] (S3) to (S1);
+\end{tikzpicture}
+\end{center}
+
+\subsection{STP工作原理}
+STP通过阻塞部分端口，将物理环路变成逻辑树形拓扑。
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.9]
+% STP后的拓扑
+\node[draw,rectangle,fill=yellow!30,minimum height=0.6cm] (S1) at (0,0) {\small 根桥};
+\node[draw,rectangle,minimum height=0.6cm] (S2) at (3,0) {\small 交换机2};
+\node[draw,rectangle,minimum height=0.6cm] (S3) at (1.5,-1.8) {\small 交换机3};
+\draw[<->,green!60!black,thick] (S1) -- node[above]{\tiny RP} (S2);
+\draw[<->,green!60!black,thick] (S1) -- node[left]{\tiny RP} (S3);
+\draw[<->,red,dashed] (S2) -- node[right]{\tiny 阻塞} (S3);
+\node at (1.5,-2.6) {\footnotesize STP：阻塞一条链路，消除环路};
+\end{tikzpicture}
+\end{center}
+
+\subsection{STP关键概念}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{根桥(Root Bridge)}：网络中优先级最高的交换机，作为树的根
+    \item \textbf{根端口(RP)}：非根桥上到根桥路径最短的端口
+    \item \textbf{指定端口(DP)}：每个网段上到根桥路径最短的端口
+    \item \textbf{阻塞端口}：既非根端口也非指定端口，被阻塞
+\end{enumerate}
+
+\subsection{STP选举过程}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 选举根桥：比较桥ID（优先级+MAC），最小者为根桥
+    \item 选举根端口：非根桥上选择到根桥开销最小的端口
+    \item 选举指定端口：每个网段选择到根桥开销最小的端口
+    \item 阻塞其他端口：剩余端口进入阻塞状态
+\end{enumerate}
+
+\begin{examplebox}[例题3.6 STP端口角色]
+\textbf{题目}：三台交换机S1(优先级32768,MAC=00:00:00:00:00:01)、S2(优先级32768,MAC=00:00:00:00:00:02)、S3(优先级32768,MAC=00:00:00:00:00:03)组成环路，所有链路开销相同。确定各端口角色。
+\tcblower
+\textbf{步骤1}：选根桥
+
+优先级相同，比较MAC地址，S1的MAC最小 $\Rightarrow$ \textbf{S1为根桥}
+
+\textbf{步骤2}：选根端口（非根桥上）
+\begin{itemize}[itemsep=0pt]
+    \item S2：连接S1的端口为根端口
+    \item S3：连接S1的端口为根端口
+\end{itemize}
+
+\textbf{步骤3}：选指定端口
+\begin{itemize}[itemsep=0pt]
+    \item S1的所有端口都是指定端口（根桥）
+    \item S2-S3链路：S2的MAC较小，S2端口为指定端口
+\end{itemize}
+
+\textbf{步骤4}：S3连接S2的端口为\textbf{阻塞端口}
+\end{examplebox}
+
+\section{虚拟局域网(VLAN)}
+VLAN（Virtual Local Area Network）是一种将物理局域网在逻辑上划分为多个广播域的技术。
+
+\subsection{VLAN的作用}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{隔离广播域}：减少广播风暴的影响范围
+    \item \textbf{提高安全性}：不同VLAN之间默认隔离，需要路由器才能通信
+    \item \textbf{灵活管理}：按业务或部门划分，而非物理位置
+    \item \textbf{简化管理}：用户移动时只需修改VLAN配置，无需改变物理连接
+\end{itemize}
+
+\textbf{VLAN的优势}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 控制广播：广播帧只在同一VLAN内传播
+    \item 增强安全：敏感数据可以放在独立的VLAN中
+    \item 降低成本：无需为每个部门购买独立的交换机
+    \item 提高性能：减少不必要的广播流量
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.9]
+\node[draw,rectangle,minimum width=3.5cm,minimum height=1.5cm] (sw) {交换机};
+\node[draw,circle,fill=red!30,minimum size=0.5cm,left=1.2cm of sw,yshift=0.4cm] (A) {\small A};
+\node[draw,circle,fill=red!30,minimum size=0.5cm,left=1.2cm of sw,yshift=-0.4cm] (B) {\small B};
+\node[draw,circle,fill=blue!30,minimum size=0.5cm,right=1.2cm of sw,yshift=0.4cm] (C) {\small C};
+\node[draw,circle,fill=blue!30,minimum size=0.5cm,right=1.2cm of sw,yshift=-0.4cm] (D) {\small D};
+\draw (A) -- (sw);
+\draw (B) -- (sw);
+\draw (C) -- (sw);
+\draw (D) -- (sw);
+\node[below=0.15cm of A,red] {\tiny VLAN10};
+\node[below=0.15cm of B,red] {\tiny VLAN10};
+\node[below=0.15cm of C,blue] {\tiny VLAN20};
+\node[below=0.15cm of D,blue] {\tiny VLAN20};
+\node[below=1.2cm of sw] {\footnotesize A、B在VLAN10；C、D在VLAN20；互相隔离};
+\end{tikzpicture}
+\end{center}
+
+\subsection{VLAN的实现方式}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{基于端口}：最常用，将交换机端口划分到不同VLAN
+    \item \textbf{基于MAC地址}：根据设备MAC地址划分VLAN
+    \item \textbf{基于协议}：根据网络层协议类型划分VLAN
+    \item \textbf{基于IP子网}：根据IP地址划分VLAN
+\end{itemize}
+
+\subsection{802.1Q帧格式}
+IEEE 802.1Q标准定义了VLAN标记的格式，在标准以太网帧中插入4字节VLAN标记：
+\begin{center}
+\begin{tikzpicture}[node distance=0cm]
+\node[draw,minimum width=2cm,minimum height=0.6cm] (da) {目的MAC};
+\node[draw,minimum width=2cm,minimum height=0.6cm,right=of da] (sa) {源MAC};
+\node[draw,minimum width=1.5cm,minimum height=0.6cm,right=of sa,fill=yellow!30] (tag) {VLAN标记};
+\node[draw,minimum width=1cm,minimum height=0.6cm,right=of tag] (type) {类型};
+\node[draw,minimum width=2cm,minimum height=0.6cm,right=of type] (data) {数据};
+\node[below=0.1cm of tag] {\tiny 4字节};
+\end{tikzpicture}
+\end{center}
+
+\textbf{VLAN标记结构}（4字节）：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{TPID}（2字节）：标签协议标识，固定为\texttt{0x8100}
+    \item \textbf{TCI}（2字节）：标签控制信息，包含：
+    \begin{itemize}[itemsep=0pt]
+        \item PRI（3位）：优先级，用于QoS
+        \item CFI（1位）：规范格式指示
+        \item VID（12位）：VLAN标识符，范围1-4094
+    \end{itemize}
+\end{itemize}
+
+\subsection{端口类型}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{Access端口}：连接终端设备，只属于一个VLAN
+    \begin{itemize}[itemsep=0pt]
+        \item 收到无标签帧：添加该端口所属VLAN的标签
+        \item 发送帧：去除VLAN标签后发送
+    \end{itemize}
+    \item \textbf{Trunk端口}：连接交换机，可传输多个VLAN的帧
+    \begin{itemize}[itemsep=0pt]
+        \item 收发帧时保留VLAN标签
+        \item 用于交换机之间传输多个VLAN的数据
+    \end{itemize}
+\end{itemize}
+
+\begin{examplebox}[例题3.7 VLAN通信]
+\textbf{题目}：交换机S1的端口1-4分别连接主机A、B、C、D，端口1、2属于VLAN10，端口3、4属于VLAN20。A发送广播帧，哪些主机能收到？
+\tcblower
+广播帧只在同一VLAN内传播。
+
+A属于VLAN10，因此广播帧只会发送到同属VLAN10的端口。
+
+\textbf{答案}：只有B能收到（B也在VLAN10），C和D在VLAN20，收不到。
+\end{examplebox}
+
+
+%========================================
+\chapter{网络层}
+%========================================
+\section{网络层服务}
+网络层的主要功能是实现不同网络之间的互联，为分组选择合适的路由，将分组从源主机传送到目的主机。
+
+\subsection{两种服务模式}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{特性} & \textbf{虚电路服务} & \textbf{数据报服务} \\
+\midrule
+连接建立 & 需要 & 不需要 \\
+可靠性保证 & 网络保证 & 主机保证 \\
+分组路径 & 固定 & 可变 \\
+分组顺序 & 有序 & 可能乱序 \\
+典型应用 & ATM & \textbf{因特网} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{虚电路服务}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 通信前先建立虚电路（逻辑连接）
+    \item 所有分组沿同一路径传输，按序到达
+    \item 网络负责可靠传输，类似电话网络
+    \item 代表：ATM网络、X.25
+\end{itemize}
+
+\textbf{数据报服务}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 无需建立连接，每个分组独立路由
+    \item 分组可能走不同路径，可能乱序到达
+    \item 网络只提供"尽力而为"的服务，可靠性由端系统保证
+    \item 代表：因特网（IP协议）
+\end{itemize}
+
+\begin{notebox}
+\textbf{因特网选择数据报服务的原因}：
+\begin{itemize}[itemsep=0pt]
+    \item 网络设计简单，路由器不需要维护连接状态
+    \item 适应性强，能够绕过故障节点
+    \item 可扩展性好，支持大规模网络
+    \item 端到端原则：复杂功能放在端系统实现
+\end{itemize}
+\end{notebox}
+
+\section{IPv4地址}
+IPv4地址是因特网中用于标识主机和路由器接口的32位地址。
+
+\subsection{地址格式}
+32位二进制，用点分十进制表示：
+\begin{center}
+\texttt{10101100.00010000.00000001.00000001} $\Leftrightarrow$ \texttt{172.16.1.1}
+\end{center}
+
+\textbf{点分十进制转换}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 将32位二进制分为4个8位组
+    \item 每组转换为0-255的十进制数
+    \item 用点号分隔
+\end{itemize}
+
+\subsection{分类编址}
+早期的IP地址采用分类编址方案，将地址空间划分为A、B、C、D、E五类。
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+% A类
+\draw (0,0) rectangle (8,0.6);
+\draw (1,0) -- (1,0.6);
+\node at (0.5,0.3) {\tiny 0};
+\node at (4.5,0.3) {\small 网络号(7位) | 主机号(24位)};
+\node[left] at (0,0.3) {A类};
+% B类
+\draw (0,-1) rectangle (8,-0.4);
+\draw (2,-1) -- (2,-0.4);
+\node at (1,-0.7) {\tiny 10};
+\node at (5,-0.7) {\small 网络号(14位) | 主机号(16位)};
+\node[left] at (0,-0.7) {B类};
+% C类
+\draw (0,-2) rectangle (8,-1.4);
+\draw (3,-2) -- (3,-1.4);
+\node at (1.5,-1.7) {\tiny 110};
+\node at (5.5,-1.7) {\small 网络号(21位) | 主机号(8位)};
+\node[left] at (0,-1.7) {C类};
+\end{tikzpicture}
+\end{center}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ccccc}
+\toprule
+\textbf{类别} & \textbf{首位} & \textbf{地址范围} & \textbf{网络数} & \textbf{每网主机数} \\
+\midrule
+A & 0 & 1.0.0.0-126.x.x.x & 126 & $2^{24}-2$ \\
+B & 10 & 128.0.0.0-191.255.x.x & $2^{14}$ & $2^{16}-2$ \\
+C & 110 & 192.0.0.0-223.255.255.x & $2^{21}$ & 254 \\
+D & 1110 & 224-239 & \multicolumn{2}{c}{多播地址} \\
+E & 1111 & 240-255 & \multicolumn{2}{c}{保留地址} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{分类编址的问题}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item A类网络太大（1600万主机），B类网络较大（6万主机），C类网络太小（254主机）
+    \item 地址利用率低，造成大量浪费
+    \item 路由表膨胀，难以管理
+\end{itemize}
+
+\subsection{特殊地址}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \texttt{0.0.0.0}：本网络本主机（DHCP请求时使用）
+    \item \texttt{127.x.x.x}：环回测试地址（localhost）
+    \item \texttt{255.255.255.255}：本网段广播（受限广播）
+    \item 主机号全0：网络地址（标识一个网络）
+    \item 主机号全1：直接广播地址（向该网络所有主机广播）
+\end{itemize}
+
+\subsection{私有地址}
+私有地址只能在内部网络使用，不能在因特网上路由：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item A类：\texttt{10.0.0.0/8}（1个A类网络）
+    \item B类：\texttt{172.16.0.0/12}（16个B类网络）
+    \item C类：\texttt{192.168.0.0/16}（256个C类网络）
+\end{itemize}
+
+\section{子网划分}
+子网划分是将一个大的IP网络划分为多个较小的子网，以提高地址利用率和便于管理。
+
+\subsection{子网划分的原理}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 从主机号中借用若干位作为子网号
+    \item 原来的两级IP地址变成三级：网络号 + 子网号 + 主机号
+    \item 对外仍表现为一个网络，内部划分为多个子网
+\end{itemize}
+
+\subsection{子网掩码}
+子网掩码用于区分IP地址中的网络部分和主机部分。
+
+\begin{center}
+\begin{tikzpicture}[node distance=0cm,scale=0.95]
+\node[draw,minimum width=2.5cm,minimum height=0.5cm,fill=blue!20] (net) {\small 网络号};
+\node[draw,minimum width=1.3cm,minimum height=0.5cm,right=of net,fill=green!20] (sub) {\small 子网号};
+\node[draw,minimum width=2.2cm,minimum height=0.5cm,right=of sub,fill=yellow!20] (host) {\small 主机号};
+\node[below=0.2cm of net] {\footnotesize 1111...1};
+\node[below=0.2cm of sub] {\footnotesize 1111...1};
+\node[below=0.2cm of host] {\footnotesize 0000...0};
+\node[below=0.8cm of sub] {\footnotesize 子网掩码：连续1对应网络部分，连续0对应主机部分};
+\end{tikzpicture}
+\end{center}
+
+\textbf{子网掩码的作用}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item IP地址 AND 子网掩码 = 网络地址
+    \item 用于判断两个IP地址是否在同一子网
+    \item 路由器使用子网掩码进行路由决策
+\end{itemize}
+
+\textbf{默认子网掩码}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item A类：\texttt{255.0.0.0}（/8）
+    \item B类：\texttt{255.255.0.0}（/16）
+    \item C类：\texttt{255.255.255.0}（/24）
+\end{itemize}
+
+\subsection{子网划分步骤}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 确定需要的子网数量$N$
+    \item 计算子网位数：$n = \lceil\log_2 N\rceil$
+    \item 从主机号借$n$位作为子网号
+    \item 计算新的子网掩码
+    \item 确定每个子网的地址范围
+\end{enumerate}
+
+\begin{examplebox}[例题4.1 子网划分]
+\textbf{题目}：C类地址\texttt{192.168.1.0}划分为6个子网，求子网掩码和每子网主机数。
+\tcblower
+需要$\lceil\log_2 6\rceil = 3$位子网号
+
+子网掩码：\texttt{255.255.255.224}（/27）
+
+主机位：$8-3=5$位，每子网主机数：$2^5-2=$ \textbf{30台}
+
+子网列表：
+\begin{center}\small
+\begin{tabular}{|c|c|c|c|}
+\hline
+子网 & 网络地址 & 可用范围 & 广播地址 \\
+\hline
+0 & 192.168.1.0 & .1-.30 & .31 \\
+1 & 192.168.1.32 & .33-.62 & .63 \\
+2 & 192.168.1.64 & .65-.94 & .95 \\
+3 & 192.168.1.96 & .97-.126 & .127 \\
+4 & 192.168.1.128 & .129-.158 & .159 \\
+5 & 192.168.1.160 & .161-.190 & .191 \\
+\hline
+\end{tabular}
+\end{center}
+\end{examplebox}
+
+\begin{examplebox}[例题4.1b 判断同一子网]
+\textbf{题目}：主机A的IP为\texttt{192.168.1.100}，主机B的IP为\texttt{192.168.1.200}，子网掩码为\texttt{255.255.255.192}，它们是否在同一子网？
+\tcblower
+计算网络地址：
+
+A的网络地址：\texttt{192.168.1.100} AND \texttt{255.255.255.192}
+
+$100 = 01100100$，$192 = 11000000$，AND结果 = $01000000 = 64$
+
+A的网络地址：\texttt{192.168.1.64}
+
+B的网络地址：\texttt{192.168.1.200} AND \texttt{255.255.255.192}
+
+$200 = 11001000$，$192 = 11000000$，AND结果 = $11000000 = 192$
+
+B的网络地址：\texttt{192.168.1.192}
+
+\textbf{结论}：网络地址不同，\textbf{不在同一子网}
+\end{examplebox}
+
+\section{CIDR无分类编址}
+CIDR（Classless Inter-Domain Routing）是一种更灵活的IP地址分配方案，消除了传统的A、B、C类地址的界限。
+
+\subsection{CIDR的特点}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 消除分类地址的概念，网络前缀可以是任意长度
+    \item 使用"斜线记法"表示地址块
+    \item 支持路由聚合，减少路由表项
+    \item 提高地址分配的灵活性和利用率
+\end{itemize}
+
+\subsection{斜线记法}
+\texttt{IP地址/前缀长度}，如\texttt{192.168.1.0/24}
+
+\textbf{含义}：前24位是网络前缀，后8位是主机号
+
+\textbf{地址块大小}：$2^{32-n}$个地址（n为前缀长度）
+
+\begin{examplebox}[例题4.2a CIDR地址块]
+\textbf{题目}：地址块\texttt{10.0.0.0/22}包含多少个IP地址？可分配给多少台主机？
+\tcblower
+地址总数：$2^{32-22} = 2^{10} = 1024$个地址
+
+可分配主机数：$1024 - 2 = 1022$台（减去网络地址和广播地址）
+
+地址范围：\texttt{10.0.0.0} - \texttt{10.0.3.255}
+\end{examplebox}
+
+\subsection{路由聚合}
+路由聚合（也称超网）是将多个连续的网络合并为一个更大的地址块，减少路由表项。
+
+\textbf{聚合条件}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 地址块必须连续
+    \item 地址块数量必须是2的幂次
+    \item 聚合后的网络地址必须能被地址块大小整除
+\end{itemize}
+
+\begin{center}
+\texttt{10.1.192.0/24} + \texttt{10.1.193.0/24} + \texttt{10.1.194.0/24} + \texttt{10.1.195.0/24}
+
+$\Downarrow$ 聚合
+
+\texttt{10.1.192.0/22}
+\end{center}
+
+\subsection{最长前缀匹配}
+路由器转发时，选择与目的地址匹配的\textbf{最长前缀}的路由。
+
+\textbf{匹配原则}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 将目的IP与路由表中每个条目的网络前缀进行比较
+    \item 可能有多个条目匹配
+    \item 选择前缀最长（最具体）的那个
+    \item 如果没有匹配，使用默认路由（0.0.0.0/0）
+\end{itemize}
+
+\begin{examplebox}[例题4.2 最长前缀匹配]
+\textbf{题目}：目的地址\texttt{172.32.47.165}，路由表如下，转发给哪个路由器？
+\begin{center}\small
+\begin{tabular}{|c|c|}
+\hline
+目的网络 & 下一跳 \\
+\hline
+172.32.0.0/16 & R1 \\
+172.32.32.0/19 & R2 \\
+172.32.47.0/24 & R3 \\
+0.0.0.0/0 & R4 \\
+\hline
+\end{tabular}
+\end{center}
+\tcblower
+匹配分析：
+\begin{itemize}[itemsep=0pt]
+    \item /16匹配（前16位172.32）$\checkmark$
+    \item /19匹配（172.32.32-63范围，47在内）$\checkmark$
+    \item /24匹配（172.32.47）$\checkmark$
+    \item /0默认路由，都匹配 $\checkmark$
+\end{itemize}
+最长前缀是/24 $\Rightarrow$ 转发给\textbf{R3}
+\end{examplebox}
+
+\section{VLSM变长子网掩码}
+VLSM（Variable Length Subnet Mask）允许在同一网络中使用不同长度的子网掩码，根据实际需求分配地址，提高地址利用率。
+
+\subsection{VLSM的优势}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 根据每个子网的实际主机数量分配合适大小的地址块
+    \item 避免地址浪费，提高利用率
+    \item 支持层次化的网络设计
+\end{itemize}
+
+\subsection{VLSM地址分配原则}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 按需求从大到小排序
+    \item 先分配需求最大的子网
+    \item 从剩余地址空间中继续分配
+    \item 确保地址块对齐（网络地址能被块大小整除）
+\end{enumerate}
+
+\begin{examplebox}[例题4.3 VLSM地址分配]
+\textbf{题目}：地址块\texttt{192.168.10.0/24}，分配给：销售部50台、技术部25台、财务部10台、点对点链路。
+\tcblower
+按需求从大到小分配：
+\begin{enumerate}[itemsep=0pt]
+    \item 销售部(50台)：需6位主机号（$2^6-2=62\geq50$），用/26
+    
+    分配\texttt{192.168.10.0/26}，范围.0-.63，可用.1-.62（62台）
+    \item 技术部(25台)：需5位主机号（$2^5-2=30\geq25$），用/27
+    
+    分配\texttt{192.168.10.64/27}，范围.64-.95，可用.65-.94（30台）
+    \item 财务部(10台)：需4位主机号（$2^4-2=14\geq10$），用/28
+    
+    分配\texttt{192.168.10.96/28}，范围.96-.111，可用.97-.110（14台）
+    \item 点对点(2台)：需2位主机号，用/30
+    
+    分配\texttt{192.168.10.112/30}，范围.112-.115，可用.113-.114（2台）
+\end{enumerate}
+
+\textbf{地址利用率}：使用了116个地址，原有256个，利用率约45\%（比等分高很多）
+\end{examplebox}
+
+\begin{examplebox}[例题4.4 路由聚合]
+\textbf{题目}：将\texttt{10.1.192.0/24}、\texttt{10.1.193.0/24}、\texttt{10.1.194.0/24}、\texttt{10.1.195.0/24}聚合。
+\tcblower
+第三字节二进制：
+\begin{itemize}[itemsep=0pt]
+    \item 192 = 11000000
+    \item 193 = 11000001
+    \item 194 = 11000010
+    \item 195 = 11000011
+\end{itemize}
+
+共同前缀：前6位相同(110000)
+
+聚合后前缀长度：$16+6=22$位
+
+\textbf{聚合结果}：\texttt{10.1.192.0/22}
+
+验证：/22表示前22位是网络前缀，后10位是主机号，共$2^{10}=1024$个地址，正好是4个/24网络。
+\end{examplebox}
+
+\section{IP数据报格式}
+IP数据报是网络层的传输单位，由首部和数据两部分组成。
+
+\subsection{首部格式}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{版本}（4位）：IPv4为4
+    \item \textbf{首部长度}（4位）：以4字节为单位，最小5（20字节），最大15（60字节）
+    \item \textbf{总长度}（16位）：整个数据报的长度，最大65535字节
+    \item \textbf{标识、标志、片偏移}：用于分片和重组
+    \item \textbf{生存时间TTL}（8位）：每经过一个路由器减1，为0时丢弃
+    \item \textbf{协议}（8位）：上层协议，如TCP(6)、UDP(17)、ICMP(1)
+    \item \textbf{首部校验和}（16位）：只校验首部
+    \item \textbf{源IP地址}（32位）
+    \item \textbf{目的IP地址}（32位）
+\end{itemize}
+
+\subsection{IP分片}
+当IP数据报长度超过链路的MTU（最大传输单元）时，需要进行分片。
+
+\textbf{分片相关字段}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{标识}：同一数据报的所有分片具有相同的标识
+    \item \textbf{MF标志}：1表示后面还有分片，0表示最后一个分片
+    \item \textbf{DF标志}：1表示不允许分片
+    \item \textbf{片偏移}：该分片在原数据报中的位置，以8字节为单位
+\end{itemize}
+
+\begin{examplebox}[例题4.5 IP分片]
+\textbf{题目}：一个4000字节的IP数据报（首部20字节），经过MTU=1500字节的链路，如何分片？
+\tcblower
+数据部分：$4000 - 20 = 3980$字节
+
+每个分片最大数据：$1500 - 20 = 1480$字节（必须是8的倍数）
+
+分片情况：
+\begin{center}\small
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+分片 & 数据长度 & 总长度 & 片偏移 & MF \\
+\hline
+1 & 1480 & 1500 & 0 & 1 \\
+2 & 1480 & 1500 & 185 & 1 \\
+3 & 1020 & 1040 & 370 & 0 \\
+\hline
+\end{tabular}
+\end{center}
+
+片偏移计算：$1480/8=185$，$2960/8=370$
+\end{examplebox}
+
+\subsection{TTL字段的作用}
+TTL（Time To Live）字段用于防止数据报在网络中永久循环：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 发送时设置初始TTL值（通常为64或128）
+    \item 每经过一个路由器，TTL减1
+    \item 当TTL减为0时，路由器丢弃该数据报
+    \item 路由器向源主机发送ICMP超时消息
+\end{itemize}
+
+\section{路由选择协议}
+路由选择协议用于在路由器之间交换路由信息，构建和维护路由表。
+
+\subsection{路由协议分类}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{内部网关协议(IGP)}：在自治系统内部使用
+    \begin{itemize}[itemsep=0pt]
+        \item 距离向量协议：RIP
+        \item 链路状态协议：OSPF
+    \end{itemize}
+    \item \textbf{外部网关协议(EGP)}：在自治系统之间使用
+    \begin{itemize}[itemsep=0pt]
+        \item BGP（边界网关协议）
+    \end{itemize}
+\end{itemize}
+
+\subsection{RIP协议}
+RIP（Routing Information Protocol）是一种基于距离向量的内部网关协议。
+
+\textbf{核心规则}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 以"跳数"作为度量标准，选择跳数最少的路径
+    \item 最大跳数为15，跳数=16表示网络不可达
+    \item 仅适用于小型网络
+    \item 每30秒向相邻路由器广播路由表
+\end{itemize}
+
+\textbf{路由更新规则}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 收到新网络的路由信息：添加到路由表
+    \item 收到更短路径：更新路由表
+    \item 收到相同下一跳的更新：无条件更新（即使跳数增加）
+    \item 收到不同下一跳且跳数更多：不更新
+\end{itemize}
+
+\textbf{RIP的问题}："坏消息传播得慢"，当网络故障时可能产生路由环路。
+
+\begin{examplebox}[例题4.6 RIP协议]
+\textbf{题目}：路由器R1收到邻居R2的距离矢量，包含$<$net1, 16$>$，这表示什么？
+\tcblower
+在RIP协议中，跳数=16表示"目的网络不可达"。
+
+R2发送的$<$net1, 16$>$说明R2无法到达net1。
+
+因此R1也无法通过R2到达net1，应将到net1的路由标记为不可达。
+\end{examplebox}
+
+\subsection{OSPF协议}
+OSPF（Open Shortest Path First）是一种基于链路状态的内部网关协议。
+
+\textbf{核心特点}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 使用Dijkstra最短路径算法
+    \item 以"链路代价"作为度量标准（可代表带宽、时延等）
+    \item 无路由环路问题
+    \item 支持大规模网络
+    \item 收敛速度快
+\end{itemize}
+
+\textbf{工作过程}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 通过Hello分组建立邻居关系
+    \item 生成链路状态通告(LSA)
+    \item 通过洪泛方式传播LSA
+    \item 所有路由器建立相同的链路状态数据库(LSDB)
+    \item 使用SPF算法计算最短路径
+\end{enumerate}
+
+\textbf{OSPF分组类型}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item Hello分组：发现和维护邻居关系
+    \item 数据库描述分组：交换LSDB摘要
+    \item 链路状态请求分组：请求特定LSA
+    \item 链路状态更新分组：发送LSA
+    \item 链路状态确认分组：确认收到LSA
+\end{itemize}
+
+\subsection{BGP协议}
+BGP（Border Gateway Protocol）是自治系统之间使用的外部网关协议。
+
+\textbf{核心特点}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 基于路径向量协议
+    \item 使用TCP（端口179）传输，保证可靠性
+    \item 选择"较好"的路由而非"最佳"路由
+    \item 支持策略路由
+\end{itemize}
+
+\begin{notebox}
+\textbf{路由协议的封装方式}：
+\begin{itemize}[itemsep=0pt]
+    \item RIP：封装在UDP（端口520）中
+    \item OSPF：直接封装在IP（协议号89）中
+    \item BGP：封装在TCP（端口179）中
+\end{itemize}
+\end{notebox}
+
+\begin{examplebox}[例题4.7 路由协议]
+\textbf{题目}：封装RIP、OSPF、BGP报文的协议分别是什么？
+\tcblower
+\begin{itemize}[itemsep=0pt]
+    \item RIP：UDP（用户数据报协议）
+    \item OSPF：IP（直接封装在IP数据报中）
+    \item BGP：TCP（传输控制协议）
+\end{itemize}
+
+\textbf{答案}：UDP、IP、TCP
+\end{examplebox}
+
+\section{IP数据报转发}
+\subsection{转发规则}
+主机发送数据报时，首先判断目的主机是否在同一网络：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 用自身IP与子网掩码做AND运算，得到自身网络地址
+    \item 用目的IP与自身子网掩码做AND运算，得到目的网络地址
+    \item 若两个网络地址相同：直接交付（同一网络）
+    \item 若两个网络地址不同：间接交付（发给默认网关）
+\end{enumerate}
+
+\subsection{路由器转发流程}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 检查IP数据报首部是否出错，出错则丢弃
+    \item 根据目的地址查路由表
+    \item 找到匹配条目则转发到下一跳
+    \item 找不到匹配则丢弃并发送ICMP差错报文
+\end{enumerate}
+
+\subsection{广播地址}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{受限广播}：255.255.255.255，路由器不转发
+    \item \textbf{直接广播}：主机号全1，可被路由器转发
+    \item 路由器可以隔离广播域，抑制广播风暴
+\end{itemize}
+
+\section{静态路由与路由环路}
+\subsection{静态路由类型}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{普通静态路由}：手动配置"目的网络+下一跳"
+    \item \textbf{默认路由}：0.0.0.0/0，匹配所有未知目的地址
+    \item \textbf{特定主机路由}：/32掩码，精确匹配单个主机
+\end{itemize}
+
+\subsection{路由环路}
+路由环路是指数据包在路由器之间循环转发、无法到达目标的问题。
+
+\textbf{产生原因}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 配置错误：下一跳指向错误
+    \item 路由聚合不当：聚合了不存在的网络
+    \item 网络故障：链路故障后路由表未及时更新
+\end{itemize}
+
+\textbf{解决方法}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{TTL字段}：每经过路由器减1，为0时丢弃
+    \item \textbf{黑洞路由}：对不存在的网络配置null0接口
+    \item \textbf{水平分割}：不向学习路由的接口反向发送该路由
+\end{itemize}
+
+\begin{examplebox}[例题4.8 网络设备与广播域]
+\textbf{题目}：下列网络设备中，能够抑制广播风暴的是？\\
+Ⅰ 中继器 \quad Ⅱ 集线器 \quad Ⅲ 网桥 \quad Ⅳ 路由器
+\tcblower
+\begin{itemize}[itemsep=0pt]
+    \item 中继器、集线器（物理层）：不隔离冲突域/广播域
+    \item 网桥（数据链路层）：隔离冲突域，但不隔离广播域
+    \item 路由器（网络层）：隔离冲突域+广播域，可抑制广播风暴
+\end{itemize}
+
+\textbf{答案}：仅Ⅳ（路由器）
+\end{examplebox}
+
+\begin{examplebox}[例题4.9 IP路由器功能]
+\textbf{题目}：下列关于IP路由器的描述，正确的是？\\
+Ⅰ 运行路由协议，设置路由表\\
+Ⅱ 监测到拥塞时，合理丢弃IP分组\\
+Ⅲ 对收到的IP分组进行差错校验，确保传输的IP分组不丢失\\
+Ⅳ 根据收到的IP分组的目的IP地址，将其转发到合适的输出线路上
+\tcblower
+\begin{itemize}[itemsep=0pt]
+    \item Ⅰ正确：路由器运行路由协议维护路由表
+    \item Ⅱ正确：拥塞时路由器会丢弃分组
+    \item Ⅲ错误：IP层不负责可靠传输，仅校验首部，出错则丢弃
+    \item Ⅳ正确：根据目的地址查表转发
+\end{itemize}
+
+\textbf{答案}：Ⅰ、Ⅱ、Ⅳ
+\end{examplebox}
+
+\section{ICMP协议}
+ICMP（Internet Control Message Protocol）是网际控制报文协议，用于在主机和路由器之间传递控制信息和错误报告。
+
+\subsection{ICMP报文类型}
+\textbf{差错报告报文}（5种）：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{终点不可达}：路由器无法转发数据报（无路由、主机不可达、端口不可达等）
+    \item \textbf{源点抑制}：因拥塞丢弃数据报，请求源主机降低发送速率
+    \item \textbf{时间超过}：TTL减为0时丢弃数据报（traceroute的原理）
+    \item \textbf{参数问题}：IP首部字段有错误
+    \item \textbf{改变路由}：通知源主机存在更优路径
+\end{itemize}
+
+\textbf{询问报文}（2种）：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{回送请求/回答}：ping命令使用，测试连通性
+    \item \textbf{时间戳请求/回答}：用于时钟同步和延迟测量
+\end{itemize}
+
+\subsection{不发送ICMP差错报告的情况}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 对ICMP差错报告报文本身不发送
+    \item 对第一个分片之后的后续分片不发送
+    \item 对多播地址的数据报不发送
+    \item 对特殊地址（如127.0.0.0、0.0.0.0）不发送
+\end{itemize}
+
+\subsection{ICMP应用}
+\textbf{ping命令}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 使用ICMP回送请求和回送回答报文
+    \item 测试目标主机是否可达
+    \item 测量往返延迟
+\end{itemize}
+
+\textbf{traceroute命令}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 利用TTL递增和ICMP时间超过报文
+    \item 逐跳发现路径上的路由器
+    \item Windows使用tracert，Linux使用traceroute
+\end{itemize}
+
+\begin{tipbox}
+\textbf{traceroute工作原理}：
+\begin{enumerate}[itemsep=0pt]
+    \item 发送TTL=1的数据报，第一个路由器返回时间超过报文
+    \item 发送TTL=2的数据报，第二个路由器返回时间超过报文
+    \item 依次递增TTL，直到到达目的主机返回回送回答
+\end{enumerate}
+\end{tipbox}
+
+\section{VPN与NAT}
+\subsection{虚拟专用网VPN}
+VPN（Virtual Private Network）利用公用因特网作为专用网之间的通信载体。
+
+\textbf{工作原理}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 使用IP隧道技术封装内部数据报
+    \item 内部数据报被加密后封装在新的IP数据报中
+    \item 新数据报使用公网IP地址在因特网上传输
+    \item 到达目的网关后解密还原
+\end{itemize}
+
+\textbf{私有IP地址范围}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item A类：10.0.0.0 $\sim$ 10.255.255.255（10/8）
+    \item B类：172.16.0.0 $\sim$ 172.31.255.255（172.16/12）
+    \item C类：192.168.0.0 $\sim$ 192.168.255.255（192.168/16）
+\end{itemize}
+
+\subsection{网络地址转换NAT}
+NAT（Network Address Translation）允许多个私有IP地址共享一个公网IP地址。
+
+\textbf{工作过程}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 内网主机发送数据报，源地址为私有IP
+    \item NAT路由器将源地址替换为公网IP，记录映射关系
+    \item 数据报发送到公网
+    \item 回程数据报到达NAT路由器，查表还原目的地址
+    \item 转发给内网主机
+\end{enumerate}
+
+\subsection{NAPT}
+NAPT（Network Address and Port Translation）使用IP地址+端口号进行映射，一个公网IP可支持多台内网主机同时上网。
+
+\textbf{特点}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 结合端口号区分不同的内网主机
+    \item 大大提高公网IP的利用率
+    \item 外网主机无法主动发起连接（提供一定安全保护）
+    \item P2P应用需要NAT穿越技术
+\end{itemize}
+
+\begin{examplebox}[例题4.10 IP分片计算]
+\textbf{题目}：一个IP数据报总长1500B（首部20B，载荷1480B），经过MTU=800B的链路，如何分片？
+\tcblower
+每个分片最大数据：$800 - 20 = 780$B
+
+但片偏移必须是8字节的整数倍，所以最大取776B（$776 \div 8 = 97$）
+
+分片情况：
+\begin{itemize}[itemsep=0pt]
+    \item 分片1：776B数据，片偏移=0，MF=1
+    \item 分片2：$1480-776=704$B数据，片偏移=$776/8=97$，MF=0
+\end{itemize}
+
+\textbf{答案}：至少分为2个分片，片偏移分别为0和97
+\end{examplebox}
+
+\section{IP数据报转发案例}
+\subsection{转发判断流程}
+主机发送IP数据报时，需要判断目的主机是否在同一网络：
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 计算自身网络地址：自身IP AND 子网掩码
+    \item 计算目的网络地址：目的IP AND 自身子网掩码
+    \item 比较两个网络地址：
+    \begin{itemize}[itemsep=0pt]
+        \item 相同 → 直接交付（通过交换机在本网络内转发）
+        \item 不同 → 间接交付（发送给默认网关/路由器）
+    \end{itemize}
+\end{enumerate}
+
+\begin{examplebox}[例题4.11 IP转发判断]
+\textbf{题目}：主机A的IP为192.168.1.100/24，默认网关为192.168.1.1。主机A要发送数据给以下目的地址，分别采用直接交付还是间接交付？\\
+(1) 192.168.1.50 \quad (2) 192.168.2.50 \quad (3) 10.0.0.1
+\tcblower
+主机A的网络地址：192.168.1.100 AND 255.255.255.0 = 192.168.1.0
+
+\textbf{(1) 目的192.168.1.50}：
+\begin{itemize}[itemsep=0pt]
+    \item 目的网络地址：192.168.1.50 AND 255.255.255.0 = 192.168.1.0
+    \item 与A的网络地址相同 → \textbf{直接交付}
+\end{itemize}
+
+\textbf{(2) 目的192.168.2.50}：
+\begin{itemize}[itemsep=0pt]
+    \item 目的网络地址：192.168.2.50 AND 255.255.255.0 = 192.168.2.0
+    \item 与A的网络地址不同 → \textbf{间接交付}（发给网关192.168.1.1）
+\end{itemize}
+
+\textbf{(3) 目的10.0.0.1}：
+\begin{itemize}[itemsep=0pt]
+    \item 目的网络地址：10.0.0.1 AND 255.255.255.0 = 10.0.0.0
+    \item 与A的网络地址不同 → \textbf{间接交付}（发给网关192.168.1.1）
+\end{itemize}
+\end{examplebox}
+
+\begin{examplebox}[例题4.12 广播地址计算]
+\textbf{题目}：某主机IP为192.168.0.100，子网掩码为255.255.255.128，求该子网的网络地址、广播地址和可用主机范围。
+\tcblower
+\textbf{网络地址}：192.168.0.100 AND 255.255.255.128
+
+$100 = 01100100$，$128 = 10000000$
+
+AND结果 = $00000000 = 0$
+
+网络地址：\textbf{192.168.0.0}
+
+\textbf{广播地址}：主机位全1
+
+子网掩码/25，主机位7位，全1 = 127
+
+广播地址：\textbf{192.168.0.127}
+
+\textbf{可用主机范围}：192.168.0.1 $\sim$ 192.168.0.126（共126台）
+\end{examplebox}
+
+\begin{examplebox}[例题4.13 路由表查找综合题]
+\textbf{题目}：路由器R的路由表如下，分析目的地址为172.32.57.14的数据报如何转发。
+
+\begin{center}\small
+\begin{tabular}{|c|c|c|}
+\hline
+目的网络 & 子网掩码 & 下一跳 \\
+\hline
+172.32.0.0 & 255.255.0.0 & 接口0 \\
+172.32.32.0 & 255.255.224.0 & 接口1 \\
+172.32.56.0 & 255.255.252.0 & 接口2 \\
+0.0.0.0 & 0.0.0.0 & 192.168.1.1 \\
+\hline
+\end{tabular}
+\end{center}
+\tcblower
+对目的地址172.32.57.14逐条匹配：
+
+\textbf{条目1}：172.32.57.14 AND 255.255.0.0 = 172.32.0.0 ✓ 匹配（/16）
+
+\textbf{条目2}：172.32.57.14 AND 255.255.224.0
+\begin{itemize}[itemsep=0pt]
+    \item $57 = 00111001$，$224 = 11100000$
+    \item AND结果 = $00100000 = 32$
+    \item 172.32.32.0 ✓ 匹配（/19）
+\end{itemize}
+
+\textbf{条目3}：172.32.57.14 AND 255.255.252.0
+\begin{itemize}[itemsep=0pt]
+    \item $57 = 00111001$，

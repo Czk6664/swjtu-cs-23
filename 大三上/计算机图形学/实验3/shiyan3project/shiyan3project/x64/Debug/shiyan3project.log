@@ -1,0 +1,34 @@
+﻿  shiyan3project.cpp
+D:\桌面\计算机图形学\实验3\shiyan3project\ShapeImpl.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+  (编译源文件“shiyan3project.cpp”)
+  
+D:\桌面\计算机图形学\实验3\shiyan3project\Algorithms.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+  (编译源文件“shiyan3project.cpp”)
+  
+D:\桌面\计算机图形学\实验3\shiyan3project\ScanlineFillD2D.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+  (编译源文件“shiyan3project.cpp”)
+  
+D:\visual stduio 2026\VC\Tools\MSVC\14.50.35717\include\xutility(522,82): warning C4244: “参数”: 从“_Ty”转换到“float”，可能丢失数据
+D:\visual stduio 2026\VC\Tools\MSVC\14.50.35717\include\xutility(522,82): warning C4244:         with
+D:\visual stduio 2026\VC\Tools\MSVC\14.50.35717\include\xutility(522,82): warning C4244:         [
+D:\visual stduio 2026\VC\Tools\MSVC\14.50.35717\include\xutility(522,82): warning C4244:             _Ty=int
+D:\visual stduio 2026\VC\Tools\MSVC\14.50.35717\include\xutility(522,82): warning C4244:         ]
+  (编译源文件“shiyan3project.cpp”)
+      D:\visual stduio 2026\VC\Tools\MSVC\14.50.35717\include\xutility(522,82):
+      模板实例化上下文(最早的实例化上下文)为
+          D:\桌面\计算机图形学\实验3\shiyan3project\shiyan3project.cpp(978,32):
+          查看对正在编译的函数 模板 实例化“std::shared_ptr<Circle> std::make_shared<Circle,D2D1_POINT_2F&,int>(D2D1_POINT_2F &,int &&)”的引用
+          D:\visual stduio 2026\VC\Tools\MSVC\14.50.35717\include\memory(2944,46):
+          查看对正在编译的函数 模板 实例化“std::_Ref_count_obj2<Circle>::_Ref_count_obj2<D2D1_POINT_2F&,_Ty>(D2D1_POINT_2F &,_Ty &&)”的引用
+          with
+          [
+              _Ty=int
+          ]
+          D:\visual stduio 2026\VC\Tools\MSVC\14.50.35717\include\memory(2131,18):
+          查看对正在编译的函数 模板 实例化“void std::_Construct_in_place<_Ty,D2D1_POINT_2F&,int>(_Ty &,D2D1_POINT_2F &,int &&) noexcept(false)”的引用
+          with
+          [
+              _Ty=Circle
+          ]
+  
+  shiyan3project.vcxproj -> D:\桌面\计算机图形学\实验3\shiyan3project\x64\Debug\shiyan3project.exe

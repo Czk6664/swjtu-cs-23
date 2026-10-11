@@ -1,0 +1,68 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{listings}
+\geometry{a4paper, margin=1in}
+
+\title{计算机图形学模拟试卷（二）参考答案与解析}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{简答题建议答案}
+\begin{enumerate}
+    \item \textbf{显存作用}：显存是 GPU 专门用来存储像素颜色信息的存储器。分辨率决定了屏幕上的像素总数，而显存容量限制了能保存的最大像素总数及对应的位深（颜色深度）。
+    \item \textbf{GPU 堆类型}：
+    \begin{itemize}
+        \item \textbf{默认堆}：GPU 访问快，适合静态资源。
+        \item \textbf{上传堆}：CPU 可写，用于数据传输。
+        \item \textbf{回读堆}：GPU 数据读回 CPU。
+    \end{itemize}
+    \item \textbf{Mipmapping}：预生成不同等级分辨率的纹理图片。当物体远离摄像机时，采样低分辨率图，减少因采样频率过低引起的走样。
+\end{enumerate}
+
+\section{计算题解析}
+\begin{enumerate}
+    \item \textbf{Bresenham (-8, 4)}：
+    $dx=8, dy=4$。$|dx| > |dy|$，主方向为 $x$ 轴。
+    $x$ 以 $-1$ 步进，$y$ 以 $+1$ 进位。
+    映射到第一象限：步进 $(0,0) \to (8,4)$。
+    $d = 2\Delta y - \Delta x = 2(4) - 8 = 0$。
+    每次 $d \ge 0 \implies y++, d = d + 2(4-8) = d-8; d < 0 \implies d = d+8$。
+    
+    \item \textbf{B 样条 $t=0.5$}：
+    二次 B 样条基函数或性质：$P(0.5) = 0.5(P_1 + 0.5(P_0 + P_2))$。
+    $P_{mid} = (0.0+2.0)/2 = 1.0; (0.0+0.0)/2 = 0.0 \implies M(1,0)$。
+    $P(0.5) = 0.5 \times (1,2) + 0.5 \times (1,0) = (1, 1)$。
+    
+    \item \textbf{3D 变换矩阵}：
+    旋转 $R_x(90^\circ)$：$\begin{bmatrix} 1&0&0&0 \\ 0&0&-1&0 \\ 0&1&0&0 \\ 0&0&0&1 \end{bmatrix}$。
+    平移 $T(0,0,5)$：第四列为 $(0,0,5,1)^T$。
+    结果：$T \cdot R \cdot V$。
+\end{enumerate}
+
+\section{画图与分析解析}
+\begin{itemize}
+    \item \textbf{中点圆 $R=5$}：$d_0 = 1-5=-4 < 0$ $\to$ (1,5), $d=d+2(1)+3=1$；$d > 0$ $\to$ (2,4)。
+    \item \textbf{SH 裁剪}：由内向外输出交点 $I$；由外向内输出交点 $I$ 和新端点 $V$。
+\end{itemize}
+
+\section{算法解析}
+\begin{lstlisting}[language=C++]
+std::vector<Point> GetBezier2(Point p0, Point p1, Point p2) {
+    std::vector<Point> res;
+    for (float t = 0; t <= 1.0f; t += 0.01f) {
+        float u = 1 - t;
+        Point p;
+        p.x = u*u*p0.x + 2*t*u*p1.x + t*t*p2.x;
+        p.y = u*u*p0.y + 2*t*u*p1.y + t*t*p2.y;
+        res.push_back(p);
+    }
+    return res;
+}
+\end{lstlisting}
+
+\end{document}

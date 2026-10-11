@@ -1,0 +1,1159 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{multirow}
+\usepackage[most]{tcolorbox}
+\tcbset{colback=white,colframe=black,boxrule=0.6pt,arc=0mm,left=3mm,right=3mm,top=2mm,bottom=2mm,breakable,enhanced}
+% 下划线填空宏：在水平线上放入左对齐内容
+\newcommand{\fillin}[1]{\underline{\makebox[8cm][l]{#1}}}
+\usetikzlibrary{shapes,arrows,positioning}
+
+\geometry{left=2.5cm,right=2.5cm,top=3.5cm,bottom=2.5cm}
+\setlength{\headheight}{24.64995pt}
+
+% 设置页眉
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\textbf{实验1 熟悉开发环境及工具}}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{2pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\leaders\hrule height 2pt\hfill}}
+
+% 设置代码样式
+\lstset{
+    language=C++,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+}
+
+\title{\textbf{实验1 熟悉开发环境及工具}}
+\author{程泽凯 \quad 2023112621}
+\date{\today}
+
+\begin{document}
+
+% 自定义封面（按图一）
+\begin{titlepage}
+    \thispagestyle{empty}
+    \begin{spacing}{1.2}
+    \centering
+    \vspace*{10mm}
+    {\zihao{4} 《计算机图形学及人机交互》\par}
+    \vspace{20mm}
+    {\bfseries\zihao{1} 实 验 报 告\par}
+    \vspace{40mm}
+
+    % 基本信息
+    \songti\zihao{-3}
+    \begin{flushleft}
+    \setlength{\tabcolsep}{1em}
+    \renewcommand\arraystretch{2}
+    \begin{tabular}{@{}ll}
+        学\quad 号： & \fillin{2023112621} \\
+        姓\quad 名： & \fillin{程泽凯} \\
+        年\quad 级： & \fillin{2023 级} \\
+        专\quad 业： & \fillin{计算机科学与技术} \\
+        院\quad 系： & \fillin{计算机与人工智能学院} \\
+    \end{tabular}
+    \end{flushleft}
+
+    \vfill
+    {\zihao{-3} 2025~2026 第 1 学期\par}
+    \end{spacing}
+\end{titlepage}
+
+% 第二页留白
+\clearpage
+\thispagestyle{empty}\mbox{}
+\clearpage
+
+% 正文设置：小四宋体，1.5倍行距
+\songti\zihao{-4}
+\onehalfspacing
+
+\section{实验目的}
+
+\begin{tcolorbox}
+通过本次实验，熟悉计算机图形学开发环境和工具，掌握Direct2D图形编程的基本方法，学会使用Visual Studio 2022进行图形应用程序的开发。具体目标包括：
+
+\begin{enumerate}
+    \item 熟悉Windows图形编程环境
+    \item 掌握Direct2D API的基本使用方法
+    \item 学会绘制基本几何图形（直线、矩形、椭圆、圆弧等）
+    \item 理解面向对象的图形程序设计思想
+    \item 培养图形程序调试和优化能力
+\end{enumerate}
+\end{tcolorbox}
+
+\section{实验任务}
+
+\begin{tcolorbox}
+参看下面的图形，请采用 GDI 或 Direct2D 编程实现。其中标注部分的内容可以不绘制。
+
+要求：
+\begin{enumerate}
+    \item 采用 Direct2D 实现（5 分）。
+    \item 撰写实验报告，主要包括以下几个部分的内容：（共 95 分）
+    \begin{enumerate}
+        \item 给出本次实验的目的，任务及要求等（5 分）。
+        \item 根据任务要求，给出程序的主要功能模块结构图（15 分），描述每个功能模块实现的主要功能（10 分）。
+        \item 给出每个模块的程序流程图（20 分）、完整的程序代码（30 分）及程序运行结果的屏幕截图（10 分）。
+        \item 实验总结（5 分）。
+    \end{enumerate}
+\end{enumerate}
+\end{tcolorbox}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{D:/桌面/计算机图形学/实验1/1.png}
+    \caption{实验要求绘制的图形}
+    \label{fig:target}
+\end{figure}
+
+\section{实验环境}
+
+\subsection{硬件环境}
+\begin{tcolorbox}
+\begin{enumerate}
+    \item 计算机：机械革命旷世16pro
+    \item CPU：12th Gen Intel® i9-12900h
+    \item RAM：32G
+\end{enumerate}
+\end{tcolorbox}
+
+\subsection{软件环境}
+\begin{tcolorbox}
+\begin{enumerate}
+    \item 操作系统：Windows 11 专业版
+    \item 开发工具：Visual Studio 2022
+\end{enumerate}
+\end{tcolorbox}
+
+
+\section{图形坐标计算}
+
+在实现复杂图形绘制之前，需要先进行精确的坐标计算。本节将详细分析图形中所有关键点的坐标计算过程和绘制顺序。
+
+\subsection{坐标系统设定}
+
+根据实验要求，建立以窗口左上角为原点的坐标系，向右为X轴正方向，向下为Y轴正方向。窗口尺寸设定为400×500像素。
+
+\begin{tcolorbox}
+\textbf{坐标系参数：}
+\begin{itemize}
+    \item 窗口宽度：400 像素
+    \item 窗口高度：500 像素
+    \item 原点位置：窗口左上角 (0, 0)
+    \item X轴方向：向右为正
+    \item Y轴方向：向下为正
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{主要图形元素坐标计算}
+
+根据坐标计算图和绘制顺序表，对图形中的各个关键点进行精确定位：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{D:/桌面/计算机图形学/实验1/坐标计算图1.png}
+    \caption{图形坐标计算图（上半部分）}
+    \label{fig:coordinates1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{D:/桌面/计算机图形学/实验1/坐标计算图2.png}
+    \caption{图形坐标计算图（中间部分）}
+    \label{fig:coordinates2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{D:/桌面/计算机图形学/实验1/坐标计算图3.png}
+    \caption{图形坐标计算图（下半部分）}
+    \label{fig:coordinates2}
+\end{figure}
+
+\subsubsection{中心区域关键点}
+
+\begin{table}[H]
+\centering
+\caption{中心区域关键点坐标}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{点名} & \textbf{X坐标} & \textbf{Y坐标} & \textbf{描述} \\
+\hline
+A & 150 & 300 & 中心椭圆心 \\
+\hline
+B & 122 & 160 & 上方垂直线起点 \\
+\hline
+C & 122 & 223.6 & 上方垂直线终点 \\
+\hline
+D & 87 & 223.6 & 左上圆弧起点 \\
+\hline
+E & 122 & 134 & 左上圆弧终点 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{外层圆弧关键点}
+
+\begin{table}[H]
+\centering
+\caption{外层圆弧关键点坐标}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{点名} & \textbf{X坐标} & \textbf{Y坐标} & \textbf{描述} \\
+\hline
+Q₁ & 87 & 223.6 & 左上大圆弧起点 \\
+\hline
+R₁ & 213 & 223.6 & 右上大圆弧终点 \\
+\hline
+F & 0 & 80 & 左下圆弧中点 \\
+\hline
+G & 40 & 80 & 右下圆弧中点 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{辅助线段关键点}
+
+\begin{table}[H]
+\centering
+\caption{辅助线段关键点坐标}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{点名} & \textbf{X坐标} & \textbf{Y坐标} & \textbf{描述} \\
+\hline
+L & -40 & 80 & 左侧斜线起点 \\
+\hline
+M & 80 & 40 & 左侧斜线终点 \\
+\hline
+N & -60 & 0 & 左下斜线起点 \\
+\hline
+O & -100 & 80 & 左下斜线终点 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{圆弧参数计算}
+
+对于复杂的圆弧绘制，需要计算圆心、半径、起始角度和终止角度：
+
+\subsubsection{主要圆弧参数}
+
+\begin{table}[H]
+\centering
+\caption{圆弧参数计算结果}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{圆弧名称} & \textbf{圆心X} & \textbf{圆心Y} & \textbf{半径} & \textbf{起始角} & \textbf{终止角} \\
+\hline
+中心椭圆 & 150 & 300 & 40 & 0° & 360° \\
+\hline
+左上圆弧 & 87 & 223.6 & 35 & 109.28° & 250.62° \\
+\hline
+右上圆弧 & 213 & 223.6 & 35 & 289.38° & 70.62° \\
+\hline
+大圆弧 & 150 & 300 & 64 & 212.98° & 327.02° \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{角度计算方法}
+
+对于圆弧的角度计算，采用以下数学公式：
+
+\begin{tcolorbox}
+\textbf{角度计算公式：}
+\begin{align}
+\theta &= \arctan\left(\frac{y - cy}{x - cx}\right) \\
+\text{角度标准化} &: \theta \in [0, 2\pi] \\
+\text{弧度转角度} &: \text{degree} = \theta \times \frac{180}{\pi}
+\end{align}
+\end{tcolorbox}
+
+其中：
+\begin{itemize}
+    \item $(x, y)$ 为圆弧上的点坐标
+    \item $(cx, cy)$ 为圆心坐标
+    \item $\theta$ 为计算得到的角度（弧度）
+\end{itemize}
+
+\subsection{坐标变换与调整}
+
+在实际编程实现中，需要将理论计算的坐标转换为适合窗口显示的像素坐标。主要调整包括：
+
+\subsubsection{坐标平移变换}
+
+由于原始计算中存在负坐标，需要将整个图形向右下方平移，确保所有点都在窗口可视区域内。
+
+\begin{tcolorbox}
+\textbf{坐标变换公式：}
+\begin{align}
+x_{\text{screen}} &= x_{\text{original}} + \text{offset}_x \\
+y_{\text{screen}} &= y_{\text{original}} + \text{offset}_y
+\end{align}
+
+\textbf{平移参数：}
+\begin{itemize}
+    \item $\text{offset}_x = 150$ （向右平移150像素）
+    \item $\text{offset}_y = 50$ （向下平移50像素）
+\end{itemize}
+\end{tcolorbox}
+
+\subsubsection{实际使用的坐标值}
+
+经过坐标变换后，主要关键点的实际坐标为：
+
+\begin{table}[H]
+\centering
+\caption{实际使用的关键点坐标}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{点名} & \textbf{理论坐标} & \textbf{实际X} & \textbf{实际Y} & \textbf{用途} \\
+\hline
+A & (0, 250) & 150 & 300 & 中心椭圆心 \\
+\hline
+B & (-28, 110) & 122 & 160 & 垂直线起点 \\
+\hline
+C & (-28, 173.6) & 122 & 223.6 & 垂直线终点 \\
+\hline
+D & (-63, 173.6) & 87 & 223.6 & 左上圆弧起点 \\
+\hline
+E & (-28, 84) & 122 & 134 & 左上圆弧终点 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{绘制顺序设计}
+
+为了确保图形的正确显示效果，制定了以下绘制顺序：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{D:/桌面/计算机图形学/实验1/绘制顺序表.png}
+    \caption{图形绘制顺序表}
+    \label{fig:drawing_order}
+\end{figure}
+
+\begin{enumerate}
+    \item \textbf{中心圆}：作为主体结构，首先绘制
+    \item \textbf{外层大圆弧}：绘制包围的大圆弧结构
+    \item \textbf{左上圆弧}：绘制左上角的小圆弧
+    \item \textbf{右上圆弧}：绘制右上角的小圆弧
+    \item \textbf{垂直线段}：连接上下结构的线段
+    \item \textbf{辅助线段}：其他装饰性线段
+\end{enumerate}
+
+\textbf{绘制顺序的设计原则：}
+\begin{itemize}
+    \item 从主体到细节：先绘制主要结构，再添加细节
+    \item 从内到外：先绘制内部结构，再绘制外层结构
+    \item 避免遮挡：确保后绘制的元素不会遮挡先绘制的元素
+\end{itemize}
+
+\section{实验步骤与结果}
+
+\subsection{绘制程序的主要功能模块结构图}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{D:/桌面/计算机图形学/实验1/未命名绘图.drawio.png}
+	\caption{程序模块树状结构图}
+	\label{fig:structure}
+\end{figure}
+
+\subsection{程序模块简要介绍}
+
+根据程序模块树状结构图，本程序采用层次化模块设计，共包含4个父模块和9个子模块。以下是各模块的功能简介：
+
+\subsubsection{系统依赖模块}
+
+\begin{tcolorbox}
+\textbf{模块功能：}负责引入程序所需的所有外部依赖库和头文件。
+
+\textbf{主要组件：}
+\begin{itemize}
+    \item Windows API基础库（windows.h）
+    \item Direct2D图形库（d2d1.h）
+    \item STL容器库（vector）
+    \item 数学函数库（cmath）
+    \item 内存管理库（new）
+\end{itemize}
+
+\textbf{作用：}为其他模块提供基础的系统功能支持，确保程序能够正常调用Windows API和Direct2D图形接口。
+\end{tcolorbox}
+
+\subsubsection{图形类父模块（Shapes）}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\textwidth]{D:/桌面/计算机图形学/实验1/图形类模块.png}
+	\caption{图形类模块流程图）}
+	\label{fig:coordinates1}
+\end{figure}
+
+\begin{tcolorbox}
+\textbf{模块功能：}定义和管理所有图形对象，提供统一的图形绘制接口。
+
+\textbf{子模块组成：}
+\begin{itemize}
+    \item \textbf{形状接口子模块}：定义Shape基类，提供统一的绘制接口
+    \item \textbf{具体形状实现子模块}：实现直线、矩形、椭圆、圆弧四种具体图形类
+\end{itemize}
+
+\textbf{设计特点：}采用面向对象设计，通过继承和多态实现图形的统一管理和绘制。
+\end{tcolorbox}
+
+\subsubsection{渲染父模块（Renderer）}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\textwidth]{D:/桌面/计算机图形学/实验1/渲染模块.png}
+	\label{fig:coordinates1}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\textwidth]{D:/桌面/计算机图形学/实验1/渲染模块2.png}
+	\caption{渲染模块流程图}
+	\label{fig:coordinates1}
+\end{figure}
+
+\begin{tcolorbox}
+\textbf{模块功能：}管理整个图形渲染流程，负责Direct2D资源管理和绘制调度。
+
+\textbf{子模块组成：}
+\begin{itemize}
+    \item \textbf{D2D资源管理子模块}：管理Direct2D工厂、渲染目标、画刷等资源
+    \item \textbf{绘制调度子模块}：维护图形对象列表，执行批量绘制操作
+\end{itemize}
+
+\textbf{核心功能：}协调图形对象的创建、存储和渲染输出。
+\end{tcolorbox}
+
+\subsubsection{主程序父模块（Main）}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\textwidth]{D:/桌面/计算机图形学/实验1/主程序模块.png}
+	\caption{主程序模块流程图}
+	\label{fig:coordinates1}
+\end{figure}
+
+\begin{tcolorbox}
+\textbf{模块功能：}程序的最高层控制模块，管理程序生命周期和系统交互。
+
+\textbf{子模块组成：}
+\begin{itemize}
+    \item \textbf{窗口初始化子模块}：负责Windows窗口类注册和窗口创建
+    \item \textbf{消息处理子模块}：处理Windows消息，协调各父模块工作
+    \item \textbf{消息循环子模块}：维护程序主事件循环，保持程序运行
+\end{itemize}
+
+\textbf{协调作用：}统一管理图形类父模块和渲染父模块的协作关系。
+\end{tcolorbox}
+
+\subsubsection{模块间协作关系}
+
+\begin{tcolorbox}
+\textbf{协作流程：}
+\begin{enumerate}
+    \item \textbf{初始化阶段}：主程序父模块创建窗口，初始化图形类和渲染父模块
+    \item \textbf{对象创建}：图形类父模块按照绘制顺序创建24个具体图形对象，对应图形的不同部分：
+    
+    \textbf{图形构成分析：}
+    \begin{enumerate}
+        \item \textbf{第1个对象}：绘制图形底部的\textbf{主圆形}，作为整个图形的核心基础结构
+        
+        \item \textbf{第2-3个对象}：构成图形左侧的\textbf{大弧形轮廓}，形成主体的外围包络线
+        
+        \item \textbf{第4个对象}：绘制连接上下部分的\textbf{中央垂直线段}
+        
+        \item \textbf{第5-9个对象}：构建图形中部的\textbf{椭圆形环状结构}，包括：
+        \begin{itemize}
+            \item 外层椭圆弧线
+            \item 内层椭圆弧线  
+            \item 左右两条垂直连接线
+            \item 底部连接弧线
+        \end{itemize}
+        
+        \item \textbf{第10-18个对象}：构成图形右侧的\textbf{复杂弧形分支结构}，包括：
+        \begin{itemize}
+            \item 右侧延伸的连接线段
+            \item 多个不同半径的同心圆弧
+            \item 形成右下角的弯曲造型
+        \end{itemize}
+        
+        \item \textbf{第19-23个对象}：绘制图形顶部的\textbf{装饰性小圆弧群}，包括：
+        \begin{itemize}
+            \item 顶端的小椭圆
+            \item 左右对称的大弧形结构
+            \item 两个小装饰圆弧
+        \end{itemize}
+        
+        \item \textbf{第24个对象}：绘制从上部装饰结构到右侧分支的\textbf{斜向连接线}
+    \end{enumerate}
+    
+    \textbf{绘制顺序设计原则：}
+    \begin{itemize}
+        \item \textbf{从主体到细节}：先绘制底部主圆形，再添加各部分细节
+        \item \textbf{从内到外}：先构建核心结构，再扩展到外围元素
+        \item \textbf{分区域绘制}：按照底部→中部→右侧→顶部的空间顺序组织
+        \item \textbf{最后连接}：用连接线将各个独立部分有机结合
+    \end{itemize}
+    \item \textbf{渲染阶段}：渲染父模块调度图形对象进行批量绘制
+    \item \textbf{交互响应}：主程序父模块处理窗口消息，触发重绘和资源调整
+    \item \textbf{清理阶段}：按依赖关系逆序释放所有模块资源
+\end{enumerate}
+
+\end{tcolorbox}
+
+\subsection{模块化代码详细讲解}
+
+本程序采用层次化模块设计，使用Direct2D API实现复杂图形的绘制。程序总共331行代码，按照父模块-子模块的层次结构进行组织。下面按照模块层次对程序进行详细分析：
+
+\textbf{模块层次结构说明：}
+\begin{itemize}
+    \item \textbf{父模块}：定义主要功能领域，包含多个相关子模块
+    \item \textbf{子模块}：实现父模块中的具体功能，相互协作完成任务
+    \item \textbf{模块间依赖}：通过接口和数据传递实现模块间协作
+\end{itemize}
+
+\subsubsection{系统依赖模块 - 头文件包含与库链接}
+
+\begin{lstlisting}[caption=系统依赖声明]
+#include <windows.h>    // Windows API基础头文件
+#include <d2d1.h>       // Direct2D图形库头文件
+#include <vector>       // STL容器，用于存储图形对象
+#include <new>          // 内存分配异常处理
+#include <cmath>        // 数学函数库，用于三角函数计算
+
+#pragma comment(lib, "d2d1.lib")  // 链接Direct2D库
+\end{lstlisting}
+
+系统依赖模块负责引入程序所需的所有外部依赖。各头文件的作用如下：
+\begin{itemize}
+    \item \textbf{windows.h}：提供Windows API基础功能，包括窗口创建、消息处理等
+    \item \textbf{d2d1.h}：Direct2D图形库的核心头文件，提供所有绘图接口
+    \item \textbf{vector}：STL容器，用于动态管理图形对象集合
+    \item \textbf{new}：提供内存分配异常处理机制
+    \item \textbf{cmath}：数学函数库，圆弧绘制需要三角函数计算
+\end{itemize}
+
+\subsubsection{父模块：图形类模块（Shapes）}
+
+图形类父模块是程序的核心业务模块，负责定义和管理所有图形对象。该父模块包含两个子模块：形状接口子模块和具体形状实现子模块。
+
+\begin{lstlisting}[caption=图形类父模块全局资源]
+// Global Direct2D Factory - 图形类父模块的全局资源
+ID2D1Factory* g_pFactory = NULL;
+\end{lstlisting}
+
+\textbf{父模块职责：}
+\begin{itemize}
+    \item 统一管理Direct2D工厂资源，为子模块提供基础设施
+    \item 定义图形系统的整体架构和接口规范
+    \item 协调子模块间的协作关系
+\end{itemize}
+
+\textbf{子模块A：形状接口子模块}
+
+\begin{lstlisting}[caption=形状基类定义]
+// Shape base class - 图形基类
+class Shape {
+public:
+    virtual ~Shape() {}  // 虚析构函数，确保正确释放派生类对象
+    // 纯虚函数，定义绘制接口，实现多态
+    virtual void Draw(ID2D1RenderTarget* pRT, ID2D1SolidColorBrush* pBrush) = 0;
+};
+\end{lstlisting}
+
+形状接口子模块作为图形类父模块的第一个子模块，定义了所有图形对象的统一接口规范。
+
+\textbf{子模块A职责：}
+\begin{itemize}
+    \item \textbf{接口定义}：使用纯虚函数Draw()定义统一的绘制接口
+    \item \textbf{内存管理}：虚析构函数确保派生类对象能够正确析构
+    \item \textbf{多态支持}：为子模块B提供策略模式基础
+    \item \textbf{参数标准化}：统一接口参数：渲染目标(pRT)和画刷(pBrush)
+\end{itemize}
+
+\textbf{与父模块的关系：}
+\begin{itemize}
+    \item 依赖父模块提供的g\_pFactory资源
+    \item 为父模块定义统一的图形操作接口
+    \item 为子模块B提供继承基础
+\end{itemize}
+
+\textbf{子模块B：具体形状实现子模块}
+
+具体形状实现子模块作为图形类父模块的第二个子模块，负责实现子模块A定义的Shape接口。该子模块包含四种具体形状类：直线、矩形、椭圆和圆弧。
+
+\textbf{子模块B职责：}
+\begin{itemize}
+    \item \textbf{接口实现}：继承子模块A的Shape基类，实现Draw()方法
+    \item \textbf{属性封装}：封装每种形状的几何属性（坐标、尺寸等）和视觉属性（颜色、线宽）
+    \item \textbf{绘制逻辑}：将抽象的图形描述转换为Direct2D API调用
+    \item \textbf{算法实现}：对于复杂形状（如圆弧），实现数学计算算法
+\end{itemize}
+
+\textbf{与父模块和子模块A的关系：}
+\begin{itemize}
+    \item 依赖父模块的g\_pFactory资源进行Direct2D操作
+    \item 继承子模块A的Shape基类，遵循统一接口规范
+    \item 为父模块提供具体的图形绘制能力
+\end{itemize}
+
+\textbf{1. 直线类（MyLine）实现}
+
+\begin{lstlisting}[caption=直线类实现]
+class MyLine : public Shape {
+public:
+    // 构造函数：接收起点、终点坐标，颜色RGB值和线宽
+    MyLine(float x1, float y1, float x2, float y2, float r, float g, float b, float width) {
+        this->x1 = x1; this->y1 = y1; this->x2 = x2; this->y2 = y2;
+        this->r = r; this->g = g; this->b = b; this->width = width;
+    }
+
+    // 重写基类的Draw方法
+    void Draw(ID2D1RenderTarget* pRT, ID2D1SolidColorBrush* pBrush) {
+        pBrush->SetColor(D2D1::ColorF(r, g, b));  // 设置画刷颜色
+        // 调用Direct2D API绘制直线
+        pRT->DrawLine(D2D1::Point2F(x1, y1), D2D1::Point2F(x2, y2), pBrush, width);
+    }
+
+private:
+    float x1, y1, x2, y2;  // 起点和终点坐标
+    float r, g, b;         // RGB颜色值
+    float width;           // 线宽
+};
+\end{lstlisting}
+
+\textbf{MyLine类设计特点：}
+\begin{itemize}
+    \item 封装直线的几何属性：起点坐标(x1,y1)、终点坐标(x2,y2)
+    \item 封装视觉属性：RGB颜色值和线宽
+    \item 使用Direct2D的DrawLine API实现绘制
+    \item 通过Point2F结构体传递坐标参数
+\end{itemize}
+
+\textbf{2. 矩形类（MyRect）实现}
+
+\begin{lstlisting}[caption=矩形类实现]
+class MyRect : public Shape {
+public:
+    MyRect(float x1, float y1, float x2, float y2, float r, float g, float b, float width) {
+        this->x1 = x1; this->y1 = y1; this->x2 = x2; this->y2 = y2;
+        this->r = r; this->g = g; this->b = b; this->width = width;
+    }
+
+    void Draw(ID2D1RenderTarget* pRT, ID2D1SolidColorBrush* pBrush) {
+        pBrush->SetColor(D2D1::ColorF(r, g, b));
+        // 使用RectF结构体定义矩形区域
+        pRT->DrawRectangle(D2D1::RectF(x1, y1, x2, y2), pBrush, width);
+    }
+
+private:
+    float x1, y1, x2, y2;  // 矩形的左上角和右下角坐标
+    float r, g, b;         // RGB颜色值
+    float width;           // 边框线宽
+};
+\end{lstlisting}
+
+\textbf{MyRect类设计特点：}
+\begin{itemize}
+    \item 使用对角点坐标定义矩形：左上角(x1,y1)和右下角(x2,y2)
+    \item 使用Direct2D的DrawRectangle API实现绘制
+    \item 通过RectF结构体传递矩形区域参数
+    \item 支持边框线宽设置
+\end{itemize}
+
+\textbf{3. 椭圆类（MyEllipse）实现}
+
+\begin{lstlisting}[caption=椭圆类实现]
+class MyEllipse : public Shape {
+public:
+    // cx, cy: 椭圆中心坐标; rx, ry: 水平和垂直半径
+    MyEllipse(float cx, float cy, float rx, float ry, float r, float g, float b, float width) {
+        this->cx = cx; this->cy = cy; this->rx = rx; this->ry = ry;
+        this->r = r; this->g = g; this->b = b; this->width = width;
+    }
+
+    void Draw(ID2D1RenderTarget* pRT, ID2D1SolidColorBrush* pBrush) {
+        pBrush->SetColor(D2D1::ColorF(r, g, b));
+        // 使用Ellipse结构体定义椭圆
+        pRT->DrawEllipse(D2D1::Ellipse(D2D1::Point2F(cx, cy), rx, ry), pBrush, width);
+    }
+
+private:
+    float cx, cy, rx, ry;  // 中心坐标和半径
+    float r, g, b;         // RGB颜色值
+    float width;           // 边框线宽
+};
+\end{lstlisting}
+
+\textbf{MyEllipse类设计特点：}
+\begin{itemize}
+    \item 使用中心点和半径定义椭圆：中心(cx,cy)、水平半径rx、垂直半径ry
+    \item 使用Direct2D的DrawEllipse API实现绘制
+    \item 通过Ellipse结构体传递椭圆参数
+    \item 支持圆形（rx=ry）和椭圆（rx≠ry）两种情况
+\end{itemize}
+
+\textbf{4. 圆弧类（MyArc）实现 - 数学计算的应用}
+
+圆弧类是具体形状实现子模块中最复杂的部分，因为Direct2D没有直接的圆弧绘制API，需要通过cmath库的数学计算实现：
+
+\begin{lstlisting}[caption=圆弧类构造函数和成员变量]
+class MyArc : public Shape {
+public:
+    // cx, cy: 圆心坐标; radius: 半径
+    // startX, startY: 起始点坐标; endX, endY: 结束点坐标
+    // clockwise: 是否顺时针绘制
+    MyArc(float cx, float cy, float radius, float startX, float startY, 
+          float endX, float endY, bool clockwise, float r, float g, float b, float width) {
+        this->cx = cx; this->cy = cy; this->radius = radius;
+        this->startX = startX; this->startY = startY;
+        this->endX = endX; this->endY = endY;
+        this->clockwise = clockwise;
+        this->r = r; this->g = g; this->b = b; this->width = width;
+    }
+
+private:
+    float cx, cy, radius;           // 圆心坐标和半径
+    float startX, startY, endX, endY; // 起始点和结束点坐标
+    bool clockwise;                 // 绘制方向
+    float r, g, b;                  // RGB颜色值
+    float width;                    // 线宽
+};
+\end{lstlisting}
+
+\textbf{MyArc类设计特点：}
+\begin{itemize}
+    \item 使用圆心、半径和起始终止点定义圆弧
+    \item 支持顺时针和逆时针两种绘制方向
+    \item 通过数学计算将圆弧分解为多个小线段
+    \item 依赖cmath库的三角函数进行角度计算
+\end{itemize}
+\begin{lstlisting}[caption=圆弧绘制算法核心实现]
+void Draw(ID2D1RenderTarget* pRT, ID2D1SolidColorBrush* pBrush) {
+    if (!pRT || !pBrush) return;  // 安全检查
+    
+    pBrush->SetColor(D2D1::ColorF(r, g, b));
+
+    const float PI = 3.14159265f;
+    // 计算起始角度和结束角度
+    float startAngle = (float)atan2(startY - cy, startX - cx);
+    float endAngle = (float)atan2(endY - cy, endX - cx);
+    
+    // 角度标准化：将负角度转换为正角度
+    if (startAngle < 0) startAngle += 2.0f * PI;
+    if (endAngle < 0) endAngle += 2.0f * PI;
+    
+    // 处理跨越2π边界的情况
+    if (!clockwise && endAngle < startAngle) {
+        endAngle += 2.0f * PI;
+    } else if (clockwise && startAngle < endAngle) {
+        startAngle += 2.0f * PI;
+    }
+    
+    // 将圆弧分解为100个小线段
+    int segments = 100;
+    float angleStep = 0.0f;
+    
+    if (clockwise) {
+        angleStep = (startAngle - endAngle) / (float)segments;
+    } else {
+        angleStep = (endAngle - startAngle) / (float)segments;
+    }
+    
+    // 绘制每个小线段
+    for (int i = 0; i < segments; i++) {
+        float angle1 = 0.0f;
+        float angle2 = 0.0f;
+        
+        if (clockwise) {
+            angle1 = startAngle - (float)i * angleStep;
+            angle2 = startAngle - (float)(i + 1) * angleStep;
+        } else {
+            angle1 = startAngle + (float)i * angleStep;
+            angle2 = startAngle + (float)(i + 1) * angleStep;
+        }
+        
+        // 计算线段端点坐标
+        float x1 = cx + radius * (float)cos(angle1);
+        float y1 = cy + radius * (float)sin(angle1);
+        float x2 = cx + radius * (float)cos(angle2);
+        float y2 = cy + radius * (float)sin(angle2);
+        
+        // 绘制小线段
+        pRT->DrawLine(D2D1::Point2F(x1, y1), D2D1::Point2F(x2, y2), pBrush, width);
+    }
+}
+\end{lstlisting}
+
+\textbf{圆弧算法关键技术点：}
+\begin{itemize}
+    \item 使用atan2函数计算角度，避免除零错误
+    \item 角度标准化处理，确保角度在[0, 2π]范围内
+    \item 正确处理顺时针和逆时针方向
+    \item 将圆弧分解为100个小线段，保证绘制平滑度
+    \item 使用三角函数cos和sin计算圆弧上的点坐标
+\end{itemize}
+
+\subsubsection{父模块：渲染模块（Renderer）}
+
+渲染父模块负责管理整个绘制流程，包含两个子模块：D2D资源管理子模块和绘制调度子模块。该父模块与图形类父模块紧密协作，实现图形的实际渲染。
+
+\begin{lstlisting}[caption=渲染父模块全局资源]
+// Global shape list - 渲染父模块的全局资源
+std::vector<Shape*> g_shapes;
+\end{lstlisting}
+
+\textbf{父模块职责：}
+\begin{itemize}
+    \item 统一管理所有待绘制的图形对象
+    \item 协调D2D资源管理和绘制调度两个子模块
+    \item 与图形类父模块协作，实现图形的渲染输出
+\end{itemize}
+
+\textbf{子模块A：绘制调度子模块}
+
+\textbf{绘制调度子模块设计优点：}
+\begin{itemize}
+    \item \textbf{动态管理}：支持运行时动态添加、删除图形对象
+    \item \textbf{多态统一}：利用Shape基类指针，统一处理不同类型的图形
+    \item \textbf{高效遍历}：支持快速遍历和批量绘制操作
+    \item \textbf{解耦设计}：不直接操作D2D资源，依赖D2D资源管理子模块
+\end{itemize}
+
+\textbf{绘制调度流程：}
+\begin{enumerate}
+    \item 初始化阶段：在WM\_CREATE消息中创建所有图形对象
+    \item 绘制阶段：在WM\_PAINT消息中遍历g\_shapes容器
+    \item 清理阶段：在WM\_DESTROY消息中释放所有图形对象
+\end{enumerate}
+
+\subsubsection{父模块：主程序模块（Main）}
+
+主程序父模块是整个程序的最高层控制模块，负责协调所有其他父模块的工作。该父模块包含三个子模块：窗口初始化子模块、消息处理子模块和消息循环子模块。
+
+\textbf{父模块职责：}
+\begin{itemize}
+    \item 统一管理程序的生命周期：初始化、运行、退出
+    \item 协调图形类父模块和渲染父模块的工作
+    \item 处理系统级事件和用户交互
+\end{itemize}
+
+\textbf{子模块A：消息处理子模块}
+
+消息处理子模块是主程序父模块的核心子模块，负责响应Windows消息并协调其他父模块的工作。主要通过WndProc窗口过程函数实现。
+
+\textbf{子模块A职责：}
+\begin{itemize}
+    \item \textbf{消息分发}：接收并分类处理各种Windows消息
+    \item \textbf{模块协调}：根据消息类型调用相应的父模块功能
+    \item \textbf{生命周期管理}：管理程序的初始化、运行和清理阶段
+\end{itemize}
+
+\textbf{与其他父模块的协作关系：}
+\begin{itemize}
+    \item \textbf{WM\_CREATE}：初始化图形类父模块和渲染父模块
+    \item \textbf{WM\_PAINT}：协调渲染父模块绘制图形类父模块的对象
+    \item \textbf{WM\_DESTROY}：清理所有父模块的资源
+\end{itemize}
+
+\textbf{1. WM\_CREATE消息处理 - 系统初始化}
+
+\begin{lstlisting}[caption=系统初始化消息处理]
+case WM_CREATE: {
+    // 创建Direct2D工厂 - D2D资源管理子模块初始化
+    HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &g_pFactory);
+    if (FAILED(hr) || !g_pFactory) {
+        MessageBox(hwnd, "Failed to create Direct2D factory", "Error", MB_OK | MB_ICONERROR);
+        return -1;
+    }
+
+    // 绘制调度子模块初始化 - 创建图形对象集合
+    try {
+        // 按照实际图形需求创建各种形状对象
+        g_shapes.push_back(new MyEllipse(150, 300, 40, 40, 0.0f, 0.0f, 0.0f, 2.0f));
+        g_shapes.push_back(new MyArc(150, 300, 64, 212.98, 311.38, 109.28, 250.62, false, 0.0f, 0.0f, 0.0f, 2.0f));
+        g_shapes.push_back(new MyArc(87, 223.6, 35, 109.28, 250.62, 122, 223.6, true, 0.0f, 0.0f, 0.0f, 2.0f));
+        g_shapes.push_back(new MyLine(122, 134, 122, 223.6, 0.0f, 0.0f, 0.0f, 2.0f));
+        // ... 更多图形对象创建（共创建24个图形对象）
+    }
+    catch (const std::bad_alloc&) {
+        MessageBox(hwnd, "Memory allocation failed", "Error", MB_OK | MB_ICONERROR);
+        return -1;
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\textbf{WM\_CREATE消息处理关键技术点：}
+\begin{itemize}
+    \item \textbf{资源创建检查}：使用HRESULT检查Direct2D工厂创建是否成功
+    \item \textbf{异常安全}：采用try-catch机制保护内存分配操作
+    \item \textbf{批量初始化}：一次性创建所有需要的图形对象（本程序创建24个）
+    \item \textbf{错误处理}：创建失败时显示错误信息并退出
+\end{itemize}
+
+\textbf{2. WM\_PAINT消息处理 - 绘制流程协调}
+
+\begin{lstlisting}[caption=绘制流程消息处理]
+case WM_PAINT: {
+    PAINTSTRUCT ps;
+    BeginPaint(hwnd, &ps);  // 开始Windows绘制
+
+    // D2D资源管理子模块 - 按需创建渲染目标
+    if (!pRT && g_pFactory) {
+        RECT rc;
+        GetClientRect(hwnd, &rc);  // 获取窗口客户区尺寸
+        
+        if (rc.right > 0 && rc.bottom > 0) {
+            // 创建硬件加速的窗口渲染目标
+            HRESULT hr = g_pFactory->CreateHwndRenderTarget(
+                D2D1::RenderTargetProperties(),
+                D2D1::HwndRenderTargetProperties(hwnd, D2D1::SizeU(rc.right, rc.bottom)),
+                &pRT
+            );
+
+            // 创建实心画刷资源
+            if (SUCCEEDED(hr) && pRT) {
+                hr = pRT->CreateSolidColorBrush(D2D1::ColorF(0, 0, 0), &pBrush);
+            }
+            
+            // 资源创建失败处理
+            if (FAILED(hr)) {
+                if (pBrush) { pBrush->Release(); pBrush = NULL; }
+                if (pRT) { pRT->Release(); pRT = NULL; }
+                EndPaint(hwnd, &ps);
+                return 0;
+            }
+        }
+    }
+
+    // 绘制调度子模块 - 执行实际绘制操作
+    if (pRT && pBrush) {
+        pRT->BeginDraw();  // 开始Direct2D绘制会话
+        pRT->Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f));  // 清空背景为白色
+
+        // 遍历绘制调度列表，批量绘制所有图形
+        for (size_t i = 0; i < g_shapes.size(); ++i) {
+            if (g_shapes[i]) {
+                g_shapes[i]->Draw(pRT, pBrush);  // 多态调用各形状的Draw方法
+            }
+        }
+
+        HRESULT hr = pRT->EndDraw();  // 结束Direct2D绘制会话
+        // 处理设备丢失情况（如全屏切换等）
+        if (hr == D2DERR_RECREATE_TARGET) {
+            if (pBrush) { pBrush->Release(); pBrush = NULL; }
+            if (pRT) { pRT->Release(); pRT = NULL; }
+        }
+    }
+    
+    EndPaint(hwnd, &ps);  // 结束Windows绘制会话
+    return 0;
+}
+\end{lstlisting}
+
+\textbf{WM\_PAINT消息处理关键技术：}
+\begin{itemize}
+    \item \textbf{延迟创建}：渲染目标只在需要时创建，节省资源
+    \item \textbf{硬件加速}：使用HwndRenderTarget利用GPU加速
+    \item \textbf{设备管理}：正确处理设备丢失（D2DERR\_RECREATE\_TARGET）情况
+    \item \textbf{多态绘制}：利用多态机制统一处理不同类型图形
+    \item \textbf{标准流程}：清空背景 → 遍历形状列表 → 批量绘制
+\end{itemize}
+
+\textbf{3. WM\_SIZE消息处理 - 窗口尺寸自适应}
+
+\begin{lstlisting}[caption=窗口尺寸变化处理]
+case WM_SIZE: {
+    // D2D资源管理子模块 - 动态调整渲染目标尺寸
+    if (pRT) {
+        RECT rc;
+        GetClientRect(hwnd, &rc);  // 获取新的客户区尺寸
+        if (rc.right > 0 && rc.bottom > 0) {
+            // 调整渲染目标尺寸以匹配新窗口大小
+            HRESULT hr = pRT->Resize(D2D1::SizeU(rc.right, rc.bottom));
+            if (FAILED(hr)) {
+                // 尺寸调整失败，释放资源以便下次重新创建
+                if (pBrush) { pBrush->Release(); pBrush = NULL; }
+                if (pRT) { pRT->Release(); pRT = NULL; }
+            }
+            InvalidateRect(hwnd, NULL, FALSE);  // 触发窗口重绘
+        }
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\textbf{WM\_SIZE消息处理关键技术：}
+\begin{itemize}
+    \item \textbf{动态调整}：渲染目标尺寸随窗口大小变化而调整
+    \item \textbf{失败处理}：调整失败时释放资源，下次绘制时重新创建
+    \item \textbf{重绘触发}：使用InvalidateRect触发窗口重绘
+\end{itemize}
+
+\textbf{4. WM\_DESTROY消息处理 - 系统资源清理}
+
+\begin{lstlisting}[caption=系统资源清理处理]
+case WM_DESTROY:
+    // 绘制调度子模块清理 - 释放所有图形对象
+    for (size_t i = 0; i < g_shapes.size(); ++i) {
+        if (g_shapes[i]) {
+            delete g_shapes[i];  // 释放图形对象内存
+            g_shapes[i] = NULL;  // 避免悬挂指针
+        }
+    }
+    g_shapes.clear();  // 清空容器
+    
+    // D2D资源管理子模块清理 - 按相反顺序释放资源
+    if (pBrush) { pBrush->Release(); pBrush = NULL; }
+    if (pRT) { pRT->Release(); pRT = NULL; }
+    if (g_pFactory) { g_pFactory->Release(); g_pFactory = NULL; }
+    
+    PostQuitMessage(0);  // 发送程序退出消息
+    return 0;
+\end{lstlisting}
+
+\textbf{WM\_DESTROY消息处理关键技术：}
+\begin{itemize}
+    \item \textbf{内存清理}：逐个释放所有图形对象，防止内存泄漏
+    \item \textbf{指针安全}：释放后将指针设为NULL，避免悬挂指针
+    \item \textbf{资源顺序}：按创建的相反顺序释放资源，确保依赖关系正确
+    \item \textbf{程序退出}：使用PostQuitMessage发送退出消息
+\end{itemize}
+
+\subsubsection{主程序模块（Main）- 窗口初始化子模块和消息循环子模块}
+
+窗口初始化子模块负责Windows窗口系统的初始化工作，包括窗口类注册和窗口创建。消息循环子模块负责程序的主事件循环，持续接收、处理和分发Windows消息。
+
+\begin{lstlisting}[caption=主程序入口函数实现]
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    const char CLASS_NAME[] = "Direct2D Window";
+
+    // 窗口初始化子模块 - 注册窗口类
+    WNDCLASS wc = { 0 };
+    wc.lpfnWndProc = WndProc;           // 设置消息处理函数
+    wc.hInstance = hInstance;           // 应用程序实例句柄
+    wc.lpszClassName = CLASS_NAME;      // 窗口类名标识符
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);  // 默认背景画刷
+
+    RegisterClass(&wc);  // 向系统注册窗口类
+
+    // 窗口初始化子模块 - 创建窗口实例
+    HWND hwnd = CreateWindowEx(
+        0,                              // 扩展窗口样式
+        CLASS_NAME,                     // 使用已注册的窗口类
+        "Direct2D Multi-Shape Drawing", // 窗口标题栏文本
+        WS_OVERLAPPEDWINDOW,           // 标准重叠窗口样式
+        CW_USEDEFAULT, CW_USEDEFAULT,  // 系统默认位置
+        400, 500,                      // 窗口初始尺寸
+        NULL, NULL, hInstance, NULL    // 父窗口、菜单、实例、参数
+    );
+
+    if (!hwnd) return 0;  // 窗口创建失败则退出程序
+
+    ShowWindow(hwnd, nCmdShow);  // 显示窗口并设置显示状态
+
+    // 消息循环子模块 - 主事件循环
+    MSG msg = { 0 };
+    while (GetMessage(&msg, NULL, 0, 0)) {  // 获取消息，阻塞等待
+        TranslateMessage(&msg);  // 翻译虚拟键消息
+        DispatchMessage(&msg);   // 分发消息到窗口过程函数
+    }
+
+    return 0;  // 程序正常退出
+}
+\end{lstlisting}
+
+\textbf{主程序模块关键技术点：}
+\begin{itemize}
+    \item \textbf{窗口类注册}：定义窗口的基本属性和行为，包括消息处理函数
+    \item \textbf{窗口创建}：使用CreateWindowEx创建具体窗口实例
+    \item \textbf{消息循环}：使用GetMessage-TranslateMessage-DispatchMessage模式
+    \item \textbf{错误处理}：检查窗口创建是否成功，失败时退出
+\end{itemize}
+
+\textbf{父子模块协作流程总结：}
+\begin{enumerate}
+    \item \textbf{程序启动}：主程序父模块的窗口初始化子模块创建窗口载体
+    \item \textbf{资源初始化}：消息处理子模块接收WM\_CREATE，初始化图形类父模块和渲染父模块
+    \item \textbf{图形创建}：图形类父模块的具体形状实现子模块创建24个图形对象
+    \item \textbf{绘制执行}：消息处理子模块接收WM\_PAINT，协调渲染父模块的两个子模块完成绘制
+    \item \textbf{尺寸调整}：消息处理子模块接收WM\_SIZE，调用渲染父模块的D2D资源管理子模块
+    \item \textbf{资源清理}：消息处理子模块接收WM\_DESTROY，清理所有父模块的资源
+    \item \textbf{消息循环}：主程序父模块的消息循环子模块维持程序运行
+\end{enumerate}
+
+\textbf{模块间依赖关系图：}
+\begin{itemize}
+    \item \textbf{主程序父模块} → 协调 → \textbf{图形类父模块} + \textbf{渲染父模块}
+    \item \textbf{图形类父模块}：形状接口子模块 → 定义接口 → 具体形状实现子模块
+    \item \textbf{渲染父模块}：绘制调度子模块 ↔ 协作 ↔ D2D资源管理子模块
+    \item \textbf{主程序父模块}：窗口初始化 → 消息处理 → 消息循环
+\end{itemize}
+
+\subsection{程序运行结果}
+
+程序成功编译运行后，能够绘制出要求的复杂图形。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{D:/桌面/计算机图形学/实验1/2.png}
+    \caption{程序运行结果截图}
+    \label{fig:result}
+\end{figure}
+
+\section{实验总结}
+
+\begin{tcolorbox}
+通过本次实验，我深入学习了Direct2D图形编程技术，主要收获如下：
+
+\begin{enumerate}
+    \item \textbf{技术掌握}：熟练掌握了Direct2D API的使用方法，包括工厂创建、渲染目标管理、图形绘制等核心技术。
+    
+    \item \textbf{设计思想}：学会了面向对象的图形程序设计方法，通过继承和多态实现了灵活的图形绘制框架。
+    
+    \item \textbf{数学应用}：将数学知识（三角函数、解析几何）应用到实际编程中，解决了复杂圆弧绘制问题。
+    
+    \item \textbf{资源管理}：深入理解了Windows图形资源的生命周期管理，学会了正确的创建和释放策略。
+    
+    \item \textbf{调试技能}：通过解决各种编程问题，提高了程序调试和错误处理能力。
+\end{enumerate}
+
+本实验为后续的计算机图形学学习奠定了坚实的基础，不仅掌握了基本的图形编程技术，更重要的是培养了系统性的程序设计思维和解决复杂问题的能力。
+\end{tcolorbox}
+
+\end{document}

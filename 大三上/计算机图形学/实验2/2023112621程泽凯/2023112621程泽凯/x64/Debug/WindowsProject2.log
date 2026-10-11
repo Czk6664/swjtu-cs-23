@@ -1,0 +1,24 @@
+﻿  WindowsProject2.cpp
+D:\桌面\计算机图形学\实验2\WindowsProject2\WindowsProject2.cpp(469,50): warning C4267: “参数”: 从“size_t”转换到“UINT32”，可能丢失数据
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\xutility(149,77): warning C4244: “参数”: 从“_Ty”转换到“float”，可能丢失数据
+          with
+          [
+              _Ty=int
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\memory(2006): message : 查看对正在编译的函数 模板 实例化“void std::_Construct_in_place<_Ty,D2D1_POINT_2F&,int>(_Ty &,D2D1_POINT_2F &,int &&) noexcept(false)”的引用
+          with
+          [
+              _Ty=Circle
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\memory(2725): message : 查看对正在编译的函数 模板 实例化“std::_Ref_count_obj2<_Ty>::_Ref_count_obj2<D2D1_POINT_2F&,int>(D2D1_POINT_2F &,int &&)”的引用
+          with
+          [
+              _Ty=Circle
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\memory(2726): message : 查看对正在编译的函数 模板 实例化“std::_Ref_count_obj2<_Ty>::_Ref_count_obj2<D2D1_POINT_2F&,int>(D2D1_POINT_2F &,int &&)”的引用
+          with
+          [
+              _Ty=Circle
+          ]
+D:\桌面\计算机图形学\实验2\WindowsProject2\WindowsProject2.cpp(579): message : 查看对正在编译的函数 模板 实例化“std::shared_ptr<Circle> std::make_shared<Circle,D2D1_POINT_2F&,int>(D2D1_POINT_2F &,int &&)”的引用
+  WindowsProject2.vcxproj -> D:\桌面\计算机图形学\实验2\WindowsProject2\x64\Debug\WindowsProject2.exe
