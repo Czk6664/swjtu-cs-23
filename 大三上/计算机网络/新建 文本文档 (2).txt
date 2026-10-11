@@ -1,0 +1,935 @@
+第6章 交换技术及应用实验
+vanlo VanlO
+O FO 192.168.10.12/24 192168.1011/24 Fa
+F
+FO FO2 Vlan2o Vlan2o
+192.168.20.12/24 192168.20.11/24
+图6-15V江AN配置实验拓扑医
+6.84交换机配营模式及常用命令
+1,交换机置模式
+交操机命今行损作梳式。十要包括:用户梳式、特权檀式、全局配置磁式和端口音
+置模式等几种。每种模式下能执行的命令不同。每种模式有不同的提示符,所以使用命
+今行福作时要注意提示符的信点。交换机经常使用的配置糖式以及它们的提示符加下
+用户模式Switch>
+特权模式 Switch#
+全局配置模式 Switch(config)h
+端口配置模式 Switch(config-if)f
+vlan 配置模式Switch(config-vlan)f
+(1)用户模式进入特权模式
+Switch>engble
+Password:
+出现损示时输入密码后回车。密码输入时在屏嘉上不显示
+(2)特权框式进入全局配置模式及退出全局配置模式
+Switchtconfiewre terninal
+Switch(config)#eait
+(3)全局模式进入端口配置模式
+Switch(config)#interface port-type mod-num/port-mum
+Switch(config-if)#excit
+其中porrbpe为接口类型,mod-mm为接口模块号,por-mum为接口号。例如
+Switch(config)finterface fastEthemet 0/1
+2.交换机命令行常用操作
+交换机命令行提供了一些命令可以使用户能更方便简单地进行配置操作
+(1)获得帮助
+Switch#2
+可以显示当前槛式下的所有命今。输入部分命令后加?。如Switch#show?.可t
+显示当前模式下所有第一个关键词为show 的命令。
+143
+知增金重
+第6章 交换技术及应用实耻
+(1)在交换机Sa上配置VLAN
+●创建V江AN10,并命名
+Sa(config)#vian IO
+Sa(config-vlan)#name vlan10
+Sa(config-vlan)#exit
+-指定接口F0/1属于VLAN10;
+Sa(config)finterface fastEthernet 0/1
+Sa(config-iftswitchport access van 10
+Sa(config-if#exit
+●创建 VLAN20,并命名:
+Sa(config)hvlan 20
+Sa(config-vlan)#name vlan26
+Sa(config-ylan)#ei
+●指定接口F0/2属于VLAN20:
+Sa(config)rinterface fastEthernet 0
+Sa(confie-iffswtchport access wlan 20
+Sa(config-iftexit
+如果没有给 VLAN指定名称,系统会自动给它命名
+(2)在交换机Sb上配置VLAN
+●创建VLAN10,并命名:
+Sb(config)#vlan 10
+Sb(config-vlan)#name vian10
+Sb(config-vlan)#exit
+●指定接口FO/1属于VLAN10;
+Sb(config)hinterface fastEthernet 0/1
+Sb(config-if)fswitchport access vlan 10
+Sb(config-if)#exit
+的硅VAN20.并命名
+Sb(config)#vlan 20
+Sb(config-vlan)#name wlan26
+Sb(config-vlan)#exit
+●指定接口F0/2属于VLAN20;
+Sb(config)ainterface fastEthernet 0/2
+Sb(config-if)#sitchport access vlan 20
+Sb(config-if#exi
+(3)查看VπAN配置信良
+146
+坐
+第6章 交换技术及应用实路
+Sa#showwa
+VLANName Status Pots
+default active Fa0/3,Fa0/4,FaO/2
+FaO/6 ,FaO/7 ,FaO/8
+Fa0/9,Fa0/10,Fa0/11
+Fa0/12.Fa0/13.Fa0/14
+Fa015.Fa0/16,Fa0/1
+Fa0/18,Fa0/19,Fa0/20
+Fa0V21,FaO/22,Fa0/23
+FaO/24
+1 vlan1O FaO/ active
+vlan20 active FaO/2 2O
+可以看出,接口Fa0/1属于VLAN10,接口Fa02属于VLAN20,其他接口都属于
+VLAN1。
+3。配置trunh
+交换机端口的工作梳式有access和tunk两种。要使某一端口能够转发所有VLAN
+的粒据,需设置其工作模式为tnunk,否则只能转发其所在VLAN的数据
+(1)配置SA中与SB连接的接口的工作模式
+Sa(config)interface fastErhernet 03
+Sa(config-if)switchport mode runk
+Sa(config-iffexit
+(2)配置SB中与SA连接的接口的工作模式
+Sb(config)#interface fastEthernet 0/3
+Sb(config-if)hswitchport mode trunk
+Sb(config-if)#exit
+琴重新设置接口的T作梳式为acces。可以用金令:Sb(confie-inswichpot mod
+aCcesS
+(3)查看VLAN配置信息
+Sa#show wlan
+Pots VLANName Status
+active default Fa0/3,Fa0/4.Fa0/5
+FaO/6,FaO/7,FaO/8
+FaO/9 ,FaOV10,FaO/11
+Fa0V12.Fa0/13.Fa0/14
+Fa0/15.Fa0/16.Fa0/1
+14z
+增坐
+第6章 交换技术及应用实里
+VanlO vlan1o
+F 192.168.10.11/24 192.168.10.12/24
+PC2 F PC4 F2 FO VIan2O Vlmn2O
+192.168.20,1124 192,16820.1224
+图6-16 交换机元余配置实验拓扑区
+6.94实验步
+1,己置VAN
+与6.8节实验相同,按照拓扑图中规划配置计算机的P,配置VLAN。如果配置生
+成树,还要设置两台交换机的F0/3、F0/4接口按trunk方式工作
+2,硬件连接
+按照拓扑图诈接计算机和交换机。当交换机之间的两条网线连接上后,有时会出
+亦掩机配置于法损作。举似那机现鱼。观察亦掩机端口指示灯会看贝指示灯狮紧闪妖
+这是因为交换机间的两条链路会形成一个环路,造成广播风暴。断开任一条连统,就全
+恢复正常。所以在生成树或链路聚合配置之前,不要把交换机间两条连线全连上
+3.配置生成树
+生成树的配置可以滑除上述的环路。使只有一条线路处于工作状态
+(1)在交换机Sa上开启生成树协议并设置生成树协议类型
+Sa(config)#spanning-tret
+交换机默认情况下牛成树的协议没有工作。使用这条命令让生成树的协议自动开
+工作。如果要让牛成树协议停止工作,可以用no soanninr-tree命令
+Sa(config)#spanning-tree mode rst
+这个命令设置生成树协议类型为rs加。常用生成树协议类型还有s加、msp
+(2)在交操机Sh上开启牛成树协议并设置牛成树协议类型
+Sb(config)tspanming-tree
+Sb(config)nspanning-tree mode rst
+注意。两台交换机的生成树协议类型要一致
+(3)设置交操机Sa的代先级为较高极,使它成为根交换机
+Sa(config)fspanning-tree prioriny 4096
+代先经的激值要求为0或4096的倍数。数信战小,优生级战高。其数信范用为0～
+61440。默认值为3276B,
+149
+知推金重
+第6章 交换技术及应用实始
+(4)设置品口代先织
+Sa(config)ainterface fastethernet 0s
+Sa(config-if)#spanning-ree port-priorit 0
+端口优先级的数值要求为0或16的倍数。数值越小,优先级越高。其数值范围
+为O～24O。
+(5)查看生成树配置情沉
+Saishoe spanning-tree
+StpVersion:RSTP
+SysStpStatus:Enabled
+BaseNurmPorts:24
+MaxAge:2O
+HelloTime:2
+ForwardDelay:15
+BridgeMaxAge:2O
+BridgeHelloTime:2
+BridgeForwardDelay:15
+MaxHops:2O
+TxHoldCount;3
+PathCostMethod:Long
+BPDLJGuard:Disabled
+BPDLJFilter:Disabled
+BridgeAddr:00d0.f87b.ed31
+Priority;O
+TimeSinceTopologyChange:0d:0h:13m:38s
+TopologyChanges:0
+DesignatedRoot:000000D0F87BED31
+RootCost:O
+RootPort:O
+Sbtshow spanning-tree
+StpVersion:RSTP
+SysStpStatus:Enabled
+BaseNumPorts:24
+MaxAge:2O
+HelloTime:2
+ForwardDelay:15
+BridgeMaxAge:2O
+BridgeHelloTime:2
+5O
+捕黄
+第6章 交换技术及应用实电
+BridgeForwardlelay:15
+MaxHops:20
+TxHoldCount:3
+PathCostMethod:Long
+BPDUGuard:Disabled
+BPDUFilter:Disabled
+BridgeAddr: 00d0.f87b.eb07
+(Priority:32768
+TimeSinceTopologyChange:0d:0h:15m:59s
+TopologyChanges:d
+DesignatedRoot:000000D0F87BED31
+/RootCost:200000
+RootPort: FaO/3
+从上可以看出生成树的各个参数配置情况和端口的转发状态。对比Priority
+RootCost和RooCost这三项值,可以看出根交换机和数据转发端口
+(6)查看网络连通情况
+将交换机间的两条连线都连上。在PC1上执行网络命令
+C:下ping-4 192.168.10.12
+可以看贝能够及时接收到对方应答的数据包。拔掉F03口的连线,一般可以看
+有一个丢包的情况,
+4,配置链路展合
+配置链路聚合前要先别除第3步配置的生成树,
+默认情况下,交换机中不存在ggregateport(以下简称AP)。可以通过全局配
+模式下的interfaceaggregatepot命令手工创建一个AP。可以使用接口配置模式下的
+por-grop命令将一个接口加入一个AP。一旦AP配置完成,则AP配置将应用到所有
+的AP成员端口上
+(1)在交换机Sa创建链路聚合接口AP1并将网络接口0/3和0/4加入AP
+Sa(config)tinterface aggregatePort 1
+Sa(config-io)tswitchport mode trunk
+Sa(config-ifHexit
+该命令创建一个AP,接口号为1,并设置该接口的工作模式为tmunk。锐捷交换机
+中AP编号可为1～6,
+Sa(config)#interface fastEthernet 0/3
+Sa(config-iohport-group 1
+Sa(config)tinterface fastEthernet 0/4
+Sa(config-ifrport-growpI
+当一个接口加入AP,它的属性将被AP的属性所取代。所以F03和F0/4都将以mun
+模式工作,而不用再去设置它们的工作模式。
+151
+坐
+第6章 交接技术及应用实第
+要将一个接口从AP中刑除,可以在接口模式下用nopot-roup命令。当一个接口
+从AP中册除,则它的属性将恢复为其加入AP前的属性
+(2)在交换机Sb创理链路聚合接口AP1并将网络接口F0/3和F0/4加入AP
+Sb(config)hinterface aggregatePort 1
+Sb(config-if)iswitchpor node trunk
+Sb(config-if)#ewit
+Sb(config)rinierface fastEthernet 03
+Sb(contig-it)#port-group1
+Sb(config)hinterface fastEthernet 0/4
+Sb(config-if)#port-gmoiup1
+(3)查若硅路聚合记置信是
+Sb#show aggregatePort sumnan
+SwitchPort Mode Ports AggregatePort MaxPorts
+Enabled 工runk FaO/3.FaO/4 Ag
+(4)配置聚合端口的流量均衡
+排产掩机默认的流量均衡方式县根据输入报文的源MAC地址进行流量分配。可
+以重新设置按输入报文的目的MAC地址进行流量分配或根据源P与目的P进行流量分
+配。配堂命令为aggregateport load-balance {dst-mac src-mac lip}
+香着流量均衡配置信忌;
+Sa#show aggregateport load-balance
+Load-balance:Source MAC address
+配置按给入报文的目的MAC地址进行流量分配
+Sat aegregateport load-balance dst-nac
+Sbt aggregateport load-balance dst-nac
+(5)连通性测试
+将交换机间的两条连线都连上。在PC1上执行网络命令
+C:/Pping- 192.168.10.12
+可以看见能够及时接收到对方应答的教据包。拔掉F03口的连线,PC1与PC3之
+间仍然连通,一般没有丢包的情况
+思考
+6-1.简述交换机的工作原理,与集线器相比,其优势在什么地方
+6-2.交换机是如何感知其周围网络环境变化的(加计算机增加、减小等)
+6-3.从一个网络管理员角度看,交换机提供了哪些功能供管理员方便、高效的管
+理所有网络用户
+6-4.什么是VLAN?该技术有哪些优点?如何实现VLAN?
+6-5.什么是中继(Tnunk)技术?如何实现Tnunk
+152
+田
+第7章路由器及基本配置实照
+R2600-A(confg-if)#end ;直接追回到特权模式
+R26OO-A#
+表7-7总结了以上4种路由器配置模式以及相互之间切换的命令
+表7-7命令横式及切将
+命令模式 访问方法 路由器提示符 退出方法
+登录 使用exit命令 用户EXEC R26OO-A
+从用户EXEC模式输入 R26OO-A# 退出回到用户EXEC模式,使用 特权EXEC emable命令 disable或exit命令
+从特权EXEC模式箱入 R26O0-A(config)# 为退出回到特权RXEC模式,使用 全局配置 configure temminal cxit或cnd命令,或按下Ctrl-2
+从全局配置模式,输入 R26O0-A(config-if)# 要退出回到金局配置被式,使用
+接口配置 i切tcfcc 接口类型 结 sxit命令。为直接退特权EXBC积
+号 丨式,使用cnd命令,或按下Ctl-Z
+2.路由器命令行基本功能
+(1)帮助信息
+R26OO-A>2 1品示当前模式下所有可执行的命令
+R26O0-A#co? ;显示当前模式下所有以c0开头的命令
+configure
+R2600-A#configure ? 1显示 configure 命令后可执行的参数
+terminal Configure from the terminal
+(2)命令的简写
+R26OO-A#conf t ;路由器命令行支持命令的简写,该命令代表configure termina
+R2600-A(config)A
+注意,命令的简写不止一种形式,例如confter也是configureteminal的简写,只
+要和其他命令不引起歧义即可
+(3)命令的自动补齐
+R26OO-A#cOm ;按键盘的Tab键自动补齐 configure
+R26O0-A#configure
+(4)命令的快捷健功能
+R2600-A(c0nfig-if)# Ax ;按Cr+2直接退回到特权模式
+R26OO-A#
+;按十键重新输入上一条命令 R26OO-A#1
+R26O0-A#configure
+172
+增坐
+第7章 路由器及基本配置实稻
+3.给路由器配置设备名称并配置接口IP地址信
+(1)在R2600-A路由器上进行配首
+R2600-A>enable
+R2600-A# configure terminal
+R2600-A(config)# hostname R4
+;配置R2600-A路由器的设备名为RA,注意,设备名称的有效字符是22个字节
+RA(config)ninterface fastethernet 1/0 ;进入RA的P1加接口核式
+RA(config-if)p address17.1.0.1 255.255.0.0 配置接口的P地址
+RA(config-if)fno shutdown 开自该接口
+RA(config-if)fexit
+RA(config)#interface serial I/3 :进入RA的申口serial 13接口模式
+RA(config-if)paddress17.2.0.1255.255.0.0
+RA(config-if)tno shutdown
+RA(config-if)texit
+(2)在R2600-B路由器上进行配置
+R26O0-B>enable
+R2600-B# configure terminal
+R2600-B(config)# hosttame RB 1配置R2600-B路由器的设备名为R日
+RB(config)ainterface fastethernet 1/O
+RB(config-if)paddress17.3.0.1255.255.0.0
+RB(config-if)#no shutdown
+RB(config-if)#exit
+RB(config)tinterface serial 1/3
+RB(config-ifpaddress 17.2.0.2255.255.0.0
+DCE端要配置时钟如率 RB(config-if)fclock rate 64000
+RB(config-if)tno shutdown
+RB(config-if)#exi
+4.查看路由器接口参数的配置
+RB(config)#show ip interface brief
+OK2 Status IP_Address(Pri Interface
+DowN YES no address serial12
+UP YES 17.2.0.2/16 serial1/3
+173
+坐
+第7章 路由器及基本配置实单
+UP FastEthernet 1/O 17.3.0.1/16 YES
+FastEthermet 1/] no address YES DOwN
+UP Nu noaddress ES
+以上查看的是RB的配置信息,可在RA运行同样的命令查看接口配置信息
+5,查看路由器当前生效的配置信息
+RA#shoe running-config
+Building configuration.
+Current configuration:540 byte
+version 8.51 (building 11)
+主机名为RA hostname RA
+no service password-encryptior
+interface serial 1/2
+clock Tate 64000
+interface serial 1/3
+in address 17.2.0.1255.255.0.( :接口Senia11/3 的P地切
+interface FastEthernet 1/0
+ip address 17.1.0.1255255.0.0 ;快速以太网接口1/0 的P地址
+duplex auto
+speedauto
+interface FastEthernet 1/]
+duplex auto
+speedauto
+end
+注意:showrumning-confg是查看当前生效的配置信息,showstartup-confg是查看
+保在在NVAM里的配留立性信良。眩由照启动时。将NVRAM里的配留立件加粉至
+RAM里牛效。
+6。配曾静态路由
+锐捷路由器的静态路由配置命令为
+router(config)proute网络编号子网掩码转发路由器的P地址/本地接口
+命令中最后一项可以是下一跳路由器直连接口的P地址或者是本地路由器转发数
+据的接口
+(1)在RA上配置静本路中
+RA(config)#ip route 173.0.0255.255.0.0172.0.
+或
+RA(config)# ip rowte17.3.0.0255.255.0.0serial 1/3
+(2)在路中聚RR上配置静本路中
+174
+国坐
+17章 路由器及基本配置实器
+RB(config#ip rowte171.0.0255.255.0.0172.0.
+或:
+RB(confie)# ip route 171.0.0 255.255.0.0 serial 1/
+(3)验证RA上的静态路由配普
+RA#shoe ip route
+Codes: C-connected.S-static. R-RF
+O-OSPF,IA-OSPF inter area
+N1-OSPF NSSAexteral type 1.N2-OSPF NSSAexternal type7
+E1-OSPF external type 1,E2-OSPF exteral type2
+*-candidate default
+Gateway oflast resort is no set
+C 17.1.0.0/16 is directly connected.FastEthernet 1/
+C 17.1.0.132is 10cal h0st
+C 17.2.0.0/16 is directly connected,serial 1/3
+C 17.2.0.1/32 is local host,
+17,3.0,016 11/01V1817.2.0,4 1经由17202列达173.0.0网学
+(4)验证RB上的静本路由配置
+RB#showp route
+Codes: C-connected,S-static.R-RI
+O-OSPFIA-OSPF inter area
+N1-OSPF NSSA externaltype 1,N2-OSPF NSSAexteraltype2
+E1-OSPF external type 1.E2-OSPF exteral type7
+*-candidate default
+Gateway oflast resort is no set
+;经由172.0.1到达17.1.0.0网结 17.1.0.0/16 [1/0via 17.2.0.1
+C 17.2.0.0/16 is directly connected,serial 1/3
+C 17.2.0.2/32 is local host
+C 17.3.0.0/16 is directly connected,FastEthernet 1/0
+C
+17.3.0,1/32is local host
+(5)测试 PC1和 PC2 之间的详通件
+在PC1上PNGPC2.输出结果显示两台计算机可以连通
+注意:配置PC1和PC2的TCP/P协议属性时,需要配置默认网关,其中PC1的
+默认网关为路由器RA的F1/0接口,P地址为17.1.01,PC2的默认网关为RB的F1/
+接口。P地址为17301
+7,配置广域网接口的封装类型为PPR
+PPP协议分为LCP和NCP两个子层。LCP负香链路的协商、建立、回拨、认证
+数据的压缩、多链路捆绑等功能。NCP主要负责和上层协议进行协商,为网络层协议
+提供服务。配堂方法切下
+175
+坐
+第7章 路由器及基本配置实监
+202.115.12.1/24
+SI/3
+DE nternet-B F1/ S/3 F
+200.2.0.1/24 202.115.12.2/24 10.0.0.1/16 Wcb Servet
+200.2.0.2/24 PC
+10.0.0,2/16
+图7-15 实验拓扑良
+7.10.4 实验步骤
+1,各路由器端口信总配曾
+按照拓扑结构图。为未命名的路由器分配名称,并为每台路由器的端口配置卫坩
+址。
+(1)在路由器LAN-R上配置,
+router>enable
+routert configure terminal
+router(config)Hhostname LV-R 将路由器命名为LAN-R
+LAN-R(config)#interface fastethernet 1//0
+LAN-R(config-if)#ipaddress10.0.0.1255.255.0.0
+LAN-R(config-if)fno shutdon
+LAN-R(config-if)fexit
+LAN-R(config)# interface sl3
+LAN-R(config-if)#ipaddress202.15.12.1255.255.255.0
+LAN-R(config-if)#no shutdown
+LAN-R(config-if)texir
+(2)在路由器Internet-R上配置,
+router?engble
+routerf configure terminal
+router(config)#hospame Internet-R
+Internet-R(config)rinterface serial 1/3
+Internet-R(config-if)#ipaddress202.15.12.2255.255.255.0
+Internet-R(confio-iftclock rate 6400
+Internet-R(config-if)Hno shutdown
+Intemet-R(config-if)#exit
+Intemet-R(config)#interface fasthernet 1/0
+Intemet-R(confie-if#ipaddress 200.2.0.1255.255.255.0
+Internet-R(config-if)#no shutdown
+Internet-R(config-if#exi
+2.在LAN-R上配置缺省路由
+18O
+捕黄
+第7章 路由器及基本配里实船
+LAN-R(config)p route 0.0.0.0 0.0.0.0 serial 1/3
+3在工AN-R上动APT
+(1)NAPT配,
+若LAN-R连接内部网络与Imteret,IntermetR为Intemet上的路由器,要使内部网
+络主机可以访问 Internct,需进行动态NAPT配置
+LAN-R(config)interface fastethernet I/U
+LAN-R(config-if)Hp nat inside :定义F1o为内网接E
+LAN-R(config-ifreai
+i定义S13为外网接亡 LAN-R(config)finterface serial I3
+LAN-R(config-if)Hp nat owtside
+LAN-R(config-if)Hexit
+LAN-R(config)Hp matpoolto_internet 202.15.I2.1202.15.12.1netmas
+255.255.255.0 定义内部全局地址注
+LAN-R(confg)#access-sr10permit10.0.0.00.0.255.255:定义允许转换的地
+LAN-R(confg)pnarinsidesourelir10pooltointernetoverload:为内部本地调用
+转换地址池
+(2)验证测试
+在PC1上测试访间Web服务器的主页。在路由器LAN-R上查看NAPT映射关系
+LAN-R#show ip nat translation
+Outside global Pro Inside global Inside local Outside loca]
+2O0,2,0,2:8C 1cP202,1512,1:492410.0.0,2:4924 200,2.0_2:80
+结果显示,10002访间200202的80端口,路由器将私有地址10002转掩为
+法的外网地址20215.12.1,
+4.标准IP访问控制列表配普
+配置标准P访问控制列表,禁止202.15.12.0网络访间WebServer主机。锐捷路
+由器标准P访向控制列表命令为
+Router(config)#access-list<1-99>permindeny)源地址[反掩码
+该白令定义标准ACL
+Router(config-if)#ip access-group<1-99/inlout
+该命今在指字路由器接口后,应用ACL到指定接口
+(1)在Internet-R上配置标准P访问控制列表
+i网络掩码是反掩码 Internet-R(config)#access-list1demy 202.15.12.0 0.0.0.255
+1其他网络互访不受限制 Intemnet-R(config)faccess-list 1 permit an
+(2)把访问控制列表应用在接口上,
+Internet-R(config)finterface fastEthernet I/0 1应用在尽量第近目的地址的接工
+Internet-R(config-if)#ip access-group 1 out 1检查该接口上方向为o的数据流量
+Internet-R (config-if)#end
+(3)查看访问控制列表,
+18
+管7章路由翠及其木配置实形
+Intermet-R #shoe access-list 1
+Standard IP access list I includes 2 iters
+deny202.15.12.0,wildcard bits 0.0.0.255
+pcrmitany
+(4)查着Intermet-R路由器接口信息
+RB# shos ip inierface fastEthernet I6
+FastEthernet I/O
+IP interface state is:UP
+IP interface type is: BROADCAST
+IP interface MTU is:150(
+IPaddress is;
+接口P地址 200.2.0.1/24 (primary’
+IPaddress negotiate is:OFH
+Forward direct-boardcast is: ON
+ICMP rmask reply is:ON
+Send ICMPredirect is:ON
+Send ICMP unreachabled is: ON
+DHCP relay is: OFF
+Fast switch is:ON
+Route borizontal-split is: ON
+Help address is: 0.0.0.0
+Proxy ARPis:ON
+Outgoing access list is 1. :编号为1的访间控制列表应用在接口的out方点
+Inbound access list is not set
+(5)查看PC1和 Web server之间的连通性,
+PC1不能PmNG通Web server主机,也不能访问 Web服务
+6.扩属IP访问掉制列表配已
+配置扩展卫访问控制列表,禁止202.15.12.0网络访间WebServer主机的Web服
+务,其他两络互访不受限制,
+注意:在配置扩展卫访间控制列表之前,需要把标准访间控制列表的配置删除
+刑险台令如下
+Internet-R(config)tinterfaceastEtherner1/0;进入F1/o的接口配置模式
+Intemet-R(config-ibnoipacces-group1out:剩除该接口上应用的标准访问控制列
+锐楼路由器定义扩展P访间控制列表命令为
+Router(config)#access-isr<100-199>{permit/deny协议源地址反斑码[腺端口
+目的地址反撞码【目的端口1
+(1)在Internet-R上配置扩展P访问控制列表。
+ImtemetR(config)faccess-isz101demv1ep202.15.1200.0.0.255host200.20.2e
+182
+坐
+第7章 路由器及燕本配置实照
+;网络搅码是反掩码,cqwww指示目的端口, Mv
+Internet-R(config)taccess-list 101 permitpany an
+(2)把访向控制列表应用在接口上
+Internet-R (config)hinterface fastEthermet 1/00;应用在层量靠近目的地址的接口
+Internet-R(config-iffip access-growp 101 outt:检查该接口上方向为ou的数据流n
+Internet-R(config-if#end
+(3)香看访问控制究表,
+Intermet-R#show access-list70)
+Extended IP access list 101 inchudes 4 items
+denytcp 202.15.12.00.0.0.255host 200.2.0.2qwww
+permit ip any any
+(4)查看Intemnct-R的F1/0接口配置信息
+Internet-R# show ip interface fastEthernet I/
+FastEthernet 1/o
+IP interface state is;UF
+IP interface type is:BROADCAST
+IP interface MTUis;1500
+IP address is;
+200.2.0.1/24 (primary
+IP address negotiate is: OFF
+Forward direct-boardcast is: ON
+ICMP mask reply is: ON
+Send ICMPredirect is:ON
+Send ICMP unreachabled is: ON
+DHCP relay is:OFF
+Fast switch is:ON
+Route horizontal-split is: ON
+Help address is: 0.0.0.0
+ProxyARPis:ON
+:编号为101的访问控制列表应用在接口的omt方向 Outgoing access list is 101
+Inbound access list is not set
+(5)查看PC1和Web Server之间的连通性
+PC1不能访问 Web Server的主页,但能PmNG通 Web Server
+思考题
+7-1.简述路由器的工作原理,它对收到的数据包做哪些处理
+7-2.描述当用户访问1mtemet中某一服务器的过程中,源站发出的数据包是如何到
+达目的服务器的?中间经过了哪些封装与解?,以及是如何选择路径的?
+183
+打摘单
+第8章三息交换技术及应用实彩
+此实验与上一实验所实现的功能是相同的,都是要便分别属于两个不同静态VA
+(Vlan10和Van20)的计算机能够相互通信。这两个VLAN的计算机分别属于两个不
+同时P于网,192.168.10.0和192,168.20.0,网天分别为192.168.10.1和192.168.Z0.1
+S.7.4实验步骤
+实验时先按实验拓扑图连接计算机和交换机并配置计算机P和网关。前面部分的
+置同第六草的交换LVLAN配置实验
+1.配置VLAN
+(1)在交换机S2126上配置VLAN并分配接口
+●创建 Vlan10,并指定接口。
+S2126(config)#wlan10
+S2126(comfig-vlan)#exii
+S2126(config)hinterface fastEthernet 0/1
+S2126(config-tt)#switchport access wan 10
+S2126(config-if)#exit
+● 创建Van20,并指定接口,
+S2126(config)#van 20
+S2126(config-vlan)#exi
+S2126(config)#interface fastEthernet 0/
+S2126(config-if)#switchport access vian 20
+S2126(config-if)#exit
+(2)在交操机S3760上配置VLAN
+●创建 Vlan10,并指定接口,
+S3760(config)#vlan 10
+S3760(config-vlan)#exi
+S3760fconfieninterface fastEthernet 0/
+S3760(config-if)#switchport access van 10
+S3760(config-if)#exit
+●创建Vlan20,并指定接口
+S3760(config)#wlan 20
+S3760(config-vlan)#excit
+S3760(config)tinterface fastEthernet 0/
+S3760(config-if)#switchport access vlan 20
+S3760(config-if)#exi
+2.配置Trunk
+(1)配置S2126中与S3760连接的接口的工作模式
+S2126(config)hinterface fastEthernet 03
+S2126(config-if)#switchport mode trwn
+2o1
+田推坐
+第8章三层交换技术及应用实路
+S2126(confg-if)Hewi
+(2)配置S3760中与S2126连接的接口的工作模式
+S3760(contig)ainterface fastEtherret 0
+S3760(contig-it)#switcnport mode trunh
+S3760(config-if)nevit
+3.配置三层交换机实现VLAN间通信
+在三层交换机上创弹虑报VLAN接口,配置其P,便个同VLAN间的计算机能
+追后
+(1)创建愿拟Van10接口并配置其P
+S3760(confg)rinrerface wan 16 ;切整屋拟Van10接E
+S3760(confg-iDpaddress192.168101255.255.255.0:配置重报VLAN接口
+S3760(config-if)#exit
+(2)创建虚拟Van20接口并配置其P
+S3760(confg)#interface wlan 26
+S3760(conhg-1t)#paddress 192.168.20.1255.255.255.
+S3760(config-if#exit
+所要注意的是,给VAN配置的卫地址就是这个网段的网关地址,在该网段中
+计算机的网关地址应该设置为这个地址
+4,数活路由选择协议
+在三层交换机上需整激洁路由协议。只有这样当日的地个在本地VLAN上时,三
+层交换机才会使用路由协议来转发分组。
+S3760#configure terninal :进入全同配置模式
+S3760(config)#ip routinA :启动IP路由送择
+S3760(config)#end 退回到特权模式
+这一命令迪常在默认情况下是后动的,严生的路田表也与路由器中基本相同。可以
+看出在三层交换机中已经实现了路由器的很多功能
+便用 show running-config命令采观察配置的结果
+Routerfshow running-confi
+5。验证宝验结果
+因为本实验的目的是便分别属于两个不同VLAN的计算机能影相互通信,因此
+配置完成后,任意两台计算机之间都应能通信。在任意一台计算机上执行ping另外三
+台主机的命令。如果可以获得正确的返回信息,实验结果就得到了验证
+思考题
+8-1.说明三层交换技术产生的原因与技术特点
+8-2.简述两种三层交换技术的工作原理
+8-3.简述本章介绍的两种流交换技术NHRP和MPLS各目的工作原理
+2O2
+坐
+第9章 距离矢量路由协议与应用实验
+9.3.5 实验步骤
+1.各路由器端口信忌配曾
+按照拓扑结构图,为未命名的路由器分配名称,开为饼台路由器的端口配置卫
+址。为外,因为4台路由器是通过串口直接连接的,需要将一个甲口设置成DCE,
+一个串口设置成DTE(DTE是指数据终端设备,DCE是指数据同步设备)。而且要
+置DCE的时钟预率。本实验中DCE端口是r2632-a的s1/2端口,2632b的s1/2和s
+端口,r1762的s1/2端口。
+(1)在r2632-a上的配置命令如下
+;从晋迪模式进人特权模式 router>en
+;从特权模式进入配置模式 router#conft
+router(config)#hostame r2632-aa;将路由器命名为r2632-a
+r2632-a(config)tints1/2 ;进入串口s1/2的配置模式
+r2632-a(config-it)#ipaddress192.16&.10.2255.255.255.
+;为用口s1/2配置P地址和子网掩码
+r2632-a(contig-it)#clock rate 640000:为申口81/2配置DCE时钟预率
+r2632-a(config-if#no shwt ;开后甲口s1/2
+r2632-a(config-if)#exh 退出
+r2632-a(config)Hints1/3 ;进入申口s13的配置模式
+r2632-a(config-if)#ipaddr192.168.12.1255.255.255.0
+;为甲口s1/3配置P地址和子网掩码
+r2632-a(config-if)#no shu ;开后甲口s1/3
+r2632-a(config-if)#exi 退出
+r2632-a(config)#int 1/0 ;进入以太网口自0的配置模式
+r2632-a(config-if)#ipaddr192.16&1.5255.255.255.
+;为以太网口f0配置P地址和子网掩码
+r2632-a(contig-if)#no shwt ;开启以太网口自n
+r2632-a(config-iftei 退出
+至此r2632-a的端口配置全部完成。路由器r1762、r2632b、3740的配置命令
+r2632-a的命今相以,
+(2)在3740上的配置如下:
+router>en
+router#conft
+router(config)#hostname r3746
+r3740(config)#im83/1
+r3740(config-if)#ipaddress192.168.10.1255.255.255.
+r3740(config-if)#no shut
+r3740(config-if)#ei
+r3740(config)#int s3/C
+21O
+第9章 距高矢量路由协议与应用实教
+r3740(c0nfie-if)#ipaddr192.168.13.1255.255.255(
+r3740(config-if)#no shut
+r3740(config-if)#exit
+r3740(config)#imt 83/2
+r3740(confie-if#ipaddr192.168.0.2255.255.255.
+r3740(config-if)#no shwt
+(3)在T2632-b上的配置如下:
+routeren
+router#conft
+router(config)#hostname r2632-t
+T2632-b(config)#imt s1/2
+r2632-h(confie-if#inaddress192.168.13.2255.255.255.
+r2632-b(config-if#clock rqte 6400
+r2632-b(config-if)#n0 shul
+r2632-b(config-if)texir
+r2632-b(config)#imt sl/3
+r2632-h(cnnfio-ifHnadd192.168.12.2255.255.255.
+r2632-b(config-if)tclock rate 64000
+r2632-b(config-if#no shut
+r2632-b(config-if)#exit
+(4)在r1762上的配置如下;
+router>en
+routerfconft
+router(config)thostnane r1762
+r1762(config#int sl/2
+r1762(config-if)#paddress192.168.0.1255.255.255.0
+r1762(config-if)#clock rate 64000
+r1762(config-if)#no shut
+r1762(config-if#exn
+r1762(configmint1/0
+r1762(confg-0#paddr192.168.14.1255.255.255.0
+r1762(config-if)#no shut
+r1762(config-if)#exit
+(5)当所有路由器的端口均配置完成后,可使用showinterface命令查看端口的状
+态。以下是2632-a路由器的串口s1/2的情况:
+T2632-a+shom ints1/2
+serial 1/2 is UP ,line protocol is UP
+Hardware is PO2 SCC HDLC CONTROLLER seria
+Interf8ce addressis: 192,168,10.2/24
+21
+知增金重
+第9章 距离关量降自协议与应用实形
+MTU1500 bytes,BW 2000 Kbii
+Encapsulation protocol is HDLC, loopback not set
+Kccpalive intcrval is 10 scc,set
+Carrier dclay is 2 scx
+RXload is 1,Txload is I
+Cucucing stratcgy: WFQ
+5 minutes input rate 14 bits/sec,0 packets/sec
+5 minutes output rate 17 bits/sec,0 packets/sec
+1622packets input,35678 bytes,0res 1ack,0no buffer,0 droppe
+Received 1622 broadcasts,0 runts,0 giant
+0 input crrors,0 CRC,0 fame,0 overrun,0 abor
+1621 packets output,35662 bytes,0 undemuns,0 droppe
+0 output errors,0 collisions,6 interface resets
+Icarrier transitions
+V35 DCE cable
+DCD=uP DSR=Up DTR-up RTS-up CTS-U
+请注意上面的租体字部分:Seriallisup.lineprotocolisup说明了链路和链路协议均
+工作正常:Imemetaddressis192.168102/24表示P地址已经止确指定。在另外三个路
+由器上运行相应命令,也应该看到类似信息。至此步骤1全部完成
+2.启用RIPv2协议
+依次在每一台路由器上启用RPV2协议。每台路由器上RP相关的命令如下
+(1)路由器T2632-a:
+r2632-a>en i从普递模式进入特权模式
+r2632-a#confL i从特权模式进入配置模式
+r2632-a(config)#rowter rip ;进入RIP动议的配置模式
+r2632-a(confg-router)#nehvork192.168.10.0设定要启用RP协议的网络号
+r263Z-a(conig-router)并nehwork19216K1Z.0:设定要启用RP协议的网络
+r2632-a(config-router)#nenwork 192.168.1.0r设定要启用RP协议的网络号
+r2632-a(config-router)#version 2 :定义RIPv2协议,默认为RPvl
+(2)路由器r3740:
+r374ODen
+r374OHconf1
+r3740(config)trowter rit
+r3740(config-router)#netork 192.168.10.(
+r3740(config-router)#network 192.168.13.
+r3740(config-router)#network 192.168.0.
+r3740(config-router)#version 2
+(3)路由器T2632-b;
+2
+坐
+第9章距离关量路由格设与应用实级
+T2632-b>en
+r2632-b#conf1
+r2632-b(config)#roiuter rt
+r2632-b(config-router)#neturk 192.168.12.0
+r2632-b(contg-router)nebwork 1y2.16K13.0
+r2632-b(config-router# wersion 2
+(4)路由器r1762:
+r1762>en
+r1762#conft
+r1762(config)#rowterri
+r1762(contig-router)#netork 1y2.168.u.0
+r1762(config-router)#nehork 192.168.14.(
+r1762(config-router)#version 2
+(5)在网络中所有路由器上都配置好RP协议后,等待一段时间,符网络处于收
+氢状态后,就可以运用各种俞今测试协议景合配置成功了。在路由器3740上云行8h0
+加route检查路由器的路由表,看到除了直连路由外,路由器通过RP协议已经我到
+到达网络192168140和192.16812.0的路径。以卜是路田器3740运行该命令后的满
+出:
+T3740Hshow ip route
+Codes:C-connected.S-statie,R-RIP B-BGF
+O-OSPF,LA-OSPF inter arca
+N1-OSPF NSSA extemal type 1.N2-OSPF NSSA extemal type
+E1-OSPF cxtemal type 1,E-OSPr external type
+i-1S-IS,su-IS-IS summary.L1-1s-1S 1evel-1.L2-1S-IS 1evel ia-IS-IS inter area,*-candidate defauli
+Gateway of last resort is no set
+192.168,0.0/24is directty connected.serial 3/2
+C 192,168,0,2/32 is local host
+192.168,1,0/24[120/11va192,168,10.2.00:00:18.sera13/ R
+C 192.168.10.0/24 is directly connected.serial3/
+C 192.168.10.1/32 is local host
+R 192,168.12.0/24[120/11va192,168,10.2,00:00:18,8er1a13/
+R [120/11va192,168.13.2.00:00:11.s0ria13/
+192.168.13.0/24 is directly connected,serial 3
+192.168.13.1/32 is local host
+192.168.14.0/24[120/1]va192.168,0.1,00:00:09,ser1a13/
+C代来盲连路中,R表示通过R叩协议把到的可达的路由。Vi后面的卫地址表示
+要到达可达的网络经过的端口的P地址。从路由表上可以看到,3740要到达网丝
+192.168.1.0,可以经过2632-要到达网络192.168.12.0,可以经过r2632-或r2632b
+213
+坐
+第10章 OSPF路由协这与应用实弱
+10.8.3 实验环境
+1.实验设备
+本实验采用的是一台锐排r1762路由器、一台锐捷r3740路由器和两台锐捷r2632路
+器。同时需要若干连接线和几台工作站来完成路由协议的配置
+2.立验折扑结构图
+本实验拓扑结构、P地址规划与第9章RPv2路由配置实验相同。OSPF协议支持区
+域划分,以减少资源消耗。因此,本实验中将构理一个骨干区城Area0,并把网络划
+为多个区域,如图10-7所示,通过配置OSPF路由协议,将Area1和Area2连在骨干区
+上。
+r1Z62 ATea
+S F
+S3
+AreaO Area SI S
+F1
+S/3 S13
+2632- 2632-b
+图10-7实验拓扑厚
+P地址规划如下:
+计算机A:192.168.1.2/24:计算机B:192.168.14.2/24
+T2632-a的F1/0:192.168.1.5/24:S1/2:192.168.10.2/24:S1/3:192.168.12.1/24
+r2632-b的S1/2:192.168.13.2/24:S1/3:192.168.12.2/24
+r3740的S3/0:192.168.13.1/24:S3/1:192.168.10.1/24:S3/2:192.168.0.2/24
+r1762的F1/0:192.168.14.1/24:S1/2:192.168.0.1/24
+1084应验步瑰
+1。各路由器端口信息配首
+相根拓扑结构图构球网终并配置网终基本参勒。该步要配置讨理与RP路中协议面
+置相同。在此不界述
+2.启用OSPF协议
+(1)在r2632-b上讲行area0区域0SPF配置
+‘t进入OSPF协议配置模式 r2632-b (c0nfi2)Hrouter ospf
+r2632-b(config-router)#network192.168.12.00.0.0.255area00:指定OSPF协议网
+络号和区域号
+244
+知推金重
+第10章 08PF路由热议与度用实
+r2632-b(config-router)network192,168.13.00.0.0.255area0
+(2) 在r2632-a上进行area0和area1的配
+;进入OSPF协议配置模式 r2632-a(config)#router ospt
+r2632-a(c0nfig-r0uter)hnetwork192.168.12.00.0.0.255area
+r2632-a(contg-router)mnetwork 1y2.168.10.0 0.0.0.Z53area
+r2632-a(confg-router)+network192.168.1.00.0.0.255area
+(3)在r3740上进行area0和area2的配
+r3740(config)rrouter ospf
+r3740(config-router)network192.168.10.00.0.0.255 area0
+r3740(config-router)#network192.168.12.00.0.0.255 area0
+r3740(config-router)#network192.168.0.00.0.0.255 area2
+(4)在r1762上进行area2的配管
+r1762(config)#router ospl
+r1762(config-router)network192.168.14.00.0.0.255 area2
+r1762(config-router)#network192.168.0.00.0.0.255 area
+3.查看OSPF协议运行状态
+在4台路由器中都启用OSPF协议后,用show命令验证路由器能否正常工作
+(1)在4台路由器中任一台上执行showipDrotocols命令。以卜是r3740的输出
+r3740#show ip protocols
+Routing Protocol is "ospf 1"
+Outgoing update filter list for all interfaces is not set
+Incoming update filter list for all interfaces is not se
+Router ID192.168.13.1
+Number of areas in this router is 2:2 normal 0 stub 0 nssa
+Routing for Networks;
+192168.0,00,0,0,255area2
+192.168.10,0 0,0.0.255 area C
+192,168,12.0 0.0.0,255 area C
+Reference bardwidth unit is 100 mmbps
+Distance:(default is I10)
+从路由器的输出结果看,路由器3740将S3/0接口P作为自己的RouterD值,OSP
+讲程号默认为1,网络192168100和192.16812.0国于骨干区域Area0,网络192.168.0.
+属于Area2。
+(2)在4台路由器中仟一台上执行showinroue命令。以下是路由器3740上运行该
+命令的输出结果;
+r3740#show ip route
+Codes: C-connected.S-static.R-RIPB-BGF
+O-OSPFIA-OSPF inter are
+N1-OSPF NSSAexteral type 1.N2-OSPF NSSA extemal type7
+245
+田
+第10章 OSPF路由协议与庭用实器
+E1-OSPF extermal type 1,E2-OSPF external type2
+i-1S-IS,su-IS-IS summary,L1-1S-1S 1evel-1,L2-IS-IS level ia - IS-IS inter area,-candidate defaul
+Gateway oflast resort is no sel
+192.168.0.0/24 is directly connected,serial 3/
+192.168.0.2/321s 10cal h05t
+OIA192.168.1.0/24[110/511via192.168.10.2,00:03:50,seria13/
+C 192.168.10.0/24 is directly connected,serial 3/
+C 192.168.10.1/32 is 1ocal host
+O 192.168.12.0/241110/1001v1a 192.168.10.2.00:59:00,sera13/
+C 192.168.13.0/24 is directly connected,serial 3/
+C 192.168.13.1/32is 10ca1h0st
+192,168.14,0/24 1110/51]V1a192.168.0.1,00:38:17,Sera13/
+从输出结果中看到除了直连路由外,路由器通过OSPF协议已经找到了到达网缩
+192.168.1.0、192.168.14.0和192.168.12.0的路径
+4.验证主机A和主机B之间的连通件
+在主机A上PING主机B.输出结果显示两台计算机可以连通
+注煮:配置PC1和PC2的TCPⅢ协议属性时,需要配置默认网关,其中主机A
+的默认网关为路由器r2632-a的F10接口,P地址为192.168.1.5;主机B的默认网关
+为r1762的F1/0接口,P地址为192.168.14.1
+思考题
+10-1.比较解路状态路中协议和距蒸矢量路申协议的优缺点
+10-2.什么导肾理绝离AD(AdminisrativeDistance)7OSPF的管理距离AD是名少
+和RP相比,有什么特点
+10-3.什么是OSPF的邻居?什么是OSPF的邻接关系
+10-4.OSPF报文的5种类型是什么?每一种类型的用途是什么
+10-5.什么是LSA?怎样区分一个LSA和一个OSPF更新报文不同
+10-6.请用命令showipospfdaabase采查看一个链路状态效据厍中所有LSA的
+表。该命令仅仅输出LSA的头部信思,而不是每个LSA的全部信息。如果该数据库包含
+多个区域的LSA信总,死表明该路由器是ABR路由器
+10-7,简述Hello报文协议的作用,
+10-8.在单区域OSPF实验中,为何三个路由器先后所显示的DR/BDR有所不同?可
+能是什么原因造成的{
+10-9.在多区域OSPF实验中,如果在4个路由器上同时也配置了RPv2协议,路由
+表是否会有变化?为什么?
+246
+坐
