@@ -1,0 +1,350 @@
+%========================================
+\chapter{数据链路层}
+%========================================
+\section{基本概念}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{链路}：一个节点到相邻节点的物理线路
+    \item \textbf{数据链路}：链路 + 通信协议（硬件+软件）
+    \item \textbf{帧}：数据链路层的传输单位
+\end{itemize}
+
+\subsection{三个核心问题}
+\begin{center}
+\begin{tikzpicture}[node distance=0cm,>=stealth]
+\node[draw,minimum width=1.2cm,minimum height=0.7cm,fill=gray!30] (head) {\small 帧头};
+\node[draw,minimum width=3.5cm,minimum height=0.7cm,right=of head,fill=white] (data) {\small 数据（来自网络层）};
+\node[draw,minimum width=1.2cm,minimum height=0.7cm,right=of data,fill=gray!30] (tail) {\small 帧尾};
+\draw[decorate,decoration={brace,amplitude=4pt,raise=2pt}] (head.north west) -- (tail.north east) node[midway,above=6pt] {\small 封装成帧};
+\node[below=0.2cm of head] {\footnotesize 帧定界};
+\node[below=0.2cm of tail] {\footnotesize FCS校验};
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{封装成帧}：添加帧头帧尾，实现帧定界
+    \item \textbf{透明传输}：数据中出现帧定界符时的处理（字节填充/比特填充）
+    \item \textbf{差错检测}：通过FCS检测比特错误（不纠错）
+\end{enumerate}
+
+\section{差错检测}
+\subsection{奇偶校验}
+在数据后添加1位校验位，使整个数据中"1"的个数为奇数或偶数。
+
+\textbf{局限性}：只能检测奇数位错误，无法检测偶数位错误。
+
+\subsection{CRC循环冗余校验}
+CRC是一种强大的差错检测方法，基于多项式除法原理。
+
+\textbf{CRC计算步骤}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 确定生成多项式$G(x)$，将其转换为二进制除数
+    \item 在数据后补$n$个0（$n$为生成多项式最高次数）
+    \item 用模2除法（异或运算）计算余数
+    \item 将余数附加到原数据后发送
+\end{enumerate}
+
+\begin{examplebox}[例题3.1 CRC计算]
+\textbf{题目}：生成多项式$G(x)=x^3+x^2+1$，数据为\texttt{101001}，求发送的比特序列。
+\tcblower
+\textbf{步骤}：
+\begin{enumerate}[itemsep=0pt]
+    \item 除数：$G(x)$对应\texttt{1101}
+    \item 被除数：数据后补3个0 $\rightarrow$ \texttt{101001000}
+    \item 模2除法得余数：\texttt{001}
+\end{enumerate}
+\textbf{发送序列}：\texttt{101001} + \texttt{001} = \texttt{101001001}
+\end{examplebox}
+
+\section{可靠传输协议}
+\subsection{停止-等待协议(SW)}
+发送方每发送一个帧后必须等待接收方的确认。
+
+\textbf{关键机制}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{确认(ACK)}：接收方收到正确帧后发送确认
+    \item \textbf{超时重传}：发送方超时未收到确认则重传
+    \item \textbf{帧编号}：用0/1交替编号，防止重复接收
+\end{itemize}
+
+\begin{formulabox}
+\textbf{信道利用率}：$U = \frac{T_D}{T_D + RTT + T_A} \approx \frac{T_D}{T_D + RTT}$
+\end{formulabox}
+
+\begin{examplebox}[例题3.2 停等协议效率]
+\textbf{题目}：帧长1000字节，速率1Mbps，单向传播时延250ms，求信道利用率。
+\tcblower
+发送时延：$T_D = \frac{1000 \times 8}{10^6} = 8$ms
+
+往返时间：$RTT = 2 \times 250 = 500$ms
+
+信道利用率：$U = \frac{8}{8+500} = \frac{8}{508} \approx$ \textbf{1.57\%}
+\end{examplebox}
+
+\subsection{回退N帧协议(GBN)}
+允许发送方连续发送多个帧，提高信道利用率。
+
+\textbf{核心特点}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 发送窗口$W_T$：$1 < W_T \leq 2^n - 1$（n为序号位数）
+    \item 接收窗口$W_R = 1$（只能按序接收）
+    \item \textbf{累积确认}：ACKn表示n及之前的帧都已收到
+    \item \textbf{出错处理}：重传出错帧及其后所有帧
+\end{itemize}
+
+\subsection{选择重传协议(SR)}
+只重传出错的帧，效率更高。
+
+\textbf{核心特点}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 发送窗口$W_T$：$1 < W_T \leq 2^{n-1}$
+    \item 接收窗口$W_R$：$1 < W_R \leq W_T$
+    \item \textbf{逐个确认}：只确认正确收到的帧
+    \item \textbf{出错处理}：只重传出错的帧
+\end{itemize}
+
+\begin{examplebox}[例题3.3 窗口大小计算]
+\textbf{题目}：帧序号用3比特表示，GBN和SR协议的发送窗口最大分别为多少？
+\tcblower
+序号范围：$0 \sim 2^3 - 1 = 0 \sim 7$，共8个序号
+
+\textbf{GBN协议}：$W_T \leq 2^n - 1 = 2^3 - 1 = 7$
+
+\textbf{SR协议}：$W_T \leq 2^{n-1} = 2^2 = 4$
+\end{examplebox}
+
+\section{PPP协议}
+PPP是目前使用最广泛的点对点数据链路层协议。
+
+\subsection{帧格式}
+\begin{center}
+\begin{tikzpicture}[node distance=0cm]
+\node[draw,minimum width=1cm,minimum height=0.8cm,fill=gray!30] (f1) {F};
+\node[draw,minimum width=1cm,minimum height=0.8cm,right=of f1] (a) {A};
+\node[draw,minimum width=1cm,minimum height=0.8cm,right=of a] (c) {C};
+\node[draw,minimum width=1.5cm,minimum height=0.8cm,right=of c] (p) {协议};
+\node[draw,minimum width=3cm,minimum height=0.8cm,right=of p,fill=yellow!20] (data) {数据};
+\node[draw,minimum width=1.5cm,minimum height=0.8cm,right=of data] (fcs) {FCS};
+\node[draw,minimum width=1cm,minimum height=0.8cm,right=of fcs,fill=gray!30] (f2) {F};
+\node[below=0.1cm of f1] {\tiny 7E};
+\node[below=0.1cm of a] {\tiny FF};
+\node[below=0.1cm of c] {\tiny 03};
+\end{tikzpicture}
+\end{center}
+
+\subsection{透明传输}
+\textbf{异步传输（字节填充）}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \texttt{7E}$\rightarrow$\texttt{7D 5E}
+    \item \texttt{7D}$\rightarrow$\texttt{7D 5D}
+\end{itemize}
+
+\section{CSMA/CD协议}
+以太网使用的介质访问控制协议。
+
+\subsection{工作原理}
+\begin{center}
+\fbox{\textbf{先听后说、边说边听、冲突停止、随机重发}}
+\end{center}
+
+\begin{formulabox}
+\textbf{争用期}（碰撞窗口）：$2\tau$（往返传播时延）
+
+\textbf{最小帧长} = 争用期 $\times$ 数据率 = $\frac{2d}{v} \times R$
+
+10Mbps以太网：争用期=51.2$\mu$s，最小帧长=64字节
+\end{formulabox}
+
+\begin{examplebox}[例题3.4 CSMA/CD计算]
+\textbf{题目}：以太网速率10Mbps，最大距离2500m，传播速度$2\times10^8$m/s，求争用期和最小帧长。
+\tcblower
+单向传播时延：$\tau = \frac{2500}{2\times10^8} = 12.5\mu$s
+
+争用期：$2\tau = 25\mu$s
+
+最小帧长：$L = 2\tau \times R = 25\times10^{-6} \times 10\times10^6 = 250$bit = \textbf{32字节}
+\end{examplebox}
+
+\subsection{截断二进制指数退避算法}
+碰撞后等待时间 = 争用期 $\times$ 随机数$r$，其中$r \in \{0,1,...,2^k-1\}$，$k=\min(\text{重传次数},10)$
+
+\section{MAC地址与ARP}
+\subsection{MAC地址格式}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 48位（6字节），固化在网卡的ROM中
+    \item 格式：前3字节OUI（厂商标识）+ 后3字节设备标识
+    \item 广播地址：\texttt{FF-FF-FF-FF-FF-FF}
+\end{itemize}
+
+\subsection{ARP协议}
+ARP用于将IP地址解析为MAC地址。
+
+\textbf{工作过程}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 检查本地ARP缓存
+    \item 若没有，广播ARP请求
+    \item 目标主机单播回复MAC地址
+    \item 将映射存入ARP缓存
+\end{enumerate}
+
+\section{以太网交换机}
+\subsection{集线器vs交换机}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{特性} & \textbf{集线器} & \textbf{交换机} \\
+\midrule
+工作层级 & 物理层 & 数据链路层 \\
+转发依据 & 无（广播） & MAC地址 \\
+冲突域 & 所有端口共享 & 每端口独立 \\
+通信方式 & 半双工 & 全双工 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{自学习与转发}
+\textbf{转发规则}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{自学习}：记录源MAC与入端口的映射
+    \item \textbf{明确转发}：表中有目的MAC，转发到对应端口
+    \item \textbf{泛洪}：表中无目的MAC，转发到除入端口外所有端口
+    \item \textbf{过滤}：目的MAC对应入端口，直接丢弃
+\end{enumerate}
+
+\begin{examplebox}[例题3.5 交换机转发]
+\textbf{题目}：交换机初始表为空，依次发生：(1)A$\to$B (2)B$\to$A (3)C$\to$D，描述操作。
+\tcblower
+\begin{tabular}{|c|l|l|l|}
+\hline
+\textbf{通信} & \textbf{自学习} & \textbf{转发} & \textbf{帧交换表} \\
+\hline
+A$\to$B & 登记A-端口1 & 泛洪(2,3,4) & A:1 \\
+B$\to$A & 登记B-端口2 & 明确转发(1) & A:1, B:2 \\
+C$\to$D & 登记C-端口3 & 泛洪(1,2,4) & A:1, B:2, C:3 \\
+\hline
+\end{tabular}
+\end{examplebox}
+
+\section{生成树协议(STP)}
+\subsection{问题背景}
+冗余链路提高可靠性，但会形成环路，导致：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{广播风暴}：广播帧在环路中无限循环
+    \item \textbf{帧重复}：主机收到多份相同帧
+    \item \textbf{MAC表震荡}：地址映射不断变化
+\end{itemize}
+
+\subsection{STP关键概念}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{根桥(Root Bridge)}：网络中优先级最高的交换机
+    \item \textbf{根端口(RP)}：非根桥上到根桥路径最短的端口
+    \item \textbf{指定端口(DP)}：每个网段上到根桥路径最短的端口
+    \item \textbf{阻塞端口}：既非根端口也非指定端口，被阻塞
+\end{enumerate}
+
+\section{虚拟局域网(VLAN)}
+VLAN将物理局域网在逻辑上划分为多个广播域。
+
+\subsection{VLAN的作用}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{隔离广播域}：减少广播风暴的影响范围
+    \item \textbf{提高安全性}：不同VLAN之间默认隔离
+    \item \textbf{灵活管理}：按业务或部门划分
+\end{itemize}
+
+\subsection{802.1Q帧格式}
+在标准以太网帧中插入4字节VLAN标记：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{TPID}（2字节）：固定为\texttt{0x8100}
+    \item \textbf{TCI}（2字节）：包含VID（12位VLAN标识符，范围1-4094）
+\end{itemize}
+
+\subsection{端口类型}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{Access端口}：连接终端设备，只属于一个VLAN
+    \begin{itemize}[itemsep=0pt]
+        \item 接收：仅收未打标签的帧，按端口PVID打标签
+        \item 发送：仅转发VID与端口PVID一致的帧，并去标签
+    \end{itemize}
+    \item \textbf{Trunk端口}：连接交换机，可传输多个VLAN的帧
+    \begin{itemize}[itemsep=0pt]
+        \item 接收：未打标签的帧按PVID打标签，已打标签的帧保留标签
+        \item 发送：VID与PVID一致的帧去标签转发，否则带标签转发
+    \end{itemize}
+\end{itemize}
+
+\begin{examplebox}[例题3.6 VLAN通信]
+\textbf{题目}：交换机S1的端口1-4分别连接主机A、B、C、D，端口1、2属于VLAN10，端口3、4属于VLAN20。A发送广播帧，哪些主机能收到？
+\tcblower
+广播帧只在同一VLAN内传播。
+
+A属于VLAN10，因此广播帧只会发送到同属VLAN10的端口。
+
+\textbf{答案}：只有B能收到（B也在VLAN10），C和D在VLAN20，收不到。
+\end{examplebox}
+
+\section{数据链路层综合例题}
+
+\begin{examplebox}[例题3.7 多交换机自学习（综合题）]
+\textbf{题目}：如图所示网络拓扑，主机A-H的MAC地址与主机名相同。交换机1的端口1-4分别连接A、B、交换机2、C；交换机2的端口1-4分别连接交换机1、D、E、交换机3；交换机3的端口1-4分别连接F、交换机2、G、H。依次发生通信：(1)B→C (2)D→A (3)G→D (4)E→H (5)C→B (6)F→G，给出各交换机的自学习过程和最终帧交换表。
+\tcblower
+\textbf{通信过程分析}：
+
+\begin{center}\small
+\begin{tabular}{|c|l|l|l|}
+\hline
+\textbf{通信} & \textbf{交换机1} & \textbf{交换机2} & \textbf{交换机3} \\
+\hline
+B→C & 登记B:2，泛洪 & 登记B:1，泛洪 & 登记B:2，泛洪 \\
+D→A & 登记D:3，泛洪 & 登记D:2，泛洪 & 登记D:2，泛洪 \\
+G→D & 收不到 & 登记G:4，明确转发 & 登记G:3，明确转发 \\
+E→H & 登记E:3，泛洪 & 登记E:3，泛洪 & 登记E:2，泛洪 \\
+C→B & 登记C:4，明确转发 & 收不到 & 收不到 \\
+F→G & 收不到 & 收不到 & 登记F:1，明确转发 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{最终帧交换表}：
+\begin{center}\small
+\begin{tabular}{|c|c||c|c||c|c|}
+\hline
+\multicolumn{2}{|c||}{\textbf{交换机1}} & \multicolumn{2}{c||}{\textbf{交换机2}} & \multicolumn{2}{c|}{\textbf{交换机3}} \\
+\hline
+MAC & 端口 & MAC & 端口 & MAC & 端口 \\
+\hline
+B & 2 & B & 1 & B & 2 \\
+D & 3 & D & 2 & D & 2 \\
+E & 3 & G & 4 & G & 3 \\
+C & 4 & E & 3 & E & 2 \\
+  &   &   &   & F & 1 \\
+\hline
+\end{tabular}
+\end{center}
+\end{examplebox}
+
+\begin{examplebox}[例题3.8 2014年真题]
+\textbf{题目}：某以太网拓扑及交换机当前转发表如下图所示，主机00-e1-d5-00-23-a1向主机00-e1-d5-00-23-c1发送1个数据帧，主机00-e1-d5-00-23-c1收到该帧后，向主机00-e1-d5-00-23-a1发送1个确认帧，交换机对这两个帧的转发端口分别是？
+
+\begin{center}\small
+\begin{tabular}{|c|c|}
+\hline
+目的地址 & 端口 \\
+\hline
+00-e1-d5-00-23-b1 & 2 \\
+00-e1-d5-00-23-a1 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+（交换机有3个端口，端口1连a1，端口2连b1，端口3连c1）
+
+A. \{3\}和\{1\} \quad B. \{2,3\}和\{1\} \quad C. \{2,3\}和\{1,2\} \quad D. \{1,2,3\}和\{1\}
+\tcblower
+\textbf{分析}：
+
+(1) a1→c1：查表，c1不在表中，执行\textbf{泛洪}，转发到端口\{2,3\}（除入端口1外所有端口）
+
+(2) c1→a1：查表，a1在端口1，执行\textbf{明确转发}，转发到端口\{1\}
+
+\textbf{答案}：B
+\end{examplebox}

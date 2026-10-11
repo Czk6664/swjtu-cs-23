@@ -1,0 +1,1440 @@
+%========================================
+\chapter{综合练习题库}
+%========================================
+
+本章汇集了500道人工智能导论的练习题，涵盖是非题、填空题、选择题、简答题和综合计算题，并附有参考答案，供读者复习巩固所学知识。
+
+%----------------------------------------
+\section{是非题 (100题)}
+%----------------------------------------
+
+\textbf{（1-20题）}
+\begin{enumerate}[leftmargin=2em,itemsep=1pt]
+% 1-20
+\item 消解时主要通过推导空子句来实现反证的。（\quad）
+\item $L$、$\neg L$为互补文字，$L \land \neg L \Rightarrow \square$。（\quad）
+\item $(P(x) \land Q(y)) \lor (P(x) \land R(y))$为合取范式。（\quad）
+\item 若P为时真时假，则$\neg P$仍为永真式。（\quad）
+\item $(\forall x)P(x) \lor R(x)$中的$P(x)$不在$\forall x$的辖域中。（\quad）
+\item 语义网络是一种有向图，它有5个级别，7种类型。（\quad）
+\item 单位关系不在语义网络表示的范围内。（\quad）
+\item 对象与类是实例关系。（\quad）
+\item 基于语义网络的推理主要有网络匹配、网络继承和网络演绎三种方式。（\quad）
+\item 框架之间也有从属关系、实例关系等。（\quad）
+\item 图灵测试是衡量机器是否具有智能的唯一标准。（\quad）
+\item 人工智能的符号主义学派强调逻辑推理和符号操作。（\quad）
+\item 联结主义学派主要模拟人脑的神经网络结构。（\quad）
+\item 行为主义学派认为智能取决于感知和行动系统。（\quad）
+\item 知识是人们对自然界认识的结晶，是信息的一种形式。（\quad）
+\item 谓词逻辑比命题逻辑具有更强的表达能力。（\quad）
+\item 在一阶谓词逻辑中，量词的辖域必须明确。（\quad）
+\item 脚本表示法特别适用于描述具有时间序列和因果关系的事件。（\quad）
+\item 产生式系统由规则库、综合数据库和推理机三部分组成。（\quad）
+\item 产生式规则的一般形式是 IF P THEN Q。（\quad）
+\end{enumerate}
+
+\textbf{参考答案（1-20题）：}
+1.$\checkmark$, 2.$\checkmark$, 3.$\times$, 4.$\times$, 5.$\times$, 6.$\checkmark$, 7.$\times$, 8.$\checkmark$, 9.$\checkmark$, 10.$\checkmark$, 
+11.$\times$, 12.$\checkmark$, 13.$\checkmark$, 14.$\checkmark$, 15.$\checkmark$, 16.$\checkmark$, 17.$\checkmark$, 18.$\checkmark$, 19.$\checkmark$, 20.$\checkmark$
+
+\vspace{1em}
+\textbf{（21-40题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+% 21-40
+\item 极小极大分析法中采用逆向推算来计算节点得分的。（\quad）
+\item 解树一定是代价最小。（\quad）
+\item 本原问题即直接可解的简单问题。（\quad）
+\item 与或图搜索也可分为盲目搜索和启发式搜索。（\quad）
+\item 对$\alpha$-$\beta$剪枝技术中，对与节点来说，$\alpha$是倒推值的下确界，$\beta$是倒推值的上确界。（\quad）
+\item A*算法中，若启发函数$h(n)$满足$h(n) \leq h^*(n)$，则一定能找到最优解。（\quad）
+\item 广度优先搜索通常比深度优先搜索需要更多的存储空间。（\quad）
+\item 深度优先搜索可能会陷入死循环，需要设置深度限制。（\quad）
+\item 爬山法是一种局部搜索算法，容易陷入局部最优。（\quad）
+\item 模拟退火算法通过接受一定概率的劣解来跳出局部最优。（\quad）
+\item 遗传算法中的变异操作主要用于增加种群的多样性。（\quad）
+\item 粒子群算法（PSO）是模仿鸟群捕食行为的群体智能算法。（\quad）
+\item 蚁群算法特别适合解决旅行商问题（TSP）。（\quad）
+\item 博弈树搜索中，MAX节点总是选择子节点中的最大值。（\quad）
+\item 博弈树搜索中，MIN节点总是选择子节点中的最小值。（\quad）
+\item 启发式搜索利用每一节点处的启发信息来引导搜索方向。（\quad）
+\item 盲目搜索不利用问题本身的特性信息。（\quad）
+\item 迭代加深搜索结合了深度优先和广度优先的优点。（\quad）
+\item 双向搜索从起点和终点同时进行，可以提高搜索效率。（\quad）
+\item 状态空间图是一个有向图，节点表示状态，弧表示操作。（\quad）
+\end{enumerate}
+
+\textbf{参考答案（21-40题）：}
+21.$\checkmark$, 22.$\times$, 23.$\checkmark$, 24.$\checkmark$, 25.$\checkmark$, 26.$\checkmark$, 27.$\checkmark$, 28.$\checkmark$, 29.$\checkmark$, 30.$\checkmark$, 
+31.$\checkmark$, 32.$\checkmark$, 33.$\checkmark$, 34.$\checkmark$, 35.$\checkmark$, 36.$\checkmark$, 37.$\checkmark$, 38.$\checkmark$, 39.$\checkmark$, 40.$\checkmark$
+
+\vspace{1em}
+\textbf{（41-60题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+% 41-60
+\item 专家系统就是由专家名字组成的咨询系统。（\quad）
+\item 用普通的程序设计语言开发专家系统的开发周期最长，效率最低，但限制最小。（\quad）
+\item 网络环境下的专家系统结构可以分为客户机/服务器或浏览器/服务器结构。（\quad）
+\item 黑板模型中的黑板就是一个全局数据库。（\quad）
+\item 不确定性推理是从确定性的初始证据出发进行推理。（\quad）
+\item 可信度方法是处理不确定性推理的一种方法。（\quad）
+\item 证据理论是经典概率论的一种扩充形式。（\quad）
+\item 模糊集合可以用来刻画模糊不确定性。（\quad）
+\item 默认推理是一种单调推理。（\quad）
+\item 归纳推理的结论一定正确。（\quad）
+\item 演绎推理能够从一般性前提推出个别性结论。（\quad）
+\item 正向推理是由已知事实推导结论的过程。（\quad）
+\item 反向推理是由假设目标推导前提的过程。（\quad）
+\item MYCIN系统是用于诊断血液感染性疾病的专家系统。（\quad）
+\item 专家系统的瓶颈问题是知识获取。（\quad）
+\item 贝叶斯网络是有向无环图，用于表示变量间的概率依赖关系。（\quad）
+\item 模糊逻辑允许真值在[0,1]区间内连续取值。（\quad）
+\item 主观贝叶斯方法中，LS>1表示证据的存在支持假设。（\quad）
+\item 冲突消解通过特定策略从匹配的规则集中选择一条执行。（\quad）
+\item 解释机制由程序实现，用于回答用户关于推理过程的提问。（\quad）
+\end{enumerate}
+
+\textbf{参考答案（41-60题）：}
+41.$\times$, 42.$\checkmark$, 43.$\checkmark$, 44.$\checkmark$, 45.$\times$, 46.$\checkmark$, 47.$\checkmark$, 48.$\checkmark$, 49.$\times$, 50.$\times$, 
+51.$\checkmark$, 52.$\checkmark$, 53.$\checkmark$, 54.$\checkmark$, 55.$\checkmark$, 56.$\checkmark$, 57.$\checkmark$, 58.$\checkmark$, 59.$\checkmark$, 60.$\checkmark$
+
+\vspace{1em}
+\textbf{（61-80题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+% 61-80
+\item 机器学习是人工智能的一个重要研究分支。（\quad）
+\item 神经网络研究属于符号主义学派。（\quad）
+\item 深度学习是机器学习的一个子领域。（\quad）
+\item 感知机只能解决线性可分问题。（\quad）
+\item 卷积神经网络（CNN）常用于处理图像数据。（\quad）
+\item 循环神经网络（RNN）常用于处理序列数据。（\quad）
+\item 反向传播算法（BP）用于训练多层前馈神经网络。（\quad）
+\item 过拟合是指模型在训练集上表现很好，但在测试集上表现很差。（\quad）
+\item 监督学习需要带标签的训练数据。（\quad）
+\item 无监督学习不需要带标签的训练数据。（\quad）
+\item 强化学习是通过与环境交互并获得奖励来学习策略。（\quad）
+\item 支持向量机（SVM）通过寻找最大间隔超平面进行分类。（\quad）
+\item 决策树是一种基于树结构的分类和回归方法。（\quad）
+\item 随机森林是由多棵决策树组成的集成学习方法。（\quad）
+\item K-均值（K-Means）是一种常用的聚类算法。（\quad）
+\item 梯度下降法是训练神经网络常用的优化算法。（\quad）
+\item 激活函数引入非线性因素，使神经网络能逼近任意函数。（\quad）
+\item Dropout是一种防止神经网络过拟合的技术。（\quad）
+\item 生成对抗网络（GAN）由生成器和判别器组成。（\quad）
+\item 迁移学习利用已有的知识来解决相关领域的新问题。（\quad）
+\end{enumerate}
+
+\textbf{参考答案（61-80题）：}
+61.$\checkmark$, 62.$\times$, 63.$\checkmark$, 64.$\checkmark$, 65.$\checkmark$, 66.$\checkmark$, 67.$\checkmark$, 68.$\checkmark$, 69.$\checkmark$, 70.$\checkmark$, 
+71.$\checkmark$, 72.$\checkmark$, 73.$\checkmark$, 74.$\checkmark$, 75.$\checkmark$, 76.$\checkmark$, 77.$\checkmark$, 78.$\checkmark$, 79.$\checkmark$, 80.$\checkmark$
+
+\vspace{1em}
+\textbf{（81-100题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+% 81-100
+\item 智能机器人的智能已经达到人类智能的水平。（\quad）
+\item 人也可以作为Agent。（\quad）
+\item 自然语言处理（NLP）旨在让计算机理解和生成人类语言。（\quad）
+\item 知识图谱是一种基于图的数据结构，用于表示实体及其关系。（\quad）
+\item 联邦学习允许多方在不共享数据的情况下协同训练模型。（\quad）
+\item 图灵机是一种抽象的计算模型。（\quad）
+\item 强人工智能是指具有真正推理和解决问题能力的智能机器。（\quad）
+\item 弱人工智能是指专注于解决特定领域问题的智能系统。（\quad）
+\item 奇点是指人工智能超越人类智能的时间点。（\quad）
+\item 数据挖掘是从大量数据中提取有用模式的过程。（\quad）
+\item 大数据技术为人工智能提供了丰富的数据养料。（\quad）
+\item 云计算为人工智能提供了强大的计算能力。（\quad）
+\item 物联网通过传感器收集数据，与人工智能结合实现智能化。（\quad）
+\item 伦理问题是人工智能发展中不可忽视的重要方面。（\quad）
+\item 算法偏见可能导致人工智能系统产生歧视性结果。（\quad）
+\item 自动驾驶汽车利用计算机视觉和传感器融合技术感知环境。（\quad）
+\item 语音识别技术将语音信号转换为文本信息。（\quad）
+\item 机器翻译利用计算机将一种语言翻译成另一种语言。（\quad）
+\item 情感计算旨在赋予计算机识别和表达情感的能力。（\quad）
+\item 人工智能的发展经历了多次高潮和低谷。（\quad）
+\end{enumerate}
+
+\textbf{参考答案（81-100题）：}
+81.$\times$, 82.$\checkmark$, 83.$\checkmark$, 84.$\checkmark$, 85.$\checkmark$, 86.$\checkmark$, 87.$\checkmark$, 88.$\checkmark$, 89.$\checkmark$, 90.$\checkmark$, 
+91.$\checkmark$, 92.$\checkmark$, 93.$\checkmark$, 94.$\checkmark$, 95.$\checkmark$, 96.$\checkmark$, 97.$\checkmark$, 98.$\checkmark$, 99.$\checkmark$, 100.$\checkmark$
+
+%----------------------------------------
+\section{填空题 (700题)}
+%----------------------------------------
+
+\textbf{（1-20题）}
+\begin{enumerate}[leftmargin=2em,itemsep=1pt]
+\item 人工智能的研究途径有心理模拟、\underline{\hspace{3em}} 和行为模拟。
+\item 人工智能的四个应用性领域包括难题求解、定理证明、智能控制和 \underline{\hspace{3em}}。
+\item 人工智能的基本技术包括搜索技术、推理技术、\underline{\hspace{3em}} 和知识库技术。
+\item 谓词逻辑是一种表达能力很强的形式语言，其真值的特点和命题逻辑的 \underline{\hspace{3em}}。
+\item 谓词逻辑中，重言式(tautology)的值是 \underline{\hspace{3em}}。
+\item 设P是谓词公式，对于P的任何论域，存在P为真的情况，则称P为 \underline{\hspace{3em}} 式。
+\item 在著名的医疗专家系统MYCIN中规定，若证据A的可信度CF(A)=0，则意味着 \underline{\hspace{3em}}。
+\item 谓词公式G是不可满足的，当且仅当对所有的解释G都为 \underline{\hspace{3em}}。
+\item 谓词公式与其子句集的关系是 \underline{\hspace{3em}} 关系。
+\item 利用归结原理证明定理时，若得到的归结式为 \underline{\hspace{3em}}，则结论成立。
+\item 若$C1=P \lor Q$，$C2=\neg P \lor R$，则C1和C2的归结式$R(C1,C2)$ = \underline{\hspace{3em}}。
+\item 知识表示的方法主要有逻辑表示法、\underline{\hspace{3em}}、产生式和语义网络等。
+\item 状态空间搜索中，宽度优先搜索属于 \underline{\hspace{3em}}，A*算法属于 \underline{\hspace{3em}}。
+\item 归结方法是一种机械化的 \underline{\hspace{3em}} 向推理方法。
+\item 产生式系统包括知识库、\underline{\hspace{3em}} 和推理机。
+\item 专家系统的核心组成部分是知识库和 \underline{\hspace{3em}}。
+\item 语义网络中，ISA关系表示 \underline{\hspace{3em}} 关系，AKO关系表示 \underline{\hspace{3em}} 关系。
+\item 神经网络的学习方法主要有 \underline{\hspace{3em}}、无监督学习和强化学习。
+\item 遗传算法的三大基本操作是选择、\underline{\hspace{3em}} 和变异。
+\item 深度学习中常用的激活函数有Sigmoid、Tanh和 \underline{\hspace{3em}} 等。
+\end{enumerate}
+
+\textbf{参考答案（1-20题）：}
+1.生理模拟, 2.机器翻译, 3.知识表示, 4.不同, 5.真, 6.可满足, 7.无关, 8.假, 9.逻辑蕴含, 10.空子句, 
+11.$Q \lor R$, 12.框架, 13.盲目搜索、启发式搜索, 14.反, 15.综合数据库, 16.推理机, 17.实例、种类, 18.监督学习, 19.交叉, 20.ReLU
+
+\vspace{1em}
+\textbf{（21-40题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 卷积神经网络（CNN）中的核心层包括卷积层、\underline{\hspace{3em}} 和全连接层。
+\item 循环神经网络（RNN）主要用于处理 \underline{\hspace{3em}} 数据。
+\item 强化学习中的四要素是状态、动作、\underline{\hspace{3em}} 和策略。
+\item AlphaGo主要采用了深度学习和 \underline{\hspace{3em}} 技术。
+\item 知识图谱的基本单位是 \underline{\hspace{3em}} (实体-关系-实体)。
+\item 模糊集合的隶属度取值范围是 \underline{\hspace{3em}}。
+\item 贝叶斯公式的核心思想是根据 \underline{\hspace{3em}} 和似然度更新后验概率。
+\item 决策树构建过程中，常用的属性选择指标有信息增益和 \underline{\hspace{3em}}。
+\item 支持向量机（SVM）通过寻找最大 \underline{\hspace{3em}} 超平面来进行分类。
+\item K-Means聚类算法的目标是最小化簇内 \underline{\hspace{3em}}。
+\item 这里的“图灵测试”是由 \underline{\hspace{3em}} 提出的。
+\item 1956年，在 \underline{\hspace{3em}} 会议上，人工智能（AI）这一术语被首次提出。
+\item 符号主义学派又称为 \underline{\hspace{3em}} 或心理学派。
+\item 联结主义学派又称为 \underline{\hspace{3em}} 或生理学派。
+\item 行为主义学派又称为 \underline{\hspace{3em}} 或控制论学派。
+\item 产生式规则的前件称为 \underline{\hspace{3em}}，后件称为 \underline{\hspace{3em}}。
+\item 框架表示法中的“槽”用于描述对象的 \underline{\hspace{3em}}。
+\item 框架表示法中的“侧面”用于描述槽的 \underline{\hspace{3em}} 或属性。
+\item 脚本的一般结构包括开端、\underline{\hspace{3em}}、角色和结尾等。
+\item 本体论（Ontology）是共享概念模型的 \underline{\hspace{3em}} 形式化规范说明。
+\end{enumerate}
+
+\textbf{参考答案（21-40题）：}
+21.池化层, 22.序列, 23.奖励, 24.蒙特卡洛树搜索, 25.三元组, 26.[0, 1], 27.先验概率, 28.基尼指数, 29.间隔, 30.平方误差和, 
+31.阿兰·图灵, 32.达特茅斯, 33.逻辑主义, 34.仿生学派, 35.进化主义, 36.条件、结论, 37.属性, 38.约束, 39.情景, 40.明确
+
+\vspace{1em}
+\textbf{（41-60题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 状态空间法中，问题由初始状态、目标状态和 \underline{\hspace{3em}} 组成。
+\item 估价函数$f(n) = g(n) + h(n)$中，$g(n)$表示从初始节点到节点n的 \underline{\hspace{3em}}，$h(n)$表示从节点n到目标节点的 \underline{\hspace{3em}}。
+\item 如果一个搜索算法总能找到最优解，则称该算法具有 \underline{\hspace{3em}}。
+\item $\alpha$-$\beta$剪枝中，$\alpha$剪枝发生在 \underline{\hspace{3em}} 节点之下。
+\item $\alpha$-$\beta$剪枝中，$\beta$剪枝发生在 \underline{\hspace{3em}} 节点之下。
+\item 约束满足问题（CSP）通常由变量、值域和 \underline{\hspace{3em}} 组成。
+\item 规划系统（Planning System）旨在生成实现目标的 \underline{\hspace{3em}}。
+\item 专家系统的解释机制可以回答用户的“Why”和 \underline{\hspace{3em}} 问题。
+\item 知识获取的方式包括人工获取、半自动获取和 \underline{\hspace{3em}}。
+\item 粗糙集理论主要用于处理 \underline{\hspace{3em}} 和不完备的知识。
+\item 深度信念网络（DBN）由多个 \underline{\hspace{3em}}（RBM）堆叠而成。
+\item 生成对抗网络（GAN）的训练过程是生成器和判别器的 \underline{\hspace{3em}} 过程。
+\item 长短期记忆网络（LSTM）是为了解决RNN中的 \underline{\hspace{3em}} 问题而提出的。
+\item 词嵌入（Word Embedding）是将词映射为 \underline{\hspace{3em}} 的技术。
+\item BERT模型基于 \underline{\hspace{3em}} 架构。
+\item 联邦学习主要解决数据 \underline{\hspace{3em}} 和隐私保护问题。
+\item 自动驾驶的分级标准通常分为 \underline{\hspace{3em}} 六个级别。
+\item 机器视觉的主要任务包括图像分类、目标检测和 \underline{\hspace{3em}}。
+\item 语音合成（TTS）是将 \underline{\hspace{3em}} 转换为语音的技术。
+\item 情感分析属于自然语言处理中的 \underline{\hspace{3em}} 任务。
+\end{enumerate}
+
+\textbf{参考答案（41-60题）：}
+41.操作符, 42.实际代价、估计代价, 43.可采纳性, 44.MIN, 45.MAX, 46.约束, 47.动作序列, 48.“How”, 49.自动获取, 50.不精确, 
+51.限制波尔兹曼机, 52.博弈, 53.梯度消失, 54.稠密向量, 55.Transformer, 56.孤岛, 57.L0-L5, 58.图像分割, 59.文本, 60.文本分类
+
+\vspace{1em}
+\textbf{（61-80题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 知识发现（KDD）的核心步骤是 \underline{\hspace{3em}}。
+\item 关联规则挖掘的一个经典算法是 \underline{\hspace{3em}} 算法。
+\item 降维技术主要有主成分分析（PCA）和 \underline{\hspace{3em}}（LDA）。
+\item 欠拟合通常是因为模型复杂度 \underline{\hspace{3em}}。
+\item 正则化通过在损失函数中添加 \underline{\hspace{3em}} 来防止过拟合。
+\item 批量归一化（Batch Normalization）可以 \underline{\hspace{3em}} 神经网络的训练。
+\item 优化算法Adam结合了 \underline{\hspace{3em}} 和自适应学习率的优点。
+\item 强化学习中，Q-Learning是一种基于 \underline{\hspace{3em}} 的算法。
+\item 策略梯度（Policy Gradient）是一种基于 \underline{\hspace{3em}} 的强化学习算法。
+\item 蒙特卡洛方法通过 \underline{\hspace{3em}} 来估计数值。
+\item 遗传算法中的适应度函数用于评价个体的 \underline{\hspace{3em}}。
+\item 粒子群算法通过更新粒子的 \underline{速度} 和位置来搜索最优解。
+\item 蚁群算法通过 \underline{\hspace{3em}} 来进行个体间的间接通信。
+\item 模拟退火算法的灵感来源于固体 \underline{\hspace{3em}} 过程。
+\item 禁忌搜索使用 \underline{\hspace{3em}} 来避免重复搜索和陷入局部最优。
+\item 模糊控制系统的核心是 \underline{\hspace{3em}}。
+\item 专家系统MYCIN使用 \underline{\hspace{3em}}（CF）模型处理不确定性。
+\item 证据理论又称为 \underline{\hspace{3em}} 理论。
+\item 贝叶斯网络中，节点表示随机变量，有向边表示 \underline{\hspace{3em}}。
+\item 隐马尔可夫模型（HMM）包含两个序列：状态序列和 \underline{\hspace{3em}}。
+\end{enumerate}
+
+\textbf{参考答案（61-80题）：}
+61.数据挖掘, 62.Apriori, 63.线性判别分析, 64.过低, 65.惩罚项, 66.加速, 67.动量, 68.价值, 69.策略, 70.随机采样, 
+71.优劣, 72.速度, 73.信息素, 74.退火, 75.禁忌表, 76.模糊规则库, 77.可信度, 78.D-S, 79.条件依赖, 80.观测序列
+
+\vspace{1em}
+\textbf{（81-100题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 极大似然估计（MLE）是一种常用的 \underline{\hspace{3em}} 方法。
+\item 在逻辑回归中，常用的激活函数是 \underline{\hspace{3em}} 函数。
+\item 损失函数用于衡量模型预测值与 \underline{\hspace{3em}} 之间的差异。
+\item 均方误差（MSE）常用于 \underline{\hspace{3em}} 任务的损失函数。
+\item 交叉熵损失常用于 \underline{\hspace{3em}} 任务的损失函数。
+\item 混淆矩阵用于评价分类模型的 \underline{\hspace{3em}}。
+\item 准确率（Accuracy）是分类正确的样本数占 \underline{\hspace{3em}} 的比例。
+\item 精确率（Precision）是预测为正例且正确的样本数占 \underline{\hspace{3em}} 的比例。
+\item 召回率（Recall）是预测为正例且正确的样本数占 \underline{\hspace{3em}} 的比例。
+\item F1分数是精确率和召回率的 \underline{\hspace{3em}}。
+\item ROC曲线下的面积称为 \underline{\hspace{3em}}，用于评价分类器性能。
+\item 知识图谱构建过程包括知识抽取、知识融合和 \underline{\hspace{3em}}。
+\item 命名实体识别（NER）旨在识别文本中的 \underline{\hspace{3em}}。
+\item 关系抽取旨在识别实体之间的 \underline{语义关系}。
+\item 问答系统（QA）旨在直接回答用户的 \underline{\hspace{3em}} 提问。
+\item 推荐系统利用用户的 \underline{\hspace{3em}} 和特征进行推荐。
+\item 协同过滤是推荐系统中常用的算法，分为基于用户和基于 \underline{\hspace{3em}} 两种。
+\item 深度强化学习（DRL）结合了深度学习的感知能力和强化学习的 \underline{\hspace{3em}} 能力。
+\item 智慧城市利用信息通信技术提升城市 \underline{\hspace{3em}} 和服务水平。
+\item 工业4.0的核心是 \underline{\hspace{3em}}。
+\end{enumerate}
+
+\textbf{参考答案（81-100题）：}
+81.参数估计, 82.Sigmoid, 83.真实值, 84.回归, 85.分类, 86.性能, 87.总样本数, 88.预测为正例, 89.实际正例, 90.调和平均数, 
+91.AUC, 92.知识加工, 93.实体, 94.语义关系, 95.自然语言, 96.历史行为, 97.物品, 98.决策, 99.管理, 100.智能制造
+
+\vspace{1em}
+\textbf{（101-120题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 谓词公式 $(\forall x)(P(x) \to Q(x))$ 等价于 \underline{\hspace{3em}}。
+\item 在归结原理中，若两个子句与其归结式中的一个子句逻辑等价，则该归结式称为 \underline{\hspace{3em}}。
+\item 若子句集S中包含空子句，则S是 \underline{\hspace{3em}} 的。
+\item 设 $P(x)$ 为“x是人”，$Q(x)$ 为“x会死”，则“所有的人都会死”的谓词公式为 \underline{\hspace{3em}}。
+\item 命题逻辑是谓词逻辑的 \underline{\hspace{3em}}。
+\item 只有当谓词公式中不含 \underline{\hspace{3em}} 变量时，才能将其化为子句集。
+\item 最一般合一者（MGU）是指比其他所有合一者都更 \underline{\hspace{3em}} 的合一者。
+\item 语义网络中的 isa 链具有 \underline{\hspace{3em}} 性质。
+\item 框架系统的数据结构类似于面向对象编程中的 \underline{\hspace{3em}}。
+\item 脚本理论中的 MTRANS 表示 \underline{\hspace{3em}} 的传输。
+\item 产生式系统的控制策略分为不可逆控制策略和 \underline{\hspace{3em}} 控制策略。
+\item 专家系统的解释功能通常分为 \underline{\hspace{3em}} 解释和执行解释。
+\item 模糊集合由隶属函数描述，隶属度的范围是 \underline{\hspace{3em}}。
+\item 粗糙集理论中，上下近似集的差集称为 \underline{\hspace{3em}}。
+\item 贝叶斯网络中，一个节点的概率仅取决于它的 \underline{\hspace{3em}}。
+\item 隐马尔可夫模型（HMM）由初始状态概率分布、状态转移概率矩阵和 \underline{\hspace{3em}} 矩阵确定。
+\item 决策树的 ID3 算法使用 \underline{\hspace{3em}} 作为属性选择标准。
+\item 决策树的 C4.5 算法使用 \underline{\hspace{3em}} 作为属性选择标准。
+\item 决策树的 CART 算法使用 \underline{\hspace{3em}} 作为属性选择标准。
+\item 线性回归模型旨在寻找一条直线，使得预测值与真实值之间的 \underline{\hspace{3em}} 最小。
+\end{enumerate}
+
+\textbf{参考答案（101-120题）：}
+101.$\neg (\exists x)(P(x) \land \neg Q(x))$, 102.重言式, 103.不可满足, 104.$(\forall x)(P(x) \to Q(x))$, 105.子集, 106.自由, 107.一般/通用, 108.传递, 109.类/对象, 110.信息, 111.回溯, 112.预演/为何, 113.[0, 1], 114.边界域, 115.父节点, 116.观测/发射概率, 117.信息增益, 118.信息增益率, 119.基尼指数, 120.均方误差
+
+\vspace{1em}
+\textbf{（121-140题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 逻辑回归虽然名字里有“回归”，但它实际上是一种 \underline{\hspace{3em}} 算法。
+\item 支持向量机（SVM）中的核技巧可以将数据映射到 \underline{\hspace{3em}} 空间。
+\item 朴素贝叶斯分类器假设特征之间是 \underline{\hspace{3em}} 的。
+\item KNN算法中的K值越小，模型越容易 \underline{\hspace{3em}}。
+\item K-Means算法需要预先指定 \underline{\hspace{3em}} 的数量。
+\item 层次聚类可以分为凝聚的和 \underline{\hspace{3em}} 的两种。
+\item DBSCAN是一种基于 \underline{\hspace{3em}} 的聚类算法。
+\item 神经网络中的每个神经元接收输入，进行加权求和，然后通过 \underline{\hspace{3em}} 输出。
+\item 感知机无法解决 \underline{\hspace{3em}} 问题。
+\item 多层前馈神经网络通常使用 \underline{\hspace{3em}} 算法进行训练。
+\item 梯度下降法中，动量（Momentum）项的作用是加速收敛并减少 \underline{\hspace{3em}}。
+\item 学习率衰减是指随着训练的进行，逐渐 \underline{\hspace{3em}} 学习率。
+\item 卷积神经网络利用了图像的局部相关性和 \underline{\hspace{3em}} 共享。
+\item 卷积操作的两个关键参数是步长（Stride）和 \underline{\hspace{3em}}（Padding）。
+\item 池化层的主要类型有最大池化和 \underline{\hspace{3em}} 池化。
+\item 1x1 卷积常用于改变通道数和增加 \underline{\hspace{3em}} 性。
+\item 循环神经网络（RNN）通过 \underline{\hspace{3em}} 状态传递历史信息。
+\item LSTM 的三个门分别是输入门、遗忘门和 \underline{\hspace{3em}} 门。
+\item GRU 是 LSTM 的一种变体，它将遗忘门和输入门合并为 \underline{\hspace{3em}} 门。
+\item 双向 RNN 由两个方向相反的 RNN 组成，可以同时利用 \underline{\hspace{3em}} 和后文信息。
+\end{enumerate}
+
+\textbf{参考答案（121-140题）：}
+121.分类, 122.高维, 123.相互独立, 124.过拟合, 125.簇/聚类, 126.分裂, 127.密度, 128.激活函数, 129.异或/线性不可分, 130.反向传播(BP), 131.震荡, 132.减小, 133.权值, 134.填充, 135.平均, 136.非线, 137.隐藏, 138.输出, 139.更新, 140.前文
+
+\vspace{1em}
+\textbf{（141-160题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item Seq2Seq 模型通常由 \underline{\hspace{3em}} 和解码器组成。
+\item 注意力机制（Attention）允许模型在生成输出时聚焦于输入的 \underline{\hspace{3em}} 部分。
+\item Transformer 模型完全基于 \underline{\hspace{3em}} 机制，抛弃了循环和卷积。
+\item BERT 代表 Bidirectional Encoder Representations from \underline{\hspace{3em}}。
+\item GPT 代表 Generative Pre-trained \underline{\hspace{3em}}。
+\item 词向量的 Word2Vec 模型有两种训练方式：CBOW 和 \underline{\hspace{3em}}。
+\item 强化学习的目标是寻找一个最优 \underline{\hspace{3em}}，使得累积回报最大。
+\item 探索（Exploration）与利用（Exploitation）是强化学习中的一对 \underline{\hspace{3em}}。
+\item $\epsilon$-greedy 策略在以概率 $\epsilon$ 选择 \underline{\hspace{3em}} 动作。
+\item 价值迭代和策略迭代是求解 \underline{\hspace{3em}}（MDP）的两种动态规划方法。
+\item 深度 Q 网络（DQN）使用 \underline{\hspace{3em}} 回放来打破数据相关性。
+\item Actor-Critic 算法中，Actor 负责输出动作，Critic 负责 \underline{\hspace{3em}}。
+\item 生成对抗网络（GAN）的损失函数通常是 \underline{\hspace{3em}} 极大极小博弈形式。
+\item 变分自编码器（VAE）包含编码器和 \underline{\hspace{3em}}。
+\item 风格迁移（Style Transfer）旨在将一张图的 \underline{\hspace{3em}} 应用到另一张图的内容上。
+\item 目标检测算法 R-CNN 系列属于 \underline{\hspace{3em}} 阶段（Two-stage）检测器。
+\item YOLO 和 SSD 属于 \underline{\hspace{3em}} 阶段（One-stage）检测器。
+\item 语义分割是对图像中的 \underline{\hspace{3em}} 像素进行分类。
+\item 实例分割不仅要区分物体类别，还要区分 \underline{\hspace{3em}}。
+\item 计算机视觉中的 IoU 代表 \underline{\hspace{3em}}。
+\end{enumerate}
+
+\textbf{参考答案（141-160题）：}
+141.编码器, 142.特定, 143.注意力, 144.Transformers, 145.Transformer, 146.Skip-gram, 147.策略, 148.矛盾, 149.随机, 150.马尔可夫决策过程, 151.经验, 152.评价/打分, 153.零和, 154.解码器, 155.风格, 156.两, 157.单, 158.每个, 159.不同个体, 160.交并比
+
+\vspace{1em}
+\textbf{（161-180题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 遗传算法的收敛性主要取决于 \underline{\hspace{3em}} 策略。
+\item 模拟退火算法在温度较高时，接受劣解的概率较 \underline{\hspace{3em}}。
+\item 蚁群算法中的信息素会随着时间 \underline{\hspace{3em}}。
+\item 粒子群算法中，参数 $w$ 称为 \underline{\hspace{3em}} 权重。
+\item A* 算法中，若 $f(n)=g(n)$，则退化为 \underline{\hspace{3em}} 搜索。
+\item 知识图谱通常使用 \underline{\hspace{3em}} 数据库存储，如Neo4j。
+\item 知识推理的两种基本模式是演绎推理和 \underline{\hspace{3em}} 推理。
+\item 归纳推理是从 \underline{\hspace{3em}} 到一般的推理。
+\item 溯因推理是从 \underline{\hspace{3em}} 推出原因的推理。
+\item 缺省推理允许在 \underline{\hspace{3em}} 不足的情况下做出假设性结论。
+\item 模态逻辑引入了“必然”和“\underline{\hspace{3em}}”算子。
+\item 模糊逻辑中，运算“与”通常取 \underline{\hspace{3em}}（Min）操作。
+\item 模糊逻辑中，运算“或”通常取 \underline{\hspace{3em}}（Max）操作。
+\item 粗糙集中，不可分辨关系是一种 \underline{\hspace{3em}} 关系。
+\item 联邦学习的架构主要分为横向联邦、纵向联邦和 \underline{\hspace{3em}} 联邦。
+\item 差分隐私通过向数据添加 \underline{\hspace{3em}} 来保护隐私。
+\item 同态加密允许在 \underline{\hspace{3em}} 数据上直接进行计算。
+\item 智慧医疗中，CDSS 代表临床 \underline{\hspace{3em}} 支持系统。
+\item 智能制造中，预测性维护利用 AI 预测设备 \underline{\hspace{3em}}。
+\item 智慧金融中，风控模型主要用于识别欺诈和评估 \underline{\hspace{3em}}。
+\end{enumerate}
+
+\textbf{参考答案（161-180题）：}
+161.精英保留/选择, 162.大, 163.挥发, 164.惯性, 165.代价一致/Dijkstra, 166.图, 167.归纳, 168.个别/特殊, 169.结果, 170.证据/信息, 171.可能, 172.取小, 173.取大, 174.等价, 175.联邦迁移, 176.噪声, 177.密文/加密, 178.决策, 179.故障, 180.信用
+
+\vspace{1em}
+\textbf{（181-200题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 机器学习的三个基本要素是模型、策略和 \underline{\hspace{3em}}。
+\item 只有有限个样本的统计学习称为 \underline{\hspace{3em}} 样本学习。
+\item 交叉验证（Cross Validation）常用于 \underline{\hspace{3em}} 选择和模型评估。
+\item ROC 曲线的横轴是 \underline{\hspace{3em}} 率（FPR）。
+\item ROC 曲线的纵轴是 \underline{\hspace{3em}} 率（TPR）。
+\item 偏差-方差分解中，偏差度量了算法的 \underline{\hspace{3em}} 能力。
+\item 偏差-方差分解中，方差度量了算法的 \underline{\hspace{3em}} 敏感性。
+\item 集成学习中，Bagging 主要降低 \underline{\hspace{3em}}。
+\item 集成学习中，Boosting 主要降低 \underline{\hspace{3em}}。
+\item 随机森林的基学习器是 \underline{\hspace{3em}} 树。
+\item AdaBoost 算法在每一轮迭代中增加 \underline{\hspace{3em}} 样本的权重。
+\item GBDT（梯度提升决策树）利用 \underline{\hspace{3em}} 的负梯度作为残差的近似值。
+\item LSTM 中的 $c_t$ 代表 \underline{\hspace{3em}} 状态。
+\item Word2Vec 中的 Skip-gram 模型是用 \underline{\hspace{3em}} 预测上下文。
+\item GloVe 是一种基于 \underline{\hspace{3em}} 矩阵分解的词向量方法。
+\item ELMo 使用 \underline{\hspace{3em}} 这里的词向量。
+\item 机器翻译评价指标 BLEU 主要计算 N-gram 的 \underline{\hspace{3em}} 度。
+\item 图像分类大赛 ImageNet 主要使用的评价指标是 Top-1 和 \underline{\hspace{3em}} 错误率。
+\item 人脸识别中常用的损失函数有 Triplet Loss 和 \underline{\hspace{3em}} Loss (如ArcFace)。
+\item 风格迁移通常使用预训练的 \underline{\hspace{3em}} 网络提取特征。
+\end{enumerate}
+
+\textbf{参考答案（181-200题）：}
+181.算法, 182.小, 183.模型/超参数, 184.假阳性, 185.真阳性, 186.拟合/期望, 187.数据扰动/方差, 188.方差, 189.偏差, 190.决策, 191.被错分, 192.损失函数, 193.细胞/记忆, 194.中心词, 195.共现, 196.动态/上下文相关, 197.重合/匹配, 198.Top-5, 199.Center/Sphere/CosFace, 200.VGG/CNN
+
+\vspace{1em}
+\textbf{（201-220题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 深度学习框架 TensorFlow 由 \underline{\hspace{3em}} 公司开发。
+\item 深度学习框架 PyTorch 由 \underline{\hspace{3em}} 公司开发。
+\item 在 Python 中，NumPy 是用于 \underline{\hspace{3em}} 计算的基础库。
+\item Pandas 库主要用于数据 \underline{\hspace{3em}} 和分析。
+\item Scikit-learn 是最流行的 \underline{\hspace{3em}} 学习库。
+\item Matplotlib 和 Seaborn 是常用的 \underline{\hspace{3em}} 库。
+\item Jupyter Notebook 是一种交互式 \underline{\hspace{3em}} 环境。
+\item 显卡（GPU）相比 CPU 更适合进行 \underline{\hspace{3em}} 计算。
+\item CUDA 是 NVIDIA 推出的 \underline{\hspace{3em}} 计算架构。
+\item 所谓“端到端”学习是指直接从 \underline{\hspace{3em}} 到输出的学习。
+\item 语义分割网络 U-Net 的结构特点是具有对称的 \underline{\hspace{3em}} 形路径。
+\item 残差网络 ResNet 中的 Block 称为 \underline{\hspace{3em}} Block。
+\item Attention Is All You Need 论文提出了 \underline{\hspace{3em}} 模型。
+\item Mask R-CNN 在 Faster R-CNN 基础上增加了 \underline{\hspace{3em}} 分支。
+\item AlphaGo 使用蒙特卡洛树搜索（MCTS）结合 \underline{\hspace{3em}} 网络和 \underline{\hspace{3em}} 网络。
+\item 强化学习中的 Reward 通常是 \underline{\hspace{3em}} 反馈的。
+\item 稀疏奖励（Sparse Reward）是指 Agent 很难获得 \underline{\hspace{3em}} 的奖励。
+\item 模仿学习（Imitation Learning）是指从 \underline{\hspace{3em}} 数据中学习。
+\item 逆强化学习（Inverse RL）是根据专家行为推导出 \underline{\hspace{3em}} 函数。
+\item 元学习（Meta Learning）通常被称为“学会 \underline{\hspace{3em}}”。
+\end{enumerate}
+
+\textbf{参考答案（201-220题）：}
+201.Google, 202.Facebook/Meta, 203.科学/数值, 204.处理, 205.机器, 206.可视化, 207.编程, 208.并行/矩阵, 209.并行, 210.原始输入, 211.U, 212.Residual/残差, 213.Transformer, 214.Mask/分割, 215.策略, 价值, 216.延迟, 217.正向/有效, 218.专家/演示, 219.奖励, 220.学习
+
+\vspace{1em}
+\textbf{（221-240题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 伦理原则中的“透明性”要求 AI 系统的决策过程是 \underline{\hspace{3em}} 的。
+\item “公平性”旨在消除 AI 系统中的 \underline{\hspace{3em}}。
+\item “问责制”要求明确 AI 系统造成损害时的 \underline{\hspace{3em}} 主体。
+\item 深度伪造（Deepfakes）利用 \underline{\hspace{3em}} 生成虚假的音视频。
+\item 对抗样本（Adversarial Examples）是对原始输入添加微小 \underline{\hspace{3em}} 导致模型出错的样本。
+\item 鲁棒性（Robustness）是指 AI 系统抵抗 \underline{\hspace{3em}} 的能力。
+\item 可解释 AI（XAI）旨在让人类 \underline{\hspace{3em}} AI 的内部工作机制。
+\item 隐私计算中的“多方安全计算”简写为 \underline{\hspace{3em}}。
+\item 欧盟发布的《人工智能法案》将 AI 系统分为 \underline{\hspace{3em}} 个风险等级。
+\item 奇点（Singularity）是指机器智能 \underline{\hspace{3em}} 人类智能的时刻。
+\item 脑机接口（BCI）建立了人脑与 \underline{\hspace{3em}} 之间的直接连接。
+\item 类脑计算旨在模仿人脑的 \underline{\hspace{3em}} 和功能。
+\item 神经形态芯片采用 \underline{\hspace{3em}} 形式处理信息。
+\item 量子计算利用量子 \underline{\hspace{3em}} 和量子纠缠进行计算。
+\item 边缘计算将计算能力下沉到 \underline{\hspace{3em}} 端。
+\item AI + 5G 的结合将实现 \underline{\hspace{3em}} 延迟的智能互联。
+\item 数字孪生（Digital Twin）是物理实体的 \underline{\hspace{3em}} 数字化映射。
+\item 元宇宙（Metaverse）是虚拟与 \underline{\hspace{3em}} 高度融合的空间。
+\item Chatbot 的中文名称是 \underline{\hspace{3em}}。
+\item 搜索引擎的核心技术包括爬虫、索引和 \underline{\hspace{3em}}。
+\end{enumerate}
+
+\textbf{参考答案（221-240题）：}
+221.可解释/可见, 222.偏见/歧视, 223.责任, 224.GAN/深度学习, 225.扰动/噪声, 226.干扰/攻击, 227.理解/信任, 228.MPC, 229.4, 230.超越, 231.外部设备/计算机, 232.结构, 233.脉冲/Spiking, 234.叠加, 235.设备/数据源, 236.低, 237.虚拟/实时, 238.现实, 239.聊天机器人, 240.排序/检索
+
+\vspace{1em}
+\textbf{（241-260题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 谓词逻辑中，量词 $\forall$ 称为 \underline{\hspace{3em}} 量词。
+\item 谓词逻辑中，量词 $\exists$ 称为 \underline{\hspace{3em}} 量词。
+\item 谓词公式 $P \land Q$ 为真，当且仅当 $P$ 和 $Q$ 都为 \underline{\hspace{3em}}。
+\item 谓词公式 $P \lor Q$ 为假，当且仅当 $P$ 和 $Q$ 都为 \underline{\hspace{3em}}。
+\item 蕴含式 $P \to Q$ 等价于 \underline{\hspace{3em}}。
+\item 若 $P \to Q$ 为真且 $P$ 为真，则 $Q$ 为 \underline{\hspace{3em}}。（假言推理）
+\item 若 $P \to Q$ 为真且 $\neg Q$ 为真，则 $\neg P$ 为 \underline{\hspace{3em}}。（拒取式）
+\item 任何命题公式都可以化为等价的 \underline{\hspace{3em}} 范式（CNF）。
+\item 任何命题公式都可以化为等价的 \underline{\hspace{3em}} 范式（DNF）。
+\item 归结原理是基于 \underline{\hspace{3em}} 证明的。
+\item 在谓词逻辑归结中，必须先进行 \underline{\hspace{3em}} 以消除变量名冲突。
+\item 在置换 $\sigma = \{f(y)/x, z/y\}$ 中，x 被替换为 \underline{\hspace{3em}}。
+\item 设有子句 $C1=\{P(x), Q(x)\}$，$C2=\{\neg P(a), R(x)\}$，其归结式为 \underline{\hspace{3em}}。
+\item 霍恩子句（Horn Clause）至多包含 \underline{\hspace{3em}} 个正文字。
+\item Prolog 语言是基于 \underline{\hspace{3em}} 逻辑的编程语言。
+\item 知识图谱中的 RDF 三元组由主体、谓词和 \underline{\hspace{3em}} 组成。
+\item OWL 是一种 Web \underline{\hspace{3em}} 语言。
+\item 语义网栈的底层是 \underline{\hspace{3em}} 和 URI。
+\item 知识图谱补全旨在预测缺失的 \underline{\hspace{3em}}。
+\item 知识图谱的推理可以发现隐含的 \underline{\hspace{3em}}。
+\end{enumerate}
+
+\textbf{参考答案（241-260题）：}
+241.全称, 242.存在, 243.真, 244.假, 245.$\neg P \lor Q$, 246.真, 247.真, 248.合取, 249.析取, 250.反证法, 251.变元标准化/改名, 252.f(y), 253.$\{\neg P(a), Q(a), R(x)\}$ [需换名合一], 254.1, 255.一阶谓词/霍恩, 256.客体/宾语, 257.本体, 258.XML/Unicode, 259.关系/实体, 260.事实/知识
+
+\vspace{1em}
+\textbf{（261-280题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 搜索算法的完备性是指如果存在解，算法是否能 \underline{\hspace{3em}} 找到。
+\item 搜索算法的最优性是指算法找到的解是否是 \underline{\hspace{3em}} 最优的。
+\item 广度优先搜索的时间复杂度是 \underline{\hspace{3em}} 级的。
+\item 深度优先搜索的空间复杂度是 \underline{\hspace{3em}} 级的。
+\item 迭代加深搜索（IDS）结合了BFS的 \underline{\hspace{3em}} 和DFS的 \underline{\hspace{3em}}。
+\item 一致代价搜索（UCS）总是扩展 \underline{\hspace{3em}} 最小的节点。
+\item 贪婪最佳优先搜索（Greedy BFS）只利用 \underline{\hspace{3em}} 函数来选择节点。
+\item 当 $h(n)$ 是 \underline{\hspace{3em}} 的时，A* 算法是完备且最优的。
+\item 在图搜索中，为保证最优性，启发函数 $h(n)$ 必须是 \underline{\hspace{3em}} 的（Consistency）。
+\item 爬山法的主要缺点是容易陷入 \underline{\hspace{3em}} 最优解。
+\item 局部束搜索（Local Beam Search）每一步保留 \underline{\hspace{3em}} 个最优状态。
+\item 遗传算法中的种群是指 \underline{\hspace{3em}} 的集合。
+\item 遗传算法中的编码是将 \underline{\hspace{3em}} 空间映射到基因空间。
+\item 轮盘赌选择策略中，适应度越高的个体被选中的概率 \underline{\hspace{3em}}。
+\item 交叉操作体现了 \underline{\hspace{3em}} 交换的思想。
+\item 变异操作模仿生物基因的 \underline{\hspace{3em}}。
+\item 粒子群算法中的 $pbest$ 表示 \underline{\hspace{3em}} 历史最优位置。
+\item 粒子群算法中的 $gbest$ 表示 \underline{\hspace{3em}} 历史最优位置。
+\item 蚁群算法中的 $\rho$ 表示信息素的 \underline{\hspace{3em}} 系数。
+\item 蚁群算法中，启发因子 $\eta$ 通常设定为距离的 \underline{\hspace{3em}}。
+\end{enumerate}
+
+\textbf{参考答案（261-280题）：}
+261.保证/一定, 262.代价/全局, 263.指数, 264.线性, 265.完备性/最优性, 空间低, 266.路径代价/g(n), 267.启发/h(n), 268.可采纳/Admissible, 269.一致/单调, 270.局部, 271.k, 272.个体/解, 273.解, 274.越大, 275.信息, 276.突变, 277.个体, 278.群体/全局, 279.挥发, 280.倒数
+
+\vspace{1em}
+\textbf{（281-300题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 博弈中，零和意味着一方的收益等于另一方的 \underline{\hspace{3em}}。
+\item 极大极小算法假设对手总是采取 \underline{\hspace{3em}} 策略。
+\item $\alpha-\beta$ 剪枝中，$\alpha$ 值是 MAX 节点已发现的 \underline{\hspace{3em}}。
+\item $\alpha-\beta$ 剪枝中，$\beta$ 值是 MIN 节点已发现的 \underline{\hspace{3em}}。
+\item 蒙特卡洛树搜索（MCTS）的四个步骤是选择、扩展、\underline{\hspace{3em}} 和回溯。
+\item MCTS 中的 UCB 公式用于平衡探索和 \underline{\hspace{3em}}。
+\item 纳什均衡是指在多人博弈中，每个博弈者都选定策略后，没有任何人可以通过 \underline{\hspace{3em}} 改变策略而获益。
+\item 囚徒困境是一个经典的 \underline{\hspace{3em}} 和博弈模型。
+\item 专家系统的推理机通常包含调度器和 \underline{\hspace{3em}} 器。
+\item 产生式系统的规则库存储的是 \underline{\hspace{3em}} 性知识。
+\item Rete 算法通过共享 \underline{\hspace{3em}} 来加速模式匹配。
+\item 确定性因子（CF）模型中，CF 的取值范围是 \underline{\hspace{3em}}。
+\item CF 模型中，CF > 0 表示证据 \underline{\hspace{3em}} 假设。
+\item CF 模型中，CF < 0 表示证据 \underline{\hspace{3em}} 假设。
+\item 证据理论中，识别框架 $\Theta$ 必须是 \underline{\hspace{3em}} 的元素集合。
+\item 证据理论中，质量函数 $m$ 之和等于 \underline{\hspace{3em}}。
+\item 模糊控制器的输入通常需要经过 \underline{\hspace{3em}} 化处理。
+\item 模糊控制器的输出通常需要经过 \underline{\hspace{3em}} 化处理。
+\item 粗糙集中的正域是指包含于目标集合的 \underline{\hspace{3em}} 近似集。
+\item 粗糙集中的属性约简是指在保持分类能力不变的情况下删除 \underline{\hspace{3em}} 属性。
+\end{enumerate}
+
+\textbf{参考答案（281-300题）：}
+281.损失, 282.最优/最坏, 283.最好值/下界, 284.最坏值/上界, 285.模拟, 286.利用, 287.单方面, 288.非零和, 289.解释, 290.过程/规则, 291.节点/网络结构, 292.[-1, 1], 293.支持, 294.反对, 295.互斥, 296.1, 297.模糊, 298.解模糊/清晰, 299.下, 300.冗余
+
+\vspace{1em}
+\textbf{（301-320题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 感知机收敛定理指出，如果数据集是 \underline{\hspace{3em}} 的，感知机算法一定能收敛。
+\item 在神经网络中，Epoch 表示所有训练样本被 \underline{\hspace{3em}} 了一次。
+\item Batch Size 是指一次参数更新所使用的 \underline{\hspace{3em}} 数量。
+\item 欠拟合通常发生在模型 \underline{\hspace{3em}} 足够捕捉数据规律时。
+\item 早停法（Early Stopping）是一种通过监控 \underline{\hspace{3em}} 误差来防止过拟合的技术。
+\item L1 正则化倾向于产生 \underline{\hspace{3em}} 权值矩阵。
+\item L2 正则化倾向于产生 \underline{\hspace{3em}} 权值矩阵。
+\item Dropout 在训练过程中以一定概率 \underline{\hspace{3em}} 神经元。
+\item Softmax 函数将输出转换为 \underline{\hspace{3em}} 分布。
+\item 交叉熵损失函数通常用于衡量两个 \underline{\hspace{3em}} 分布之间的差异。
+\item 梯度消失问题是指梯度在反向传播过程中指数级 \underline{\hspace{3em}}。
+\item 梯度爆炸问题可以通过 \underline{\hspace{3em}} 截断（Gradient Clipping）来缓解。
+\item ResNet 中的跳跃连接（Skip Connection）使得梯度可以直接 \underline{\hspace{3em}} 到浅层。
+\item CNN 中的权值共享大大减少了 \underline{\hspace{3em}} 的数量。
+\item 全连接层通常位于 CNN 的 \underline{\hspace{3em}} 部。
+\item 1D 卷积通常用于处理 \underline{\hspace{3em}} 数据。
+\item 3D 卷积通常用于处理 \underline{\hspace{3em}} 数据或体素数据。
+\item 自编码器（Autoencoder）是一种 \underline{\hspace{3em}} 学习算法。
+\item 降噪自编码器通过向输入添加 \underline{\hspace{3em}} 来学习鲁棒特征。
+\item 稀疏自编码器通过限制 \underline{\hspace{3em}} 神经元的激活来提取特征。
+\end{enumerate}
+
+\textbf{参考答案（301-320题）：}
+301.线性可分, 302.训练/遍历, 303.样本, 304.复杂度不, 305.验证集, 306.稀疏, 307.平滑/小值, 308.丢弃/失活, 309.概率, 310.概率, 311.衰减/减小, 312.梯度, 313.传播/流动, 314.参数, 315.尾/后, 316.序列/文本, 317.视频, 318.无监督, 319.噪声, 320.隐藏层
+
+\vspace{1em}
+\textbf{（321-340题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 自然语言处理中，分词是将连续文本切分为 \underline{\hspace{3em}} 的过程。
+\item 停用词（Stop Words）是指在文本处理中通常被 \underline{\hspace{3em}} 的高频无意义词。
+\item N-gram 模型假设当前词出现的概率只与前 \underline{\hspace{3em}} 个词有关。
+\item 词袋模型（Bag of Words）忽略了词的 \underline{\hspace{3em}} 信息。
+\item TF-IDF 是一种用于衡量词在文档中 \underline{\hspace{3em}} 程度的统计方法。
+\item 命名实体识别（NER）通常被视为一种 \underline{\hspace{3em}} 标注任务。
+\item 句法分析旨在确定句子的 \underline{\hspace{3em}} 结构。
+\item 机器翻译中，源语言是输入，\underline{\hspace{3em}} 语言是输出。
+\item 图像分割将图像划分为若干个具有 \underline{\hspace{3em}} 性质的区域。
+\item 阈值分割是一种基于 \underline{\hspace{3em}} 值的图像分割方法。
+\item 边缘检测旨在标识图像中 \underline{\hspace{3em}} 发生剧烈变化的点。
+\item 霍夫变换（Hough Transform）常用于检测图像中的 \underline{\hspace{3em}} 和圆等几何形状。
+\item SIFT 是一种具有尺度不变性的 \underline{\hspace{3em}} 描述子。
+\item 光流法（Optical Flow）用于估计图像序列中像素的 \underline{\hspace{3em}}。
+\item 主成分分析（PCA）是一种 \underline{\hspace{3em}} 降维方法。
+\item 线性判别分析（LDA）是一种 \underline{\hspace{3em}} 降维方法。
+\item 特征选择旨在从原始特征中选择出 \underline{\hspace{3em}} 的特征子集。
+\item 混淆矩阵的对角线元素表示 \underline{\hspace{3em}} 分类的样本数。
+\item ROC 曲线越靠近 \underline{\hspace{3em}} 角，模型性能越好。
+\item AUC 是 ROC 曲线下的 \underline{\hspace{3em}}。
+\end{enumerate}
+
+\textbf{参考答案（321-340题）：}
+321.词/Token, 322.过滤/删除, 323.N-1, 324.顺序/位置, 325.重要, 326.序列, 327.语法/树, 328.目标, 329.相似, 330.灰度/像素, 331.亮度/灰度, 332.直线, 333.局部特征, 334.运动/速度, 335.无监督/线性, 336.监督, 337.最有效/相关, 338.正确, 339.左上, 340.面积
+
+\vspace{1em}
+\textbf{（341-360题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 机器人的三大核心组件是传感器、控制器和 \underline{\hspace{3em}}。
+\item 自由度（DOF）是指机器人能够独立运动的 \underline{\hspace{3em}} 数。
+\item 被动传感器需要外部 \underline{\hspace{3em}} 源才能工作（如摄像头）。
+\item 主动传感器自己发射能量并检测 \underline{\hspace{3em}}（如激光雷达）。
+\item 路径规划旨在寻找从起点到终点的 \underline{\hspace{3em}} 路径。
+\item 轨迹规划不仅考虑路径，还考虑 \underline{\hspace{3em}} 约束。
+\item 运动学正问题是已知 \underline{\hspace{3em}} 求末端执行器位置。
+\item 运动学逆问题是已知 \underline{\hspace{3em}} 求关节角度。
+\item 构型空间（C-Space）是机器人所有可能 \underline{\hspace{3em}} 的集合。
+\item 势场法路径规划假设目标点产生 \underline{\hspace{3em}} 力。
+\item 势场法路径规划假设障碍物产生 \underline{\hspace{3em}} 力。
+\item 移动机器人的定位问题是指确定其在 \underline{\hspace{3em}} 中的位置和姿态。
+\item 卡尔曼滤波（Kalman Filter）是一种最优 \underline{\hspace{3em}} 估计算法。
+\item 粒子滤波（Particle Filter）使用一组 \underline{\hspace{3em}} 来表示概率分布。
+\item SLAM 中，回环检测主要用于消除 \underline{\hspace{3em}} 误差。
+\item 机器人操作（Manipulation）通常涉及与物体的 \underline{\hspace{3em}} 接触。
+\item 软体机器人通常由 \underline{\hspace{3em}} 材料制成。
+\item 群体机器人由大量 \underline{\hspace{3em}} 的机器人组成。
+\item 协作机器人（Cobot）设计用于与人类 \underline{\hspace{3em}} 工作。
+\item 具身智能（Embodied AI）强调智能体必须有 \underline{\hspace{3em}} 才能与环境交互。
+\end{enumerate}
+
+\textbf{参考答案（341-360题）：}
+341.执行器, 342.关节/轴, 343.能源/光, 344.反射, 345.无碰撞, 346.时间/速度, 347.关节变量, 348.末端位置, 349.位姿/配置, 350.引, 351.斥, 352.地图/环境, 353.状态, 354.粒子/样本, 355.累积, 356.物理, 357.柔性, 358.简单, 359.协同/并肩, 360.身体
+
+\vspace{1em}
+\textbf{（361-380题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 阿西莫夫提出了机器人 \underline{\hspace{3em}} 定律。
+\item 第一定律：机器人不得伤害 \underline{\hspace{3em}}，或因不作为而使 \underline{\hspace{3em}} 受到伤害。
+\item 算法歧视通常来源于训练数据的 \underline{\hspace{3em}}。
+\item 数据毒化攻击是通过 \underline{\hspace{3em}} 训练数据来破坏模型。
+\item 模型窃取攻击旨在复制或重建 \underline{\hspace{3em}} 模型。
+\item 差分隐私中的 $\epsilon$ 越小，隐私保护程度越 \underline{\hspace{3em}}。
+\item 联邦学习中的梯度更新需要经过 \underline{\hspace{3em}} 处理以保护隐私。
+\item 可解释性方法 SHAP 基于 \underline{\hspace{3em}} 值理论。
+\item 深度伪造检测旨在识别 \underline{\hspace{3em}} 生成的内容。
+\item 通用数据保护条例（GDPR）是 \underline{\hspace{3em}} 颁布的隐私法规。
+\item 人机回环（Human-in-the-loop）是指在 AI 过程中引入 \underline{\hspace{3em}} 干预。
+\item 增强智能（Augmented Intelligence）旨在 \underline{\hspace{3em}} 而非替代人类智能。
+\item 弱人工智能只能在 \underline{\hspace{3em}} 领域展现智能。
+\item 强人工智能具有 \underline{\hspace{3em}} 和自我意识。
+\item 中文屋思想实验旨在反驳 \underline{\hspace{3em}} 人工智能的观点。
+\item 符号着地问题（Symbol Grounding）是指符号如何获得 \underline{\hspace{3em}} 意义。
+\item 摩尔定律预言芯片性能每 \underline{\hspace{3em}} 个月翻一番。
+\item 黄氏定律（Huang's Law）描述了 \underline{\hspace{3em}} 性能的指数增长。
+\item 神经符号 AI 旨在结合 \underline{\hspace{3em}} 和符号推理的优势。
+\item 绿色 AI 关注 AI 模型的 \underline{\hspace{3em}} 消耗和环境影响。
+\end{enumerate}
+
+\textbf{参考答案（361-380题）：}
+361.三, 362.人类, 人类, 363.偏差, 364.污染/修改, 365.目标/受害者, 366.高, 367.加密/聚合, 368.沙普利(Shapley), 369.AI/生成模型, 370.欧盟, 371.人类, 372.增强/辅助, 373.特定, 374.自主性/通用性, 375.强, 376.现实/语义, 377.18, 378.GPU/AI芯片, 379.神经网络/连接主义, 380.能源/碳
+
+\vspace{1em}
+\textbf{（381-400题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 提示工程（Prompt Engineering）是指设计 \underline{\hspace{3em}} 以引导大模型生成期望输出。
+\item 思维链（Chain of Thought）提示能显著提高大模型的 \underline{\hspace{3em}} 能力。
+\item 大模型的幻觉（Hallucination）是指生成 \underline{\hspace{3em}} 或不符合事实的内容。
+\item 检索增强生成（RAG）结合了检索系统和 \underline{\hspace{3em}} 模型。
+\item 微调（Fine-tuning）是指在 \underline{\hspace{3em}} 模型基础上进行特定任务训练。
+\item 预训练（Pre-training）通常使用 \underline{\hspace{3em}} 学习目标，如掩码语言模型。
+\item 参数高效微调（PEFT）旨在只更新 \underline{\hspace{3em}} 参数。
+\item LoRA（Low-Rank Adaptation）通过注入 \underline{\hspace{3em}} 矩阵来微调模型。
+\item 多模态学习（Multimodal Learning）旨在处理 \underline{\hspace{3em}} 种模态的数据。
+\item CLIP 模型通过 \underline{\hspace{3em}} 学习将图像和文本对齐。
+\item 扩散模型（Diffusion Model）通过逐步去 \underline{\hspace{3em}} 来生成图像。
+\item Stable Diffusion 是一种基于 \underline{\hspace{3em}} 空间的扩散模型。
+\item NeRF（神经辐射场）用于 \underline{\hspace{3em}} 重建和视图合成。
+\item 图神经网络（GNN）专门用于处理 \underline{\hspace{3em}} 结构数据。
+\item 图卷积网络（GCN）将 \underline{\hspace{3em}} 操作推广到了图数据上。
+\item 对比学习（Contrastive Learning）通过拉近 \underline{\hspace{3em}} 样本和推远负样本来学习特征。
+\item SimCLR 是一种常用的 \underline{\hspace{3em}} 学习框架。
+\item 知识蒸馏（Knowledge Distillation）将大模型知识转移到 \underline{\hspace{3em}} 模型。
+\item 联邦学习中的客户端漂移（Client Drift）是由数据 \underline{\hspace{3em}} 分布引起的。
+\item 灾难性遗忘（Catastrophic Forgetting）是指神经网络在学习新任务时 \underline{\hspace{3em}} 旧任务知识。
+\end{enumerate}
+
+\textbf{参考答案（381-400题）：}
+381.输入提示/Prompt, 382.推理/逻辑, 383.虚假, 384.生成, 385.预训练, 386.自监督, 387.少量, 388.低秩, 389.多/两, 390.对比, 391.噪, 392.潜在/Latent, 393.3D, 394.图, 395.卷积, 396.正, 397.对比, 398.小/学生, 399.非独立同(Non-IID), 400.遗忘/丢失
+
+\vspace{1em}
+\textbf{（401-420题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 贝叶斯公式中，$P(H|E)$ 称为 \underline{\hspace{3em}} 概率。
+\item 贝叶斯公式中，$P(E|H)$ 称为 \underline{\hspace{3em}} 概率（似然度）。
+\item 贝叶斯公式中，$P(H)$ 称为 \underline{\hspace{3em}} 概率。
+\item 全概率公式用于计算 \underline{\hspace{3em}} 的概率。
+\item 朴素贝叶斯分类器被称为“朴素”是因为它假设特征条件 \underline{\hspace{3em}}。
+\item ID3 算法倾向于选择取值较 \underline{\hspace{3em}} 的属性。
+\item C4.5 算法引入 \underline{\hspace{3em}} 来解决 ID3 的偏好问题。
+\item 决策树的深度越深，模型越容易 \underline{\hspace{3em}}。
+\item 随机森林通过 \underline{\hspace{3em}} 投票来决定分类结果。
+\item 逻辑回归使用 \underline{\hspace{3em}} 函数将线性输出映射到 [0,1]。
+\item 感知机的损失函数是误分类点到超平面的 \underline{\hspace{3em}} 之和。
+\item 支持向量机（SVM）中的支持向量是距离超平面 \underline{\hspace{3em}} 的样本点。
+\item 硬间隔 SVM 要求数据必须是 \underline{\hspace{3em}} 的。
+\item 软间隔 SVM 允许 \underline{\hspace{3em}} 个样本点分类错误。
+\item 核函数 $K(x, z)$ 计算的是映射空间中两个向量的 \underline{\hspace{3em}}。
+\item 高斯核函数（RBF）只有一个参数 \underline{\hspace{3em}}。
+\item K-Means 中的 K 代表 \underline{\hspace{3em}} 的数量。
+\item K-Means 算法对初始中心点的选择 \underline{\hspace{3em}}。
+\item DBSCAN 算法有两个参数：邻域半径和最少 \underline{\hspace{3em}} 数。
+\item 层次聚类产生的结构通常可以用 \underline{\hspace{3em}} 图表示。
+\end{enumerate}
+
+\textbf{参考答案（401-420题）：}
+401.后验, 402.条件, 403.先验, 404.边缘/证据, 405.独立, 406.多, 407.信息增益率, 408.过拟合, 409.多数, 410.Sigmoid, 411.距离, 412.最近, 413.线性可分, 414.少/部分, 415.内积, 416.$\gamma$/带宽, 417.簇/聚类, 418.敏感, 419.点/样本, 420.树状
+
+\vspace{1em}
+\textbf{（421-440题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 神经网络中的 Bias（偏置）相当于直线方程中的 \underline{\hspace{3em}}。
+\item 激活函数 Tanh 的输出范围是 \underline{\hspace{3em}}。
+\item 梯度下降法中，批量（Batch）越大，梯度估计越 \underline{\hspace{3em}}。
+\item 随机梯度下降（SGD）每次仅使用 \underline{\hspace{3em}} 个样本更新参数。
+\item 小批量梯度下降（Mini-batch GD）平衡了计算效率和 \underline{\hspace{3em}} 稳定性。
+\item 动量法（Momentum）模拟了物理中的 \underline{\hspace{3em}} 概念。
+\item Adam 优化器同时估计了梯度的一阶矩和 \underline{\hspace{3em}} 矩。
+\item 卷积层中的 Filter 又称为 \underline{\hspace{3em}}。
+\item 特征图（Feature Map）的尺寸由输入尺寸、卷积核大小、步长和 \underline{\hspace{3em}} 决定。
+\item 全局平均池化（GAP）常用于替代全连接层以减少 \underline{\hspace{3em}}。
+\item RNN 中的 BPTT 算法是指随 \underline{\hspace{3em}} 反向传播。
+\item 双向 LSTM 包含 \underline{\hspace{3em}} 个独立的 LSTM 层。
+\item Attention 机制中的 Q, K, V 分别代表 Query, Key 和 \underline{\hspace{3em}}。
+\item Self-Attention 计算的是序列内部元素之间的 \underline{\hspace{3em}}。
+\item Multi-head Attention 将输入映射到多个 \underline{\hspace{3em}} 空间。
+\item Positional Encoding 为 Transformer 提供 \underline{\hspace{3em}} 信息。
+\item CNN 在图像领域的成功主要归功于 \underline{\hspace{3em}} 不变性。
+\item VGG 网络的主要特点是只使用 \underline{\hspace{3em}} 大小的卷积核。
+\item Inception 网络提出了 \underline{\hspace{3em}} 模块以增加宽度。
+\item MobileNet 使用 \underline{\hspace{3em}} 卷积来减少计算量。
+\end{enumerate}
+
+\textbf{参考答案（421-440题）：}
+421.截距, 422.[-1, 1], 423.准确/稳定, 424.1, 425.梯度/收敛, 426.惯性, 427.二阶, 428.卷积核/Kernel, 429.填充/Padding, 430.参数, 431.时间, 432.2, 433.Value, 434.相关性/权重, 435.子, 436.位置, 437.平移, 438.3x3, 439.Inception, 440.深度可分离
+
+\vspace{1em}
+\textbf{（441-460题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 强化学习中的 Return 是 \underline{\hspace{3em}} 奖励的加权和。
+\item 策略 $\pi(a|s)$ 定义了在状态 $s$ 下采取动作 $a$ 的 \underline{\hspace{3em}}。
+\item 最优价值函数 $V^*(s)$ 是所有策略下价值函数的 \underline{\hspace{3em}} 值。
+\item Bellman 方程描述了当前状态价值与 \underline{\hspace{3em}} 状态价值的关系。
+\item Model-free 强化学习不需要知道环境的 \underline{\hspace{3em}} 概率。
+\item Model-based 强化学习试图建立环境的 \underline{\hspace{3em}}。
+\item Q-learning 是一种 \underline{\hspace{3em}} 策略（Off-policy）算法。
+\item SARSA 是一种 \underline{\hspace{3em}} 策略（On-policy）算法。
+\item 深度强化学习将 Q 表替换为 \underline{\hspace{3em}} 网。
+\item 策略梯度方法直接优化 \underline{\hspace{3em}} 函数。
+\item TRPO（置信域策略优化）限制了策略更新的 \underline{\hspace{3em}}。
+\item PPO（近端策略优化）简化了 TRPO，通过 \underline{\hspace{3em}} 目标函数实现。
+\item 推荐系统中的冷启动问题是指对 \underline{\hspace{3em}} 用户或物品缺乏数据。
+\item 协同过滤中的矩阵分解将用户-物品矩阵分解为两个 \underline{\hspace{3em}} 矩阵。
+\item 知识图谱中的实体对齐是指发现不同图谱中的 \underline{\hspace{3em}} 实体。
+\item 问答系统的核心挑战是 \underline{\hspace{3em}} 理解和答案生成。
+\item 机器翻译中的对齐（Alignment）是指源词与 \underline{\hspace{3em}} 词的对应关系。
+\item 语音识别中的声学模型将音频特征映射到 \underline{\hspace{3em}} 单元。
+\item 语言模型计算一个句子出现的 \underline{\hspace{3em}}。
+\item 情感分析通常分为词级、句级和 \underline{\hspace{3em}} 级分析。
+\end{enumerate}
+
+\textbf{参考答案（441-460题）：}
+441.未来/累积, 442.概率, 443.最大, 444.后继/下一, 445.转移, 446.模型, 447.异, 448.同, 449.神经/深层神经, 450.策略, 451.步幅/幅度, 452.截断/Clip, 453.新, 454.低秩, 455.等价/同一, 456.语义, 457.目标, 458.音素/发音, 459.概率, 460.篇章/文档
+
+\vspace{1em}
+\textbf{（461-480题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 1956年达特茅斯会议的四位主要发起人是麦卡锡、明斯基、罗彻斯特和 \underline{\hspace{3em}}。
+\item 专家系统 Dendral 主要用于 \underline{\hspace{3em}} 领域的分析。
+\item 费根鲍姆提出的“知识工程”强调了 \underline{\hspace{3em}} 在AI中的中心地位。
+\item 2006年，Hinton 提出的 \underline{\hspace{3em}} 网络开启了深度学习的浪潮。
+\item ImageNet 数据集包含超过 \underline{\hspace{3em}} 万张标注图片。
+\item AlexNet 在 2012 年 ImageNet 大赛中将错误率降低了 \underline{\hspace{3em}} \%以上。
+\item 谷歌的 TPU 专为 \underline{\hspace{3em}} 框架设计。
+\item PyTorch 使用动态 \underline{\hspace{3em}} 图。
+\item TensorFlow 1.x 使用静态 \underline{\hspace{3em}} 图。
+\item ONNX 是一种开放的 \underline{\hspace{3em}} 交换格式。
+\item 摩尔定律是指集成电路上的 \underline{\hspace{3em}} 数量每18个月翻一番。
+\item 冯·诺依曼架构的瓶颈在于 \underline{\hspace{3em}} 与处理器之间的传输速度。
+\item 存内计算（Computing in Memory）旨在打破 \underline{\hspace{3em}} 墙。
+\item 神经拟态计算常使用 \underline{\hspace{3em}} 神经网络（SNN）。
+\item 量子比特（Qubit）与经典比特的区别在于它可以处于 \underline{\hspace{3em}} 态。
+\item 强人工智能有时也被称为 \underline{\hspace{3em}} 人工智能（AGI）。
+\item 弱人工智能有时也被称为 \underline{\hspace{3em}} 人工智能（ANI）。
+\item 奇点理论认为 AI 将引发人类文明的 \underline{\hspace{3em}} 改变。
+\item 2017年国务院发布的规划是指《新一代 \underline{\hspace{3em}} 发展规划》。
+\item 欧盟 GDPR 规定的“被遗忘权”是指用户有权要求 \underline{\hspace{3em}} 个人数据。
+\end{enumerate}
+
+\textbf{参考答案（461-480题）：}
+461.香农, 462.化学, 463.知识, 464.深度置信, 465.1000/1400, 466.10, 467.TensorFlow, 468.计算, 469.计算, 470.模型, 471.晶体管, 472.存储器, 473.存储/冯诺依曼, 474.脉冲, 475.叠加, 476.通用, 477.专用/狭义, 478.不可逆/巨大, 479.人工智能, 480.删除
+
+\vspace{1em}
+\textbf{（481-500题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 归结原理证明定理的三个步骤是：否定结论、化为子句集、\underline{\hspace{3em}}。
+\item 若子句集 S 中即含有 $L$ 又含有 $\neg L$，则 S \underline{\hspace{3em}}。
+\item 在 A* 算法中，若 $h(n)$ 始终比实际代价大，则 A* 算法 \underline{\hspace{3em}} 找到最优解。
+\item 模拟退火算法的终止条件通常是温度降至 \underline{\hspace{3em}} 或迭代次数达到上限。
+\item 遗传算法的变异率通常设置得比较 \underline{\hspace{3em}}。
+\item 专家系统的知识库越丰富，系统的 \underline{\hspace{3em}} 能力越强。
+\item 自然语言处理的难点在于语言的 \underline{\hspace{3em}} 性和歧义性。
+\item 计算机视觉的底层任务包括图像去噪、\underline{\hspace{3em}} 和超分辨率。
+\item 机器学习中的“奥卡姆剃刀”原则是指优选 \underline{\hspace{3em}} 的模型。
+\item 深度学习中的“黑盒”问题指的是模型缺乏 \underline{\hspace{3em}} 性。
+\item 联邦学习的主要目标是在 \underline{\hspace{3em}} 孤岛之间架起桥梁。
+\item 知识图谱的构建需要处理大量的 \underline{\hspace{3em}} 结构化数据。
+\item 智能机器人的“大脑”是指其 \underline{\hspace{3em}} 系统。
+\item 智能机器人的“身体”是指其 \underline{\hspace{3em}} 结构。
+\item 智能机器人的“感官”是指其 \underline{\hspace{3em}} 系统。
+\item 自动驾驶汽车的感知系统相当于人类驾驶员的 \underline{\hspace{3em}}。
+\item 自动驾驶汽车的决策系统相当于人类驾驶员的 \underline{\hspace{3em}}。
+\item 自动驾驶汽车的控制系统相当于人类驾驶员的 \underline{\hspace{3em}}。
+\item AI 对就业的影响主要体现为替代重复性劳动和 \underline{\hspace{3em}} 新型岗位。
+\item 人工智能的最终目标是实现机器与人类的 \underline{\hspace{3em}} 共生。
+\end{enumerate}
+
+\textbf{参考答案（481-500题）：}
+481.归结, 482.不可满足/矛盾, 483.不能/未必, 484.最低/零, 485.低/小, 486.解决问题/推理, 487.多义/复杂, 488.增强, 489.简单, 490.可解释, 491.数据, 492.半/非, 493.控制/决策, 494.机械, 495.传感, 496.眼睛, 497.大脑, 498.手脚, 499.创造, 500.和谐
+
+\vspace{1em}
+\textbf{基础与逻辑专题（501-600题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 谓词逻辑中，项（Term）是由常量、变量和 \underline{\hspace{3em}} 构成的。
+\item 原子公式（Atomic Formula）是由 \underline{\hspace{3em}} 和项构成的。
+\item 若公式 $A$ 有效（Valid），则 $\neg A$ 是 \underline{\hspace{3em}} 的。
+\item 若公式 $A$ 可满足，则 $\neg A$ 不可能是 \underline{\hspace{3em}} 的。
+\item 二阶谓词逻辑允许量词作用于 \underline{\hspace{3em}} 变量。
+\item 斯科伦（Skolem）标准型是通过消去 \underline{\hspace{3em}} 量词得到的。
+\item 在子句集中，变量的标准（Standardizing）意味着不同子句中的变量 \underline{\hspace{3em}}。
+\item 只有当两个谓词具有相同的 \underline{\hspace{3em}} 时，它们才有可能合一。
+\item 差异集（Disagreement Set）是两个表达式中 \underline{\hspace{3em}} 符号出现的位置集合。
+\item 归结原理中的一般归结式是指先进行 \underline{\hspace{3em}} 再进行二元归结的结果。
+\item 语义归结（Semantic Resolution）将子句分为 \underline{\hspace{3em}} 两类。
+\item 线性归结（Linear Resolution）要求每次归结至少有一个父子句是 \underline{\hspace{3em}} 子句。
+\item 输入归结（Input Resolution）要求每次归结至少有一个父子句是 \underline{\hspace{3em}} 子句。
+\item 单元归结（Unit Resolution）要求每次归结至少有一个父子句是 \underline{\hspace{3em}} 子句。
+\item 祖先过滤归结（Ancestry Filtered）允许中心子句与其 \underline{\hspace{3em}} 进行归结。
+\item 霍恩子句分为三种：断言、规则和 \underline{\hspace{3em}}。
+\item 语义网络中的“部分-整体”关系通常用 \underline{\hspace{3em}} 链表示。
+\item 语义网络推理中的“网络匹配”是寻找与 \underline{\hspace{3em}} 匹配的子网。
+\item 框架中的“默认值”槽用于处理信息 \underline{\hspace{3em}} 的情况。
+\item 框架系统中的“守护程序”（Demon）是一种在特定操作下 \underline{\hspace{3em}} 触发的过程。
+\item 脚本中的“场景”（Scene）描述了事件发生的 \underline{\hspace{3em}} 序列。
+\item 概念依赖理论（CD）旨在用一组 \underline{\hspace{3em}} 动作表示所有自然语言语义。
+\item 知识图谱中的“实体对齐”又称为 \underline{\hspace{3em}} 匹配。
+\item RDF Schema（RDFS）提供了定义类和 \underline{\hspace{3em}} 的词汇。
+\item OWL 中的 TransitiveProperty 表示属性具有 \underline{\hspace{3em}} 性。
+\item 描述逻辑（Description Logic）主要包含 TBox 和 \underline{\hspace{3em}} 两部分。
+\item 产生式系统的冲突消解策略中，“新颖性优先”是指优先选择 \underline{\hspace{3em}} 匹配的规则。
+\item “特定性优先”是指优先选择条件 \underline{\hspace{3em}} 的规则。
+\item 黑板模型由黑板、\underline{\hspace{3em}} 和控制机构组成。
+\item 溯因推理（Abduction）通常用于 \underline{\hspace{3em}} 诊断。
+\item 缺省逻辑（Default Logic）中的缺省规则 $\frac{A:B}{C}$ 表示如果A成立且 \underline{\hspace{3em}}，则导出C。
+\item 封闭世界假设（CWA）认为凡是不能被证明为真的命题都认为是 \underline{\hspace{3em}}。
+\item 限制逻辑（Circumscription）通过 \underline{\hspace{3em}} 谓词的外延来实现非单调推理。
+\item 模态逻辑中的 $\Box P$ 表示 $P$ 是 \underline{\hspace{3em}} 的。
+\item 模态逻辑中的 $\Diamond P$ 表示 $P$ 是 \underline{\hspace{3em}} 的。
+\item 模糊推理中的“最大-最小”合成规则是指先取 \underline{\hspace{3em}} 后取 \underline{\hspace{3em}}。
+\item 粗糙集中的下近似集是所有包含于目标集合的 \underline{\hspace{3em}} 类之并。
+\item 粗糙集中的上近似集是所有与目标集合 \underline{\hspace{3em}} 的等价类之并。
+\item 证据理论中的信任函数 $Bel(A)$ 是 $A$ 的所有 \underline{\hspace{3em}} 的质量函数之和。
+\item 证据理论中的似然函数 $Pl(A)$ 是 $A$ 的所有 \underline{\hspace{3em}} 的质量函数之和。
+\item 主观贝叶斯方法中，LS < 1 表示证据的存在 \underline{\hspace{3em}} 假设的可能性。
+\item LN > 1 表示证据的缺失 \underline{\hspace{3em}} 假设的可能性。
+\item 模糊集合的 $\lambda$-截集是指隶属度 \underline{\hspace{3em}} $\lambda$ 的元素集合。
+\item 语义网中的 URI 是指 \underline{\hspace{3em}}。
+\item 知识图谱嵌入（Embedding）旨在将实体和关系映射到 \underline{\hspace{3em}} 向量空间。
+\item TransE 算法认为头实体向量 + 关系向量 $\approx$ \underline{\hspace{3em}} 向量。
+\item 知识图谱中的 SPARQL 是一种 \underline{\hspace{3em}} 语言。
+\item 产生式系统适合表示 \underline{\hspace{3em}} 性知识。
+\item 框架系统适合表示 \underline{\hspace{3em}} 性知识。
+\item 混合推理系统旨在结合多种 \underline{\hspace{3em}} 方法的优点。
+\end{enumerate}
+
+\textbf{参考答案（501-600题）：}
+501.函数, 502.谓词, 503.不可满足, 504.有效, 505.函数/谓词, 506.存在, 507.重命名, 508.名/参数个数, 509.第一个不同, 510.置换, 511.模型/非模型, 512.初始/输入, 513.输入, 514.单元, 515.先辈, 516.目标/询问, 517.PartOf, 518.提问要求, 519.不完全/缺失, 520.自动, 521.时间/动作, 522.基元/基本, 523.指代/共指, 524.属性, 525.传递, 526.ABox, 527.最近, 528.最复杂/最多, 529.知识源, 530.故障, 531.B与已知不矛盾, 532.假, 533.最小化, 534.必然, 535.可能, 536.小(Min), 大(Max), 537.等价/基本, 538.相交, 539.子集, 540.相交集, 541.降低, 542.增加, 543.大于等于, 544.统一资源标识符, 545.低维/连续, 546.尾实体, 547.查询, 548.过程/规则, 549.结构/对象, 550.表示/推理
+
+\vspace{1em}
+\textbf{搜索与优化专题（601-700题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 状态空间图由状态节点和 \underline{\hspace{3em}} 弧组成。
+\item 问题的解路径是指从 \underline{\hspace{3em}} 分别通向目标节点的一条路径。
+\item 广度优先搜索使用 \underline{\hspace{3em}} 表来管理待扩展节点。
+\item 深度优先搜索使用 \underline{\hspace{3em}} 表来管理待扩展节点。
+\item 有界深度优先搜索（DLS）是为了解决 DFS 的 \underline{\hspace{3em}} 问题。
+\item 迭代加深搜索（IDS）在每一轮迭代中增加 \underline{\hspace{3em}}。
+\item 双向搜索要求能够从 \underline{\hspace{3em}} 向初始状态反向搜索。
+\item 平均分支系数 $b$ 和深度 $d$ 决定了搜索树的 \underline{\hspace{3em}} 规模。
+\item $A^*$ 算法中的 $*$ 表示该算法在特定条件下是 \underline{\hspace{3em}} 的。
+\item 如果启发函数 $h(n)$ 满足 $h(n) \le h(n') + c(n, n')$，则称 $h(n)$ 是 \underline{\hspace{3em}} 的。
+\item 单调性条件保证了当我们第一次扩展到节点 $n$ 时，已经找到了到达 $n$ 的 \underline{\hspace{3em}} 路径。
+\item 贪婪最佳优先搜索通常由启发函数 $h(n)$ 最小的节点开始扩展，它是不 \underline{\hspace{3em}} 的。
+\item IDA* 算法是 \underline{\hspace{3em}} 版本的 A* 算法。
+\item SMA*（Simplified Memory A*）是一种 \underline{\hspace{3em}} 受限的搜索算法。
+\item 问题规约（Problem Reduction）将复杂问题分解为 \underline{\hspace{3em}} 子问题。
+\item 与或树（AND/OR Tree）中，“与”节点表示所有子问题都必须 \underline{\hspace{3em}}。
+\item 与或树中，“或”节点表示只要有一个子问题 \underline{\hspace{3em}} 即可。
+\item 博弈树中的“地平线效应”是指因搜索深度限制而产生的 \underline{\hspace{3em}} 判断。
+\item Alpha-Beta 剪枝效率取决于节点的 \underline{\hspace{3em}} 顺序。
+\item 蒙特卡洛树搜索（MCTS）通过 \underline{\hspace{3em}} 模拟来评估节点价值。
+\item 遗传算法的“精英策略”是指强行保留 \underline{\hspace{3em}} 个体不参与变异。
+\item 遗传算法中的“模式定理”解释了算法为什么能 \underline{\hspace{3em}}。
+\item 在二进制编码中，海明距离（Hamming Distance）是指两个码串 \underline{\hspace{3em}} 的位数。
+\item 轮盘赌选择中，个体的选中概率与其 \underline{\hspace{3em}} 成正比。
+\item 锦标赛选择（Tournament Selection）通过从群体中随机选择 $k$ 个体并保留 \underline{\hspace{3em}} 者。
+\item 均匀交叉（Uniform Crossover）是指每一位都以一定概率 \underline{\hspace{3em}}。
+\item 粒子群算法（PSO）中的惯性权重 $w$ 较大时有利于 \underline{\hspace{3em}} 搜索。
+\item 粒子群算法中的惯性权重 $w$ 较小时有利于 \underline{\hspace{3em}} 搜索。
+\item 学习因子 $c1$ 代表粒子的 \underline{\hspace{3em}} 认知部分。
+\item 学习因子 $c2$ 代表粒子的 \underline{\hspace{3em}} 认知部分。
+\item 蚁群算法（ACO）利用正反馈机制，即路径上的信息素越多，此时蚂蚁选择该路径的概率越 \underline{\hspace{3em}}。
+\item 信息素挥发是为了防止算法收敛于 \underline{\hspace{3em}} 最优解。
+\item 模拟退火算法（SA）来源于 \underline{\hspace{3em}} 力学原理。
+\item Metropolis 准则允许算法以一定概率接受 \underline{\hspace{3em}} 解。
+\item 模拟退火的冷却进度表包括初始温度、温度下降函数和 \underline{\hspace{3em}} 条件。
+\item 禁忌搜索（Tabu Search）通过 \underline{\hspace{3em}} 表记忆刚走过的路径。
+\item 禁忌搜索中的“渴望准则”（Aspiration Criterion）允许在特定情况下 \underline{\hspace{3em}} 禁忌限制。
+\item 差分进化算法（DE）也是一种基于 \underline{\hspace{3em}} 的进化算法。
+\item 免疫算法（Immune Algorithm）借鉴了生物免疫系统的 \underline{\hspace{3em}} 识别机制。
+\item 人工鱼群算法模拟了鱼群的觅食、聚群和 \underline{\hspace{3em}} 行为。
+\item 约束满足问题（CSP）的目标是为变量赋值以满足所有 \underline{\hspace{3em}}。
+\item CSP 中的回溯搜索（Backtracking）是一种 \underline{\hspace{3em}} 优先搜索。
+\item 前向检验（Forward Checking）在赋值一个变量后，立即 \underline{\hspace{3em}} 相邻未赋值变量的域。
+\item 弧相容性（Arc Consistency）是指对边的两个节点，都能找到满足约束的 \underline{\hspace{3em}}。
+\item 最小冲突启发式（Min-Conflicts）每次选择能使冲突 \underline{\hspace{3em}} 的值。
+\item 局部搜索算法通常只记录 \underline{\hspace{3em}} 状态，不保留搜索路径。
+\item 爬山法的“高地”问题是指因 \underline{\hspace{3em}} 平坦而无法确定搜索方向。
+\item 遗传算法的收敛速度通常比爬山法 \underline{\hspace{3em}}。
+\item 多目标优化旨在寻找一组 \underline{\hspace{3em}} 最优解（Pareto Optimal）。
+\item 协同进化（Co-evolution）是指多个种群 \underline{\hspace{3em}} 进化。
+\end{enumerate}
+
+\textbf{参考答案（601-700题）：}
+601.算符/有向, 602.初始节点, 603.Open/队列, 604.Open/栈, 605.死循环/无限深, 606.深度限制, 607.目标状态, 608.节点/状态, 609.最优, 610.单调/一致, 611.最优/最短, 612.完备, 613.迭代加深, 614.存储/内存, 615.简单/独立, 616.解决/成功, 617.解决/成功, 618.错误, 619.排列/扩展, 620.随机, 621.最优/最佳, 622.有效/工作, 623.不同, 624.适应度, 625.最优/最好, 626.交换, 627.全局, 628.局部, 629.自我/个体, 630.社会/群体, 631.大, 632.局部, 633.热/统计, 634.差/劣, 635.终止/结束, 636.禁忌, 637.解禁/打破, 638.种群, 639.抗原, 640.追尾, 641.约束, 642.深度, 643.修剪/检查, 644.值/赋值, 645.最少/最小, 646.当前, 647.地形/函数值, 648.慢, 649.帕累托, 650.相互/共同
+
+
+
+
+
+
+
+%----------------------------------------
+\section{选择题 (100题)}
+%----------------------------------------
+
+\textbf{（1-20题）}
+\begin{enumerate}[leftmargin=2em,itemsep=1pt]
+\item 最早提出“人工智能”这一术语的会议是（ B ）。
+\\ A. 图灵测试会议 B. 达特茅斯会议 C. 关于自动机的会议 D. 国际人工智能联合会议
+\item 下列不属于人工智能研究学派的是（ D ）。
+\\ A. 符号主义 B. 联结主义 C. 行为主义 D. 经验主义
+\item 所谓“物理符号系统假设”是（ A ）学派的理论基础。
+\\ A. 符号主义 B. 联结主义 C. 行为主义 D. 进化主义
+\item 神经网络研究属于（ B ）学派。
+\\ A. 符号主义 B. 联结主义 C. 行为主义 D. 进化主义
+\item 人工智能的英文缩写是（ A ）。
+\\ A. AI B. BI C. CI D. DI
+\item 如果一个问题存在最优解，则下面几种搜索算法中，（ A ）必然可以得到该最优解。
+\\ A. 广度优先搜索 B. 深度优先搜索 C. 有界深度优先搜索 D. 启发式搜索
+\item 在启发式搜索中，估价函数$f(n)=g(n)+h(n)$，其中$h(n)$表示（ C ）。
+\\ A. 节点n到目标节点的实际代价 B. 初始节点到节点n的实际代价 C. 节点n到目标节点的估计代价 D. 初始节点到节点n的估计代价
+\item 下列搜索方法中，不属于盲目搜索的是（ D ）。
+\\ A. 宽度优先搜索 B. 深度优先搜索 C. 有界深度优先搜索 D. A*算法
+\item 若此谓词公式$P(x,y)$在所有的解释下均为真，则称该公式为（ A ）。
+\\ A. 永真式 B. 永假式 C. 可满足式 D. 不可满足式
+\item 产生式系统的推理不包括（ D ）。
+\\ A. 正向推理 B. 逆向推理 C. 双向推理 D. 简单推理
+\item 专家系统的核心组成部分是（ C ）。
+\\ A. 用户和综合数据库 B. 综合数据库和推理机 C. 知识库和推理机 D. 知识库和用户
+\item 下列哪种方法不属于知识表示方法？（ D ）
+\\ A. 谓词逻辑法 B. 产生式表示法 C. 框架表示法 D. 数据库法
+\item 语义网络表达知识时，有向弧AKO链、ISA链是用来表达节点知识的（ C ）。
+\\ A. 无序性 B. 可扩充性 C. 继承性 D. 复杂性
+\item 设$C_1=P \lor Q$，$C_2=\neg P \lor R$，则$C_1$和$C_2$的归结式为（ B ）。
+\\ A. $P \lor R$ B. $Q \lor R$ C. $Q \lor P$ D. $P \lor \neg P$
+\item 遗传算法中，（ A ）操作是模拟生物进化过程中的繁殖现象。
+\\ A. 交叉 B. 变异 C. 选择 D. 编码
+\item 深度学习中，（ B ）主要用于处理图像数据。
+\\ A. RNN B. CNN C. LSTM D. GAN
+\item 下列关于支持向量机（SVM）的描述中，错误的是（ D ）。
+\\ A. 是一种监督学习算法 B. 旨在寻找最大间隔超平面 C. 可用于分类和回归 D. 只能处理线性可分问题
+\item 在机器学习中，过拟合通常意味着模型（ B ）。
+\\ A. 在训练集和测试集上表现都差 B. 在训练集上表现好，测试集上表现差 C. 在训练集上表现差，测试集上表现好 D. 在训练集和测试集上表现都好
+\item 图灵测试的目的是（ A ）。
+\\ A. 判断机器是否具有智能 B. 测试机器的计算速度 C. 测试机器的存储容量 D. 测试机器的耗电量
+\item 贝叶斯网络是一种（ B ）。
+\\ A. 无向图模型 B. 有向无环图模型 C. 混合图模型 D. 树状模型
+\end{enumerate}
+
+\textbf{参考答案（1-20题）：}
+1.B, 2.D, 3.A, 4.B, 5.A, 6.A, 7.C, 8.D, 9.A, 10.D, 
+11.C, 12.D, 13.C, 14.B, 15.A, 16.B, 17.D, 18.B, 19.A, 20.B
+
+\vspace{1em}
+\textbf{（21-40题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 模糊逻辑中，真值的范围是（ C ）。
+\\ A. \{0, 1\} B. \{-1, 1\} C. [0, 1] D. (-$\infty$, +$\infty$)
+\item 下列哪项不是强化学习的要素？（ D ）
+\\ A. 状态 B. 动作 C. 奖励 D. 标签
+\item AlphaGo Zero与AlphaGo Master的主要区别在于（ A ）。
+\\ A. 不依赖人类棋谱 B. 搜索更深 C. 网络更宽 D. 使用更多TPU
+\item 知识图谱的基本存储单元是（ A ）。
+\\ A. 三元组 B. 节点 C. 边 D. 属性
+\item 博弈树搜索中，MAX节点选择（ B ）。
+\\ A. 最小值 B. 最大值 C. 平均值 D. 随机值
+\item BP神经网络是一种（ A ）型神经网络。
+\\ A. 多层前馈 B. 单层前馈 C. 反馈 D. 自组织
+\item 卷积神经网络中，池化层的主要作用是（ B ）。
+\\ A. 提取特征 B. 降维和减少计算量 C. 增加非线性 D. 防止过拟合
+\item 循环神经网络（RNN）存在的梯度消失问题可以通过（ C ）解决。
+\\ A. 增加层数 B. 减小学习率 C. LSTM或GRU D. 使用Sigmoid函数
+\item 在自然语言处理中，Word2Vec是一种（ A ）技术。
+\\ A. 词嵌入 B. 句法分析 C. 语义分析 D. 情感分析
+\item 下列算法中，属于聚类算法的是（ B ）。
+\\ A. KNN B. K-Means C. Naive Bayes D. Decision Tree
+\item 决策树算法中，信息增益越大，说明该属性的分类能力（ A ）。
+\\ A. 越强 B. 越弱 C. 不确定 D. 无关
+\item 随机森林属于（ C ）学习方法。
+\\ A. 增强 B. 堆叠 C. 袋装（Bagging） D. 提升（Boosting）
+\item 下列关于深度学习的说法错误的是（ C ）。
+\\ A. 深度学习是机器学习的一个分支 B. 深度学习通常需要大量数据 C. 深度学习不需要GPU加速 D. 深度学习模型通常具有深层结构
+\item 专家系统的瓶颈在于（ A ）。
+\\ A. 知识获取 B. 推理机设计 C. 数据库构建 D. 用户界面
+\item 产生式系统中的冲突消解策略不包括（ D ）。
+\\ A. 专一性排序 B. 程度排序 C. 上下文限制 D. 随机选择(通常不作为首选)
+\item 语义网络中的节点代表（ A ）。
+\\ A. 事物、概念或属性 B. 动作 C. 状态 D. 规则
+\item 框架理论是由（ B ）提出的。
+\\ A. 图灵 B. 明斯基 C. 麦卡锡 D. 费根鲍姆
+\item 蚁群算法受（ A ）启发。
+\\ A. 蚂蚁觅食行为 B. 鸟群飞行行为 C. 鱼群游动行为 D. 蜜蜂采蜜行为
+\item 粒子群优化算法（PSO）中，粒子更新依据是（ C ）。
+\\ A. 只有个体极值 B. 只有全局极值 C. 个体极值和全局极值 D. 随机漫步
+\item 模拟退火算法来源于（ B ）。
+\\ A. 生物进化 B. 固体退火原理 C. 神经传导 D. 社会行为
+\end{enumerate}
+
+\textbf{参考答案（21-40题）：}
+21.C, 22.D, 23.A, 24.A, 25.B, 26.A, 27.B, 28.C, 29.A, 30.B, 
+31.A, 32.C, 33.C, 34.A, 35.D, 36.A, 37.B, 38.A, 39.C, 40.B
+
+\vspace{1em}
+\textbf{（41-60题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 下列哪种逻辑不属于非单调逻辑？（ A ）
+\\ A. 经典命题逻辑 B. 缺省逻辑 C. 模态逻辑 D. 模糊逻辑
+\item 证据理论（D-S理论）中，信任函数Bel(A)表示（ A ）。
+\\ A. 对A为真的信任程度 B. 对A为假的信任程度 C. 对A不确定的信任程度 D. 对A的似然度
+\item 下列关于专家系统MYCIN的描述错误的是（ C ）。
+\\ A. 用于诊断血液感染 B. 使用可信度模型 C. 使用概率推理 D. 具有解释功能
+\item 卷积层中，卷积核的权值是（ B ）。
+\\ A. 固定的 B. 通过训练学习的 C. 随机生成的 D. 手工设定的
+\item 激活函数ReLU的表达式是（ A ）。
+\\ A. $f(x) = \max(0, x)$ B. $f(x) = \frac{1}{1+e^{-x}}$ C. $f(x) = \tanh(x)$ D. $f(x) = x$
+\item 梯度下降法中，学习率过大可能导致（ B ）。
+\\ A. 收敛速度过慢 B. 震荡甚至发散 C. 陷入局部最优 D. 过拟合
+\item 正则化（Regularization）的主要目的是（ A ）。
+\\ A. 防止过拟合 B. 增加模型复杂度 C. 减少训练时间 D. 提高训练精度
+\item 批量归一化（Batch Normalization）通常放在（ B ）之后。
+\\ A. 激活函数 B. 卷积或全连接层 C. 池化层 D. 输出层
+\item 生成对抗网络（GAN）中，生成器的目标是（ A ）。
+\\ A. 生成尽可能逼真的样本 B. 准确判断样本真伪 C. 最小化训练误差 D. 最大化判别器的准确率
+\item 下列关于迁移学习的说法正确的是（ A ）。
+\\ A. 将已学知识应用于新领域 B. 不需要任何新数据 C. 只能在相同领域间迁移 D. 效果总是由于从头训练
+\item 自然语言处理中的BERT模型采用了（ B ）机制。
+\\ A. CNN B. Attention C. RNN D. LSTM
+\item 机器视觉中，YOLO算法属于（ A ）算法。
+\\ A. 目标检测 B. 图像分类 C. 语义分割 D. 实例分割
+\item 联邦学习的核心优势是（ C ）。
+\\ A. 计算速度快 B. 模型精度高 C. 数据隐私保护 D. 通信成本低
+\item 自动驾驶中，激光雷达（LiDAR）主要用于（ B ）。
+\\ A. 识别交通标志 B. 构建高精度3D环境地图 C. 识别车道线 D. 识别红绿灯
+\item 工业机器人常用的控制方式是（ A ）。
+\\ A. PID控制 B. 模糊控制 C. 神经网络控制 D. 专家控制
+\item 智慧医疗中，AI辅助诊断主要利用了（ B ）技术。
+\\ A. 语音识别 B. 图像识别 C. 自然语言处理 D. 机器人技术
+\item 下列不属于生物特征识别技术的是（ D ）。
+\\ A. 指纹识别 B. 虹膜识别 C. 人脸识别 D. 二维码识别
+\item 数据挖掘中的关联规则挖掘旨在发现（ A ）。
+\\ A. 数据项之间的并发关系 B. 数据的聚类结构 C. 数据的分类边界 D. 数据的异常点
+\item 推荐系统的协同过滤算法分为（ A ）和基于物品的协同过滤。
+\\ A. 基于用户 B. 基于内容 C. 基于模型 D. 基于规则
+\item 第一位击败人类国际象棋世界冠军的计算机程序是（ B ）。
+\\ A. 浪潮天梭 B. 深蓝 C. AlphaGo D. 沃森
+\end{enumerate}
+
+\textbf{参考答案（41-60题）：}
+41.A, 42.A, 43.C, 44.B, 45.A, 46.B, 47.A, 48.B, 49.A, 50.A, 
+51.B, 52.A, 53.C, 54.B, 55.A, 56.B, 57.D, 58.A, 59.A, 60.B
+
+\vspace{1em}
+\textbf{（61-80题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 1997年，“深蓝”战胜卡斯帕罗夫，主要依靠的是（ A ）。
+\\ A. 强大的搜索和评估能力 B. 深度学习 C. 强化学习 D. 知识图谱
+\item 知识工程之父是（ C ）。
+\\ A. 麦卡锡 B. 明斯基 C. 费根鲍姆 D. 西蒙
+\item 语义网（Semantic Web）的核心技术包括XML、RDF和（ A ）。
+\\ A. Ontology B. HTML C. TCP/IP D. SQL
+\item 归结原理证明定理的过程是（ B ）。
+\\ A. 正向推理 B. 反向推理（反证法） C. 双向推理 D. 归纳推理
+\item 若子句集中包含空子句，则说该子句集（ B ）。
+\\ A. 可满足 B. 不可满足 C. 永真 D. 非空
+\item 在A*算法中，如果h(n)恒为0，则A*算法退化为（ B ）。
+\\ A. 深度优先搜索 B. 代价一致搜索（Dijkstra） C. 宽度优先搜索 D. 贪婪最佳优先搜索
+\item 状态空间搜索图中的“OPEN”表用于存放（ A ）。
+\\ A. 待扩展的节点 B. 已扩展的节点 C. 目标节点 D. 初始节点
+\item 下列哪种情况不会导致A*算法失败？（ C ）
+\\ A. 即使有解也找不到 B. 找不到最优解 C. 启发函数满足单调性 D. 搜索空间过大
+\item 极大极小搜索过程是为了（ A ）。
+\\ A. 在博弈中寻找最优策略 B. 求解最短路径 C. 证明定理 D. 聚类
+\item 在专家系统中，RETE算法用于（ A ）。
+\\ A. 高效的模式匹配 B. 知识获取 C. 解释推理 D. 不确定性计算
+\item 置换是可交换的吗？（ B ）
+\\ A. 是 B. 否 C. 有时是 D. 不确定
+\item 下列关于Skolem函数的说法正确的是（ A ）。
+\\ A. 用于消去存在量词 B. 用于消去全称量词 C. 用于消去连接词 D. 用于增加量词
+\item 谓词公式的前束范式要求（ B ）。
+\\ A. 所有量词消去 B. 所有量词移到公式最前面 C. 所有量词移到公式最后面 D. 不包含任何函数
+\item HMM中的“隐”指的是（ B ）。
+\\ A. 观测序列不可见 B. 状态序列不可见 C. 转移概率未知 D. 发射概率未知
+\item 在K-Means算法中，K值的选择通常（ C ）。
+\\ A. 越大越好 B. 越小越好 C. 需要根据具体问题确定 D. 固定为3
+\item 决策树剪枝的主要目的是（ A ）。
+\\ A. 防止过拟合 B. 防止欠拟合 C. 减少计算量 D. 增加树的深度
+\item Adaboost算法的核心思想是（ A ）。
+\\ A. 关注被错分的样本 B. 随机选择特征 C. 并行训练 D. 使用强分类器
+\item SVM中的核函数主要是为了（ B ）。
+\\ A. 降维 B. 将低维线性不可分映射到高维线性可分 C. 增加计算速度 D. 减少内存消耗
+\item Softmax函数通常用于（ C ）。
+\\ A. 二分类输出 B. 回归输出 C. 多分类输出 D. 特征提取
+\item 下列哪种优化器具有自适应学习率？（ B ）
+\\ A. SGD B. Adam C. Momentum D. BGD
+\end{enumerate}
+
+\textbf{参考答案（61-80题）：}
+61.A, 62.C, 63.A, 64.B, 65.B, 66.B, 67.A, 68.C, 69.A, 70.A, 
+71.B, 72.A, 73.B, 74.B, 75.C, 76.A, 77.A, 78.B, 79.C, 80.B
+
+\vspace{1em}
+\textbf{（81-100题）}
+\begin{enumerate}[resume,leftmargin=2em,itemsep=1pt]
+\item 残差网络（ResNet）通过引入（ A ）解决了深层网络训练难的问题。
+\\ A. 跳跃连接（Skip Connection） B. Dropout C. Batch Normalization D. Attention
+\item Transformer架构的核心组件是（ A ）。
+\\ A. 自注意力机制（Self-Attention） B. 卷积层 C. 循环层 D. 池化层
+\item 下列不属于自然语言处理任务的是（ D ）。
+\\ A. 机器翻译 B. 文本摘要 C. 对话系统 D. 图像去噪
+\item 计算机视觉中的目标检测任务是（ C ）。
+\\ A. 判断图像中有什么 B. 判断图像中物体的位置 C. 判断图像中有什么以及位置 D. 分割图像中的物体
+\item 强化学习中，Agent的目标是最大化（ B ）。
+\\ A. 当前奖励 B. 累积长期奖励 C. 状态价值 D. 动作价值
+\item 下列关于AlphaFold的描述正确的是（ A ）。
+\\ A. 预测蛋白质结构 B. 下围棋 C. 玩星际争霸 D. 生成图像
+\item 知识图谱推理的主要方法不包括（ D ）。
+\\ A. 基于规则的推理 B. 基于分布表示的推理 C. 基于神经网络的推理 D. 基于直觉的推理
+\item 自动驾驶中的SLAM技术指的是（ A ）。
+\\ A. 同步定位与地图构建 B. 目标检测与跟踪 C. 路径规划与控制 D. 传感器融合
+\item 机器人操作系统的英文缩写是（ B ）。
+\\ A. DOS B. ROS C. SOS D. IOS
+\item 我国发布的新一代人工智能发展规划中，确立了（ C ）步走的战略目标。
+\\ A. 2 B. 5 C. 3 D. 4
+\item 2016年，AlphaGo战胜了（ B ）。
+\\ A. 柯洁 B. 李世石 C. 卡斯帕罗夫 D. 樊麾
+\item 图灵因其在（ A ）方面的贡献被称为“人工智能之父”。
+\\ A. 图灵机和图灵测试 B. 深蓝 C. 专家系统 D. 神经网络
+\item 麦卡锡因其在（ A ）方面的贡献被称为“人工智能之父”。
+\\ A. LISP语言和AI术语 B. 图灵测试 C. 感知机 D. BP算法
+\item 下列哪个不属于人工智能的伦理问题？（ D ）
+\\ A. 隐私保护 B. 算法偏见 C. 责任归属 D. 计算速度
+\item 人工智能的未来发展趋势不包括（ D ）。
+\\ A. 通用人工智能 B. 人机协作 C. 可解释AI D. 完全替代人类
+\item ChatGPT基于（ A ）模型。
+\\ A. Transformer B. RNN C. CNN D. SVM
+\item （ C ）提出了“模仿游戏”来测试机器智能。
+\\ A. 冯·诺依曼 B. 麦卡锡 C. 图灵 D. 明斯基
+\item （ B ）被誉为“深度学习之父”。
+\\ A. 燕乐存 B. 杰弗里·辛顿 C. 吴恩达 D. 李飞飞
+\item 在博弈论中，（ A ）是指在对手采取最优策略情况下，己方能获得的最好结果。
+\\ A. 纳什均衡 B. 帕累托最优 C. 极大极小值 D. 全局最优
+\item 专家系统的核心思想是（ A ）。
+\\ A. 知识+推理=智能 B. 数据+算法=模型 C. 感知+行动=智能 D. 输入+输出=反馈
+\end{enumerate}
+
+\textbf{参考答案（81-100题）：}
+81.A, 82.A, 83.D, 84.C, 85.B, 86.A, 87.D, 88.A, 89.B, 90.C, 
+91.B, 92.A, 93.A, 94.D, 95.D, 96.A, 97.C, 98.B, 99.C, 100.A
+
+%----------------------------------------
+\section{补充填空题 (17题)}
+%----------------------------------------
+
+\begin{enumerate}[leftmargin=2em,itemsep=1pt]
+\item 人工智能程序与传统的计算机程序相比，具有如下特点：(1) 以 \underline{\hspace{4em}} 为研究对象，而不是以数值数据为研究对象；(2) 采用 \underline{\hspace{4em}} 搜索方法，而不是普通的算法；(3) 控制结构与 \underline{\hspace{4em}} 是分离的；(4) 允许出现 \underline{\hspace{4em}} 的答案。
+\item 产生式系统包括知识库和推理机。知识库由 \underline{\hspace{4em}} 和数据库组成，因此知识库中存储 \underline{\hspace{4em}} 和 \underline{\hspace{4em}}。推理机是一个程序，推理方式有 \underline{\hspace{4em}} 推理、 \underline{\hspace{4em}} 推理和 \underline{\hspace{4em}} 推理。
+\item 状态空间搜索中，宽度优先搜索属于 \underline{\hspace{4em}} 搜索，A*算法属于 \underline{\hspace{4em}} 搜索。
+\item 归结方法是一种机械化的 \underline{\hspace{4em}} 向推理方法。
+\item 在归结原理中，空子句不含有文字，它 \underline{\hspace{4em}} 被任何解释满足，所以空子句是 \underline{\hspace{4em}} 的。归结过程出现空子句，说明出现了互补的文字对，说明子句集是 \underline{\hspace{4em}}。
+\item 遗传算法的主要操作有 \underline{\hspace{4em}}、\underline{\hspace{4em}} 和 \underline{\hspace{4em}}。
+\item 在状态空间搜索的一般过程中，常常需要 \underline{\hspace{4em}} 表和 \underline{\hspace{4em}} 表两个数据结构。OPEN表用于存放 \underline{\hspace{4em}} 的节点，CLOSED表用于存放 \underline{\hspace{4em}} 的节点。
+\item 在语义网络中，为了表示节点间属性的继承推理，规定了两个约定俗成的链，命名为 \underline{\hspace{4em}} 和 \underline{\hspace{4em}}。
+\item 人工智能是1956年，在 \underline{\hspace{4em}} 会议上首次被提出的。
+\item 在人工智能中，通常知识的表示方法有 \underline{\hspace{4em}} 表示法、产生式系统表示法、\underline{\hspace{4em}} 表示法、框架表示法、脚本表示法等。
+\item 开发专家系统需要解决 \underline{\hspace{4em}}、\underline{\hspace{4em}} 和 \underline{\hspace{4em}} 三个基本问题。
+\item 语义网络是用图的方法表示知识的，由节点和 \underline{\hspace{4em}} 组成。其中节点表示 \underline{\hspace{4em}}，弧表示节点间的 \underline{\hspace{4em}}。
+\item 评价一个搜索策略的主要指标有：\underline{\hspace{4em}}、\underline{\hspace{4em}}、时间复杂度和空间复杂度。
+\item 推理的形式主要有 \underline{\hspace{4em}} 推理、\underline{\hspace{4em}} 推理和 \underline{\hspace{4em}} 推理三种方式。
+\item XOR问题一般可以用 \underline{\hspace{4em}} 层感知器解决。
+\item 模糊逻辑中，重言式的值为 \underline{\hspace{4em}}。
+\end{enumerate}
+
+\textbf{参考答案：}
+\begin{enumerate}[label=\arabic*.]
+\item 符号表示的知识, 启发式, 知识, 不正确/不确定
+\item 规则库, 规则, 事实, 正向, 反向, 混合
+\item 盲目, 启发式
+\item 反
+\item 不能, 永假/不可满足, 不可满足
+\item 选择, 交叉, 变异
+\item OPEN, CLOSED, 待扩展/生成但未考察, 已扩展/已考察
+\item ISA, AKO (A Kind Of)
+\item 达特茅斯 (Dartmouth)
+\item 逻辑/谓词逻辑, 语义网络
+\item 知识获取, 知识表示, 知识运用
+\item 弧/有向弧, 事物/概念/属性, 语义关系
+\item 完备性, 最优性
+\item 正向, 反向, 双向 (或 演绎, 归纳, 溯因)
+\item 多 (或 双)
+\item 1
+\end{enumerate}
+
+%----------------------------------------
+\section{简答题 (10题)}
+%----------------------------------------
+
+\begin{enumerate}[leftmargin=2em,itemsep=1pt]
+\item 什么是“图灵测试”？简单描述之。
+\item 什么是人工智能？人工智能程序与传统的计算机程序有什么区别？
+\item 什么是产生式？产生式规则的语义是什么？
+\item 广度优先搜索与深度优先搜索各有什么特点？
+\item 什么是置换？置换是可交换的吗？
+\item “$\alpha$-$\beta$剪枝方法只是极小极大方法的一种近似，剪枝可能会遗漏掉最佳走步”，这种说法是否正确？为什么？
+\item 什么是知识工程？它对人工智能的发展有何重要作用？
+\item 先进专家系统具有哪些特点？
+\item 什么是语义网络？它主要包含哪两个部分？
+\item 什么是博弈树？在博弈树搜索中，MAX节点和MIN节点分别代表什么？
+\end{enumerate}
+
+\textbf{参考答案：}
+\begin{enumerate}[label=\arabic*.]
+\item 所谓“图灵测试”，是为了判断一台机器是否具备智能的实验。实验由三个封闭的房间组成，分别放置主持人、参与人和机器。主持人向参与人和机器提问，通过提问的结果来判断谁是人，谁是机器。如果主持人无法判断谁是人，谁是机器，则认为这台机器具备智能。
+\item AI是研究如何制造人造的智能机器或智能系统来模拟人类智能活动的能力，以延伸人类智能的科学。区别：AI以符号表示的知识为研究对象，而非数值数据；AI主要采用启发式搜索而非单纯的算法；AI中控制结构与知识是分离的；AI允许出现不确定的答案。
+\item 产生式规则基本形式：$P \to Q$ 或者 IF $P$ THEN $Q$。$P$是前提（前件），$Q$是结论或操作（后件）。语义：如果前提$P$被满足，则可推出结论$Q$或执行$Q$所规定的操作。
+\item 广度优先搜索：从初始节点开始，逐层遍历所有节点。优点是如果存在解，一定能找到最优解（最短路径）；缺点是存储空间消耗大。深度优先搜索：沿着一条路径一直搜索到底，直到无法继续或达到目标。优点是节省空间；缺点是可能陷入死循环（需设深度限制），且找到的不一定是最优解。
+\item 通常用有序对的集合$s=\{t_1/v_1, t_2/v_2, \dots, t_n/v_n\}$来表示任一置换，表示变量$v_i$被项$t_i$替换。一般来说，置换是不可交换的，即两个置换合成的结果与置换使用的次序有关。
+\item 不正确。$\alpha$-$\beta$剪枝方法利用已经搜索的信息，剪掉那些对于搜索最佳走步没有意义的分枝，其找到的最佳走步与极小极大方法找到的结果是一样的（它是精确的，不是近似）。
+\item 知识工程是以知识为处理对象，研究知识系统的开发方法、工具及理论的学科。它极大地推动了专家系统和人工智能其实用化发展，解决了“知识获取”这一瓶颈问题。
+\item (1)并行分布式处理功能；(2)多专家协同工作；(3)更强的自学习能力；(4)更新的推理机制；(5)自纠错和自完善能力；(6)先进的智能接口；(7)引入更多先进技术（如神经网络、模糊逻辑等）。
+\item 语义网络是一种用图来表示知识的结构。它主要包含节点（Nodes）和弧（Arcs/Links）。节点代表“事物”、“概念”、“属性”、“情况”等；弧代表节点之间的语义关系。
+\item 博弈树是描述博弈过程的树状图。MAX节点代表己方（希望得分最大），MIN节点代表对手（希望己方得分最小）。
+\end{enumerate}
+
+%----------------------------------------
+\section{综合应用题 (10题)}
+%----------------------------------------
+
+\begin{enumerate}[leftmargin=2em,itemsep=1em]
+
+\item \textbf{（机器人摆积木）} 设机器人有一只机械手，要处理的世界有一张桌子，桌上可堆放若干相同的方积木块。机械手有4个操作：Pickup(x)（从桌上拣起x）, Putdown(x)（放到桌上）, Stack(x,y)（把x叠在y上）, Upstack(x,y)（从y上拣起x）。
+\begin{enumerate}
+    \item 定义描述状态的谓词（如ON, ONTABLE, CLEAR, HANDEMPTY, HOLDING等）。
+    \item 给出初始状态：积木A, B在桌上，C在A上。目标状态：C在桌上，B在C上，A在B上。写出求解过程的操作序列。
+\end{enumerate}
+
+\item \textbf{（归结原理）} 设已知：
+\begin{enumerate}
+    \item 如果x是y的父亲，y是z的父亲，则x是z的祖父。
+    \item 每个人都有一个父亲。
+\end{enumerate}
+使用归结演绎推理证明：对于某人u，一定存在一个人v，v是u的祖父。
+
+\item \textbf{（产生式系统）} 已知规则库：
+\begin{itemize}
+    \item R1: IF (X身上有毛) THEN (X是哺乳动物)
+    \item R2: IF (X是哺乳动物) AND (X吃肉) THEN (X是食肉动物)
+    \item R3: IF (X是食肉动物) AND (X有黑色条纹) THEN (X是老虎)
+\end{itemize}
+事实库：\{阿娜身上有毛, 阿娜吃肉, 阿娜有黑色条纹\}。
+试模拟正向推理过程，推出阿娜是什么动物。
+
+\item \textbf{（框架表示）} 请构建一个“大学教师”的框架系统，包括Name, Age, Title（职称）, Department（系）, Course（教授课程）等槽，并给出一个具体的实例（如：张三，45岁，教授，计算机系，讲授人工智能）。
+
+\item \textbf{（逻辑推理）} 张某被盗，公安局派出5个人去调查。
+\begin{itemize}
+    \item 侦察员A说：“赵与钱中至少有一人作案”
+    \item 侦察员B说：“钱与孙中至少有一人作案”
+    \item 侦察员C说：“孙与李中至少有一人作案”
+    \item 侦察员D说：“赵与孙中至少有一人与此案无关”
+    \item 侦察员E说：“钱与李中至少有一人与此案无关”
+\end{itemize}
+如果这5个侦察员的话都是可信的，使用归结原理求出谁是盗窃犯。
+
+\item \textbf{（八数码问题）} 评价函数定义为 $f(x) = d(x) + W(x)$，其中 $d(x)$ 是深度，$W(x)$ 是“不在位数”。
+初始状态：
+$
+\begin{pmatrix}
+2 & 8 & 3 \\
+1 & 6 & 4 \\
+7 & 0 & 5
+\end{pmatrix}
+$
+目标状态：
+$
+\begin{pmatrix}
+1 & 2 & 3 \\
+8 & 0 & 4 \\
+7 & 6 & 5
+\end{pmatrix}
+$
+请画出搜索树的前几步（3层左右）。
+
+\item \textbf{（语义网络）} 请用语义网络表示下列事实：
+\begin{enumerate}
+    \item 树和草都是植物。
+    \item 树和草都有根和叶。
+    \item 水草是草，它长在水中。
+    \item 果树是树，会结果。
+    \item 苹果树是果树，结苹果。
+\end{enumerate}
+
+\item \textbf{（旅行推销员问题）} 下图是一个带权图（假设A, B, C, D四城，距离自定），请用代价优先（或A*）算法求从A出发遍历所有城市回到A的最短路径。
+（注：此处需自行构造简单图例或描述图结构）
+
+\item \textbf{（谓词逻辑形式化）} 将下列自然语言转化为谓词公式：
+\begin{enumerate}
+    \item 所有的人都要呼吸。
+    \item 每个学生都要参加考试。
+    \item 任何整数或是正的或是负的。
+    \item 不是每一个人都喜欢游泳。
+\end{enumerate}
+
+\item \textbf{（Hanoi塔）} 设有3个盘子（1号小，2号中，3号大）在A柱，要求移到B柱，可借助C柱。每次只能移一个，大盘不能压小盘。请写出移动序列。
+
+\end{enumerate}
+
+\textbf{参考答案概要：}
+\begin{enumerate}[label=\arabic*.]
+\item 
+(1) 谓词：ONTABLE(x), ON(x,y), CLEAR(x), HANDEMPTY, HOLDING(x)。
+(2) 操作序列：Unstack(C,A) $\to$ Putdown(C) $\to$ Pickup(B) $\to$ Stack(B,C) $\to$ Pickup(A) $\to$ Stack(A,B)。
+\item 
+(1) $F(x,y) \land F(y,z) \to GF(x,z)$
+(2) $\forall y \exists x F(x,y)$
+求证：$\exists u \exists v (P(u) \to GF(v,u))$。
+通过归结反演，将结论否定 $\neg (\exists v GF(v,u))$ (假设u存在) 化为子句，与前提子句集归结，最终得空子句。
+\item 
+Step 1: R1匹配(阿娜有毛) $\to$ (阿娜是哺乳动物)。
+Step 2: R2匹配(阿娜是哺乳动物, 吃肉) $\to$ (阿娜是食肉动物)。
+Step 3: R3匹配(阿娜是食肉动物, 有条纹) $\to$ (阿娜是老虎)。
+\item 
+Frame Teacher:
+  Slot Name: String
+  Slot Age: Int
+  Slot Title: (Prof, AssocProf, Lecturer)
+  Instance: 张三 (Name=张三, Age=45, Title=Prof, ...)
+\item 
+将每句话化为子句：
+A: $Z \lor Q$
+B: $Q \lor S$
+C: $S \lor L$
+D: $\neg Z \lor \neg S$
+E: $\neg Q \lor \neg L$
+结论：钱和孙是作案者。
+\item 
+计算 $W(x)$：初始状态不在位数为4 (1,2,6,8,0等位置错乱)。
+扩展初始节点，计算子节点的f值，选择最小f值节点继续扩展。
+\item 
+(略，画图表示继承关系ISA，属性关系Have/Can等)
+\item 
+使用Open/Closed表。
+Open: [A(0)]
+Pop A, Push B, C, D... sorted by cost.
+...
+\item 
+(1) $\forall x (Person(x) \to Breathe(x))$
+(2) $\forall x (Student(x) \to TakeExam(x))$
+(3) $\forall x (Integer(x) \to Positive(x) \lor Negative(x))$ [注：0除外，简化表达]
+(4) $\neg \forall x (Person(x) \to LikeSwim(x))$ 或 $\exists x (Person(x) \land \neg LikeSwim(x))$
+\item 
+A $\to$ B (1号), A $\to$ C (2号), B $\to$ C (1号), A $\to$ B (3号), C $\to$ A (1号), C $\to$ B (2号), A $\to$ B (1号)。
+\end{enumerate}

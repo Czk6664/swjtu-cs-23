@@ -1,0 +1,707 @@
+%========================================
+\chapter{知识表示}
+%========================================
+
+\section{知识的基本概念}
+
+\subsection{知识的定义}
+\begin{conceptbox}
+\textbf{知识}是信息之间关联的结果，最常见的是用"如果……，则……"来表达因果关系。
+\end{conceptbox}
+
+在AI中，知识分为两类：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{事实（Fact）}：对客观世界的描述，如"蚂蚁搬家"
+    \item \textbf{规则（Rule）}：事物间的因果关系，如"如果蚂蚁搬家，则大雨将至"
+\end{itemize}
+
+\subsection{知识的特性}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{特性} & \textbf{解释} \\
+\midrule
+相对正确性 & 在特定条件下成立，可能随环境变化而失效 \\
+不确定性 & 很多知识存在概率或模糊性 \\
+可表示性 & 可以用某种语言或形式化方法表达 \\
+可利用性 & 能被计算机存储、处理并用于推理决策 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{notebox}
+知识不是绝对真理，而是人类对客观世界的认识结晶。例如："水在0°C结冰"的前提是标准大气压下。
+\end{notebox}
+
+\section{命题逻辑}
+
+\subsection{命题的定义}
+\begin{conceptbox}
+\textbf{命题（Proposition）}是一个非真即假的陈述句，具有唯一的真值（T或F）。
+\end{conceptbox}
+
+\textbf{判断是否为命题的标准}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 是否为陈述句？
+    \item 是否有唯一真值（T或F）？
+\end{enumerate}
+
+\textbf{非命题的例子}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item "你吃饭了吗？" —— 疑问句，无真假
+    \item "哇！好美！" —— 感叹句，无明确真值
+\end{itemize}
+
+\subsection{逻辑连接词}
+使用连接词将简单命题组合成复杂命题：
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ccl}
+\toprule
+\textbf{连接词} & \textbf{符号} & \textbf{含义} \\
+\midrule
+非 & $\neg P$ & P不成立 \\
+与 & $P \land Q$ & P和Q都为真 \\
+或 & $P \lor Q$ & P或Q至少一个为真 \\
+蕴含 & $P \to Q$ & 如果P为真，则Q必须为真 \\
+等价 & $P \leftrightarrow Q$ & P和Q同真或同假 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{真值表}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{cc|ccccc}
+\toprule
+$P$ & $Q$ & $\neg P$ & $P \land Q$ & $P \lor Q$ & $P \to Q$ & $P \leftrightarrow Q$ \\
+\midrule
+T & T & F & T & T & T & T \\
+T & F & F & F & T & F & F \\
+F & T & T & F & T & T & F \\
+F & F & T & F & F & T & T \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{notebox}
+\textbf{特别注意}：$P \to Q$ 在P为假时恒为真（即使Q为假），这称为"空真"。
+\end{notebox}
+
+\section{谓词逻辑}
+
+\subsection{谓词与量词}
+谓词逻辑使用变量、谓词、量词表示更复杂的知识。
+
+\textbf{量词}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{全称量词} $\forall$：表示"所有"
+    \item \textbf{存在量词} $\exists$：表示"存在"
+\end{itemize}
+
+\subsection{量词组合示例}
+设谓词 $F(x, y)$ 表示"x和y是朋友"：
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{公式} & \textbf{含义} \\
+\midrule
+$(\forall x)(\forall y)F(x,y)$ & 所有人都是彼此的朋友 \\
+$(\forall x)(\exists y)F(x,y)$ & 每个人都有至少一个朋友 \\
+$(\exists x)(\exists y)F(x,y)$ & 至少有两个人是朋友 \\
+$(\exists x)(\forall y)F(x,y)$ & 存在一个人和所有人都是朋友 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{辖域与变元}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{辖域（Scope）}：量词后面被作用的部分
+    \item \textbf{约束变元}：出现在量词辖域内的同名变量
+    \item \textbf{自由变元}：未被任何量词约束的变量
+\end{itemize}
+
+\subsection{常见等价式}
+\begin{formulabox}
+\textbf{德摩根律}：
+\begin{align*}
+\neg(P \lor Q) &\Leftrightarrow \neg P \land \neg Q \\
+\neg(P \land Q) &\Leftrightarrow \neg P \lor \neg Q
+\end{align*}
+
+\textbf{量词转换}：
+\begin{align*}
+\neg(\exists x)P &\Leftrightarrow (\forall x)(\neg P) \\
+\neg(\forall x)P &\Leftrightarrow (\exists x)(\neg P)
+\end{align*}
+\end{formulabox}
+
+\section{状态空间法}
+
+\subsection{状态空间的定义}
+\begin{conceptbox}
+\textbf{状态空间}是一个图，用来表示某个问题所有可能的状态及其之间的关系，可记为四元组：$(S, O, s_0, G)$
+\end{conceptbox}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item $S$：所有可能的状态集合
+    \item $O$：操作符集合（状态转换操作）
+    \item $s_0$：初始状态集合
+    \item $G$：目标状态集合
+\end{itemize}
+
+\subsection{状态空间图}
+\begin{center}
+\begin{tikzpicture}[node distance=1.5cm,>=stealth,thick]
+\node[draw,circle,fill=green!20] (s0) {$s_0$};
+\node[draw,circle,right=of s0] (s1) {$s_1$};
+\node[draw,circle,right=of s1] (s2) {$s_2$};
+\node[draw,circle,below=of s1] (s3) {$s_3$};
+\node[draw,circle,right=of s2,fill=red!20] (G) {$G$};
+
+\draw[->] (s0) -- node[above]{\small $o_1$} (s1);
+\draw[->] (s1) -- node[above]{\small $o_2$} (s2);
+\draw[->] (s1) -- node[left]{\small $o_3$} (s3);
+\draw[->] (s2) -- node[above]{\small $o_4$} (G);
+\draw[->] (s3) -- node[below right]{\small $o_5$} (G);
+\end{tikzpicture}
+\end{center}
+
+\textbf{求解路径}：从初始状态$s_0$到目标状态$G$的一条路径，路径上的操作序列就是问题的解。
+
+\section{产生式系统}
+
+\subsection{产生式的基本形式}
+
+\subsubsection{确定性规则}
+\begin{lstlisting}
+IF P THEN Q
+\end{lstlisting}
+或符号形式：$P \to Q$
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item $P$：前提（前项），条件满足时才能触发
+    \item $Q$：结论（后项），当P成立时应得出的结果
+\end{itemize}
+
+\subsubsection{不确定性规则}
+\begin{lstlisting}
+IF P THEN Q (置信度)
+\end{lstlisting}
+
+例如：\texttt{IF 头痛 AND 流鼻涕 THEN 感冒 (0.8)}
+
+表示有80\%的可能性是感冒。
+
+\subsection{产生式系统的组成}
+\begin{center}
+\begin{tikzpicture}[node distance=2cm,>=stealth,thick]
+\node[draw,rectangle,minimum width=3cm,minimum height=1cm,fill=blue!10] (rule) {规则库};
+\node[draw,rectangle,minimum width=3cm,minimum height=1cm,right=of rule,fill=green!10] (engine) {推理机};
+\node[draw,rectangle,minimum width=3cm,minimum height=1cm,right=of engine,fill=yellow!10] (db) {综合数据库};
+
+\draw[<->] (rule) -- (engine);
+\draw[<->] (engine) -- (db);
+\end{tikzpicture}
+\end{center}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{组成部分} & \textbf{功能} \\
+\midrule
+规则库 & 存储所有产生式规则 \\
+推理机 & 控制规则匹配与执行过程 \\
+综合数据库 & 存放当前已知的事实、中间结果和最终结论 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{求解步骤}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 初始化综合数据库（输入初始事实）
+    \item 建立规则库
+    \item 匹配规则（检查是否有规则的前提与当前事实匹配）
+    \item 执行规则（将结论加入数据库）
+    \item 检查是否已得解
+    \item 若无可用规则，请求用户提供更多信息
+    \item 终止求解
+\end{enumerate}
+
+\begin{examplebox}[例题2.1 产生式推理]
+\textbf{题目}：已知字符A和B，目标得到字符F。规则如下：
+\begin{itemize}[itemsep=0pt]
+    \item $R_1$: $A \land B \to C$
+    \item $R_2$: $A \land C \to D$
+    \item $R_3$: $B \land C \to G$
+    \item $R_4$: $B \land E \to F$
+    \item $R_5$: $D \to E$
+\end{itemize}
+\tcblower
+\textbf{解答}：
+\begin{enumerate}[itemsep=0pt]
+    \item 初始事实：A, B
+    \item 应用$R_1$：$A \land B \to C$ → 得到C
+    \item 应用$R_2$：$A \land C \to D$ → 得到D
+    \item 应用$R_5$：$D \to E$ → 得到E
+    \item 应用$R_4$：$B \land E \to F$ → 得到F ✓
+\end{enumerate}
+\textbf{推理路径}：$A,B \to C \to D \to E \to F$
+\end{examplebox}
+
+\section{语义网络}
+
+\subsection{基本概念}
+\begin{conceptbox}
+\textbf{语义网络}是一种用带标识的有向图来表示知识的方法，由节点和弧组成。
+\end{conceptbox}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{节点（Node）}：表示概念、对象、事件、属性等
+    \item \textbf{弧（Arc）}：表示节点间的语义关系
+\end{itemize}
+
+\subsection{基本语义关系}
+
+\subsubsection{类属关系}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{关系} & \textbf{含义} & \textbf{示例} \\
+\midrule
+ISA & 实例关系：A是B的一个实例 & 鹦鹉 → ISA → 鸟 \\
+AMO & 成员关系：A是B的成员 & 李琦 → AMO → 学生会 \\
+AKO & 种类关系：A是B的一种类型 & 鸟 → AKO → 动物 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{包含关系（聚集关系）}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{Part-of}：某物是另一物的一部分
+    \item 例如：轮胎 → Part-of → 汽车
+    \item \textbf{特点}：不具备属性继承性
+\end{itemize}
+
+\subsubsection{属性关系}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{Have}：具备某种属性（鸟 → Have → 翅膀）
+    \item \textbf{Can}：能够做某事（洗衣机 → Can → 洗衣服）
+\end{itemize}
+
+\subsubsection{其他关系}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{时间关系}：Before、After
+    \item \textbf{位置关系}：Located-at、Located-in
+    \item \textbf{因果关系}：If-then
+    \item \textbf{相近关系}：Similar-to
+\end{itemize}
+
+\subsection{语义网络示例}
+\begin{center}
+\begin{tikzpicture}[node distance=2cm,>=stealth,thick]
+\node[draw,ellipse] (animal) {动物};
+\node[draw,ellipse,below left=of animal] (mammal) {哺乳动物};
+\node[draw,ellipse,below=of mammal] (cat) {猫};
+\node[draw,ellipse,below=of cat] (sphinx) {斯芬克斯猫};
+\node[draw,rectangle,right=of sphinx] (fur) {毛};
+
+\draw[->] (mammal) -- node[left]{\small AKO} (animal);
+\draw[->] (cat) -- node[left]{\small AKO} (mammal);
+\draw[->] (sphinx) -- node[left]{\small ISA} (cat);
+\draw[->,dashed] (sphinx) -- node[above]{\small Not-Have} (fur);
+\end{tikzpicture}
+\end{center}
+
+\begin{notebox}
+\textbf{属性继承}：类属关系（ISA、AKO）支持属性继承，包含关系（Part-of）不支持。
+\end{notebox}
+
+\begin{notebox}
+\textbf{属性继承}：类属关系（ISA、AKO）支持属性继承，包含关系（Part-of）不支持。
+\end{notebox}
+
+\subsection{语义网络的推理}
+
+基于语义网络的推理主要有以下三种方式：
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{网络匹配（Matching）}
+    \begin{itemize}
+        \item 在知识库的语义网络中寻找与待求解问题相匹配的片段。
+        \item 如果找到匹配的片段，则问题得到解答。
+    \end{itemize}
+    
+    \item \textbf{网络继承（Inheritance）}
+    \begin{itemize}
+        \item 利用ISA和AKO链，下层节点自动拥有上层节点的属性。
+        \item 这是一个\textbf{默认推理}过程，除非有明确的特例（如鸵鸟是鸟，但不会飞）。
+    \end{itemize}
+    
+    \item \textbf{网络演绎（Deduction）}
+    \begin{itemize}
+        \item 根据语义网络中的隐含关系（如传递性）推导出新的关系。
+        \item 例如：A是B的一部分，B是C的一部分 $\to$ A是C的一部分。
+    \end{itemize}
+\end{enumerate}
+
+\section{框架表示法}
+
+\subsection{框架的结构}
+\begin{conceptbox}
+\textbf{框架（Frame）}是一种描述对象属性的数据结构，由若干个槽（Slot）组成，每个槽又可划分为若干个侧面（Facet）。
+\end{conceptbox}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{术语} & \textbf{含义} \\
+\midrule
+框架（Frame） & 描述某一类事物的整体结构 \\
+槽（Slot） & 表示对象的一个属性 \\
+侧面（Facet） & 描述槽的某个方面（如默认值、约束） \\
+槽值 & 槽的具体取值 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{框架表示步骤}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 分析待表示知识中的对象及其属性，设置框架中的槽
+    \item 考察各对象间的联系，使用槽名描述上下层框架间的关系
+    \item 对各层对象的槽和侧面进行合理组织，避免信息重复
+\end{enumerate}
+
+\begin{examplebox}[例题2.2 框架表示]
+\textbf{题目}：用框架表示以下新闻：
+
+"今天，一次强度为里氏8.5级的强烈地震袭击了下斯洛文尼亚地区，造成25人死亡和5亿美元的财产损失。"
+\tcblower
+\textbf{解答}：
+\begin{lstlisting}
+框架名：<地震3>
+  ISA: <地震>
+  地点: 下斯洛文尼亚
+  时间: 今天
+  震级: 8.5
+  伤亡人数: 25
+  财产损失: 5亿美元
+\end{lstlisting}
+\end{examplebox}
+
+\section{专家系统的结构与原理}
+
+\begin{conceptbox}
+\textbf{专家系统}（Expert System）是一种智能计算机程序，能够利用人类专家的知识和推理方法来解决特定领域中的复杂问题。
+\end{conceptbox}
+
+\subsection{六大核心组件}
+
+专家系统通常由以下六个部分组成：
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{知识库（Knowledge Base）}
+    \begin{itemize}
+        \item 存储特定领域的专业知识（事实、规则等）。
+        \item 是专家系统的核心，其质量决定系统的性能。
+    \end{itemize}
+    
+    \item \textbf{推理机（Inference Engine）}
+    \begin{itemize}
+        \item 根据当前已知事实，利用知识库中的知识进行推理。
+        \item 常用推理策略：正向推理、反向推理、混合推理。
+    \end{itemize}
+    
+    \item \textbf{综合数据库（Global Database）}
+    \begin{itemize}
+        \item 又称动态数据库或黑板，用于存放初始证据、中间结果和最终结论。
+    \end{itemize}
+    
+    \item \textbf{人机界面（User Interface）}
+    \begin{itemize}
+        \item 用户与系统交互的窗口，负责接受用户输入和输出系统解答。
+    \end{itemize}
+    
+    \item \textbf{解释模块（Explanation Module）}
+    \begin{itemize}
+        \item "Why"解释：为什么系统问这个问题？
+        \item "How"解释：系统是如何得出这个结论的？
+        \item 增强用户对系统的信任感。
+    \end{itemize}
+    
+    \item \textbf{知识获取模块（Knowledge Acquisition）}
+    \begin{itemize}
+        \item 负责将人类专家的知识转化为计算机可表示的形式并存入知识库。
+        \item 是构建专家系统的"瓶颈"环节。
+    \end{itemize}
+\end{enumerate}
+
+\subsection{先进专家系统的特点}
+
+随着技术发展，新一代（先进）专家系统表现出以下特征：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{并行分布式处理}：多专家协同工作。
+    \item \textbf{多专家协同}：解决单一领域知识的局限性。
+    \item \textbf{自学习能力}：能从经验中学习新知识。
+    \item \textbf{深层知识推理}：不仅基于浅层经验规则，还能进行基于模型的深层推理。
+\end{itemize}
+
+\section{习题与解答}
+
+\subsection{是非题}
+
+\begin{enumerate}[leftmargin=2em,itemsep=2pt]
+    \item 语义网络是一种有向图，它有5个级别，7种类型。（√）
+    \item 单位关系不在语义网络表示的范围内。（×）
+    \item 对象与类是实例关系。（√）
+    \item 基于语义网络的推理主要有网络匹配、网络继承和网络演绎三种方式。（√）
+    \item 对"与"、"或"、"蕴含"关系，在语义网络表示时主要加上"与"、"或"、"蕴含"结点。（√）
+    \item 框架之间也有从属关系、实例关系等。（√）
+    \item 命题是可以判断真假的陈述句。（√）
+\end{enumerate}
+
+\subsection{填空题}
+
+\begin{enumerate}[leftmargin=2em,itemsep=2pt]
+    \item 在人工智能中，通常知识有\underline{谓词逻辑表示法}、\underline{产生式系统表示法}、\underline{语义网络表示法}、\underline{框架表示法}等表示的方法。
+    \item 产生式系统包括\underline{知识库}和\underline{推理机}，知识库由\underline{规则库}和\underline{数据库}组成。
+    \item 产生式系统的推理可分为\underline{正向推理}、\underline{反向推理}和\underline{混合推理}。
+    \item 语义网络是用\underline{有向图}方法表示的，由\underline{节点}和\underline{弧}二元组构成。其中节点表示概念、属性、事件等；弧表示节点间的语义关系。
+    \item 在语义网络中，为了表示节点间属性的继承推理，规定了两个约定俗成的链，命名为\underline{ISA}和\underline{AKO}，用来表明类和子类、类和个体之间的关系。
+    \item 仅个体变元被量化的谓词称为\underline{一阶谓词}。
+    \item 在谓词公式中，紧接于量词之后被量词作用的谓词公式称为该量词的\underline{辖域}，而在一个量词的辖域中与该量词的指导变元相同的变元称为\underline{约束变元}，其他变元称为\underline{自由变元}。
+\end{enumerate}
+
+\subsection{选择题}
+
+\begin{examplebox}[选择题2.1]
+\textbf{问题}：语义网络表达知识时，有向弧AKO链、ISA链是用来表达节点知识的（\quad）
+
+A. 无序性 \quad B. 可扩充性 \quad C. 继承性
+\tcblower
+\textbf{答案}：C
+
+AKO（A Kind Of）和ISA（Is A）链用于表示类属关系，支持属性的继承推理。
+\end{examplebox}
+
+\begin{examplebox}[选择题2.2]
+\textbf{问题}：从已知事实出发，通过规则库求得结论的产生式系统的推理方式是（\quad）
+
+A. 正向推理 \quad B. 反向推理 \quad C. 双向推理
+\tcblower
+\textbf{答案}：A
+
+正向推理（数据驱动）从已知事实出发，逐步应用规则得出结论。反向推理（目标驱动）从目标出发，寻找支持目标的事实。
+\end{examplebox}
+
+\subsection{语义网络表示例题}
+
+\begin{examplebox}[例题2.3 语义网络表示人物关系]
+\textbf{问题}：用语义网络表示"胡涛是创新公司的经理，他35岁，住在飞天胡同68号"。
+\tcblower
+\begin{center}
+\begin{tikzpicture}[node distance=2cm,>=stealth,thick]
+\node[draw,ellipse] (hutao) {胡涛};
+\node[draw,ellipse,right=of hutao] (company) {创新公司};
+\node[draw,rectangle,above=1.5cm of hutao] (age) {35};
+\node[draw,rectangle,below=1.5cm of hutao] (addr) {飞天胡同68号};
+\node[draw,ellipse,right=of company] (manager) {经理};
+
+\draw[->] (hutao) -- node[above]{\small 工作于} (company);
+\draw[->] (hutao) -- node[left]{\small 年龄} (age);
+\draw[->] (hutao) -- node[left]{\small 住于} (addr);
+\draw[->] (hutao) -- node[below]{\small ISA} (manager);
+\end{tikzpicture}
+\end{center}
+\end{examplebox}
+
+\begin{examplebox}[例题2.4 语义网络表示事件]
+\textbf{问题}：用语义网络表示"高老师从3月到7月给计算机系学生讲《计算机网络》课"。
+\tcblower
+\begin{center}
+\begin{tikzpicture}[node distance=1.8cm,>=stealth,thick]
+\node[draw,ellipse,fill=yellow!20] (event) {讲课事件};
+\node[draw,ellipse,left=of event] (teacher) {高老师};
+\node[draw,ellipse,right=of event] (student) {计算机系学生};
+\node[draw,rectangle,above=of event] (course) {计算机网络};
+\node[draw,rectangle,below left=1.2cm of event] (start) {3月};
+\node[draw,rectangle,below right=1.2cm of event] (end) {7月};
+
+\draw[->] (teacher) -- node[above]{\small 主体} (event);
+\draw[->] (event) -- node[above]{\small 对象} (student);
+\draw[->] (event) -- node[left]{\small 课程} (course);
+\draw[->] (event) -- node[below left]{\small 开始} (start);
+\draw[->] (event) -- node[below right]{\small 结束} (end);
+\end{tikzpicture}
+\end{center}
+\end{examplebox}
+
+\begin{examplebox}[例题2.5 语义网络表示层次关系]
+\textbf{问题}：用语义网络表示以下知识：
+\begin{enumerate}[itemsep=0pt]
+    \item 树和草都是植物
+    \item 树和草都有根和叶
+    \item 水草是草，且长在水中
+    \item 果树是树，且会结果
+    \item 苹果树是一种果树，它结苹果
+\end{enumerate}
+\tcblower
+\begin{center}
+\begin{tikzpicture}[node distance=1.5cm,>=stealth,thick,scale=0.9,transform shape]
+\node[draw,ellipse] (plant) {植物};
+\node[draw,ellipse,below left=of plant] (tree) {树};
+\node[draw,ellipse,below right=of plant] (grass) {草};
+\node[draw,ellipse,below=of tree] (fruit) {果树};
+\node[draw,ellipse,below=of grass] (water) {水草};
+\node[draw,ellipse,below=of fruit] (apple) {苹果树};
+\node[draw,rectangle,right=2cm of plant] (root) {根};
+\node[draw,rectangle,right=of root] (leaf) {叶};
+
+\draw[->] (tree) -- node[left]{\small AKO} (plant);
+\draw[->] (grass) -- node[right]{\small AKO} (plant);
+\draw[->] (fruit) -- node[left]{\small AKO} (tree);
+\draw[->] (water) -- node[right]{\small AKO} (grass);
+\draw[->] (apple) -- node[left]{\small ISA} (fruit);
+\draw[->] (plant) -- node[above]{\small Have} (root);
+\draw[->] (plant) -- node[above]{\small Have} (leaf);
+\draw[->] (fruit) -- node[right]{\small Can} ++(1.5,0) node[right]{结果};
+\draw[->] (water) -- node[right]{\small 生长于} ++(1.5,0) node[right]{水中};
+\draw[->] (apple) -- node[right]{\small 结} ++(1.5,0) node[right]{苹果};
+\end{tikzpicture}
+\end{center}
+\end{examplebox}
+
+\subsection{框架表示例题}
+
+\begin{examplebox}[例题2.6 框架表示灾害事件]
+\textbf{问题}：用框架表示以下新闻：
+
+"新华社3月16日电：昨日，沙尘暴袭击韩国汉城，机场与高速公路被迫关闭，造成的损失不详。韩国官方表示，如果需要直接损失情况，可待一周后的官方公布数字。此次沙尘是起因于中国内蒙古地区过分垦牧破坏植被所致。"
+\tcblower
+\begin{lstlisting}
+FRAME: 沙尘暴事件
+  Slot1: 时间
+    Value: 3月15日
+  Slot2: 地点
+    Value: 韩国汉城
+  Slot3: 损失
+    Value: 不详
+    If-needed: 一周后官方公布数字
+  Slot4: 起因
+    Default: 中国内蒙古地区过分垦牧破坏植被
+  Slot5: 影响
+    Value: 机场与高速公路关闭
+\end{lstlisting}
+\end{examplebox}
+
+\begin{examplebox}[例题2.7 框架网络表示]
+\textbf{问题}：建立一个"学生"框架网络，包含"学生基本情况"、"学生课程学习情况"和"学生奖惩情况"三个框架。
+\tcblower
+\begin{lstlisting}
+FRAME: <学生基本情况>
+  姓名: Unit(String)
+  性别: Area(男, 女)
+  年龄: Unit(Integer)
+  学号: Unit(String)
+  专业: Unit(String)
+  班级: Unit(String)
+
+FRAME: <学生课程学习情况>
+  AKO: <学生基本情况>
+  课程名称: Unit(String)
+  成绩: Unit(Float)
+  学分: Unit(Float)
+  学期: Unit(String)
+
+FRAME: <学生奖惩情况>
+  AKO: <学生基本情况>
+  奖惩类型: Area(奖励, 惩罚)
+  奖惩名称: Unit(String)
+  奖惩时间: Unit(Date)
+  奖惩原因: Unit(String)
+\end{lstlisting}
+\end{examplebox}
+
+\subsection{谓词逻辑表示例题}
+
+\begin{examplebox}[例题2.8 谓词公式表示]
+\textbf{问题}：将下列自然语言转化为谓词表示形式：
+\begin{enumerate}[itemsep=0pt]
+    \item 所有的人都是要呼吸的
+    \item 每个学生都要参加考试
+    \item 任何整数或是正的或是负的
+    \item 不存在最大的整数
+\end{enumerate}
+\tcblower
+设谓词：M(x):x是人，H(x):x要呼吸，P(x):x是学生，Q(x):x要参加考试，I(x):x是整数，R(x):x是正数，N(x):x是负数，G(x,y):x大于y
+
+\begin{enumerate}[itemsep=0pt]
+    \item $\forall x(M(x) \to H(x))$
+    \item $\forall x(P(x) \to Q(x))$
+    \item $\forall x(I(x) \to (R(x) \lor N(x)))$
+    \item $\neg\exists x(I(x) \land \forall y(I(y) \to G(x,y)))$
+    
+    或等价形式：$\forall x(I(x) \to \exists y(I(y) \land G(y,x)))$
+\end{enumerate}
+\end{examplebox}
+
+\subsection{产生式系统推理例题}
+
+\begin{examplebox}[例题2.9 产生式系统推理（动物识别）]
+\textbf{问题}：已知产生式系统中具有下面的规则：
+\begin{itemize}[itemsep=0pt]
+    \item R1: IF(X身上有毛) THEN (X是哺乳动物)
+    \item R2: IF(X喂奶) THEN (X是哺乳动物)
+    \item R5: IF(X是哺乳动物) AND (X吃肉) THEN (X是食肉动物)
+    \item R6: IF(X是哺乳动物) AND (X有尖锐的牙齿) AND (X有锋利的爪子) THEN (X是食肉动物)
+    \item R9: IF(X是食肉动物) AND (X的身体是黄褐色) AND (X有黑色斑点) THEN (X是猎豹)
+\end{itemize}
+
+事实集合：D1:(阿郎身上有毛)，D2:(阿郎有尖锐的牙齿)，D3:(阿郎有锋利的爪子)，D4:(阿郎身体的颜色是黄褐色)，D5:(阿郎身上有黑色斑点)
+
+用前向推理求解阿郎是什么动物。
+\tcblower
+\textbf{推理过程}：
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+\textbf{事实} & \textbf{规则} & \textbf{策略} & \textbf{更新数据库} \\
+\midrule
+D1 & R1 & C2 & D6:阿郎是哺乳动物 \\
+D6,D2,D3 & R6 & C3 & D7:阿郎是食肉动物 \\
+D7,D4,D5 & R9 & C3 & D8:阿郎是猎豹 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{结论}：阿郎是猎豹。
+\end{examplebox}
+
+\section{本章小结}
+
+本章介绍了人工智能中的知识表示方法：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 知识的概念与特性：相对正确性、不确定性、可表示性、可利用性
+    \item 命题逻辑：命题、连接词、真值表
+    \item 谓词逻辑：谓词、量词、辖域、等价式
+    \item 状态空间法：四元组表示、求解路径
+    \item 产生式系统：规则库、推理机、综合数据库
+    \item 语义网络：节点、弧、七类语义关系
+    \item 框架表示法：框架、槽、侧面
+\end{itemize}
+
+\textbf{重点掌握}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 产生式系统的组成和求解步骤
+    \item 语义网络的七类基本关系
+    \item 框架的结构和表示方法
+    \item 谓词公式的表示方法
+\end{itemize}

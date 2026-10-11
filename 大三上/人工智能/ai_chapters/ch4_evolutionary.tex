@@ -1,0 +1,1226 @@
+%========================================
+\chapter{搜索求解与进化计算}
+
+\section{搜索策略概述}
+
+\begin{conceptbox}
+\textbf{搜索}（Search）是人工智能解决问题的一种通用策略。
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{盲目搜索}：不利用问题的领域知识，按固定策略遍历状态空间（如BFS、DFS）。
+    \item \textbf{启发式搜索}：利用与问题相关的启发信息（估价函数）指导搜索方向（如A*算法）。
+\end{itemize}
+\end{conceptbox}
+
+\subsection{盲目搜索}
+
+\subsubsection{1. 宽度优先搜索（BFS）}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{策略}：先生成第一层所有节点，再生成第二层...逐层扩展。
+    \item \textbf{数据结构}：队列（Queue，先进先出）。
+    \item \textbf{性质}：
+    \begin{itemize}
+        \item \textbf{完备性}：若有解，一定能找到。
+        \item \textbf{最优性}：当所有操作代价相等时，能找到最短路径。
+        \item \textbf{缺点}：空间复杂度高（指数级增长），容易爆内存。
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{2. 深度优先搜索（DFS）}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{策略}：沿着一条路径一直往下搜，直到无路可走再回溯。
+    \item \textbf{数据结构}：栈（Stack，后进先出）。
+    \item \textbf{性质}：
+    \begin{itemize}
+        \item \textbf{不完备}：可能陷入死循环（对于无限深度）。
+        \item \textbf{不最优}：找到的解不一定是最短的。
+        \item \textbf{优点}：空间复杂度低。
+    \end{itemize}
+\end{itemize}
+
+\subsection{启发式搜索与A*算法}
+
+\subsubsection{估价函数}
+用来估计节点重要性的函数：
+$$f(n) = g(n) + h(n)$$
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item $g(n)$：从初始节点到节点$n$的\textbf{实际代价}。
+    \item $h(n)$：从节点$n$到目标节点的\textbf{估计代价}（启发函数）。
+\end{itemize}
+
+\subsubsection{A*算法}
+\textbf{A*算法}是最著名的启发式搜索算法。
+\begin{conceptbox}
+\textbf{可采纳性（Admissibility）}：
+若启发函数 $h(n)$ 满足 $h(n) \le h^*(n)$（其中 $h^*(n)$ 是实际最小代价），则 A* 算法保证能找到\textbf{全局最优解}。
+\end{conceptbox}
+
+\begin{examplebox}[例题4.1 八数码问题的A*求解]
+\textbf{问题}：将混乱的数字拼图恢复有序。
+\textbf{启发函数设计}：
+\begin{itemize}[itemsep=0pt]
+    \item $h_1(n)$：不在位的数码个数（简单，但不够精确）。
+    \item $h_2(n)$：所有数码与其目标位置的\textbf{曼哈顿距离}之和（更精确，且满足可采纳性）。
+\end{itemize}
+\textbf{结论}：$h_2$比$h_1$能更快找到最优解。
+\end{examplebox}
+
+\section{博弈树搜索}
+
+\subsection{极小化极大算法（Minimax）}
+适用于零和博弈（如象棋、井字棋）：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{MAX层}（我方）：选择估值最大的节点（对自己最有利）。
+    \item \textbf{MIN层}（对手）：选择估值最小的节点（对我方最不利）。
+\end{itemize}
+
+\subsection{\texorpdfstring{$\alpha-\beta$}{alpha-beta}剪枝}
+为了提高搜索效率，去掉不需要搜索的分支：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{$\alpha$剪枝}：在MIN层，若当前值 $\le \alpha$（MAX层的下界），则剪掉该枝（对手不会选这个更差的，我也没必要看了）。
+    \item \textbf{$\beta$剪枝}：在MAX层，若当前值 $\ge \beta$（MIN层的上界），则剪掉该枝。
+\end{itemize}
+
+%========================================
+
+\section{概述}
+
+\begin{conceptbox}
+\textbf{进化计算}是一类模拟生物进化过程的优化算法，包括遗传算法、进化策略等。
+
+\textbf{群智能}是指由简单个体组成的群体，通过局部交互涌现出复杂的集体智能行为。
+\end{conceptbox}
+
+这类算法的共同特点：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 基于种群的搜索策略
+    \item 不依赖问题的梯度信息
+    \item 具有全局搜索能力
+    \item 适用于复杂优化问题
+\end{itemize}
+
+\section{遗传算法}
+
+\subsection{基本概念}
+
+\begin{conceptbox}
+\textbf{遗传算法}（Genetic Algorithm, GA）是模拟达尔文生物进化论的自然选择和遗传机制的优化算法，通过选择、交叉、变异等操作，使种群逐代进化，最终找到最优解。
+\end{conceptbox}
+
+\textbf{生物学启示}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{适者生存}：适应环境的个体更容易存活和繁殖
+    \item \textbf{遗传}：后代继承父母的基因特征
+    \item \textbf{变异}：基因在遗传过程中可能发生随机改变
+    \item \textbf{进化}：经过多代繁衍，种群整体适应度提高
+\end{itemize}
+
+\subsection{遗传算法的核心术语}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{生物学概念} & \textbf{GA术语} & \textbf{含义} \\
+\midrule
+染色体 & 个体/染色体 & 问题的一个候选解 \\
+基因 & 基因 & 解的一个分量（决策变量） \\
+基因型 & 编码 & 解的表示形式（如二进制串） \\
+表现型 & 解码 & 编码对应的实际解 \\
+种群 & 种群 & 多个候选解的集合 \\
+适应度 & 适应度函数 & 评价解的优劣程度 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{编码方式}
+
+编码是将问题的解表示为染色体的过程，常见编码方式：
+
+\subsubsection{二进制编码}
+将解的每个分量用二进制串表示。
+
+\begin{examplebox}[例子：二进制编码]
+\textbf{问题}：求$x \in [0, 31]$使$f(x) = x^2$最大
+
+\textbf{编码}：用5位二进制表示$x$
+\begin{itemize}[itemsep=0pt]
+    \item $x = 0$ → 编码：00000
+    \item $x = 15$ → 编码：01111
+    \item $x = 31$ → 编码：11111
+\end{itemize}
+
+\textbf{染色体示例}：10110 表示 $x = 22$，适应度 $f(22) = 484$
+\end{examplebox}
+
+\subsubsection{实数编码}
+直接用实数表示解的各个分量，适用于连续优化问题。
+
+\subsubsection{排列编码}
+用排列表示解，适用于组合优化问题（如TSP）。
+
+\begin{examplebox}[例子：排列编码（TSP问题）]
+\textbf{问题}：访问5个城市（1,2,3,4,5）的最短路径
+
+\textbf{编码}：城市访问顺序的排列
+\begin{itemize}[itemsep=0pt]
+    \item 染色体1：[1, 3, 5, 2, 4] → 路径：1→3→5→2→4→1
+    \item 染色体2：[2, 1, 4, 5, 3] → 路径：2→1→4→5→3→2
+\end{itemize}
+\end{examplebox}
+
+\subsection{遗传算法的基本操作}
+
+\subsubsection{选择（Selection）}
+根据适应度选择优秀个体进入下一代，常用方法：
+
+\textbf{1. 轮盘赌选择}：个体被选中的概率与其适应度成正比。
+
+\begin{formulabox}
+选择概率：$P_i = \frac{f_i}{\sum_{j=1}^{N} f_j}$
+
+其中$f_i$是个体$i$的适应度，$N$是种群大小。
+\end{formulabox}
+
+\begin{examplebox}[例子：轮盘赌选择]
+\textbf{种群}：4个个体，适应度分别为 $f_1=10, f_2=20, f_3=30, f_4=40$
+
+\textbf{计算选择概率}：
+\begin{itemize}[itemsep=0pt]
+    \item 适应度总和：$10+20+30+40=100$
+    \item $P_1 = 10/100 = 10\%$
+    \item $P_2 = 20/100 = 20\%$
+    \item $P_3 = 30/100 = 30\%$
+    \item $P_4 = 40/100 = 40\%$
+\end{itemize}
+
+\textbf{轮盘}：生成随机数$r \in [0,1]$
+\begin{itemize}[itemsep=0pt]
+    \item $r \in [0, 0.1)$ → 选择个体1
+    \item $r \in [0.1, 0.3)$ → 选择个体2
+    \item $r \in [0.3, 0.6)$ → 选择个体3
+    \item $r \in [0.6, 1.0]$ → 选择个体4
+\end{itemize}
+适应度高的个体占据更大的轮盘区域，更容易被选中。
+\end{examplebox}
+
+\textbf{2. 锦标赛选择}：随机选取$k$个个体，从中选择适应度最高的。
+
+\begin{examplebox}[例子：锦标赛选择（k=3）]
+\textbf{种群}：6个个体，适应度为 $[15, 28, 12, 35, 22, 18]$
+
+\textbf{第一次选择}：随机抽取3个个体（如个体1,3,5），适应度为$[15, 12, 22]$，选择最优的个体5
+
+\textbf{第二次选择}：随机抽取3个个体（如个体2,4,6），适应度为$[28, 35, 18]$，选择最优的个体4
+
+锦标赛选择简单高效，选择压力可通过$k$值调节。
+\end{examplebox}
+
+\textbf{3. 精英保留策略}：将当前种群中最优的若干个体直接复制到下一代，保证最优解不丢失。
+
+\subsubsection{交叉（Crossover）}
+交叉是遗传算法的核心操作，模拟生物的基因重组，产生新个体。
+
+\textbf{1. 单点交叉}：随机选择一个交叉点，交换两个父代在交叉点后的基因。
+
+\begin{examplebox}[例子：单点交叉]
+\textbf{父代1}：1 0 1 1 | 0 0 1 0
+
+\textbf{父代2}：0 1 0 0 | 1 1 0 1
+
+交叉点在第4位后，交换后半部分：
+
+\textbf{子代1}：1 0 1 1 | 1 1 0 1
+
+\textbf{子代2}：0 1 0 0 | 0 0 1 0
+\end{examplebox}
+
+\textbf{2. 两点交叉}：随机选择两个交叉点，交换两点之间的基因段。
+
+\begin{examplebox}[例子：两点交叉]
+\textbf{父代1}：1 0 | 1 1 0 0 | 1 0
+
+\textbf{父代2}：0 1 | 0 0 1 1 | 0 1
+
+交叉点在第2位和第6位后，交换中间部分：
+
+\textbf{子代1}：1 0 | 0 0 1 1 | 1 0
+
+\textbf{子代2}：0 1 | 1 1 0 0 | 0 1
+\end{examplebox}
+
+\textbf{3. 均匀交叉}：对每个基因位，以一定概率决定是否交换。
+
+\begin{examplebox}[例子：均匀交叉]
+\textbf{父代1}：1 0 1 1 0 0 1 0
+
+\textbf{父代2}：0 1 0 0 1 1 0 1
+
+\textbf{交换掩码}：1 0 1 0 0 1 0 1（1表示交换，0表示不交换）
+
+\textbf{子代1}：0 0 0 1 0 1 1 1
+
+\textbf{子代2}：1 1 1 0 1 0 0 0
+\end{examplebox}
+
+\textbf{4. 顺序交叉（OX）}：用于排列编码，保持相对顺序。
+
+\begin{examplebox}[例子：顺序交叉（TSP问题）]
+\textbf{父代1}：[1 2 | 3 4 5 | 6 7 8 9]
+
+\textbf{父代2}：[4 5 | 2 1 8 | 7 6 9 3]
+
+\textbf{步骤}：
+\begin{enumerate}[itemsep=0pt]
+    \item 子代1先复制父代1的中间段：[* * | 3 4 5 | * * * *]
+    \item 从父代2的交叉点后开始，按顺序填入未出现的城市：7,6,9,2,1,8
+    \item 子代1：[9 2 | 3 4 5 | 1 8 7 6]
+\end{enumerate}
+\end{examplebox}
+
+\subsubsection{变异（Mutation）}
+变异以较小概率随机改变个体的某些基因，增加种群多样性，防止早熟收敛。
+
+\textbf{1. 位翻转变异}（二进制编码）：随机选择某些位，将0变1或1变0。
+
+\begin{examplebox}[例子：位翻转变异]
+\textbf{原个体}：1 0 1 1 0 0 1 0
+
+\textbf{变异位}：第3位和第6位
+
+\textbf{变异后}：1 0 \textbf{0} 1 0 \textbf{1} 1 0
+\end{examplebox}
+
+\textbf{2. 高斯变异}（实数编码）：在原值基础上加上服从高斯分布的随机数。
+$$x' = x + N(0, \sigma^2)$$
+
+\textbf{3. 交换变异}（排列编码）：随机选择两个位置，交换其基因值。
+
+\begin{examplebox}[例子：交换变异（TSP问题）]
+\textbf{原个体}：[1 2 3 4 5 6 7 8 9]
+
+\textbf{交换位置}：第3位和第7位
+
+\textbf{变异后}：[1 2 \textbf{7} 4 5 6 \textbf{3} 8 9]
+\end{examplebox}
+
+\subsection{遗传算法流程}
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm,>=stealth,thick,
+    box/.style={draw,rectangle,rounded corners,minimum width=3cm,minimum height=0.8cm,align=center}]
+\node[box,fill=blue!10] (init) {初始化种群};
+\node[box,fill=green!10,below=of init] (eval) {计算适应度};
+\node[box,fill=yellow!10,below=of eval] (select) {选择操作};
+\node[box,fill=orange!10,below=of select] (cross) {交叉操作};
+\node[box,fill=red!10,below=of cross] (mutate) {变异操作};
+\node[box,fill=purple!10,below=of mutate] (newpop) {形成新种群};
+\node[draw,diamond,aspect=2,below=of newpop,fill=gray!10] (term) {终止？};
+\node[box,fill=blue!20,below=of term] (output) {输出最优解};
+
+\draw[->] (init) -- (eval);
+\draw[->] (eval) -- (select);
+\draw[->] (select) -- (cross);
+\draw[->] (cross) -- (mutate);
+\draw[->] (mutate) -- (newpop);
+\draw[->] (newpop) -- (term);
+\draw[->] (term) -- node[right]{是} (output);
+\draw[->] (term.east) -- ++(1.5,0) |- node[near start,right]{否} (eval.east);
+\end{tikzpicture}
+\end{center}
+
+\textbf{算法步骤}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{初始化}：随机生成$N$个个体组成初始种群
+    \item \textbf{适应度评估}：计算每个个体的适应度值
+    \item \textbf{选择}：根据适应度选择优秀个体作为父代
+    \item \textbf{交叉}：以交叉概率$P_c$对父代进行交叉操作
+    \item \textbf{变异}：以变异概率$P_m$对个体进行变异操作
+    \item \textbf{形成新种群}：用新个体替换旧种群
+    \item \textbf{终止判断}：达到最大代数或满足收敛条件则停止，否则转步骤2
+\end{enumerate}
+
+\begin{notebox}
+\textbf{参数设置建议}：
+\begin{itemize}[itemsep=0pt]
+    \item 种群大小$N$：通常取20-200
+    \item 交叉概率$P_c$：通常取0.6-0.9
+    \item 变异概率$P_m$：通常取0.001-0.1
+    \item 最大代数：根据问题规模设定
+\end{itemize}
+\end{notebox}
+
+\subsection{遗传算法完整例题}
+
+\begin{examplebox}[例题4.1 用遗传算法求函数最大值]
+\textbf{问题}：求$f(x) = x^2$在$x \in [0, 31]$上的最大值。
+
+\textbf{参数设置}：种群大小$N=4$，交叉概率$P_c=0.8$，变异概率$P_m=0.1$，用5位二进制编码。
+\tcblower
+\textbf{第一步：初始化种群}
+
+随机生成4个个体：
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+个体 & 编码 & 解码值$x$ & 适应度$f(x)=x^2$ \\
+\midrule
+1 & 01101 & 13 & 169 \\
+2 & 11000 & 24 & 576 \\
+3 & 01000 & 8 & 64 \\
+4 & 10011 & 19 & 361 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{第二步：选择（轮盘赌）}
+
+适应度总和：$169+576+64+361=1170$
+
+选择概率：$P_1=14.4\%, P_2=49.2\%, P_3=5.5\%, P_4=30.9\%$
+
+假设选择结果：个体2、个体2、个体4、个体1（适应度高的被多次选中）
+
+\textbf{第三步：交叉}
+
+配对：(个体2, 个体2) 和 (个体4, 个体1)
+
+对(个体4, 个体1)进行单点交叉（交叉点在第3位后）：
+\begin{itemize}[itemsep=0pt]
+    \item 父代：100|11 和 011|01
+    \item 子代：100|01 和 011|11
+\end{itemize}
+
+\textbf{第四步：变异}
+
+假设个体3的第2位发生变异：01111 → 00111
+
+\textbf{新种群}：
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+个体 & 编码 & 解码值$x$ & 适应度$f(x)=x^2$ \\
+\midrule
+1 & 11000 & 24 & 576 \\
+2 & 11000 & 24 & 576 \\
+3 & 00111 & 7 & 49 \\
+4 & 01111 & 15 & 225 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{继续迭代}...经过多代进化，种群将收敛到最优解$x=31$（编码11111），$f(31)=961$。
+\end{examplebox}
+
+\begin{examplebox}[例题4.2 遗传算法解决TSP问题]
+\textbf{问题}：有4个城市，距离矩阵如下，求最短旅行路径。
+\begin{center}
+\begin{tabular}{c|cccc}
+ & A & B & C & D \\
+\hline
+A & 0 & 10 & 15 & 20 \\
+B & 10 & 0 & 35 & 25 \\
+C & 15 & 35 & 0 & 30 \\
+D & 20 & 25 & 30 & 0 \\
+\end{tabular}
+\end{center}
+\tcblower
+\textbf{编码方式}：排列编码，如[A,B,C,D]表示路径A→B→C→D→A
+
+\textbf{初始种群}（4个个体）：
+\begin{itemize}[itemsep=0pt]
+    \item 个体1：[A,B,C,D]，路径长度 = 10+35+30+20 = 95
+    \item 个体2：[A,C,B,D]，路径长度 = 15+35+25+20 = 95
+    \item 个体3：[A,B,D,C]，路径长度 = 10+25+30+15 = 80
+    \item 个体4：[A,D,B,C]，路径长度 = 20+25+35+15 = 95
+\end{itemize}
+
+\textbf{适应度}：取路径长度的倒数（越短越好）
+
+\textbf{选择}：个体3适应度最高，更容易被选中
+
+\textbf{交叉}（顺序交叉）：
+\begin{itemize}[itemsep=0pt]
+    \item 父代1：[A,|B,C|,D]，父代2：[A,|D,B|,C]
+    \item 子代1：[A,B,C,D]（保留B,C，从父代2填入D）
+\end{itemize}
+
+\textbf{变异}（交换变异）：交换两个城市位置
+
+经过多代进化，找到最优路径[A,B,D,C]或[A,C,D,B]，长度为80。
+\end{examplebox}
+
+
+\section{粒子群优化算法}
+
+\subsection{基本概念}
+
+\begin{conceptbox}
+\textbf{粒子群优化}（Particle Swarm Optimization, PSO）是一种模拟鸟群觅食行为的群智能优化算法。每个粒子代表一个候选解，通过跟踪个体最优和群体最优来更新自己的位置和速度。
+\end{conceptbox}
+
+\textbf{鸟群觅食启示}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 每只鸟知道自己离食物有多远（适应度）
+    \item 每只鸟记住自己找到过的最好位置（个体最优$p_{best}$）
+    \item 鸟群共享信息，知道群体找到的最好位置（全局最优$g_{best}$）
+    \item 每只鸟根据自身经验和群体经验调整飞行方向
+\end{itemize}
+
+\subsection{PSO核心术语}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{术语} & \textbf{含义} \\
+\midrule
+粒子 & 搜索空间中的一个候选解 \\
+位置$x_i$ & 粒子当前所在位置，即解的值 \\
+速度$v_i$ & 粒子的移动方向和步长 \\
+个体最优$p_{best,i}$ & 粒子$i$历史上找到的最优位置 \\
+全局最优$g_{best}$ & 整个群体历史上找到的最优位置 \\
+适应度 & 评价粒子位置优劣的函数值 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{速度和位置更新公式}
+
+\begin{formulabox}
+\textbf{速度更新}：
+$$v_i^{t+1} = w \cdot v_i^t + c_1 \cdot r_1 \cdot (p_{best,i} - x_i^t) + c_2 \cdot r_2 \cdot (g_{best} - x_i^t)$$
+
+\textbf{位置更新}：
+$$x_i^{t+1} = x_i^t + v_i^{t+1}$$
+
+其中：
+\begin{itemize}[itemsep=0pt]
+    \item $w$：惯性权重，控制对前一速度的继承程度
+    \item $c_1$：认知系数（个体学习因子），通常取2
+    \item $c_2$：社会系数（群体学习因子），通常取2
+    \item $r_1, r_2$：$[0,1]$之间的随机数
+\end{itemize}
+\end{formulabox}
+
+\textbf{速度更新公式的三个部分}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{惯性部分}：$w \cdot v_i^t$，保持粒子原有运动趋势
+    \item \textbf{认知部分}：$c_1 \cdot r_1 \cdot (p_{best,i} - x_i^t)$，向个体最优位置靠近
+    \item \textbf{社会部分}：$c_2 \cdot r_2 \cdot (g_{best} - x_i^t)$，向全局最优位置靠近
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick]
+    % 当前位置
+    \node[draw,circle,fill=blue!20,minimum size=0.8cm] (xi) at (0,0) {$x_i$};
+    % 个体最优
+    \node[draw,circle,fill=green!20,minimum size=0.6cm] (pbest) at (3,2) {$p_{best}$};
+    % 全局最优
+    \node[draw,circle,fill=red!20,minimum size=0.6cm] (gbest) at (4,-1) {$g_{best}$};
+    % 新位置
+    \node[draw,circle,fill=yellow!30,minimum size=0.8cm] (xnew) at (2.5,0.5) {$x_i'$};
+    
+    % 速度向量
+    \draw[->,blue,very thick] (xi) -- node[above,sloped]{\small 惯性} ++(1,0.3);
+    \draw[->,green!60!black,dashed] (xi) -- node[above,sloped]{\small 认知} (pbest);
+    \draw[->,red!60!black,dashed] (xi) -- node[below,sloped]{\small 社会} (gbest);
+    \draw[->,orange,very thick] (xi) -- node[below]{\small 合成} (xnew);
+\end{tikzpicture}
+\end{center}
+
+\subsection{参数说明}
+
+\begin{notebox}
+\textbf{惯性权重$w$的作用}：
+\begin{itemize}[itemsep=0pt]
+    \item $w$较大：全局搜索能力强，收敛速度慢
+    \item $w$较小：局部搜索能力强，容易陷入局部最优
+    \item 常用策略：线性递减，从0.9递减到0.4
+\end{itemize}
+
+\textbf{学习因子$c_1, c_2$的作用}：
+\begin{itemize}[itemsep=0pt]
+    \item $c_1$较大：粒子更相信自己的经验
+    \item $c_2$较大：粒子更相信群体的经验
+    \item 通常取$c_1 = c_2 = 2$
+\end{itemize}
+\end{notebox}
+
+\subsection{PSO算法流程}
+
+\begin{center}
+\begin{tikzpicture}[node distance=1cm,>=stealth,thick,
+    box/.style={draw,rectangle,rounded corners,minimum width=4cm,minimum height=0.7cm,align=center,font=\small}]
+\node[box,fill=blue!10] (init) {初始化粒子位置和速度};
+\node[box,fill=green!10,below=of init] (eval) {计算每个粒子的适应度};
+\node[box,fill=yellow!10,below=of eval] (pbest) {更新个体最优$p_{best}$};
+\node[box,fill=orange!10,below=of pbest] (gbest) {更新全局最优$g_{best}$};
+\node[box,fill=red!10,below=of gbest] (update) {更新速度和位置};
+\node[draw,diamond,aspect=2,below=of update,fill=gray!10] (term) {终止？};
+\node[box,fill=blue!20,below=of term] (output) {输出$g_{best}$};
+
+\draw[->] (init) -- (eval);
+\draw[->] (eval) -- (pbest);
+\draw[->] (pbest) -- (gbest);
+\draw[->] (gbest) -- (update);
+\draw[->] (update) -- (term);
+\draw[->] (term) -- node[right]{是} (output);
+\draw[->] (term.east) -- ++(1.2,0) |- node[near start,right]{否} (eval.east);
+\end{tikzpicture}
+\end{center}
+
+\textbf{算法步骤}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{初始化}：随机生成$N$个粒子的位置$x_i$和速度$v_i$
+    \item \textbf{评估}：计算每个粒子的适应度值
+    \item \textbf{更新$p_{best}$}：若当前位置优于$p_{best,i}$，则更新
+    \item \textbf{更新$g_{best}$}：若某粒子的$p_{best}$优于$g_{best}$，则更新
+    \item \textbf{更新速度和位置}：根据公式计算新的速度和位置
+    \item \textbf{终止判断}：达到最大迭代次数或满足精度要求则停止
+\end{enumerate}
+
+\subsection{PSO完整例题}
+
+\begin{examplebox}[例题4.3 用PSO求函数最小值]
+\textbf{问题}：求$f(x) = x^2$在$x \in [-5, 5]$上的最小值。
+
+\textbf{参数}：粒子数$N=3$，$w=0.7$，$c_1=c_2=1.5$
+\tcblower
+\textbf{第一步：初始化}
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+粒子 & 位置$x$ & 速度$v$ & 适应度$f(x)$ \\
+\midrule
+1 & 3.0 & 0.5 & 9.0 \\
+2 & -2.0 & -0.3 & 4.0 \\
+3 & 4.0 & 0.2 & 16.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+初始$p_{best}$：$[3.0, -2.0, 4.0]$，$g_{best} = -2.0$（适应度最小）
+
+\textbf{第二步：更新速度和位置}（以粒子1为例）
+
+假设$r_1=0.6, r_2=0.8$：
+\begin{align*}
+v_1^{new} &= 0.7 \times 0.5 + 1.5 \times 0.6 \times (3.0-3.0) + 1.5 \times 0.8 \times (-2.0-3.0) \\
+&= 0.35 + 0 + (-6.0) = -5.65 \quad \text{（限制在$[-2,2]$后为$-2$）}
+\end{align*}
+$$x_1^{new} = 3.0 + (-2) = 1.0$$
+
+新适应度：$f(1.0) = 1.0 < 9.0$，更新$p_{best,1} = 1.0$
+
+\textbf{第三步：继续迭代}
+
+经过多次迭代，所有粒子逐渐向$x=0$靠近，最终$g_{best} \approx 0$，$f(0)=0$。
+\end{examplebox}
+
+\begin{examplebox}[例题4.4 PSO求解二维函数优化]
+\textbf{问题}：求$f(x,y) = x^2 + y^2$的最小值，$x,y \in [-10, 10]$
+
+\textbf{参数}：粒子数$N=4$，$w=0.8$，$c_1=c_2=2.0$，最大迭代100次
+\tcblower
+\textbf{初始化}（随机生成）：
+\begin{center}
+\begin{tabular}{ccccc}
+\toprule
+粒子 & $x$ & $y$ & $v_x$ & $v_y$ \\
+\midrule
+1 & 5.0 & 3.0 & 0.5 & -0.3 \\
+2 & -4.0 & 6.0 & -0.2 & 0.4 \\
+3 & 2.0 & -5.0 & 0.3 & 0.1 \\
+4 & -3.0 & -2.0 & -0.1 & -0.2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{适应度计算}：
+\begin{itemize}[itemsep=0pt]
+    \item 粒子1：$f = 25 + 9 = 34$
+    \item 粒子2：$f = 16 + 36 = 52$
+    \item 粒子3：$f = 4 + 25 = 29$
+    \item 粒子4：$f = 9 + 4 = 13$ ← 最优
+\end{itemize}
+
+$g_{best} = (-3.0, -2.0)$，适应度13
+
+\textbf{迭代过程}：粒子逐渐向原点$(0,0)$聚集
+
+\textbf{最终结果}：$g_{best} \approx (0, 0)$，$f_{min} \approx 0$
+\end{examplebox}
+
+
+\section{蚁群优化算法}
+
+\subsection{基本概念}
+
+\begin{conceptbox}
+\textbf{蚁群优化}（Ant Colony Optimization, ACO）是一种模拟蚂蚁觅食行为的群智能优化算法。蚂蚁通过释放和感知信息素来间接通信，最终找到从蚁巢到食物源的最短路径。
+\end{conceptbox}
+
+\textbf{蚂蚁觅食行为}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 蚂蚁在行走时会释放信息素
+    \item 蚂蚁倾向于选择信息素浓度高的路径
+    \item 较短路径上的信息素积累更快（蚂蚁往返次数多）
+    \item 信息素会随时间挥发
+    \item 最终大多数蚂蚁会选择最短路径
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick]
+    % 蚁巢和食物
+    \node[draw,circle,fill=brown!30,minimum size=1cm] (nest) at (0,0) {蚁巢};
+    \node[draw,circle,fill=green!30,minimum size=1cm] (food) at (6,0) {食物};
+    
+    % 两条路径
+    \draw[blue,very thick] (nest) to[bend left=40] node[above]{\small 长路径} (food);
+    \draw[red,very thick,line width=2pt] (nest) to[bend right=20] node[below]{\small 短路径（信息素浓）} (food);
+    
+    % 蚂蚁
+    \node at (2,-0.8) {\small 🐜🐜🐜};
+    \node at (3,1.5) {\small 🐜};
+\end{tikzpicture}
+\end{center}
+
+\subsection{ACO核心公式}
+
+\textbf{状态转移概率}：蚂蚁$k$从城市$i$选择下一个城市$j$的概率：
+
+\begin{formulabox}
+$$P_{ij}^k = \begin{cases}
+\frac{[\tau_{ij}]^\alpha \cdot [\eta_{ij}]^\beta}{\sum_{s \in allowed_k} [\tau_{is}]^\alpha \cdot [\eta_{is}]^\beta} & \text{若 } j \in allowed_k \\
+0 & \text{否则}
+\end{cases}$$
+
+其中：
+\begin{itemize}[itemsep=0pt]
+    \item $\tau_{ij}$：边$(i,j)$上的信息素浓度
+    \item $\eta_{ij} = 1/d_{ij}$：启发式信息（距离的倒数）
+    \item $\alpha$：信息素重要程度因子
+    \item $\beta$：启发式信息重要程度因子
+    \item $allowed_k$：蚂蚁$k$尚未访问的城市集合
+\end{itemize}
+\end{formulabox}
+
+\textbf{信息素更新}：
+
+\begin{formulabox}
+$$\tau_{ij}^{new} = (1-\rho) \cdot \tau_{ij}^{old} + \Delta\tau_{ij}$$
+
+$$\Delta\tau_{ij} = \sum_{k=1}^{m} \Delta\tau_{ij}^k$$
+
+$$\Delta\tau_{ij}^k = \begin{cases}
+Q / L_k & \text{若蚂蚁}k\text{经过边}(i,j) \\
+0 & \text{否则}
+\end{cases}$$
+
+其中：
+\begin{itemize}[itemsep=0pt]
+    \item $\rho$：信息素挥发系数，$\rho \in (0,1)$
+    \item $Q$：信息素强度常数
+    \item $L_k$：蚂蚁$k$走过的路径总长度
+\end{itemize}
+\end{formulabox}
+
+\subsection{ACO算法流程}
+
+\textbf{算法步骤}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{初始化}：设置参数，初始化信息素矩阵
+    \item \textbf{构建解}：每只蚂蚁根据转移概率构建一条完整路径
+    \item \textbf{评估}：计算每只蚂蚁的路径长度
+    \item \textbf{更新信息素}：先挥发，再根据路径质量增加信息素
+    \item \textbf{记录最优}：更新全局最优解
+    \item \textbf{终止判断}：达到最大迭代次数则停止，否则转步骤2
+\end{enumerate}
+
+\begin{notebox}
+\textbf{参数设置建议}：
+\begin{itemize}[itemsep=0pt]
+    \item 蚂蚁数量$m$：通常等于城市数量
+    \item $\alpha$：通常取1-2
+    \item $\beta$：通常取2-5
+    \item $\rho$：通常取0.1-0.5
+    \item $Q$：通常取100
+\end{itemize}
+\end{notebox}
+
+\subsection{ACO例题}
+
+\begin{examplebox}[例题4.5 蚁群算法解决TSP问题]
+\textbf{问题}：3个城市A、B、C，距离矩阵如下，用ACO求最短路径。
+\begin{center}
+\begin{tabular}{c|ccc}
+ & A & B & C \\
+\hline
+A & 0 & 2 & 5 \\
+B & 2 & 0 & 3 \\
+C & 5 & 3 & 0 \\
+\end{tabular}
+\end{center}
+
+\textbf{参数}：$\alpha=1, \beta=2, \rho=0.5, Q=10$，初始信息素$\tau_0=1$
+\tcblower
+\textbf{第一次迭代}：
+
+蚂蚁1从A出发，计算转移概率：
+\begin{itemize}[itemsep=0pt]
+    \item $\eta_{AB} = 1/2 = 0.5$，$\eta_{AC} = 1/5 = 0.2$
+    \item $P_{AB} = \frac{1^1 \times 0.5^2}{1^1 \times 0.5^2 + 1^1 \times 0.2^2} = \frac{0.25}{0.25+0.04} = 86.2\%$
+    \item $P_{AC} = 13.8\%$
+\end{itemize}
+
+假设选择B，然后必须去C，路径：A→B→C→A，长度 = 2+3+5 = 10
+
+蚂蚁2路径：A→C→B→A，长度 = 5+3+2 = 10
+
+\textbf{信息素更新}：
+\begin{itemize}[itemsep=0pt]
+    \item 挥发后：$\tau = 0.5 \times 1 = 0.5$
+    \item 边AB增加：$\Delta\tau_{AB} = 10/10 = 1$（两只蚂蚁都经过）
+    \item 更新后：$\tau_{AB} = 0.5 + 1 = 1.5$
+\end{itemize}
+
+\textbf{继续迭代}...最终找到最优路径A→B→C→A，长度10。
+\end{examplebox}
+
+
+% ====================
+% 新增算法详细描述及流程图
+% ====================
+
+\subsection{一阶谓词逻辑表示法}
+一阶谓词逻辑（First‑Order Predicate Logic, FOPL）在形式上扩展了命题逻辑，引入了量词、变量和谓词。其基本语法包括：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+  \item 常量（如 $a, b$）表示具体对象。
+  \item 变量（如 $x, y$）可以取任意对象。
+  \item 谓词（如 $P(x)$, $R(x,y)$）描述对象的属性或关系。
+  \item 量词：全称量词 $\forall x$（对所有 $x$）和存在量词 $\exists x$（存在某个 $x$）。
+\end{itemize}
+例如，表达“所有人都会死”可以写作 $\forall x\, (\text{人}(x) \rightarrow \text{死}(x))$。
+
+\subsection{鲁宾逊归结原理}
+鲁宾逊归结（Robinson resolution）是 FOPL 中一种基于子句集的推理规则。其核心步骤：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+  \item 将所有公式化为合取范式（CNF），得到子句集合。
+  \item 选取两条子句，其中一条含有文字 $L$，另一条含有其互补文字 $\neg L$。
+  \item 消去 $L$ 与 $\neg L$，将剩余文字合并形成新子句。
+  \item 重复上述过程，若得到空子句 $\square$，则原公式集合不可满足，证明目标成立。
+\end{enumerate}
+下面给出一个简化示例的归结过程（已在第 3 章出现）。
+
+\subsection{盲目图搜索策略}
+盲目搜索（Blind graph search）不利用任何启发信息，仅依据搜索结构进行遍历。常见的两种实现方式是深度优先搜索（DFS）和广度优先搜索（BFS）。
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.5cm,->,thick]
+  \node[draw,rectangle,rounded corners,fill=blue!10] (init) {初始化起点};
+  \node[draw,rectangle,rounded corners,fill=green!10,below=of init] (open) {打开列表（栈/队列）};
+  \node[draw,rectangle,rounded corners,fill=yellow!10,below=of open] (expand) {展开节点};
+  \node[draw,rectangle,rounded corners,fill=orange!10,below=of expand] (check) {检查目标};
+  \node[draw,diamond,aspect=2,below=of check,fill=gray!10] (term) {结束？};
+  \node[draw,rectangle,rounded corners,fill=purple!10,below=of term] (output) {返回路径};
+  \draw (init) -- (open);
+  \draw (open) -- (expand);
+  \draw (expand) -- (check);
+  \draw (check) -- (term);
+  \draw (term) -- node[right]{是} (output);
+  \draw (term.east) -- ++(1.5,0) |- node[near start,right]{否} (open.east);
+\end{tikzpicture}
+\end{center}
+
+\subsection{启发式图搜索策略}
+启发式搜索（Heuristic search）在展开节点时使用评估函数 $f(n)$ 来决定搜索顺序，常见的策略包括最佳优先搜索（Best‑First Search）和 A* 算法。
+
+\subsection{A*算法}
+A* 通过代价函数 $f(n)=g(n)+h(n)$ 组合实际代价 $g(n)$ 与启发式估计 $h(n)$，在保证 $h$ 可采纳的前提下能够找到最优路径。
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm,->,thick]
+  \node[draw,rectangle,rounded corners,fill=blue!10] (init) {初始化起点};
+  \node[draw,rectangle,rounded corners,fill=green!10,below=of init] (open) {打开列表（按 $f$ 排序）};
+  \node[draw,rectangle,rounded corners,fill=yellow!10,below=of open] (expand) {展开最低 $f$ 节点};
+  \node[draw,rectangle,rounded corners,fill=orange!10,below=of expand] (goal) {检查是否为目标};
+  \node[draw,diamond,aspect=2,below=of goal,fill=gray!10] (term) {结束？};
+  \node[draw,rectangle,rounded corners,fill=purple!10,below=of term] (output) {输出最优路径};
+  \draw (init) -- (open);
+  \draw (open) -- (expand);
+  \draw (expand) -- (goal);
+  \draw (goal) -- (term);
+  \draw (term) -- node[right]{是} (output);
+  \draw (term.east) -- ++(1.5,0) |- node[near start,right]{否} (open.east);
+\end{tikzpicture}
+\end{center}
+
+\subsection{遗传算法}
+遗传算法（Genetic Algorithm, GA）模拟自然选择与基因重组过程，主要包括编码、选择、交叉、变异四个步骤。
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm,->,thick]
+  \node[draw,rectangle,rounded corners,fill=blue!10] (init) {初始化种群};
+  \node[draw,rectangle,rounded corners,fill=green!10,below=of init] (eval) {计算适应度};
+  \node[draw,rectangle,rounded corners,fill=yellow!10,below=of eval] (select) {选择父代};
+  \node[draw,rectangle,rounded corners,fill=orange!10,below=of select] (crossover) {交叉产生子代};
+  \node[draw,rectangle,rounded corners,fill=red!10,below=of crossover] (mutate) {变异};
+  \node[draw,diamond,aspect=2,below=of mutate,fill=gray!10] (term) {终止？};
+  \node[draw,rectangle,rounded corners,fill=purple!10,below=of term] (output) {输出最优解};
+  \draw (init) -- (eval);
+  \draw (eval) -- (select);
+  \draw (select) -- (crossover);
+  \draw (crossover) -- (mutate);
+  \draw (mutate) -- (term);
+  \draw (term) -- node[right]{是} (output);
+  \draw (term.east) -- ++(1.5,0) |- node[near start,right]{否} (eval.east);
+\end{tikzpicture}
+\end{center}
+
+\subsection{粒子群算法}
+粒子群优化（Particle Swarm Optimization, PSO）已在第 4 章中给出，此处仅作简要复述并引用已有流程图。
+
+\subsection{BP神经网络}
+BP（Back‑Propagation）神经网络通过前向传播计算输出，随后利用误差反向传播更新权重。
+\begin{equation*}
+  \Delta w_{ij} = -\eta \frac{\partial E}{\partial w_{ij}} = \eta \;\delta_j \; o_i
+\end{equation*}
+其中 $\eta$ 为学习率，$\delta_j$ 为误差项，$o_i$ 为前一层输出。
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm,->,thick]
+  \node[draw,rectangle,rounded corners,fill=blue!10] (input) {输入层};
+  \node[draw,rectangle,rounded corners,fill=green!10,below=of input] (hidden) {隐藏层};
+  \node[draw,rectangle,rounded corners,fill=yellow!10,below=of hidden] (output) {输出层};
+  \node[draw,diamond,aspect=2,below=of output,fill=gray!10] (term) {误差收敛？};
+  \node[draw,rectangle,rounded corners,fill=purple!10,below=of term] (end) {结束};
+  \draw (input) -- (hidden);
+  \draw (hidden) -- (output);
+  \draw (output) -- (term);
+  \draw (term) -- node[right]{是} (end);
+  \draw (term.east) -- ++(1.5,0) |- node[near start,right]{否} (hidden.east);
+\end{tikzpicture}
+\end{center}
+
+\subsection{卷积神经网络}
+卷积神经网络（Convolutional Neural Network, CNN）在图像任务中通过卷积层提取局部特征，随后使用池化层降低维度。
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+  \item 卷积层：$\mathbf{y}=\sigma(\mathbf{W}*\mathbf{x}+b)$
+  \item 池化层：最大池化 $\max$ 或平均池化 $\operatorname{avg}$
+  \item 全连接层：将特征映射到分类空间
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm,->,thick]
+  \node[draw,rectangle,rounded corners,fill=blue!10] (input) {输入图像};
+  \node[draw,rectangle,rounded corners,fill=green!10,below=of input] (conv) {卷积层};
+  \node[draw,rectangle,rounded corners,fill=yellow!10,below=of conv] (pool) {池化层};
+  \node[draw,rectangle,rounded corners,fill=orange!10,below=of pool] (fc) {全连接层};
+  \node[draw,diamond,aspect=2,below=of fc,fill=gray!10] (term) {结束？};
+  \node[draw,rectangle,rounded corners,fill=purple!10,below=of term] (output) {输出类别};
+  \draw (input) -- (conv);
+  \draw (conv) -- (pool);
+  \draw (pool) -- (fc);
+  \draw (fc) -- (term);
+  \draw (term) -- node[right]{是} (output);
+  \draw (term.east) -- ++(1.5,0) |- node[near start,right]{否} (conv.east);
+\end{tikzpicture}
+\end{center}
+
+\subsection{Q学习}
+Q‑learning 是一种基于价值函数的强化学习算法，更新规则为：
+\begin{equation*}
+  Q(s,a) \leftarrow Q(s,a) + \alpha \bigl[ r + \gamma \max_{a'} Q(s',a') - Q(s,a) \bigr]
+\end{equation*}
+其中 $\alpha$ 为学习率，$\gamma$ 为折扣因子。
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm,->,thick]
+  \node[draw,rectangle,rounded corners,fill=blue!10] (state) {当前状态 $s$};
+  \node[draw,rectangle,rounded corners,fill=green!10,below=of state] (action) {选择动作 $a$};
+  \node[draw,rectangle,rounded corners,fill=yellow!10,below=of action] (reward) {获得奖励 $r$ 与新状态 $s'$};
+  \node[draw,rectangle,rounded corners,fill=orange!10,below=of reward] (update) {更新 $Q(s,a)$};
+  \node[draw,diamond,aspect=2,below=of update,fill=gray!10] (term) {收敛？};
+  \node[draw,rectangle,rounded corners,fill=purple!10,below=of term] (policy) {得到最优策略};
+  \draw (state) -- (action);
+  \draw (action) -- (reward);
+  \draw (reward) -- (update);
+  \draw (update) -- (term);
+  \draw (term) -- node[right]{是} (policy);
+  \draw (term.east) -- ++(1.5,0) |- node[near start,right]{否} (state.east);
+\end{tikzpicture}
+\end{center}
+
+% ====================
+% 结束新增内容
+% ====================
+
+\section{三种算法对比}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{特性} & \textbf{遗传算法(GA)} & \textbf{粒子群(PSO)} & \textbf{蚁群(ACO)} \\
+\midrule
+生物原型 & 生物进化 & 鸟群觅食 & 蚂蚁觅食 \\
+搜索方式 & 选择+交叉+变异 & 速度-位置更新 & 信息素引导 \\
+信息共享 & 通过交叉 & 通过$g_{best}$ & 通过信息素 \\
+适用问题 & 通用优化 & 连续优化 & 组合优化(TSP) \\
+参数数量 & 较多 & 较少 & 中等 \\
+收敛速度 & 中等 & 快 & 较慢 \\
+全局搜索 & 强 & 中等 & 强 \\
+实现难度 & 中等 & 简单 & 中等 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{tipbox}
+\textbf{算法选择建议}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{连续优化问题}（如函数优化）：优先选择PSO，实现简单，收敛快
+    \item \textbf{组合优化问题}（如TSP、调度）：优先选择ACO或GA
+    \item \textbf{复杂约束问题}：GA更灵活，可设计专门的编码和算子
+    \item \textbf{实时性要求高}：PSO收敛速度快
+    \item \textbf{解空间离散}：ACO或GA更适合
+\end{itemize}
+\end{tipbox}
+
+\section{本章小结}
+
+本章介绍了三种重要的进化与群智能优化算法：
+
+\textbf{遗传算法（GA）}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 模拟生物进化过程
+    \item 核心操作：选择、交叉、变异
+    \item 编码方式：二进制、实数、排列编码
+    \item 适用于各类优化问题
+\end{itemize}
+
+\textbf{粒子群优化（PSO）}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 模拟鸟群觅食行为
+    \item 通过个体最优和全局最优引导搜索
+    \item 速度更新公式包含惯性、认知、社会三部分
+    \item 实现简单，适合连续优化问题
+\end{itemize}
+
+\textbf{蚁群优化（ACO）}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 模拟蚂蚁觅食行为
+    \item 通过信息素进行间接通信
+    \item 信息素更新包括挥发和增强
+    \item 特别适合TSP等组合优化问题
+\end{itemize}
+
+\textbf{重点掌握}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item GA的编码方式和三种基本操作
+    \item PSO的速度-位置更新公式及参数含义
+    \item ACO的状态转移概率和信息素更新规则
+    \item 三种算法的适用场景和选择依据
+\end{itemize}
+
+
+
+
+\subsection{A*算法}
+
+\begin{formulabox}
+\textbf{估价函数}：$f(n) = g(n) + h(n)$
+
+其中：
+\begin{itemize}[itemsep=0pt]
+    \item $g(n)$：从初始节点到节点$n$的实际代价
+    \item $h(n)$：从节点$n$到目标节点的估计代价（启发函数）
+    \item $f(n)$：经过节点$n$的路径的估计总代价
+\end{itemize}
+
+\textbf{A*算法条件}：$h(n) \leq h^*(n)$（启发函数不高估实际代价）
+\end{formulabox}
+
+\begin{examplebox}[例题4.6 八数码问题]
+\textbf{问题}：八数码游戏，初始状态和目标状态如下，定义启发函数$h(x)$表示某状态下与目标数码不同的位置个数。用全局择优法画出搜索过程。
+
+\begin{center}
+初始状态：\quad
+\begin{tabular}{|c|c|c|}
+\hline
+2 & 8 & 3 \\
+\hline
+1 & 6 & 4 \\
+\hline
+7 &   & 5 \\
+\hline
+\end{tabular}
+\quad\quad
+目标状态：\quad
+\begin{tabular}{|c|c|c|}
+\hline
+1 & 2 & 3 \\
+\hline
+8 &   & 4 \\
+\hline
+7 & 6 & 5 \\
+\hline
+\end{tabular}
+\end{center}
+\tcblower
+\textbf{解答}：
+
+\textbf{启发函数}：$h(n)$ = 不在目标位置的数码个数
+
+\textbf{估价函数}：$f(n) = g(n) + h(n)$
+
+初始状态$S_0$：$g=0$，$h=4$（2,8,1,6不在位），$f=4$
+
+\textbf{搜索过程}：
+\begin{enumerate}[itemsep=0pt]
+    \item 扩展$S_0$，生成后继状态
+    \item 计算各状态的$f$值
+    \item 选择$f$值最小的状态继续扩展
+    \item 重复直到达到目标状态
+\end{enumerate}
+
+\textbf{最优解路径}：$S_0 \to S_1 \to S_2 \to S_3 \to S_4$（目标）
+\end{examplebox}
+
+\subsection{博弈树与α-β剪枝}
+
+\begin{conceptbox}
+\textbf{极大极小算法}：在博弈树中，MAX层选择最大值，MIN层选择最小值，通过倒推计算最优走步。
+
+\textbf{α-β剪枝}：在极大极小搜索中，利用已搜索信息剪去不必要的分支，提高效率。
+\end{conceptbox}
+
+\begin{formulabox}
+\textbf{α-β剪枝规则}：
+\begin{itemize}[itemsep=0pt]
+    \item $\alpha$：MAX节点的当前最优值（下界）
+    \item $\beta$：MIN节点的当前最优值（上界）
+    \item \textbf{α剪枝}：若MIN节点的$\beta \leq$其祖先MAX节点的$\alpha$，则剪枝
+    \item \textbf{β剪枝}：若MAX节点的$\alpha \geq$其祖先MIN节点的$\beta$，则剪枝
+\end{itemize}
+\end{formulabox}
+
+\begin{examplebox}[例题4.7 α-β剪枝]
+\textbf{问题}：对下面的博弈树进行α-β剪枝，静态值在叶节点的圆括号中，假设第一个博弈者为MAX。
+
+(1) 第一个博弈者将选择什么移动？
+
+(2) 假如采用α-β算法，哪些节点无须检验？
+\tcblower
+\textbf{解答}：
+
+\textbf{α-β剪枝过程}：
+\begin{enumerate}[itemsep=0pt]
+    \item 从左到右深度优先搜索
+    \item MAX层：更新$\alpha$值，取子节点最大值
+    \item MIN层：更新$\beta$值，取子节点最小值
+    \item 当$\alpha \geq \beta$时发生剪枝
+\end{enumerate}
+
+\textbf{剪枝条件}：
+\begin{itemize}[itemsep=0pt]
+    \item α剪枝：MIN节点的$\beta$值$\leq$祖先MAX节点的$\alpha$值
+    \item β剪枝：MAX节点的$\alpha$值$\geq$祖先MIN节点的$\beta$值
+\end{itemize}
+\end{examplebox}
+
+\begin{notebox}
+\textbf{α-β剪枝的基本思想}：
+
+首先使搜索树的某一部分达到最大深度，计算出某些MAX节点的$\alpha$值或某些MIN节点的$\beta$值。随着搜索的继续，不断修改各节点的$\alpha$或$\beta$值。
+
+当满足以下条件时可以剪枝：
+\begin{itemize}[itemsep=0pt]
+    \item 任何MIN节点的$\beta$值$\leq$其先辈MAX节点的$\alpha$值，可进行α剪枝
+    \item 任何MAX节点的$\alpha$值$\geq$其先辈MIN节点的$\beta$值，可进行β剪枝
+\end{itemize}
+\end{notebox}
+
+\section{习题与解答}
+
+\subsection{是非题}
+
+\begin{enumerate}[leftmargin=2em,itemsep=2pt]
+    \item 极小极大分析法中采用逆向推算来计算节点得分的。（√）
+    \item 解树一定是代价最小。（×）
+    \item 本原问题即直接可解的简单问题。（√）
+    \item 与或图搜索也可分为盲目搜索和启发式搜索。（√）
+    \item 对α-β剪枝技术中，对与节点来说，α是倒推值的下确界，β是倒推值的上确界。（×）
+\end{enumerate}
+
+\subsection{填空题}
+
+\begin{enumerate}[leftmargin=2em,itemsep=2pt]
+    \item 状态空间搜索中宽度优先属于\underline{盲目搜索}，A*算法属于\underline{启发式搜索}。
+    \item 广度优先搜索算法中，OPEN表的数据结构实际是一个\underline{队列}，深度优先搜索算法中，OPEN表的数据结构实际是一个\underline{栈}。
+    \item 在状态空间搜索的一般过程中，常常需要\underline{OPEN表}和\underline{CLOSED表}两个数据结构。
+    \item 遗传算法的主要操作有\underline{选择}、\underline{交叉}、\underline{变异}，个体的适应度一般采用\underline{轮盘赌}来产生下一代个体的再生数目。
+\end{enumerate}
+
+\subsection{选择题}
+
+\begin{examplebox}[选择题4.1]
+\textbf{问题}：如果问题存在最优解，则下面几种搜索算法中，（\quad）必然可以得到该最优解，（\quad）可以认为是"智能程度相对比较高"的算法。
+
+A. 广度优先搜索 \quad B. 深度优先搜索 \quad C. 有界深度优先搜索 \quad D. 启发式搜索
+\tcblower
+\textbf{答案}：A，D
+
+广度优先搜索按层次扩展，保证找到最优解。启发式搜索利用问题知识指导搜索，智能程度较高。
+\end{examplebox}
+
+\begin{examplebox}[选择题4.2]
+\textbf{问题}：XOR问题一般可以用下面哪种模型来解决？（\quad）
+
+A. 神经元 \quad B. 单层感知器 \quad C. 多层感知器
+\tcblower
+\textbf{答案}：C
+
+XOR问题是非线性可分问题，单层感知器无法解决，需要多层感知器（至少一个隐藏层）。
+\end{examplebox}
+
+\subsection{计算题}
+
+\begin{examplebox}[例题4.8 传教士与野人问题]
+\textbf{问题}：假设N个传教士和N个野人，船每次最多可供K个人乘渡，这里N=5、K=3。假设在某一时刻，在河的左岸有M个传教士，C个野人。B=1表示船在左岸，B=0表示船在右岸。
+
+给定下面两种不同的启发式函数：
+\begin{enumerate}[itemsep=0pt]
+    \item $h_1(n) = M + C$
+    \item $h_2(n) = M + C - 2B$
+\end{enumerate}
+
+试说明$h_1(n)$不满足$h(n) \leq h^*(n)$，而$h_2(n)$满足$h(n) \leq h^*(n)$。
+\tcblower
+\textbf{解答}：
+
+\textbf{(1) 证明$h_1(n)$不满足条件}
+
+给出反例：状态$(M,C,B) = (1,1,1)$时，$h_1(n) = M + C = 1 + 1 = 2$
+
+而实际上只需要摆渡一次就可以达到目标，所以$h^*(n) = 1$
+
+因此$h_1(n) = 2 > 1 = h^*(n)$，不满足$h(n) \leq h^*(n)$
+
+\textbf{(2) 证明$h_2(n)$满足条件}
+
+\textbf{A. 船在左岸的情况}（B=1）
+
+不考虑限制条件，每船载3人的最少摆渡次数为：
+$$\frac{M+C-3}{2} \times 2 + 1 = M + C - 2$$
+
+所以$h_2(n) = M + C - 2 \times 1 = M + C - 2$
+
+\textbf{B. 船在右岸的情况}（B=0）
+
+需要先将船送回左岸，相当于状态$(M+1, C, 1)$或$(M, C+1, 1)$的最少摆渡数加1：
+$$h_2(n) = M + C - 2 \times 0 = M + C$$
+
+由于该摆渡次数是在不考虑限制条件下推出的最少次数，当有限制条件时，最优摆渡次数只能大于或等于该值。
+
+因此$h_2(n) \leq h^*(n)$，满足A*算法条件。
+\end{examplebox}

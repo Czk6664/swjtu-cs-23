@@ -1,0 +1,11 @@
+{
+  "recognition_dataset": {
+    "file_name": "recognition_dataset_resized_100.json",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "images": "images"
+    }
+  }
+}

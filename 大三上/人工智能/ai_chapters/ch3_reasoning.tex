@@ -1,0 +1,1251 @@
+%========================================
+\chapter{推理方法}
+%========================================
+
+\section{推理的基本概念}
+
+\subsection{推理的定义}
+\begin{conceptbox}
+\textbf{推理}是指从已知事实出发，按照某种策略，运用已掌握的知识，推导出其中蕴含的事实性结论或归纳出某些新的结论的过程。
+\end{conceptbox}
+
+\textbf{生活中的推理例子}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 医生看病：根据症状（发烧、咳嗽）+ 医学知识 → 诊断（感冒）
+    \item 侦探破案：根据线索（指纹、目击证人）+ 推理 → 找出凶手
+    \item 天气预报：根据气象数据 + 气象规律 → 预测明天天气
+\end{itemize}
+
+推理所用的事实分为两类：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{初始证据}：用户输入的问题相关事实（如：病人体温38.5°C）
+    \item \textbf{中间结论}：推理过程中产生的临时结果（如：病人发烧了）
+\end{itemize}
+
+\begin{examplebox}[例子：医疗诊断推理过程]
+\textbf{初始证据}：体温38.5°C、咳嗽、流鼻涕
+
+\textbf{推理过程}：
+\begin{enumerate}[itemsep=0pt]
+    \item 体温38.5°C $>$ 37.5°C → 中间结论：发烧
+    \item 发烧 + 咳嗽 + 流鼻涕 → 中间结论：呼吸道感染
+    \item 呼吸道感染 + 无其他严重症状 → 最终结论：普通感冒
+\end{enumerate}
+\end{examplebox}
+
+\section{推理方式的分类}
+
+\subsection{按逻辑基础分类}
+
+\subsubsection{演绎推理（Deductive Reasoning）}
+\begin{conceptbox}
+从一般性的知识出发，推出适用于个别情况的结论。是一种\textbf{"从一般到个别"}的推理方式。
+\end{conceptbox}
+
+\textbf{典型模式——三段论}：
+
+\begin{examplebox}[例子：三段论的生活应用]
+\textbf{例1：生物学推理}
+\begin{itemize}[itemsep=0pt]
+    \item 大前提：所有哺乳动物都是恒温动物
+    \item 小前提：狗是哺乳动物
+    \item 结论：狗是恒温动物 ✓
+\end{itemize}
+
+\textbf{例2：数学推理}
+\begin{itemize}[itemsep=0pt]
+    \item 大前提：所有偶数都能被2整除
+    \item 小前提：100是偶数
+    \item 结论：100能被2整除 ✓
+\end{itemize}
+
+\textbf{例3：日常推理}
+\begin{itemize}[itemsep=0pt]
+    \item 大前提：所有金属都能导电
+    \item 小前提：铜是金属
+    \item 结论：铜能导电 ✓
+\end{itemize}
+\end{examplebox}
+
+\begin{tipbox}
+\textbf{演绎推理的特点}：
+\begin{itemize}[itemsep=0pt]
+    \item 结论必然包含在前提之中
+    \item 若前提为真，则结论\textbf{一定}为真（100\%可靠）
+    \item \textbf{不能增殖新知识}——只是将已有知识"揭示出来"
+\end{itemize}
+
+\textbf{类比理解}：演绎推理就像"拆礼物"——礼物（结论）本来就在盒子（前提）里，你只是把它拿出来而已。
+\end{tipbox}
+
+\subsubsection{归纳推理（Inductive Reasoning）}
+\begin{conceptbox}
+从大量特殊事例出发，归纳出一般性结论的推理过程。是一种\textbf{"从个别到一般"}的推理方式。
+\end{conceptbox}
+
+\begin{examplebox}[例子：归纳推理的生活应用]
+\textbf{例1：科学发现}
+\begin{itemize}[itemsep=0pt]
+    \item 观察1：苹果落地
+    \item 观察2：石头落地
+    \item 观察3：树叶落地
+    \item 归纳结论：所有物体都会落向地面（万有引力）
+\end{itemize}
+
+\textbf{例2：日常经验}
+\begin{itemize}[itemsep=0pt]
+    \item 观察1：第一只见到的天鹅是白色的
+    \item 观察2：第二只见到的天鹅是白色的
+    \item ...
+    \item 观察100：第一百只见到的天鹅是白色的
+    \item 归纳结论：所有天鹅都是白色的（后来发现黑天鹅，结论被推翻！）
+\end{itemize}
+
+\textbf{例3：机器学习}
+\begin{itemize}[itemsep=0pt]
+    \item 数据1：图片A是猫
+    \item 数据2：图片B是猫
+    \item ...
+    \item 数据10000：图片N是猫
+    \item 归纳结论：学会识别猫的特征模式
+\end{itemize}
+\end{examplebox}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{类型} & \textbf{描述} & \textbf{示例} \\
+\midrule
+完全归纳 & 考察全部对象后得出结论 & 检查班级所有学生都到齐了 \\
+不完全归纳 & 只考察部分对象后推出结论 & 抽样调查、机器学习 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{notebox}
+\textbf{演绎 vs 归纳的核心区别}：
+\begin{itemize}[itemsep=0pt]
+    \item 演绎：前提真 → 结论\textbf{必然}真（但不产生新知识）
+    \item 归纳：前提真 → 结论\textbf{可能}真（但能产生新知识）
+\end{itemize}
+
+\textbf{记忆口诀}：演绎像"开锁"（钥匙对了门一定开），归纳像"猜谜"（线索多了可能猜对）。
+\end{notebox}
+
+\subsubsection{默认推理（Default Reasoning）}
+\begin{conceptbox}
+在知识不完整的情况下，假设某些条件已经具备，从而进行推理。核心思想：\textbf{如果无法证明某件事不成立，就默认它是成立的}。
+\end{conceptbox}
+
+\begin{examplebox}[例子：默认推理的生活应用]
+\textbf{例1：鸟会飞}
+\begin{itemize}[itemsep=0pt]
+    \item 知识：鸟通常会飞
+    \item 事实：Tweety是一只鸟
+    \item 默认推理：Tweety会飞
+    \item 但是：如果后来知道Tweety是企鹅 → 推翻结论，Tweety不会飞
+\end{itemize}
+
+\textbf{例2：汽车能开}
+\begin{itemize}[itemsep=0pt]
+    \item 知识：汽车通常能开
+    \item 事实：小明有一辆汽车
+    \item 默认推理：小明的汽车能开
+    \item 但是：如果后来知道汽车没油了 → 推翻结论
+\end{itemize}
+
+\textbf{例3：学生会考试}
+\begin{itemize}[itemsep=0pt]
+    \item 知识：学生通常要参加考试
+    \item 事实：小红是学生
+    \item 默认推理：小红要参加考试
+    \item 但是：如果小红是免试保送生 → 推翻结论
+\end{itemize}
+\end{examplebox}
+
+\begin{tipbox}
+默认推理是\textbf{非单调推理}的典型代表——新信息可能推翻旧结论。这更符合人类的日常思维方式！
+\end{tipbox}
+
+\subsection{按知识确定性分类}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{类型} & \textbf{特点} & \textbf{示例} \\
+\midrule
+确定性推理 & 知识和结论都是确定的（非真即假） & 数学证明、逻辑推理 \\
+不确定性推理 & 知识和结论不确定，有概率或模糊性 & 医疗诊断、天气预报 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{examplebox}[例子：确定性 vs 不确定性推理]
+\textbf{确定性推理}：
+\begin{itemize}[itemsep=0pt]
+    \item 如果 $x > 5$ 且 $x < 10$，则 $x$ 在5到10之间 → 100\%确定
+\end{itemize}
+
+\textbf{不确定性推理}：
+\begin{itemize}[itemsep=0pt]
+    \item 如果发烧且咳嗽，则可能是感冒（80\%）或肺炎（15\%）或其他（5\%）
+    \item 明天降雨概率70\%
+\end{itemize}
+\end{examplebox}
+
+\subsection{按推理过程是否反复分类}
+
+\begin{examplebox}[例子：单调推理 vs 非单调推理]
+\textbf{单调推理}（结论只增不减）：
+\begin{itemize}[itemsep=0pt]
+    \item 已知：A是真的
+    \item 推出：B是真的
+    \item 新增知识C后：A和B仍然是真的，可能还能推出D
+\end{itemize}
+
+\textbf{非单调推理}（结论可能被推翻）：
+\begin{itemize}[itemsep=0pt]
+    \item 已知：小明是鸟
+    \item 推出：小明会飞
+    \item 新增知识"小明是企鹅"后：推翻"小明会飞"的结论
+\end{itemize}
+\end{examplebox}
+
+\section{推理规则}
+
+推理规则是进行逻辑推理的基本工具，下面介绍三种最重要的推理规则。
+
+\subsection{假言推理（Modus Ponens）——肯定前件}
+\begin{formulabox}
+$$\frac{P, \quad P \to Q}{Q}$$
+
+\textbf{读法}：如果$P$为真，且"$P$蕴含$Q$"为真，则$Q$为真。
+\end{formulabox}
+
+\begin{examplebox}[例题3.1 假言推理应用]
+\textbf{题目}：根据以下知识进行推理。
+\begin{itemize}[itemsep=0pt]
+    \item 知识1：如果下雨，地面会湿（$P \to Q$）
+    \item 事实：现在下雨了（$P$）
+\end{itemize}
+\tcblower
+\textbf{解答}：
+
+根据假言推理规则：$\frac{P, \quad P \to Q}{Q}$
+
+\begin{itemize}[itemsep=0pt]
+    \item $P$ = 下雨 ✓（已知为真）
+    \item $P \to Q$ = 下雨 → 地面湿 ✓（已知为真）
+    \item 结论：$Q$ = 地面会湿 ✓
+\end{itemize}
+\end{examplebox}
+
+\begin{examplebox}[例题3.2 假言推理——医疗诊断]
+\textbf{题目}：
+\begin{itemize}[itemsep=0pt]
+    \item 规则：如果体温超过38°C，则判定为发烧
+    \item 事实：病人体温39°C
+\end{itemize}
+求：病人是否发烧？
+\tcblower
+\textbf{解答}：
+
+设 $P$ = 体温超过38°C，$Q$ = 发烧
+
+\begin{itemize}[itemsep=0pt]
+    \item $P$：39°C $>$ 38°C ✓ 为真
+    \item $P \to Q$：体温超过38°C → 发烧 ✓ 为真
+    \item 根据假言推理：$Q$ = 发烧 ✓
+\end{itemize}
+
+\textbf{结论}：病人发烧了。
+\end{examplebox}
+
+\subsection{拒取式推理（Modus Tollens）——否定后件}
+\begin{formulabox}
+$$\frac{P \to Q, \quad \neg Q}{\neg P}$$
+
+\textbf{读法}：如果"$P$蕴含$Q$"为真，且$Q$为假，则$P$为假。
+\end{formulabox}
+
+\begin{examplebox}[例题3.3 拒取式推理应用]
+\textbf{题目}：
+\begin{itemize}[itemsep=0pt]
+    \item 知识：如果下雨，地面会湿（$P \to Q$）
+    \item 事实：地面是干的（$\neg Q$）
+\end{itemize}
+求：是否下雨了？
+\tcblower
+\textbf{解答}：
+
+根据拒取式推理：$\frac{P \to Q, \quad \neg Q}{\neg P}$
+
+\begin{itemize}[itemsep=0pt]
+    \item $P \to Q$：下雨 → 地面湿 ✓
+    \item $\neg Q$：地面干（地面不湿）✓
+    \item 结论：$\neg P$ = 没有下雨 ✓
+\end{itemize}
+
+\textbf{推理过程}：如果下雨了，地面应该湿；但地面是干的，所以没下雨。
+\end{examplebox}
+
+\begin{examplebox}[例题3.4 拒取式推理——故障诊断]
+\textbf{题目}：
+\begin{itemize}[itemsep=0pt]
+    \item 规则：如果电脑中病毒，则运行速度会变慢
+    \item 事实：电脑运行速度正常（不慢）
+\end{itemize}
+求：电脑是否中病毒？
+\tcblower
+\textbf{解答}：
+
+设 $P$ = 中病毒，$Q$ = 运行变慢
+
+\begin{itemize}[itemsep=0pt]
+    \item $P \to Q$：中病毒 → 变慢 ✓
+    \item $\neg Q$：运行不慢 ✓
+    \item 根据拒取式：$\neg P$ = 没中病毒 ✓
+\end{itemize}
+
+\textbf{结论}：电脑没有中病毒。
+\end{examplebox}
+
+\subsection{三段论式推理（Hypothetical Syllogism）——链式推理}
+\begin{formulabox}
+$$\frac{P \to Q, \quad Q \to R}{P \to R}$$
+
+\textbf{读法}：如果$P$能推出$Q$，$Q$能推出$R$，则$P$能推出$R$。
+\end{formulabox}
+
+\begin{examplebox}[例题3.5 三段论式推理]
+\textbf{题目}：
+\begin{itemize}[itemsep=0pt]
+    \item 规则1：如果努力学习，则成绩会提高（$P \to Q$）
+    \item 规则2：如果成绩提高，则能考上好大学（$Q \to R$）
+\end{itemize}
+求：努力学习与考上好大学的关系？
+\tcblower
+\textbf{解答}：
+
+根据三段论式推理：$\frac{P \to Q, \quad Q \to R}{P \to R}$
+
+\begin{itemize}[itemsep=0pt]
+    \item $P \to Q$：努力学习 → 成绩提高 ✓
+    \item $Q \to R$：成绩提高 → 考上好大学 ✓
+    \item 结论：$P \to R$ = 努力学习 → 考上好大学 ✓
+\end{itemize}
+
+\textbf{推理链}：努力学习 → 成绩提高 → 考上好大学
+\end{examplebox}
+
+\begin{examplebox}[例题3.6 综合推理练习]
+\textbf{题目}：已知以下规则和事实，推导结论。
+\begin{itemize}[itemsep=0pt]
+    \item 规则1：如果是哺乳动物，则是恒温动物（$A \to B$）
+    \item 规则2：如果是恒温动物，则需要进食维持体温（$B \to C$）
+    \item 规则3：如果是狗，则是哺乳动物（$D \to A$）
+    \item 事实：旺财是狗（$D$）
+\end{itemize}
+\tcblower
+\textbf{解答}：
+
+\textbf{步骤1}：用三段论连接规则
+\begin{itemize}[itemsep=0pt]
+    \item $D \to A$ 和 $A \to B$ → $D \to B$（狗是恒温动物）
+    \item $D \to B$ 和 $B \to C$ → $D \to C$（狗需要进食维持体温）
+\end{itemize}
+
+\textbf{步骤2}：用假言推理得出结论
+\begin{itemize}[itemsep=0pt]
+    \item $D$（旺财是狗）+ $D \to A$ → $A$（旺财是哺乳动物）
+    \item $A$ + $A \to B$ → $B$（旺财是恒温动物）
+    \item $B$ + $B \to C$ → $C$（旺财需要进食维持体温）
+\end{itemize}
+
+\textbf{最终结论}：旺财是哺乳动物、是恒温动物、需要进食维持体温。
+\end{examplebox}
+
+
+372: \section{不确定性推理}
+
+现实世界中往往存在大量不确定性知识。\textbf{不确定性推理}是指从不确定性的初始证据出发，通过运用不确定性的知识，最终推出具有一定程度的不确定性但却是合理或者近乎合理的结论的思维过程。
+
+\subsection{可信度方法（Certainty Factor, CF）}
+
+可信度方法是著名的专家系统\textbf{MYCIN}采用的推理方法。
+
+\subsubsection{CF模型的定义}
+
+\begin{formulabox}
+\textbf{可信度CF(H,E)}：表示在证据E出现的情况下，结论H为真的可信程度。
+$$CF(H,E) \in [-1, 1]$$
+\begin{itemize}[itemsep=0pt]
+    \item $CF > 0$：证据E增加结论H为真的可信度（支持）
+    \item $CF < 0$：证据E减少结论H为真的可信度（反对）
+    \item $CF = 0$：证据E与结论H无关
+    \item $CF = 1$：证据E肯定结论H为真
+    \item $CF = -1$：证据E肯定结论H为假
+\end{itemize}
+\end{formulabox}
+
+\subsubsection{CF模型的推理计算}
+
+\textbf{1. 组合证据的不确定性}
+
+当证据由多个部分组成时（如 $E = E_1 \land E_2$ 或 $E = E_1 \lor E_2$），其可信度计算如下：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{合取（与）}：$CF(E_1 \land E_2) = \min\{CF(E_1), CF(E_2)\}$
+    \item \textbf{析取（或）}：$CF(E_1 \lor E_2) = \max\{CF(E_1), CF(E_2)\}$
+    \item \textbf{否定（非）}：$CF(\neg E) = -CF(E)$
+\end{itemize}
+
+\textbf{2. 规则的不确定性传播}
+
+对于规则 $A \to B$，设有规则强度 $CF(B, A)$。
+\begin{itemize}[itemsep=0pt]
+    \item 若证据A肯定为真（$CF(A)=1$），则结论B的可信度为 $CF(B) = CF(B, A)$
+    \item 若证据A不确定（$CF(A)$已知），则结论B的可信度为：
+\end{itemize}
+\begin{equation*}
+CF(B) = CF(B, A) \times \max\{0, CF(A)\}
+\end{equation*}
+
+\begin{examplebox}[例题3.19 CF计算]
+\textbf{题目}：已知规则 $R: (A_1 \land A_2) \to B$，规则强度 $CF(B, A_1 \land A_2) = 0.8$。
+已知证据可信度：$CF(A_1) = 0.6, CF(A_2) = 0.5$。
+求：结论B的可信度 $CF(B)$。
+
+\tcblower
+\textbf{解答}：
+\begin{enumerate}[itemsep=0pt]
+    \item 先计算前提 $A = A_1 \land A_2$ 的可信度：
+    $$CF(A) = \min\{CF(A_1), CF(A_2)\} = \min\{0.6, 0.5\} = 0.5$$
+    \item 再计算结论B的可信度：
+    $$CF(B) = CF(B, A) \times \max\{0, CF(A)\} = 0.8 \times 0.5 = 0.4$$
+\end{enumerate}
+\end{examplebox}
+
+\textbf{3. 结论不确定的合成算法}
+
+当有多条不同规则推导出同一个结论H时（例如 $R_1: E_1 \to H$ 和 $R_2: E_2 \to H$），需要合成这些规则计算出的可信度 $CF_1(H)$ 和 $CF_2(H)$。合成公式如下：
+
+\begin{equation*}
+CF_{合成}(H) = 
+\begin{cases}
+CF_1(H) + CF_2(H) - CF_1(H) \times CF_2(H) & \text{若 } CF_1, CF_2 > 0 \\
+CF_1(H) + CF_2(H) + CF_1(H) \times CF_2(H) & \text{若 } CF_1, CF_2 < 0 \\
+\frac{CF_1(H) + CF_2(H)}{1 - \min\{|CF_1(H)|, |CF_2(H)|\}} & \text{若 } CF_1, CF_2 \text{ 异号}
+\end{cases}
+\end{equation*}
+
+\begin{examplebox}[例题3.20 CF合成计算]
+\textbf{题目}：
+\begin{itemize}[itemsep=0pt]
+    \item 规则1推出：$CF_1(H) = 0.28$
+    \item 规则2推出：$CF_2(H) = 0.48$
+    \item 规则3推出：$CF_3(H) = -0.27$
+\end{itemize}
+求：综合可信度 $CF(H)$。
+
+\tcblower
+\textbf{解答}：
+\begin{enumerate}[itemsep=0pt]
+    \item 先合成两个正值 $CF_1$ 和 $CF_2$：
+    $$CF_{12} = 0.28 + 0.48 - 0.28 \times 0.48 = 0.76 - 0.1344 = 0.6256$$
+    \item 再合成 $CF_{12}$ 和 $CF_3$（异号）：
+    \begin{align*}
+    CF_{total} &= \frac{CF_{12} + CF_3}{1 - \min\{|CF_{12}|, |CF_3|\}} \\
+    &= \frac{0.6256 + (-0.27)}{1 - 0.27} \\
+    &= \frac{0.3556}{0.73} \approx 0.49
+    \end{align*}
+\end{enumerate}
+\end{examplebox}
+
+\subsection{证据理论（Dempster-Shafer Theory）}
+
+证据理论（D-S理论）能够处理"不知道"的情况，引入了信任函数和似然函数。
+
+\begin{conceptbox}
+\textbf{核心概念}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{识别框架} $\Theta$：所有可能结果的集合（互斥且完备）。
+    \item \textbf{基本概率分配（BPA）} $m(A)$：表示对子集A的直接信任程度。
+    \begin{itemize}
+        \item $m(\emptyset) = 0$
+        \item $\sum_{A \subseteq \Theta} m(A) = 1$
+    \end{itemize}
+    \item \textbf{信任函数} $Bel(A)$：表示对A的信任下界（所有包含在A中的子集的m之和）。
+    $$Bel(A) = \sum_{B \subseteq A} m(B)$$
+    \item \textbf{似然函数} $Pl(A)$：表示对A的信任上界（不反对A的程度）。
+    $$Pl(A) = \sum_{B \cap A \neq \emptyset} m(B) = 1 - Bel(\neg A)$$
+    \item \textbf{信任区间}：$[Bel(A), Pl(A)]$，表示对A的确信程度。
+\end{itemize}
+\end{conceptbox}
+
+\begin{examplebox}[例题3.20 D-S理论计算]
+\textbf{题目}：设 $\Theta = \{a, b, c, d\}$，$A=\{a, b\}$，$B=\{a, b, c\}$。
+已知 $m(A) = 0.6, m(\Theta) = 0.4$，其余为0。
+求：$Bel(A)$ 和 $Bel(B)$。
+
+\tcblower
+\textbf{解答}：
+\begin{enumerate}[itemsep=0pt]
+    \item $Bel(A)$ 是所有包含在A中的子集的m之和：
+    \begin{itemize}
+        \item A的子集只有A本身（且m>0的）
+        \item $Bel(A) = m(A) = 0.6$
+    \end{itemize}
+    \item $Bel(B)$ 是所有包含在B中的子集的m之和：
+    \begin{itemize}
+        \item A是B的子集（$\{a,b\} \subseteq \{a,b,c\}$）
+        \item $Bel(B) = m(A) = 0.6$
+    \end{itemize}
+    \item (补充) $Pl(A)$：与A相交的集合有A和$\Theta$
+    $$Pl(A) = m(A) + m(\Theta) = 0.6 + 0.4 = 1.0$$
+    信任区间为 $[0.6, 1.0]$。
+\end{enumerate}
+\end{examplebox}
+
+\section{子句集}
+
+\subsection{为什么需要子句集？}
+
+在进行自动推理时，我们需要把复杂的逻辑公式转换成统一的标准形式，这就是\textbf{子句集}。
+
+\begin{conceptbox}
+\textbf{子句}：由文字（原子公式或其否定）通过"或"连接组成的公式。
+
+\textbf{子句集}：多个子句通过"与"连接的集合。
+
+\textbf{目的}：将任意谓词公式转换为标准形式，便于计算机进行自动推理。
+\end{conceptbox}
+
+\begin{examplebox}[例子：什么是子句？]
+\textbf{文字}：$P$、$\neg P$、$Q(x)$、$\neg R(a,b)$ 都是文字
+
+\textbf{子句}（文字的析取）：
+\begin{itemize}[itemsep=0pt]
+    \item $P$ （单个文字也是子句）
+    \item $P \lor Q$ （两个文字的析取）
+    \item $\neg P \lor Q \lor R$ （三个文字的析取）
+    \item $\neg H(x) \lor D(x)$ （含变量的子句）
+\end{itemize}
+
+\textbf{子句集}（子句的合取）：
+$$\{P \lor Q, \quad \neg P \lor R, \quad Q\}$$
+等价于：$(P \lor Q) \land (\neg P \lor R) \land Q$
+\end{examplebox}
+
+\subsection{子句集转换步骤详解}
+
+将谓词公式转换为子句集需要9个步骤，下面通过具体例子逐步讲解。
+
+\begin{examplebox}[例题3.7 子句集转换——完整示例]
+\textbf{题目}：将公式 $(\forall x)(P(x) \to (\exists y)Q(x,y))$ 转换为子句集。
+
+\textbf{含义}：对于所有的x，如果P(x)成立，则存在某个y使得Q(x,y)成立。
+\tcblower
+\textbf{解答}：
+
+\textbf{步骤1：消去蕴含}（$P \to Q \equiv \neg P \lor Q$）
+$$(\forall x)(\neg P(x) \lor (\exists y)Q(x,y))$$
+
+\textbf{步骤2：否定内移}（本例无需操作，因为没有否定符号在量词外面）
+
+\textbf{步骤3：变元标准化}（本例变量名已经不同，无需改名）
+
+\textbf{步骤4：化为前束形}（把量词移到最前面）
+$$(\forall x)(\exists y)(\neg P(x) \lor Q(x,y))$$
+
+\textbf{步骤5：消去存在量词}（Skolem化）
+
+$y$在$\forall x$的辖域内，所以$y$依赖于$x$，用Skolem函数$f(x)$代替$y$：
+$$(\forall x)(\neg P(x) \lor Q(x,f(x)))$$
+
+\textbf{步骤6-7：化为标准形并消去全称量词}
+$$\neg P(x) \lor Q(x,f(x))$$
+
+\textbf{步骤8-9：写成子句集}
+$$S = \{\neg P(x) \lor Q(x,f(x))\}$$
+\end{examplebox}
+
+\begin{examplebox}[例题3.8 子句集转换——多子句示例]
+\textbf{题目}：将"所有人都是会死的"和"苏格拉底是人"转换为子句集。
+\tcblower
+\textbf{解答}：
+
+\textbf{原始表述}：
+\begin{itemize}[itemsep=0pt]
+    \item 前提1：$(\forall x)(H(x) \to D(x))$ （所有人都会死）
+    \item 前提2：$H(s)$ （苏格拉底是人）
+\end{itemize}
+
+\textbf{转换前提1}：
+\begin{enumerate}[itemsep=0pt]
+    \item 消去蕴含：$(\forall x)(\neg H(x) \lor D(x))$
+    \item 消去全称量词：$\neg H(x) \lor D(x)$
+    \item 子句：$C_1 = \neg H(x) \lor D(x)$
+\end{enumerate}
+
+\textbf{转换前提2}：
+\begin{enumerate}[itemsep=0pt]
+    \item 已经是原子公式，直接作为子句
+    \item 子句：$C_2 = H(s)$
+\end{enumerate}
+
+\textbf{最终子句集}：$S = \{\neg H(x) \lor D(x), \quad H(s)\}$
+\end{examplebox}
+
+\begin{tipbox}
+\textbf{Skolem化的规则}：
+\begin{itemize}[itemsep=0pt]
+    \item 存在量词\textbf{不在}全称量词辖域内 → 用\textbf{常量}代替
+    \item 存在量词\textbf{在}全称量词辖域内 → 用\textbf{Skolem函数}代替
+\end{itemize}
+
+\textbf{例如}：
+\begin{itemize}[itemsep=0pt]
+    \item $(\exists x)P(x)$ → $P(a)$（用常量$a$代替）
+    \item $(\forall x)(\exists y)P(x,y)$ → $(\forall x)P(x,f(x))$（$y$依赖于$x$）
+\end{itemize}
+\end{tipbox}
+
+\section{归结原理}
+
+\subsection{什么是归结？}
+
+\begin{conceptbox}
+\textbf{归结原理}：从两个子句中找到一对\textbf{互补文字}（一正一负），消去它们，把剩余部分合并成新子句。
+
+\textbf{互补文字}：形如$P$和$\neg P$的一对文字。
+
+\textbf{空子句}：不含任何文字的子句，记为$\square$，表示\textbf{矛盾}。
+\end{conceptbox}
+
+\begin{examplebox}[例子：归结的直观理解]
+\textbf{类比}：归结就像"消消乐"游戏
+
+子句1：$P \lor Q$（"要么P，要么Q"）
+
+子句2：$\neg P \lor R$（"要么非P，要么R"）
+
+\textbf{归结过程}：
+\begin{itemize}[itemsep=0pt]
+    \item 找到互补文字：$P$和$\neg P$
+    \item 消去它们，合并剩余部分
+    \item 归结式：$Q \lor R$
+\end{itemize}
+
+\textbf{逻辑解释}：
+\begin{itemize}[itemsep=0pt]
+    \item 如果$P$为真：由子句2得$R$为真
+    \item 如果$P$为假：由子句1得$Q$为真
+    \item 所以：$Q$或$R$至少有一个为真，即$Q \lor R$
+\end{itemize}
+\end{examplebox}
+
+\begin{examplebox}[例题3.9 简单归结]
+\textbf{题目}：对以下子句进行归结。
+\begin{itemize}[itemsep=0pt]
+    \item $C_1 = P \lor Q$
+    \item $C_2 = \neg P \lor R$
+\end{itemize}
+\tcblower
+\textbf{解答}：
+
+\textbf{步骤1}：找互补文字
+\begin{itemize}[itemsep=0pt]
+    \item $C_1$中有$P$，$C_2$中有$\neg P$ → 互补！
+\end{itemize}
+
+\textbf{步骤2}：消去互补文字，合并剩余
+\begin{itemize}[itemsep=0pt]
+    \item $C_1$去掉$P$剩：$Q$
+    \item $C_2$去掉$\neg P$剩：$R$
+    \item 合并：$Q \lor R$
+\end{itemize}
+
+\textbf{归结式}：$C_{12} = Q \lor R$
+\end{examplebox}
+
+\begin{examplebox}[例题3.10 带变量的归结]
+\textbf{题目}：对以下子句进行归结。
+\begin{itemize}[itemsep=0pt]
+    \item $C_1 = \neg P(x) \lor Q(x)$
+    \item $C_2 = P(a)$
+\end{itemize}
+\tcblower
+\textbf{解答}：
+
+\textbf{步骤1}：找互补文字
+\begin{itemize}[itemsep=0pt]
+    \item $C_1$中有$\neg P(x)$，$C_2$中有$P(a)$
+    \item 需要\textbf{合一}：让$P(x)$和$P(a)$匹配
+\end{itemize}
+
+\textbf{步骤2}：求合一替换
+\begin{itemize}[itemsep=0pt]
+    \item 令$x = a$，即替换$\sigma = \{x/a\}$
+    \item $P(x)$变成$P(a)$，与$P(a)$匹配 ✓
+\end{itemize}
+
+\textbf{步骤3}：应用替换并归结
+\begin{itemize}[itemsep=0pt]
+    \item $C_1$应用$\sigma$：$\neg P(a) \lor Q(a)$
+    \item 消去$\neg P(a)$和$P(a)$
+    \item 剩余：$Q(a)$
+\end{itemize}
+
+\textbf{归结式}：$C_{12} = Q(a)$
+\end{examplebox}
+
+\begin{examplebox}[例题3.11 归结得到空子句]
+\textbf{题目}：对以下子句进行归结。
+\begin{itemize}[itemsep=0pt]
+    \item $C_1 = P$
+    \item $C_2 = \neg P$
+\end{itemize}
+\tcblower
+\textbf{解答}：
+
+\textbf{步骤1}：找互补文字
+\begin{itemize}[itemsep=0pt]
+    \item $P$和$\neg P$互补
+\end{itemize}
+
+\textbf{步骤2}：消去后剩余
+\begin{itemize}[itemsep=0pt]
+    \item $C_1$去掉$P$剩：（空）
+    \item $C_2$去掉$\neg P$剩：（空）
+    \item 合并：（空）
+\end{itemize}
+
+\textbf{归结式}：$\square$（空子句）
+
+\textbf{含义}：$P$和$\neg P$同时为真是矛盾的！空子句表示发现了矛盾。
+\end{examplebox}
+
+\subsection{归结注意事项}
+
+\begin{notebox}
+\textbf{归结的三条重要规则}：
+\begin{enumerate}[itemsep=0pt]
+    \item \textbf{变量改名}：若两个子句有相同变量名，需先改名避免冲突
+    \item \textbf{只消一对}：每次归结只能消去一对互补文字
+    \item \textbf{先简化}：若子句内部有可合一的文字，应先简化
+\end{enumerate}
+\end{notebox}
+
+
+744: \subsection{归结策略}
+
+为了提高归结推理的效率，减少盲目搜索，通常采用以下几种归结策略：
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{删除策略（Deletion Strategy）}
+    \begin{itemize}
+        \item 删除含有纯文字的子句：纯文字是指在子句集中只以一种符号（正或负）出现的文字。
+        \item 删除重言式子句：包含互补文字的子句（如 $P \lor \neg P$）。
+        \item 删除被包孕（Subsumed）的子句：如果子句$C_1$包含$C_2$（即$C_2 \subseteq C_1$），则$C_1$是多余的，可删除。
+    \end{itemize}
+    
+    \item \textbf{支持集策略（Set of Support Strategy）}
+    \begin{itemize}
+        \item 每次归结时，两个父子句中至少有一个是来自目标公式否定的子句（或其后裔）。
+        \item 该策略在逻辑上是完备的。
+    \end{itemize}
+    
+    \item \textbf{线性归结策略（Linear Resolution Strategy）}
+    \begin{itemize}
+        \item 每次归结的两个父子句中，至少有一个是上一次归结得到的中心子句（即最新生成的归结式）。
+        \item 该策略也是完备的，且易于计算机实现。
+    \end{itemize}
+    
+    \item \textbf{输入归结策略（Input Resolution Strategy）}
+    \begin{itemize}
+        \item 每次归结中，至少有一个父子句是初始子句集中的子句（输入子句）。
+        \item 该策略不一定是完备的。
+    \end{itemize}
+\end{enumerate}
+
+\section{归结反演}
+
+\subsection{什么是归结反演？}
+
+\begin{conceptbox}
+\textbf{归结反演}是一种用\textbf{反证法}证明定理的方法：
+
+\textbf{核心思想}：要证明结论$B$为真，先假设$B$为假（即$\neg B$），然后推导出矛盾（空子句），从而证明$B$必须为真。
+
+\textbf{类比}：就像证明"小明没有说谎"——假设"小明说谎了"，然后发现这会导致矛盾，所以"小明没有说谎"。
+\end{conceptbox}
+
+\subsection{归结反演的步骤}
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{写出前提}：把已知条件表示为谓词公式
+    \item \textbf{否定结论}：把要证明的结论取反
+    \item \textbf{转换子句集}：把前提和否定结论都转换为子句
+    \item \textbf{反复归结}：不断对子句进行归结
+    \item \textbf{得出空子句}：如果能推出$\square$，则原结论为真
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm,>=stealth,thick,scale=0.9]
+\node[draw,rectangle,rounded corners,fill=blue!10] (premise) {前提};
+\node[draw,rectangle,rounded corners,fill=red!10,right=2cm of premise] (negB) {$\neg$结论};
+\node[draw,rectangle,rounded corners,below=of premise,xshift=1.5cm] (clause) {子句集};
+\node[draw,rectangle,rounded corners,below=of clause] (resolve) {归结};
+\node[draw,diamond,below=of resolve,aspect=2.5] (empty) {空子句?};
+\node[draw,rectangle,rounded corners,fill=green!20,below=of empty] (yes) {结论为真！};
+
+\draw[->] (premise) -- (clause);
+\draw[->] (negB) -- (clause);
+\draw[->] (clause) -- (resolve);
+\draw[->] (resolve) -- (empty);
+\draw[->] (empty) -- node[right]{\small 是} (yes);
+\draw[->] (empty.east) -- ++(1,0) |- node[right,pos=0.25]{\small 否} (resolve.east);
+\end{tikzpicture}
+\end{center}
+
+\begin{examplebox}[例题3.12 归结反演——经典证明]
+\textbf{题目}：用归结反演证明"苏格拉底会死"。
+
+已知：
+\begin{itemize}[itemsep=0pt]
+    \item 前提1：所有人都是会死的
+    \item 前提2：苏格拉底是人
+\end{itemize}
+\tcblower
+\textbf{解答}：
+
+\textbf{第1步：符号化}
+
+设$H(x)$="x是人"，$D(x)$="x会死"，$s$=苏格拉底
+
+\begin{itemize}[itemsep=0pt]
+    \item 前提1：$(\forall x)(H(x) \to D(x))$
+    \item 前提2：$H(s)$
+    \item 结论：$D(s)$
+\end{itemize}
+
+\textbf{第2步：否定结论}
+
+$\neg D(s)$（假设苏格拉底不会死）
+
+\textbf{第3步：转换为子句集}
+\begin{itemize}[itemsep=0pt]
+    \item $C_1$：$\neg H(x) \lor D(x)$（由前提1转换）
+    \item $C_2$：$H(s)$（前提2）
+    \item $C_3$：$\neg D(s)$（否定结论）
+\end{itemize}
+
+\textbf{第4步：归结}
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.5cm,>=stealth]
+\node (c1) {$C_1: \neg H(x) \lor D(x)$};
+\node[right=3cm of c1] (c2) {$C_2: H(s)$};
+\node[below=of c1,xshift=2cm] (c4) {$C_4: D(s)$};
+\node[right=2cm of c4] (c3) {$C_3: \neg D(s)$};
+\node[below=of c4,xshift=1cm] (empty) {$\square$（空子句）};
+
+\draw[->] (c1) -- node[left]{\small $\{x/s\}$} (c4);
+\draw[->] (c2) -- (c4);
+\draw[->] (c4) -- (empty);
+\draw[->] (c3) -- (empty);
+\end{tikzpicture}
+\end{center}
+
+\begin{itemize}[itemsep=0pt]
+    \item $C_1$与$C_2$归结（$x$替换为$s$）：$C_4 = D(s)$
+    \item $C_4$与$C_3$归结：$\square$（空子句）
+\end{itemize}
+
+\textbf{第5步：结论}
+
+推出空子句，说明"$\neg D(s)$"（苏格拉底不会死）导致矛盾。
+
+因此，$D(s)$（苏格拉底会死）为真。\textbf{证毕！}
+\end{examplebox}
+
+\begin{examplebox}[例题3.13 归结反演——动物分类]
+\textbf{题目}：用归结反演证明"旺财是动物"。
+
+已知：
+\begin{itemize}[itemsep=0pt]
+    \item 前提1：所有狗都是哺乳动物
+    \item 前提2：所有哺乳动物都是动物
+    \item 前提3：旺财是狗
+\end{itemize}
+\tcblower
+\textbf{解答}：
+
+\textbf{第1步：符号化}
+
+设$D(x)$="x是狗"，$M(x)$="x是哺乳动物"，$A(x)$="x是动物"，$w$=旺财
+
+\begin{itemize}[itemsep=0pt]
+    \item 前提1：$(\forall x)(D(x) \to M(x))$
+    \item 前提2：$(\forall x)(M(x) \to A(x))$
+    \item 前提3：$D(w)$
+    \item 结论：$A(w)$
+\end{itemize}
+
+\textbf{第2步：否定结论}
+
+$\neg A(w)$（假设旺财不是动物）
+
+\textbf{第3步：转换为子句集}
+\begin{itemize}[itemsep=0pt]
+    \item $C_1$：$\neg D(x) \lor M(x)$
+    \item $C_2$：$\neg M(x) \lor A(x)$
+    \item $C_3$：$D(w)$
+    \item $C_4$：$\neg A(w)$
+\end{itemize}
+
+\textbf{第4步：归结}
+\begin{itemize}[itemsep=0pt]
+    \item $C_1$与$C_3$归结（$x/w$）：$C_5 = M(w)$（旺财是哺乳动物）
+    \item $C_2$与$C_5$归结（$x/w$）：$C_6 = A(w)$（旺财是动物）
+    \item $C_6$与$C_4$归结：$\square$（空子句）
+\end{itemize}
+
+\textbf{第5步：结论}
+
+推出空子句，证明$A(w)$（旺财是动物）为真。\textbf{证毕！}
+\end{examplebox}
+
+\begin{examplebox}[例题3.14 归结反演——逻辑谜题]
+\textbf{题目}：用归结反演证明结论。
+
+已知：
+\begin{itemize}[itemsep=0pt]
+    \item 前提1：如果天下雨，则地面湿
+    \item 前提2：如果地面湿，则路滑
+    \item 前提3：天下雨了
+\end{itemize}
+证明：路滑
+\tcblower
+\textbf{解答}：
+
+\textbf{符号化}：$R$=下雨，$W$=地面湿，$S$=路滑
+
+\textbf{子句集}：
+\begin{itemize}[itemsep=0pt]
+    \item $C_1$：$\neg R \lor W$（下雨→地湿）
+    \item $C_2$：$\neg W \lor S$（地湿→路滑）
+    \item $C_3$：$R$（下雨了）
+    \item $C_4$：$\neg S$（否定结论：路不滑）
+\end{itemize}
+
+\textbf{归结过程}：
+\begin{itemize}[itemsep=0pt]
+    \item $C_1$与$C_3$归结：$C_5 = W$（地面湿）
+    \item $C_2$与$C_5$归结：$C_6 = S$（路滑）
+    \item $C_6$与$C_4$归结：$\square$
+\end{itemize}
+
+\textbf{结论}：路滑。\textbf{证毕！}
+\end{examplebox}
+
+\section{习题与解答}
+
+\subsection{是非题}
+
+\begin{enumerate}[leftmargin=2em,itemsep=2pt]
+    \item 消解时主要通过推导空子句来实现反证的。（√）
+    \item $L$、$\neg L$为互补文字，$L \land \neg L \Rightarrow \square$。（√）
+    \item $(P(x) \land Q(y)) \lor (P(x) \land R(y))$为合取范式。（×）
+    \item 归结方法是一种机械化的反向推理方法。（√）
+    \item 在归结原理中，空子句不含有文字，它不能被任何解释满足，所以空子句是永假的。（√）
+\end{enumerate}
+
+\subsection{填空题}
+
+\begin{enumerate}[leftmargin=2em,itemsep=2pt]
+    \item 谓词公式与其子句集的关系是\underline{等价}。
+    \item 利用归结原理证明定理时，若得到的归结式为\underline{空子句}，则结论成立。
+    \item 若$C_1 = P \lor Q$，$C_2 = \neg P \lor \neg Q$，则$C_1$和$C_2$的归结式$R(C_1, C_2) = $\underline{$Q \lor \neg Q$或$P \lor \neg P$}。
+    \item 若$C_1 = P(x) \lor Q(x)$，$C_2 = \neg P(a) \lor R(y)$，则$C_1$和$C_2$的归结式$R(C_1, C_2) = $\underline{$Q(a) \lor R(y)$}。
+    \item 在归结原理中，几种常见的归结策略且具有完备性的是\underline{删除策略}、\underline{支持集策略}、\underline{线性归结策略}。
+    \item 推理的形式主要有\underline{正向推理}、\underline{反向推理}、\underline{双向推理}三种方式。
+\end{enumerate}
+
+\subsection{选择题}
+
+\begin{examplebox}[选择题3.1]
+\textbf{问题}：子句$\neg P \lor Q$和$P$经过消解以后，得到（\quad）
+
+A. $P$ \quad B. $Q$ \quad C. $\neg P$ \quad D. $P \lor Q$
+\tcblower
+\textbf{答案}：B
+
+$\neg P$和$P$是互补文字，消去后剩余$Q$。
+\end{examplebox}
+
+\begin{examplebox}[选择题3.2]
+\textbf{问题}：反演归结（消解）证明定理时，若当前归结式是（\quad）时，则定理得证。
+
+A. 永真式 \quad B. 包孕式 \quad C. 空子句
+\tcblower
+\textbf{答案}：C
+
+归结反演通过推导出空子句（矛盾）来证明原结论为真。
+\end{examplebox}
+
+\begin{examplebox}[选择题3.3]
+\textbf{问题}：$(A \to B) \land A \to B$是（\quad）
+
+A. 附加律 \quad B. 拒取律 \quad C. 假言推理 \quad D. 吸收律
+\tcblower
+\textbf{答案}：C
+
+这是假言推理（Modus Ponens）的形式：如果$A$为真且$A \to B$为真，则$B$为真。
+\end{examplebox}
+
+\subsection{归结反演证明例题}
+
+\begin{examplebox}[例题3.15 归结反演——程序与Bug]
+\textbf{问题}：考虑下面的句子：
+\begin{enumerate}[itemsep=0pt]
+    \item 每个程序都存在Bug
+    \item 含有Bug的程序无法工作
+    \item P是一个程序
+\end{enumerate}
+(1) 用一阶谓词逻辑表示上述句子
+(2) 使用归结原理证明P不能工作
+\tcblower
+\textbf{解答}：
+
+\textbf{(1) 谓词表示}
+
+定义谓词：
+\begin{itemize}[itemsep=0pt]
+    \item $Program(x)$：x是程序
+    \item $BUG(x)$：x存在Bug
+    \item $Work(x)$：x能工作
+\end{itemize}
+
+事实及规则的表示：
+\begin{itemize}[itemsep=0pt]
+    \item R1: $\forall x(Program(x) \to BUG(x))$
+    \item R2: $\forall y(BUG(y) \to \neg Work(y))$
+    \item F1: $Program(P)$
+\end{itemize}
+
+\textbf{(2) 归结证明}
+
+结论取反：$Work(P)$（假设P能工作）
+
+子句集：
+\begin{itemize}[itemsep=0pt]
+    \item (1) $\neg Program(x) \lor BUG(x)$
+    \item (2) $\neg BUG(y) \lor \neg Work(y)$
+    \item (3) $Program(P)$
+    \item (4) $Work(P)$（结论的否定）
+\end{itemize}
+
+归结过程：
+\begin{itemize}[itemsep=0pt]
+    \item (1)和(3)归结$\{P/x\}$：(5) $BUG(P)$
+    \item (2)和(5)归结$\{P/y\}$：(6) $\neg Work(P)$
+    \item (4)和(6)归结：$\square$
+\end{itemize}
+
+\textbf{结论}：P不能工作。证毕！
+\end{examplebox}
+
+\begin{examplebox}[例题3.16 归结反演——祖孙关系]
+\textbf{问题}：设已知：
+\begin{enumerate}[itemsep=0pt]
+    \item 如果x是y的父亲，y是z的父亲，则x是z的祖父
+    \item 老李是大李的父亲
+    \item 大李是小李的父亲
+\end{enumerate}
+使用归结演绎推理证明：对于某人u，一定存在一个人v，v是u的祖父。
+\tcblower
+\textbf{解答}：
+
+\textbf{定义谓词}：
+\begin{itemize}[itemsep=0pt]
+    \item $F(x,y)$：x是y的父亲
+    \item $GF(x,z)$：x是z的祖父
+\end{itemize}
+
+\textbf{谓词表示}：
+\begin{itemize}[itemsep=0pt]
+    \item F1: $\forall x \forall y \forall z((F(x,y) \land F(y,z)) \to GF(x,z))$
+    \item F2: $F(L,D)$（L=老李，D=大李）
+    \item F3: $F(D,X)$（X=小李）
+\end{itemize}
+
+\textbf{结论}：$\exists u \exists v(GF(v,u))$
+
+\textbf{子句集}：
+\begin{itemize}[itemsep=0pt]
+    \item (1) $\neg F(x,y) \lor \neg F(y,z) \lor GF(x,z)$
+    \item (2) $F(L,D)$
+    \item (3) $F(D,X)$
+    \item (4) $\neg GF(v,u)$（结论的否定）
+\end{itemize}
+
+\textbf{归结过程}：
+\begin{itemize}[itemsep=0pt]
+    \item (1)和(2)归结$\{L/x, D/y\}$：(5) $\neg F(D,z) \lor GF(L,z)$
+    \item (5)和(3)归结$\{X/z\}$：(6) $GF(L,X)$
+    \item (6)和(4)归结$\{L/v, X/u\}$：$\square$
+\end{itemize}
+
+\textbf{结论}：老李是小李的祖父。证毕！
+\end{examplebox}
+
+\begin{examplebox}[例题3.17 归结反演——盗窃案推理]
+\textbf{问题}：张某被盗，公安局派出5个人去调查。案情分析时：
+\begin{itemize}[itemsep=0pt]
+    \item 侦察员A说："赵与钱中至少有一个人作案"
+    \item 侦察员B说："钱与孙中至少有一个人作案"
+    \item 侦察员C说："孙与李中至少有一个人作案"
+    \item 侦察员D说："赵与孙中至少有一个人与此案无关"
+    \item 侦察员E说："钱与李中至少有一个人与此案无关"
+\end{itemize}
+如果这5个侦察员的话都是可信的，使用归结演绎推理求出谁是盗窃犯。
+\tcblower
+\textbf{解答}：
+
+\textbf{定义谓词}：$C(x)$表示x作案
+
+设Z=赵，Q=钱，S=孙，L=李
+
+\textbf{子句集}：
+\begin{itemize}[itemsep=0pt]
+    \item (1) $C(Z) \lor C(Q)$（A的话）
+    \item (2) $C(Q) \lor C(S)$（B的话）
+    \item (3) $C(S) \lor C(L)$（C的话）
+    \item (4) $\neg C(Z) \lor \neg C(S)$（D的话）
+    \item (5) $\neg C(Q) \lor \neg C(L)$（E的话）
+\end{itemize}
+
+\textbf{归结过程}（求钱是否作案）：
+\begin{itemize}[itemsep=0pt]
+    \item (1)和(4)归结：(6) $C(Q) \lor \neg C(S)$
+    \item (6)和(2)归结：(7) $C(Q)$
+\end{itemize}
+
+\textbf{结论}：钱是盗窃犯。
+
+\textbf{继续归结}（求孙是否作案）：
+\begin{itemize}[itemsep=0pt]
+    \item (3)和(5)归结：(8) $C(S) \lor \neg C(Q)$
+    \item (8)和(7)归结：(9) $C(S)$
+\end{itemize}
+
+\textbf{最终结论}：钱和孙都是盗窃犯。
+\end{examplebox}
+
+\subsection{子句集转换例题}
+
+\begin{examplebox}[例题3.18 子句集转换]
+\textbf{问题}：把下列谓词公式化为相应的子句集：
+$$\forall x \forall y(P(x,y) \to Q(x,y))$$
+\tcblower
+\textbf{解答}：
+
+\textbf{步骤1}：消去蕴含
+$$\forall x \forall y(\neg P(x,y) \lor Q(x,y))$$
+
+\textbf{步骤2}：消去全称量词
+$$\neg P(x,y) \lor Q(x,y)$$
+
+\textbf{子句集}：$S = \{\neg P(x,y) \lor Q(x,y)\}$
+\end{examplebox}
+
+\begin{examplebox}[例题3.19 复杂子句集转换]
+\textbf{问题}：把下列谓词公式化为相应的子句集：
+$$\forall x(\forall y P(x,y) \to \neg \forall y(Q(x,y) \to R(x,y)))$$
+\tcblower
+\textbf{解答}：
+
+\textbf{步骤1}：消去蕴含
+$$\forall x(\neg \forall y P(x,y) \lor \neg \forall y(\neg Q(x,y) \lor R(x,y)))$$
+
+\textbf{步骤2}：否定内移
+$$\forall x(\exists y \neg P(x,y) \lor \exists y(Q(x,y) \land \neg R(x,y)))$$
+
+\textbf{步骤3}：变量改名
+$$\forall x(\exists y \neg P(x,y) \lor \exists z(Q(x,z) \land \neg R(x,z)))$$
+
+\textbf{步骤4}：Skolem化（$y=f(x)$，$z=g(x)$）
+$$\forall x(\neg P(x,f(x)) \lor (Q(x,g(x)) \land \neg R(x,g(x))))$$
+
+\textbf{步骤5}：化为合取范式
+$$\forall x((\neg P(x,f(x)) \lor Q(x,g(x))) \land (\neg P(x,f(x)) \lor \neg R(x,g(x))))$$
+
+\textbf{步骤6}：消去全称量词，写成子句集
+
+\textbf{子句集}：
+\begin{itemize}[itemsep=0pt]
+    \item $\neg P(x,f(x)) \lor Q(x,g(x))$
+    \item $\neg P(x,f(x)) \lor \neg R(x,g(x))$
+\end{itemize}
+\end{examplebox}
+
+\section{本章小结}
+
+本章介绍了人工智能中的推理方法：
+
+\subsection{核心概念回顾}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{推理}：从已知事实推导新结论的过程
+    \item \textbf{演绎推理}：一般→个别，结论必然正确，不增殖知识
+    \item \textbf{归纳推理}：个别→一般，结论可能正确，能增殖知识
+    \item \textbf{默认推理}：假设成立，可被新信息推翻
+\end{itemize}
+
+\subsection{三大推理规则}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{规则} & \textbf{形式} & \textbf{记忆方法} \\
+\midrule
+假言推理 & $P, P \to Q \Rightarrow Q$ & 肯定前件推结论 \\
+拒取式 & $P \to Q, \neg Q \Rightarrow \neg P$ & 否定后件推否定前件 \\
+三段论 & $P \to Q, Q \to R \Rightarrow P \to R$ & 链式传递 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{归结反演要点}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 否定要证明的结论
+    \item 将所有公式转换为子句集
+    \item 反复归结直到得出空子句
+    \item 空子句表示矛盾，原结论为真
+\end{enumerate}
+
+\begin{tipbox}
+\textbf{考试技巧}：
+\begin{itemize}[itemsep=0pt]
+    \item 归结时画出归结树，清晰展示推理过程
+    \item 注意变量替换（合一）的正确性
+    \item 检查是否遗漏了否定结论这一步
+\end{itemize}
+\end{tipbox}
+
+\begin{table}[htbp]
+\centering\small
+\caption{推理方式对比表}
+\begin{tabular}{llll}
+\toprule
+\textbf{对比项} & \textbf{演绎推理} & \textbf{归纳推理} & \textbf{默认推理} \\
+\midrule
+方向 & 一般→个别 & 个别→一般 & 假设→结论 \\
+是否增殖知识 & 否 & 是 & 否 \\
+结论可靠性 & 100\% & 不确定 & 可被推翻 \\
+典型应用 & 数学证明 & 机器学习 & 常识推理 \\
+\bottomrule
+\end{tabular}
+\end{table}

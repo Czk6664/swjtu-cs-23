@@ -1,0 +1,372 @@
+%========================================
+\chapter{应用层}
+%========================================
+\section{应用层概述}
+应用层是TCP/IP协议栈的最高层，直接为用户提供网络服务。
+
+\subsection{客户-服务器模式}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{服务器}：提供服务，被动等待请求，通常使用固定端口
+    \item \textbf{客户端}：请求服务，主动发起连接，使用临时端口
+\end{itemize}
+
+\subsection{P2P模式}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 每个节点既是客户端又是服务器
+    \item 资源分布在各个节点上
+    \item 可扩展性好，但管理复杂
+\end{itemize}
+
+\section{DNS域名系统}
+DNS（Domain Name System）将域名解析为IP地址。
+
+\subsection{域名结构}
+域名采用层次结构，从右到左依次为：根域、顶级域、二级域、三级域...
+
+\textbf{示例}：\texttt{www.example.com}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \texttt{com}：顶级域（通用顶级域）
+    \item \texttt{example}：二级域
+    \item \texttt{www}：主机名
+\end{itemize}
+
+\subsection{DNS服务器类型}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{根域名服务器}：知道所有顶级域名服务器的地址
+    \item \textbf{顶级域名服务器}：管理该顶级域下的所有二级域名
+    \item \textbf{权威域名服务器}：负责特定区域的域名解析
+    \item \textbf{本地域名服务器}：用户首先查询的服务器，有缓存功能
+\end{itemize}
+
+\subsection{DNS查询方式}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{递归查询}：本地DNS服务器代替客户端完成全部查询
+    \item \textbf{迭代查询}：本地DNS服务器依次向各级服务器查询
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.85]
+\node[draw,rectangle] (client) at (0,0) {客户端};
+\node[draw,rectangle] (local) at (3,0) {本地DNS};
+\node[draw,rectangle] (root) at (6,2) {根DNS};
+\node[draw,rectangle] (tld) at (6,0) {顶级DNS};
+\node[draw,rectangle] (auth) at (6,-2) {权威DNS};
+\draw[->] (client) -- node[above]{\tiny 1.查询} (local);
+\draw[->] (local) -- node[above,sloped]{\tiny 2} (root);
+\draw[->] (root) -- node[right]{\tiny 3} (local);
+\draw[->] (local) -- node[above]{\tiny 4} (tld);
+\draw[->] (tld) -- node[right]{\tiny 5} (local);
+\draw[->] (local) -- node[above,sloped]{\tiny 6} (auth);
+\draw[->] (auth) -- node[right]{\tiny 7} (local);
+\draw[->] (local) -- node[below]{\tiny 8.结果} (client);
+\end{tikzpicture}
+\end{center}
+
+\begin{notebox}
+\textbf{DNS使用的协议}：
+\begin{itemize}[itemsep=0pt]
+    \item 通常使用UDP（端口53），查询响应快
+    \item 当响应超过512字节时使用TCP
+    \item 区域传送使用TCP
+\end{itemize}
+\end{notebox}
+
+\begin{examplebox}[例题6.1 DNS查询]
+\textbf{题目}：用户访问www.example.com，本地DNS缓存中没有记录，描述DNS解析过程。
+\tcblower
+\begin{enumerate}[itemsep=0pt]
+    \item 客户端向本地DNS服务器发送查询请求
+    \item 本地DNS向根服务器查询，获得.com顶级域服务器地址
+    \item 本地DNS向.com服务器查询，获得example.com权威服务器地址
+    \item 本地DNS向权威服务器查询，获得www.example.com的IP地址
+    \item 本地DNS将结果返回给客户端，并缓存该记录
+\end{enumerate}
+\end{examplebox}
+
+\section{HTTP协议}
+HTTP（HyperText Transfer Protocol）是Web应用的基础协议。
+
+\subsection{HTTP特点}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{无状态}：服务器不保存客户端状态信息
+    \item \textbf{基于TCP}：使用TCP连接，默认端口80
+    \item \textbf{请求-响应模式}：客户端发送请求，服务器返回响应
+\end{itemize}
+
+\subsection{HTTP连接方式}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{非持久连接}（HTTP/1.0）：每个请求/响应使用单独的TCP连接
+    \item \textbf{持久连接}（HTTP/1.1）：多个请求/响应复用同一TCP连接
+    \begin{itemize}[itemsep=0pt]
+        \item 非流水线：收到响应后才发送下一个请求
+        \item 流水线：连续发送多个请求，不等待响应
+    \end{itemize}
+\end{itemize}
+
+\subsection{HTTP请求方法}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{GET}：获取资源
+    \item \textbf{POST}：提交数据
+    \item \textbf{PUT}：上传文件
+    \item \textbf{DELETE}：删除资源
+    \item \textbf{HEAD}：获取响应头（不返回内容）
+\end{itemize}
+
+\subsection{HTTP状态码}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{cl}
+\toprule
+\textbf{状态码} & \textbf{含义} \\
+\midrule
+1xx & 信息性状态码 \\
+2xx & 成功（200 OK） \\
+3xx & 重定向（301永久移动，302临时移动） \\
+4xx & 客户端错误（404未找到，403禁止） \\
+5xx & 服务器错误（500内部错误） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{examplebox}[例题6.2 HTTP时延计算]
+\textbf{题目}：用户访问一个包含1个HTML文件和2个图片的网页，RTT=100ms。分别计算非持久连接和持久连接（非流水线）的总时延。
+\tcblower
+\textbf{非持久连接}：每个对象需要2RTT（建立连接+请求响应）
+
+总时延 = 3 × 2RTT = 6RTT = \textbf{600ms}
+
+\textbf{持久连接（非流水线）}：第一个对象2RTT，后续每个1RTT
+
+总时延 = 2RTT + 2 × 1RTT = 4RTT = \textbf{400ms}
+
+\textbf{持久连接（流水线）}：建立连接后可连续请求
+
+总时延 ≈ 2RTT + 1RTT = 3RTT = \textbf{300ms}
+\end{examplebox}
+
+\subsection{Cookie与Session}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{Cookie}：存储在客户端，用于保持状态
+    \item \textbf{Session}：存储在服务器端，通过Session ID关联
+\end{itemize}
+
+\section{FTP文件传输协议}
+FTP（File Transfer Protocol）用于在网络上传输文件。
+
+\subsection{FTP特点}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 使用两个TCP连接：
+    \begin{itemize}[itemsep=0pt]
+        \item \textbf{控制连接}（端口21）：传输命令和响应，持久连接
+        \item \textbf{数据连接}（端口20）：传输文件数据，非持久连接
+    \end{itemize}
+    \item 支持ASCII和二进制传输模式
+    \item 需要用户认证
+\end{itemize}
+
+\subsection{FTP工作模式}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{主动模式}：服务器主动连接客户端的数据端口
+    \item \textbf{被动模式}：客户端主动连接服务器的数据端口（适用于防火墙环境）
+\end{itemize}
+
+\section{电子邮件}
+\subsection{邮件系统组成}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{用户代理}：邮件客户端软件
+    \item \textbf{邮件服务器}：存储和转发邮件
+    \item \textbf{邮件协议}：SMTP、POP3、IMAP
+\end{itemize}
+
+\subsection{邮件协议}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{SMTP}（端口25）：发送邮件，推送协议
+    \item \textbf{POP3}（端口110）：接收邮件，下载后可删除服务器副本
+    \item \textbf{IMAP}（端口143）：接收邮件，邮件保留在服务器
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.9]
+\node[draw,rectangle] (ua1) at (0,0) {发送方UA};
+\node[draw,rectangle] (ms1) at (3,0) {发送方服务器};
+\node[draw,rectangle] (ms2) at (6,0) {接收方服务器};
+\node[draw,rectangle] (ua2) at (9,0) {接收方UA};
+\draw[->] (ua1) -- node[above]{\tiny SMTP} (ms1);
+\draw[->] (ms1) -- node[above]{\tiny SMTP} (ms2);
+\draw[->] (ms2) -- node[above]{\tiny POP3/IMAP} (ua2);
+\end{tikzpicture}
+\end{center}
+
+\section{DHCP动态主机配置协议}
+DHCP（Dynamic Host Configuration Protocol）自动为主机分配IP地址等网络配置。
+
+\subsection{DHCP工作过程}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{DHCP Discover}：客户端广播发现DHCP服务器
+    \item \textbf{DHCP Offer}：服务器提供IP地址等配置
+    \item \textbf{DHCP Request}：客户端请求使用某个配置
+    \item \textbf{DHCP ACK}：服务器确认分配
+\end{enumerate}
+
+\begin{notebox}
+\textbf{DHCP使用UDP}：
+\begin{itemize}[itemsep=0pt]
+    \item 客户端使用端口68
+    \item 服务器使用端口67
+    \item 初始时客户端没有IP地址，使用0.0.0.0作为源地址
+\end{itemize}
+\end{notebox}
+
+\section{常用端口号总结}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ccc}
+\toprule
+\textbf{协议} & \textbf{端口} & \textbf{传输层协议} \\
+\midrule
+FTP数据 & 20 & TCP \\
+FTP控制 & 21 & TCP \\
+SSH & 22 & TCP \\
+Telnet & 23 & TCP \\
+SMTP & 25 & TCP \\
+DNS & 53 & UDP/TCP \\
+DHCP服务器 & 67 & UDP \\
+DHCP客户端 & 68 & UDP \\
+HTTP & 80 & TCP \\
+POP3 & 110 & TCP \\
+IMAP & 143 & TCP \\
+HTTPS & 443 & TCP \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{examplebox}[例题6.3 应用层协议]
+\textbf{题目}：下列协议中，使用UDP的是？\\
+A. HTTP \quad B. FTP \quad C. SMTP \quad D. DNS
+\tcblower
+\begin{itemize}[itemsep=0pt]
+    \item HTTP：TCP（端口80）
+    \item FTP：TCP（端口20/21）
+    \item SMTP：TCP（端口25）
+    \item DNS：主要使用UDP（端口53），大数据量时用TCP
+\end{itemize}
+\textbf{答案}：D
+\end{examplebox}
+
+\begin{examplebox}[例题6.4 邮件协议]
+\textbf{题目}：用户A使用Outlook发送邮件给用户B，B使用网页版Gmail查看邮件。描述邮件传输过程中使用的协议。
+\tcblower
+\begin{enumerate}[itemsep=0pt]
+    \item A的Outlook通过\textbf{SMTP}将邮件发送到A的邮件服务器
+    \item A的邮件服务器通过\textbf{SMTP}将邮件转发到Gmail服务器
+    \item B通过浏览器访问Gmail，使用\textbf{HTTP/HTTPS}获取邮件
+\end{enumerate}
+
+注：如果B使用邮件客户端，则使用POP3或IMAP从服务器获取邮件。
+\end{examplebox}
+
+\section{Web缓存与代理服务器}
+\subsection{Web缓存的作用}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 减少客户端请求的响应时间
+    \item 减少机构接入链路的流量
+    \item 降低源服务器的负载
+\end{itemize}
+
+\subsection{条件GET}
+用于验证缓存对象是否过期：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 请求头包含\texttt{If-Modified-Since}字段
+    \item 若对象未修改，服务器返回304 Not Modified（不含对象）
+    \item 若对象已修改，服务器返回200 OK（含新对象）
+\end{itemize}
+
+\section{应用层综合例题}
+
+\begin{examplebox}[例题6.5 DNS查询类型]
+\textbf{题目}：本地DNS服务器向根DNS服务器的查询通常采用什么方式？为什么？
+\tcblower
+通常采用\textbf{迭代查询}。
+
+原因：
+\begin{itemize}[itemsep=0pt]
+    \item 根DNS服务器负载很重，需要处理大量查询
+    \item 迭代查询让本地DNS服务器承担主要工作
+    \item 根服务器只需返回下一级服务器地址，减轻负担
+\end{itemize}
+
+而本地DNS服务器与客户端之间通常采用\textbf{递归查询}，因为客户端只需发送一次请求即可获得最终结果。
+\end{examplebox}
+
+\begin{examplebox}[例题6.6 HTTP持久连接]
+\textbf{题目}：某网页包含1个HTML文件（1KB）和10个图片（每个10KB），RTT=100ms，链路带宽1Mbps。分别计算非持久连接和持久连接（流水线）方式下载该网页的总时间。
+\tcblower
+\textbf{传输时间计算}：
+\begin{itemize}[itemsep=0pt]
+    \item HTML传输时间 = $\frac{1\times8}{1000}$ = 8ms
+    \item 每个图片传输时间 = $\frac{10\times8}{1000}$ = 80ms
+\end{itemize}
+
+\textbf{非持久连接}：每个对象需要2RTT + 传输时间
+\begin{itemize}[itemsep=0pt]
+    \item HTML：2×100 + 8 = 208ms
+    \item 10个图片：10×(2×100 + 80) = 2800ms
+    \item 总时间 = 208 + 2800 = \textbf{3008ms}
+\end{itemize}
+
+\textbf{持久连接（流水线）}：1次建立连接 + 连续请求
+\begin{itemize}[itemsep=0pt]
+    \item 建立连接：1RTT = 100ms
+    \item 请求HTML并等待：1RTT + 8ms = 108ms
+    \item 连续请求10个图片：1RTT + 10×80ms = 900ms
+    \item 总时间 ≈ 100 + 108 + 900 = \textbf{1108ms}
+\end{itemize}
+\end{examplebox}
+
+\begin{examplebox}[例题6.7 DHCP工作过程]
+\textbf{题目}：主机A首次接入网络，描述其通过DHCP获取IP地址的过程。
+\tcblower
+\begin{enumerate}[itemsep=0pt]
+    \item \textbf{DHCP Discover}：A广播发现报文
+    \begin{itemize}[itemsep=0pt]
+        \item 源IP：0.0.0.0（A还没有IP）
+        \item 目的IP：255.255.255.255（广播）
+        \item 源MAC：A的MAC地址
+        \item 目的MAC：FF-FF-FF-FF-FF-FF
+    \end{itemize}
+    
+    \item \textbf{DHCP Offer}：服务器提供配置
+    \begin{itemize}[itemsep=0pt]
+        \item 包含：可用IP、子网掩码、默认网关、DNS服务器、租约时间
+    \end{itemize}
+    
+    \item \textbf{DHCP Request}：A请求使用该配置（广播）
+    
+    \item \textbf{DHCP ACK}：服务器确认分配
+\end{enumerate}
+
+此后A可以使用分配的IP地址，租约到期前需要续租。
+\end{examplebox}
+
+\begin{examplebox}[例题6.8 应用层协议综合]
+\textbf{题目}：用户在浏览器输入\texttt{www.example.com}并按回车，描述涉及的应用层协议。
+\tcblower
+\begin{enumerate}[itemsep=0pt]
+    \item \textbf{DNS}：将域名\texttt{www.example.com}解析为IP地址
+    
+    \item \textbf{HTTP/HTTPS}：
+    \begin{itemize}[itemsep=0pt]
+        \item 浏览器与Web服务器建立TCP连接
+        \item 发送HTTP GET请求获取网页
+        \item 服务器返回HTML文档
+    \end{itemize}
+    
+    \item 若网页包含其他资源（图片、CSS、JS）：
+    \begin{itemize}[itemsep=0pt]
+        \item 可能再次进行DNS查询（不同域名）
+        \item 发送额外的HTTP请求获取资源
+    \end{itemize}
+\end{enumerate}
+
+底层还涉及：TCP（传输层）、IP（网络层）、ARP（获取网关MAC地址）
+\end{examplebox}

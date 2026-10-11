@@ -1,0 +1,569 @@
+%========================================
+\chapter{机器学习基础}
+%========================================
+
+\section{机器学习的概念}
+
+\subsection{什么是机器学习？}
+
+\begin{conceptbox}
+\textbf{机器学习}（Machine Learning）是让计算机通过数据自动学习规律，进而做出决策或预测的过程。
+\end{conceptbox}
+
+机器学习的多种定义视角：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{模拟人类学习}：研究如何用机器模拟人类学习活动的学科
+    \item \textbf{知识获取}：研究机器如何获取新知识和新技能，并识别现有知识
+    \item \textbf{自主提升}：自主获取新知识和新技能，不断提升系统性能
+\end{itemize}
+
+\begin{examplebox}[例子：机器学习的生活应用]
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{垃圾邮件过滤}：学习区分正常邮件和垃圾邮件
+    \item \textbf{推荐系统}：学习用户偏好，推荐商品或内容
+    \item \textbf{语音助手}：学习理解语音指令
+    \item \textbf{人脸识别}：学习识别不同人的面部特征
+\end{itemize}
+\end{examplebox}
+
+\section{机器学习的相关术语}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{术语} & \textbf{含义} \\
+\midrule
+训练 & 执行算法，从数据中学习模型的过程 \\
+训练数据 & 用于训练的数据集合 \\
+训练样本 & 单个训练数据点 \\
+训练集 & 所有训练样本组成的集合 \\
+验证集 & 用来调整模型参数、防止过拟合的样本 \\
+测试集 & 从未见过的新数据，用于评估模型 \\
+泛化能力 & 模型在新数据上的表现能力 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{notebox}
+\textbf{三类数据的作用区分}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{训练集}：教模型学习
+    \item \textbf{验证集}：调优模型（选择超参数）
+    \item \textbf{测试集}：最终评价模型性能（不可参与训练！）
+\end{itemize}
+
+通常数据划分比例为 6:2:2 或 7:1:2（训练:验证:测试）
+\end{notebox}
+
+\section{机器学习的分类}
+
+\subsection{按学习形式分类}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{类型} & \textbf{特点} & \textbf{示例} \\
+\midrule
+有监督学习 & 数据带有标签（已知结果） & 分类、回归 \\
+无监督学习 & 数据无标签，需自行发现结构 & 聚类、降维 \\
+半监督学习 & 少量标注 + 大量未标注数据 & 图像分类 \\
+强化学习 & 通过环境反馈（奖惩）学习策略 & 游戏AI、机器人 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{examplebox}[例子：四种学习形式的区别]
+\textbf{有监督学习}：
+\begin{itemize}[itemsep=0pt]
+    \item 老师给你100道题和答案，让你学会解题方法
+    \item 然后用新题测试你是否学会了
+\end{itemize}
+
+\textbf{无监督学习}：
+\begin{itemize}[itemsep=0pt]
+    \item 给你一堆水果，没有告诉你名字
+    \item 让你自己按相似性分成几堆
+\end{itemize}
+
+\textbf{半监督学习}：
+\begin{itemize}[itemsep=0pt]
+    \item 给你100张图片，只标注了10张是猫
+    \item 让你利用这10张学会识别剩下90张
+\end{itemize}
+
+\textbf{强化学习}：
+\begin{itemize}[itemsep=0pt]
+    \item 让机器人自己学走路
+    \item 走对了给奖励，摔倒了给惩罚
+    \item 通过不断试错学会最优策略
+\end{itemize}
+\end{examplebox}
+
+\subsection{按学习目标分类}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{类型} & \textbf{目标} & \textbf{典型方法} \\
+\midrule
+概念学习 & 学习某种"概念" & 示例学习 \\
+规则学习 & 学习一组规则 & 决策树 \\
+函数学习 & 学习数学函数映射 & 神经网络 \\
+类别学习 & 对对象进行分类 & 聚类分析 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{机器学习的应用场景}
+
+\subsection{语音数据相关应用}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{应用} & \textbf{描述} \\
+\midrule
+语音识别 & 将语音转为文字或指令 \\
+语音合成 & 文本转语音输出（TTS） \\
+语音交互 & 实现人机对话（如Siri、小爱同学） \\
+机器翻译 & 自然语言互译 \\
+声纹识别 & 通过声音特征识别身份 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{图像数据相关应用}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{应用} & \textbf{描述} \\
+\midrule
+文字识别（OCR） & 识别图像中的字符 \\
+指纹识别 & 通过细节特征比对身份 \\
+人脸识别 & 通过面部特征识别人脸 \\
+形状识别 & 判断手绘图形的类别 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{有监督学习}
+
+\subsection{基本概念}
+
+\begin{conceptbox}
+\textbf{有监督学习}是利用含有标签的数据集对学习模型进行训练，然后得到预测模型，最后利用测试集对模型性能进行评估的学习方法。
+\end{conceptbox}
+
+\subsection{有监督学习流程}
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.5cm,>=stealth,thick]
+\node[draw,rectangle,rounded corners,fill=blue!10] (train) {训练样本};
+\node[draw,rectangle,rounded corners,right=of train] (feature) {特征向量 + 标签};
+\node[draw,rectangle,rounded corners,below=of feature] (algo) {机器学习算法};
+\node[draw,rectangle,rounded corners,below=of algo] (model) {预测模型};
+\node[draw,rectangle,rounded corners,left=of model] (test) {测试样本};
+\node[draw,rectangle,rounded corners,below=of model] (result) {预测结果};
+
+\draw[->] (train) -- (feature);
+\draw[->] (feature) -- (algo);
+\draw[->] (algo) -- (model);
+\draw[->] (test) -- (model);
+\draw[->] (model) -- (result);
+\end{tikzpicture}
+\end{center}
+
+\begin{examplebox}[例子：房价预测]
+\textbf{目标}：根据房屋特征预测价格
+
+\textbf{训练数据}：
+\begin{itemize}[itemsep=0pt]
+    \item 特征：面积、地段、房龄、楼层...
+    \item 标签：实际成交价格
+\end{itemize}
+
+\textbf{训练过程}：
+\begin{enumerate}[itemsep=0pt]
+    \item 收集大量带价格的房屋数据
+    \item 用算法学习特征与价格的关系
+    \item 得到预测模型
+\end{enumerate}
+
+\textbf{预测}：输入新房的特征 → 模型输出预测价格
+\end{examplebox}
+
+\section{模型评估与优化}
+
+\subsection{泛化能力与过拟合}
+
+\begin{conceptbox}
+\textbf{泛化能力}（Generalization）：模型对未见过的\textbf{新数据}（测试集）的预测能力。
+\end{conceptbox}
+
+模型训练过程中常见的两种状态：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{欠拟合（Underfitting）}：模型太简单，连训练集都学不好（"还没学会"）。
+    \item \textbf{过拟合（Overfitting）}：模型太复杂，死记硬背了训练集，对新数据效果差（"书呆子"）。
+\end{itemize}
+
+\textbf{解决过拟合的方法}：
+\begin{itemize}[itemsep=0pt]
+    \item \textbf{正则化（Regularization）}：在损失函数中加入惩罚项（如L1、L2），限制模型复杂度。
+    \item \textbf{提前停止（Early Stopping）}：验证集误差不再下降时停止训练。
+    \item \textbf{数据增强（Data Augmentation）}：增加训练数据量（如旋转、缩放图片）。
+\end{itemize}
+
+\subsection{评估指标}
+
+\begin{figure}[htbp]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+& \textbf{预测为正 (Positive)} & \textbf{预测为负 (Negative)} \\
+\hline
+\textbf{实际为正 (True)} & TP (真阳性) & FN (假阴性/漏报) \\
+\hline
+\textbf{实际为负 (False)} & FP (假阳性/误报) & TN (真阴性) \\
+\hline
+\end{tabular}
+\caption{混淆矩阵（Confusion Matrix）}
+\end{figure}
+
+常用的性能度量指标：
+\begin{enumerate}[leftmargin=2em,itemsep=5pt]
+    \item \textbf{准确率（Accuracy）}：预测正确的样本占总样本的比例。
+    $$Accuracy = \frac{TP + TN}{TP + TN + FP + FN}$$
+    
+    \item \textbf{精确率（Precision）}：预测为正的样本中，真正为正的比例（查准率）。
+    $$Precision = \frac{TP}{TP + FP}$$
+    \textit{应用：垃圾邮件拦截（宁可漏掉，不可误杀）。}
+    
+    \item \textbf{召回率（Recall）}：实际为正的样本中，被正确预测出来的比例（查全率）。
+    $$Recall = \frac{TP}{TP + FN}$$
+    \textit{应用：地震预测、肿瘤诊断（宁可误报，不可漏掉）。}
+    
+    \item \textbf{F1值（F1-Score）}：精确率和召回率的调和平均数，综合反映模型性能。
+    $$F1 = \frac{2 \times Precision \times Recall}{Precision + Recall}$$
+    
+    \item \textbf{均方误差（MSE）}：回归任务常用的指标。
+    $$MSE = \frac{1}{m} \sum_{i=1}^{m} (y_i - \hat{y}_i)^2$$
+\end{enumerate}
+
+\section{分类任务}
+
+\subsection{常用分类算法}
+
+分类任务中常用的核心算法包括：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item K近邻分类算法（KNN）
+    \item 决策树分类算法
+    \item 贝叶斯分类算法
+    \item 支持向量机（SVM）
+    \item 人工神经网络
+\end{itemize}
+
+\subsection{K近邻分类算法（KNN）}
+
+\begin{conceptbox}
+\textbf{K近邻算法}的核心思想："观其友，识其人"——一个样本的类别由它最接近的k个邻居决定。
+\end{conceptbox}
+
+\subsubsection{算法步骤}
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 计算训练集中每个点与待分类点之间的距离
+    \item 按照距离从小到大排序
+    \item 取出距离最小的前k个点
+    \item 统计这k个点分别属于哪个类别及其频次
+    \item 采用"少数服从多数"原则，确定最终类别
+\end{enumerate}
+
+\begin{examplebox}[例题5.1 KNN分类]
+\textbf{题目}：平面上有两类点，正方形（A类）和圆形（B类）。现有一个三角形待分类，当k=3和k=9时，分类结果有何不同？
+
+假设：k=3时最近的3个邻居是2个圆+1个正方形；k=9时最近的9个邻居是4个圆+5个正方形。
+\tcblower
+\textbf{解答}：
+
+\textbf{k=3时}：
+\begin{itemize}[itemsep=0pt]
+    \item 最近3个邻居：2个圆 + 1个正方形
+    \item 圆的数量更多（2 > 1）
+    \item 结论：三角形归为\textbf{B类（圆形）}
+\end{itemize}
+
+\textbf{k=9时}：
+\begin{itemize}[itemsep=0pt]
+    \item 最近9个邻居：4个圆 + 5个正方形
+    \item 正方形数量更多（5 > 4）
+    \item 结论：三角形归为\textbf{A类（正方形）}
+\end{itemize}
+
+\textbf{结论}：k值的选择会影响分类结果！
+\begin{itemize}[itemsep=0pt]
+    \item k较小：对噪声敏感，容易过拟合
+    \item k较大：更稳健，但可能忽略局部模式
+\end{itemize}
+\end{examplebox}
+
+\subsection{决策树分类算法与ID3}
+
+\begin{conceptbox}
+\textbf{决策树}是一种通过对样本数据进行学习，构建一个树形结构模型，实现对新数据分类和预测的算法。其核心策略是\textbf{"分而治之"}（Divide and Conquer）。
+\end{conceptbox}
+
+\subsubsection{决策树构建的核心：信息熵与信息增益}
+
+决策树生成的关键在于\textbf{选择哪个特征}作为当前的划分节点。经典的\textbf{ID3算法}使用\textbf{信息增益}作为选择标准。
+
+\textbf{1. 信息熵（Information Entropy）}
+熵用来度量样本集合的"纯度"或"不确定性"。纯度越高（越有序），熵越小。
+$$Ent(D) = - \sum_{k=1}^{n} p_k \log_2 p_k$$
+其中 $p_k$ 是第k类样本在集合D中占的比例。
+
+\textbf{2. 信息增益（Information Gain）}
+表示使用属性 $a$ 划分样本集 $D$ 后，系统不确定性减少的程度。
+$$Gain(D, a) = Ent(D) - \sum_{v=1}^{V} \frac{|D^v|}{|D|} Ent(D^v)$$
+其中 $D^v$ 是属性 $a$ 取值为 $v$ 的子集。
+\textbf{原则}：选择\textbf{信息增益最大}的属性进行划分。
+
+\begin{examplebox}[例题5.2 ID3算法应用——天气能否打球]
+\textbf{数据集}：14天的数据，包含4个特征（天气、温度、湿度、风速），目标是Play（Yes/No）。
+\begin{itemize}[itemsep=0pt]
+    \item 总样本：9个Yes，5个No。
+    \item 根节点熵：$Ent(D) = -(\frac{9}{14}\log_2\frac{9}{14} + \frac{5}{14}\log_2\frac{5}{14}) \approx 0.940$
+\end{itemize}
+
+\textbf{计算各属性的信息增益}：
+\begin{enumerate}[itemsep=0pt]
+    \item \textbf{按天气（Outlook）划分}：
+    \begin{itemize}
+        \item Sunny（5天）：2Y3N，$Ent=0.971$
+        \item Overcast（4天）：4Y0N，$Ent=0$（纯的！）
+        \item Rain（5天）：3Y2N，$Ent=0.971$
+    \end{itemize}
+    加权熵 $= \frac{5}{14}(0.971) + \frac{4}{14}(0) + \frac{5}{14}(0.971) = 0.693$
+    $$Gain(Outlook) = 0.940 - 0.693 = 0.247$$
+    
+    \item \textbf{同理计算其他属性}（假设结果如下）：
+    \begin{itemize}
+        \item $Gain(Temperature) = 0.029$
+        \item $Gain(Humidity) = 0.152$
+        \item $Gain(Windy) = 0.048$
+    \end{itemize}
+\end{enumerate}
+
+\textbf{结论}：$Gain(Outlook)$最大，因此选择\textbf{天气}作为根节点进行划分。之后对子节点递归执行此过程。
+\end{examplebox}
+
+\subsubsection{其他决策树算法}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{C4.5}：使用\textbf{信息增益率}（解决ID3偏向取值多属性的问题）。
+    \item \textbf{CART}：使用\textbf{基尼系数}（Gini Index），可用于分类和回归。
+\end{itemize}
+
+
+
+\subsection{KNN与决策树对比}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{对比维度} & \textbf{KNN} & \textbf{决策树} \\
+\midrule
+原理 & 基于相似性（距离） & 基于规则（逻辑判断） \\
+训练过程 & 无需显式训练 & 需要构建树结构 \\
+预测速度 & 慢（每次计算距离） & 快（遍历树） \\
+可解释性 & 差 & 强 \\
+对异常值敏感 & 是 & 否 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\section{人工神经网络}
+
+\subsection{神经元模型}
+
+\begin{conceptbox}
+\textbf{神经元}（Neuron）是神经网络的基本单元，模拟生物神经元的结构：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{输入}：$x_1, x_2, \dots, x_n$
+    \item \textbf{权重}：$w_1, w_2, \dots, w_n$
+    \item \textbf{偏置}：$b$
+    \item \textbf{激活函数}：$f(\cdot)$
+\end{itemize}
+输出公式：$y = f(\sum_{i=1}^{n} w_i x_i + b)$
+\end{conceptbox}
+
+\subsubsection{常用激活函数}
+激活函数引入非线性因素，使神经网络能逼近任意复杂函数。
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{Sigmoid}：$\sigma(x) = \frac{1}{1+e^{-x}}$，输出(0,1)。缺点：容易梯度消失。
+    \item \textbf{Tanh}：$\tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}$，输出(-1,1)，零中心化。缺点：仍有梯度消失。
+    \item \textbf{ReLU}：$f(x) = \max(0, x)$。优点：计算快，解决梯度消失（正区间）。缺点：死神经元（负区间导数为0）。
+\end{itemize}
+
+\subsection{感知机与XOR问题}
+
+\textbf{感知机（Perceptron）}是简单的线性分类模型，只能解决线性可分问题（如与、或、非逻辑）。
+
+\begin{notebox}
+\textbf{XOR问题（异或问题）}：
+\begin{itemize}[itemsep=0pt]
+    \item 异或逻辑：相同为0，不同为1。在二维平面上，(0,0)和(1,1)是0类，(0,1)和(1,0)是1类。
+    \item 这是一个典型的\textbf{线性不可分}问题。
+    \item \textbf{结论}：单层感知机无法解决XOR问题，必须使用\textbf{多层感知机（MLP）}（即具有隐藏层的神经网络）。
+\end{itemize}
+\end{notebox}
+
+\subsection{反向传播算法（BP）}
+
+\textbf{BP算法}（Back Propagation）是训练多层前馈神经网络的核心算法。
+
+\textbf{基本思想}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{前向传播}：输入信号经过隐含层处理传向输出层。
+    \item \textbf{计算误差}：对比输出结果与期望结果。
+    \item \textbf{反向传播}：将误差信号沿网络反向回传。
+    \item \textbf{参数更新}：根据误差梯度调整各层权值和偏置（梯度下降法）。
+\end{enumerate}
+
+\section{集成学习}
+
+\begin{conceptbox}
+\textbf{集成学习}（Ensemble Learning）通过构建并结合多个学习器（弱学习器）来完成学习任务，通常比单一学习器泛化性能更好。
+\end{conceptbox}
+
+\subsection{Bagging与随机森林}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{Bagging}：并行生成多个独立模型，最终通过投票（分类）或平均（回归）决定结果。
+    \item \textbf{随机森林（Random Forest）}：Bagging的扩展变体。
+    \begin{itemize}
+        \item \textbf{样本随机}：自助采样（Bootstrap）。
+        \item \textbf{特征随机}：每次分裂只从随机选出的特征子集中选最优特征。
+    \end{itemize}
+\end{itemize}
+
+\subsection{Boosting}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{核心思想}：串行生成模型，后一个模型专注于前一个模型\textbf{做错}的样本。
+    \item \textbf{代表算法}：AdaBoost, GBDT, XGBoost。
+\end{itemize}
+
+\section{深度学习模型}
+
+\subsection{卷积神经网络（CNN）}
+专注于\textbf{图像处理}。
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{卷积层}（Convolution）：提取局部特征（如边缘、纹理），具有\textbf{平移不变性}。
+    \item \textbf{池化层}（Pooling）：下采样，减少参数，扩大感受野。
+    \item \textbf{经典模型}：LeNet, AlexNet, ResNet（残差网络，解决深层退化问题）。
+\end{itemize}
+
+\subsection{循环神经网络（RNN）}
+专注于\textbf{序列数据}（如文本、语音、时间序列）。
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{特点}：具有"记忆"，当前输出依赖于当前输入和上一时刻的状态。
+    \item \textbf{LSTM}（长短期记忆网络）：引入"门"机制（输入门、遗忘门、输出门），解决长序列梯度消失问题。
+\end{itemize}
+
+\subsection{生成对抗网络（GAN）}
+由两个网络博弈训练：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{生成器（G）}：努力生成逼真的假样本欺骗判别器。
+    \item \textbf{判别器（D）}：努力分辨真样本和假样本。
+    \item \textbf{结果}：两者相互竞争，最终G能生成以假乱真的数据。
+\end{itemize}
+
+\section{强化学习（Reinforcement Learning）}
+
+\subsection{基本概念}
+\begin{conceptbox}
+\textbf{强化学习}是智能体（Agent）通过与环境这一\textbf{试错}（Trial and Error）的方式，通过最大化累积\textbf{奖励}（Reward）来学习行为策略的方法。
+\end{conceptbox}
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{马尔可夫决策过程（MDP）}：强化学习的数学基础，由$(S, A, P, R)$组成。
+    \begin{itemize}
+        \item $S$：状态集合
+        \item $A$：动作集合
+        \item $P$：状态转移概率
+        \item $R$：奖励函数
+    \end{itemize}
+    \item \textbf{与监督学习的区别}：
+    \begin{itemize}
+        \item 没有"老师"告诉正确答案，只有环境的"反馈"（奖励/惩罚）。
+        \item 奖励通常是\textbf{延迟}的（如下得一手好棋，要到终局赢了才知道）。
+    \end{itemize}
+\end{itemize}
+
+\subsection{动作价值函数（Q-Function）}
+\textbf{动作价值函数}（Action-Value Function），通常记为 $Q(s, a)$，用于衡量在给定状态 $s$ 下采取动作 $a$ 的好坏程度。
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{定义}：从状态 $s$ 开始，执行动作 $a$ 后，遵循某一策略 $\pi$ 所能获得的期望累积折扣奖励。
+    \item \textbf{数学表达}：
+    $$Q^\pi(s, a) = \mathbb{E} \left[ \sum_{k=0}^{\infty} \gamma^k r_{t+k+1} \bigg| s_t=s, a_t=a \right]$$
+    \item \textbf{作用}：通过比较不同动作的 Q 值（即 $Q(s, a_1)$ vs $Q(s, a_2)$），智能体可以选择能够带来最大长期收益的动作。
+\end{itemize}
+
+\subsection{经典算法：Q-Learning}
+Q-Learning 是一种\textbf{基于价值}（Value-based）的算法，核心是学习动作价值函数 $Q(s, a)$。
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{Q值含义}：在状态 $s$ 采取动作 $a$，并在此后遵循最优策略所能获得的期望累计奖励。
+    \item \textbf{更新公式}（贝尔曼方程）：
+    $$Q(s, a) \leftarrow Q(s, a) + \alpha [r + \gamma \max_{a'} Q(s', a') - Q(s, a)]$$
+    其中 $\alpha$ 是学习率，$\gamma$ 是折扣因子（看重未来奖励的程度）。
+\end{itemize}
+
+\section{前沿技术：大模型与生成式AI}
+
+\begin{conceptbox}
+\textbf{生成式人工智能（AIGC）}是指利用人工智能技术自动生成内容（如文本、图像、代码等）的新型生产方式。其核心驱动力是\textbf{预训练大模型（Pre-trained Large Models）}。
+\end{conceptbox}
+
+\subsection{Transformer与注意力机制}
+\textbf{Transformer}模型（Google, 2017）是现代大模型的基石。它抛弃了传统的循环神经网络（RNN）结构，完全基于\textbf{注意力机制（Attention Mechanism）}。
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{自注意力（Self-Attention）}：让模型在处理一个词时，能同时关注句子中其他所有相关的词，解决了长距离依赖问题。
+    \item \textbf{并行计算}：极大地提高了训练效率，使得训练海量数据成为可能。
+\end{itemize}
+
+\subsection{预训练与微调（Pre-training \& Fine-tuning）}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{预训练}：在海量通用数据上进行无监督学习，让模型学会语言的基本规律和世界知识（"通识教育"）。
+    \item \textbf{微调}：在特定任务数据上进行有监督学习，让模型适应具体应用场景（"专业培训"）。
+\end{enumerate}
+
+\subsection{LangChain应用开发框架}
+\textbf{LangChain}是一个用于开发基于大语言模型（LLM）应用的框架。它通过"链"（Chain）的概念，将LLM与其他组件连接起来。
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{RAG（检索增强生成）}：结合外部知识库（如PDF文档），解决大模型"幻觉"和知识滞后问题。
+    \item \textbf{Agent（智能体）}：让大模型能够使用工具（如搜索、计算器、数据库），自主规划任务流程。
+\end{itemize}
+
+\section{本章小结}
+
+本章介绍了机器学习的基础知识：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 机器学习的定义：让计算机从数据中自动学习规律
+    \item 核心术语：训练集、验证集、测试集、泛化能力
+    \item 学习形式分类：有监督、无监督、半监督、强化学习
+    \item 有监督学习流程：数据→训练→模型→预测
+    \item 分类算法：KNN（基于距离）、决策树（基于规则）
+\end{itemize}
+
+\textbf{重点掌握}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 四种学习形式的区别
+    \item KNN算法的步骤和k值影响
+    \item 决策树的结构和构建过程
+\end{itemize}

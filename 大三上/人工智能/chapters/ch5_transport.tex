@@ -1,0 +1,392 @@
+%========================================
+\chapter{传输层}
+%========================================
+\section{传输层概述}
+传输层提供端到端的通信服务，是面向通信部分的最高层。
+
+\subsection{传输层的功能}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{端到端通信}：在应用进程之间提供逻辑通信
+    \item \textbf{复用和分用}：多个应用进程共享网络层服务
+    \item \textbf{差错检测}：检测报文段的传输错误
+    \item \textbf{可靠传输}（TCP）：确保数据正确、有序、不丢失、不重复
+\end{itemize}
+
+\subsection{端口号}
+端口号用于标识主机上的应用进程，16位，范围0-65535。
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{熟知端口}（0-1023）：分配给常用服务
+    \item \textbf{登记端口}（1024-49151）：需要登记使用
+    \item \textbf{动态端口}（49152-65535）：客户端临时使用
+\end{itemize}
+
+\textbf{常用端口号}：
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{cccc}
+\toprule
+\textbf{协议} & \textbf{端口} & \textbf{协议} & \textbf{端口} \\
+\midrule
+FTP数据 & 20 & FTP控制 & 21 \\
+SSH & 22 & Telnet & 23 \\
+SMTP & 25 & DNS & 53 \\
+HTTP & 80 & POP3 & 110 \\
+HTTPS & 443 & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{UDP协议}
+UDP（User Datagram Protocol）是一种无连接的传输层协议。
+
+\subsection{UDP特点}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{无连接}：发送前不需要建立连接
+    \item \textbf{不可靠}：不保证数据到达，不重传
+    \item \textbf{面向报文}：保留报文边界，一次发送一个完整报文
+    \item \textbf{无拥塞控制}：适合实时应用
+    \item \textbf{首部开销小}：只有8字节
+\end{itemize}
+
+\subsection{UDP首部格式}
+\begin{center}
+\begin{tikzpicture}[node distance=0cm]
+\node[draw,minimum width=2cm,minimum height=0.7cm] (sp) {源端口};
+\node[draw,minimum width=2cm,minimum height=0.7cm,right=of sp] (dp) {目的端口};
+\node[draw,minimum width=2cm,minimum height=0.7cm,below=of sp] (len) {长度};
+\node[draw,minimum width=2cm,minimum height=0.7cm,right=of len] (cs) {校验和};
+\node[below=0.1cm of sp] {\tiny 2字节};
+\node[below=0.1cm of dp] {\tiny 2字节};
+\end{tikzpicture}
+\end{center}
+
+\subsection{UDP校验}
+UDP校验和覆盖首部和数据，计算时需要加上伪首部（源IP、目的IP、协议号、UDP长度）。
+
+\section{TCP协议}
+TCP（Transmission Control Protocol）是一种面向连接的可靠传输协议。
+
+\subsection{TCP特点}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{面向连接}：通信前需要建立连接
+    \item \textbf{可靠传输}：确保数据正确、有序、不丢失、不重复
+    \item \textbf{面向字节流}：把数据看作无结构的字节流
+    \item \textbf{全双工通信}：双向同时传输
+    \item \textbf{点对点}：一对一通信
+\end{itemize}
+
+\subsection{TCP首部格式}
+TCP首部最小20字节，最大60字节。
+
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{源端口、目的端口}：各2字节
+    \item \textbf{序号}（4字节）：本报文段数据的第一个字节的序号
+    \item \textbf{确认号}（4字节）：期望收到的下一个字节的序号
+    \item \textbf{数据偏移}（4位）：首部长度，以4字节为单位
+    \item \textbf{控制位}：URG、ACK、PSH、RST、SYN、FIN
+    \item \textbf{窗口}（2字节）：接收窗口大小，用于流量控制
+    \item \textbf{校验和}（2字节）：覆盖首部和数据
+    \item \textbf{紧急指针}（2字节）：URG=1时有效
+\end{itemize}
+
+\textbf{控制位含义}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{SYN}：同步，建立连接时使用
+    \item \textbf{ACK}：确认，确认号有效
+    \item \textbf{FIN}：终止，释放连接
+    \item \textbf{RST}：复位，连接出错需要重建
+    \item \textbf{PSH}：推送，尽快交付应用层
+    \item \textbf{URG}：紧急，紧急指针有效
+\end{itemize}
+
+\section{TCP连接管理}
+\subsection{三次握手（建立连接）}
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick]
+\draw[dashed] (0,0) -- (0,-4.5) node[below]{\small 客户端};
+\draw[dashed] (6,0) -- (6,-4.5) node[below]{\small 服务器};
+% 第一次握手
+\draw[->,blue,thick] (0,-0.5) -- node[above,sloped]{\small SYN=1, seq=x} (6,-1.2);
+\node[left] at (0,-0.5) {\tiny SYN\_SENT};
+% 第二次握手
+\draw[->,red,thick] (6,-1.5) -- node[above,sloped]{\small SYN=1,ACK=1,seq=y,ack=x+1} (0,-2.2);
+\node[right] at (6,-1.5) {\tiny SYN\_RCVD};
+% 第三次握手
+\draw[->,blue,thick] (0,-2.5) -- node[above,sloped]{\small ACK=1,seq=x+1,ack=y+1} (6,-3.2);
+\node[left] at (0,-2.8) {\tiny ESTABLISHED};
+\node[right] at (6,-3.5) {\tiny ESTABLISHED};
+\end{tikzpicture}
+\end{center}
+
+\textbf{三次握手过程}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 客户端发送SYN报文，seq=x，进入SYN\_SENT状态
+    \item 服务器回复SYN+ACK报文，seq=y，ack=x+1，进入SYN\_RCVD状态
+    \item 客户端发送ACK报文，seq=x+1，ack=y+1，双方进入ESTABLISHED状态
+\end{enumerate}
+
+\begin{notebox}
+\textbf{为什么需要三次握手？}
+\begin{itemize}[itemsep=0pt]
+    \item 防止已失效的连接请求到达服务器
+    \item 确认双方的发送和接收能力都正常
+    \item 同步双方的初始序号
+\end{itemize}
+\end{notebox}
+
+\subsection{四次挥手（释放连接）}
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick]
+\draw[dashed] (0,0) -- (0,-5.5) node[below]{\small 客户端};
+\draw[dashed] (6,0) -- (6,-5.5) node[below]{\small 服务器};
+% 第一次挥手
+\draw[->,blue,thick] (0,-0.5) -- node[above,sloped]{\small FIN=1,seq=u} (6,-1.2);
+\node[left] at (0,-0.5) {\tiny FIN\_WAIT\_1};
+% 第二次挥手
+\draw[->,red,thick] (6,-1.5) -- node[above,sloped]{\small ACK=1,ack=u+1} (0,-2.2);
+\node[right] at (6,-1.5) {\tiny CLOSE\_WAIT};
+\node[left] at (0,-2.5) {\tiny FIN\_WAIT\_2};
+% 第三次挥手
+\draw[->,red,thick] (6,-3) -- node[above,sloped]{\small FIN=1,seq=w} (0,-3.7);
+% 第四次挥手
+\draw[->,blue,thick] (0,-4) -- node[above,sloped]{\small ACK=1,ack=w+1} (6,-4.7);
+\node[left] at (0,-4.3) {\tiny TIME\_WAIT};
+\node[right] at (6,-5) {\tiny CLOSED};
+\end{tikzpicture}
+\end{center}
+
+\textbf{四次挥手过程}：
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 客户端发送FIN报文，进入FIN\_WAIT\_1状态
+    \item 服务器回复ACK，进入CLOSE\_WAIT状态；客户端进入FIN\_WAIT\_2
+    \item 服务器发送FIN报文，进入LAST\_ACK状态
+    \item 客户端回复ACK，进入TIME\_WAIT状态，等待2MSL后关闭
+\end{enumerate}
+
+\begin{notebox}
+\textbf{为什么需要TIME\_WAIT等待2MSL？}
+\begin{itemize}[itemsep=0pt]
+    \item 确保最后一个ACK能够到达服务器
+    \item 让本连接的所有报文段从网络中消失
+    \item MSL（Maximum Segment Lifetime）：报文段最大生存时间
+\end{itemize}
+\end{notebox}
+
+\begin{examplebox}[例题5.1 TCP连接状态]
+\textbf{题目}：TCP连接释放过程中，主动关闭方在发送最后一个ACK后进入什么状态？为什么？
+\tcblower
+进入\textbf{TIME\_WAIT}状态，等待2MSL时间后才关闭。
+
+原因：
+\begin{enumerate}[itemsep=0pt]
+    \item 确保最后的ACK能到达对方（如果丢失，对方会重发FIN）
+    \item 让本连接的所有报文段从网络中消失，避免影响新连接
+\end{enumerate}
+\end{examplebox}
+
+\section{TCP可靠传输}
+\subsection{序号与确认}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{序号}：每个字节都有唯一的序号
+    \item \textbf{确认号}：期望收到的下一个字节的序号
+    \item \textbf{累积确认}：确认号之前的所有数据都已收到
+\end{itemize}
+
+\subsection{超时重传}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 发送方为每个报文段设置超时计时器
+    \item 超时未收到确认则重传
+    \item 超时时间RTO根据RTT动态调整
+\end{itemize}
+
+\begin{formulabox}
+\textbf{RTT估计}：$RTT_s = (1-\alpha) \times RTT_s + \alpha \times RTT_{sample}$
+
+\textbf{超时时间}：$RTO = RTT_s + 4 \times RTT_D$
+
+其中$\alpha$通常取0.125，$RTT_D$为RTT偏差
+\end{formulabox}
+
+\subsection{快速重传}
+收到3个重复ACK时，立即重传丢失的报文段，不等待超时。
+
+\section{TCP流量控制}
+流量控制是让发送方的发送速率不要太快，使接收方来得及接收。
+
+\subsection{滑动窗口机制}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 接收方通过窗口字段告知发送方自己的接收窗口大小
+    \item 发送方的发送窗口不能超过接收方的接收窗口
+    \item 窗口大小可以动态调整
+\end{itemize}
+
+\begin{examplebox}[例题5.2 流量控制]
+\textbf{题目}：接收方的接收缓存为4000字节，已接收2000字节未被应用取走，此时通告的窗口大小是多少？
+\tcblower
+可用缓存 = 4000 - 2000 = 2000字节
+
+通告窗口大小 = \textbf{2000字节}
+\end{examplebox}
+
+\subsection{零窗口问题}
+当接收方窗口为0时，发送方停止发送。为避免死锁，发送方定期发送零窗口探测报文。
+
+\section{TCP拥塞控制}
+拥塞控制是防止过多的数据注入网络，使网络中的路由器或链路不致过载。
+
+\subsection{拥塞控制算法}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{慢开始}：cwnd从1开始，每收到一个ACK，cwnd加1（指数增长）
+    \item \textbf{拥塞避免}：cwnd达到ssthresh后，每个RTT，cwnd加1（线性增长）
+    \item \textbf{快重传}：收到3个重复ACK，立即重传
+    \item \textbf{快恢复}：快重传后，ssthresh=cwnd/2，cwnd=ssthresh，进入拥塞避免
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,scale=0.7]
+\draw[->] (0,0) -- (12,0) node[right] {传输轮次};
+\draw[->] (0,0) -- (0,6) node[above] {cwnd};
+% 慢开始
+\draw[blue,thick] (0,0.5) -- (1,1) -- (2,2) -- (3,4);
+% 拥塞避免
+\draw[blue,thick] (3,4) -- (4,4.3) -- (5,4.6) -- (6,4.9) -- (7,5.2);
+% 超时
+\draw[red,thick,dashed] (7,5.2) -- (7,0.5);
+% 慢开始
+\draw[blue,thick] (7,0.5) -- (8,1) -- (9,2);
+% 拥塞避免
+\draw[blue,thick] (9,2) -- (10,2.3) -- (11,2.6);
+% 标注
+\node at (1.5,4.5) {\small 慢开始};
+\node at (5,5.5) {\small 拥塞避免};
+\draw[dashed] (0,4) -- (3,4);
+\node[left] at (0,4) {\small ssthresh};
+\draw[dashed] (0,2) -- (9,2);
+\node[left] at (0,2) {\small 新ssthresh};
+\end{tikzpicture}
+\end{center}
+
+\begin{notebox}
+\textbf{发送窗口的确定}：
+
+发送窗口 = min(接收窗口rwnd, 拥塞窗口cwnd)
+
+\begin{itemize}[itemsep=0pt]
+    \item rwnd：接收方的流量控制
+    \item cwnd：发送方的拥塞控制
+\end{itemize}
+\end{notebox}
+
+\begin{examplebox}[例题5.3 拥塞控制]
+\textbf{题目}：TCP拥塞窗口cwnd=16，ssthresh=8，发生超时后cwnd和ssthresh变为多少？
+\tcblower
+发生超时：
+\begin{itemize}[itemsep=0pt]
+    \item ssthresh = cwnd/2 = 16/2 = \textbf{8}
+    \item cwnd = 1（重新慢开始）
+\end{itemize}
+
+若是收到3个重复ACK（快重传）：
+\begin{itemize}[itemsep=0pt]
+    \item ssthresh = cwnd/2 = 8
+    \item cwnd = ssthresh = 8（快恢复，进入拥塞避免）
+\end{itemize}
+\end{examplebox}
+
+\begin{examplebox}[例题5.4 TCP综合计算]
+\textbf{题目}：主机A向主机B发送TCP报文段，seq=100，携带200字节数据。B收到后回复的确认号是多少？
+\tcblower
+确认号 = 发送方序号 + 数据长度 = 100 + 200 = \textbf{300}
+
+表示B期望收到的下一个字节的序号是300。
+\end{examplebox}
+
+\section{TCP与UDP对比}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{特性} & \textbf{TCP} & \textbf{UDP} \\
+\midrule
+连接 & 面向连接 & 无连接 \\
+可靠性 & 可靠传输 & 不可靠 \\
+传输单位 & 字节流 & 报文 \\
+首部开销 & 20-60字节 & 8字节 \\
+拥塞控制 & 有 & 无 \\
+通信方式 & 点对点 & 支持多播 \\
+应用场景 & 文件传输、网页 & 视频、DNS \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{传输层综合例题}
+
+\begin{examplebox}[例题5.5 TCP序号计算]
+\textbf{题目}：主机A与主机B建立TCP连接，A的初始序号为100，B的初始序号为200。A向B发送200字节数据后，B向A发送确认并携带100字节数据。求B发送的报文段中的序号和确认号。
+\tcblower
+\textbf{分析}：
+
+A发送数据：seq=101（第一个数据字节），携带200字节
+
+B收到后：期望收到的下一个字节序号 = 101 + 200 = 301
+
+B发送确认并携带数据：
+\begin{itemize}[itemsep=0pt]
+    \item 序号 = 201（B的第一个数据字节）
+    \item 确认号 = 301（期望收到A的下一个字节）
+\end{itemize}
+
+\textbf{答案}：序号=201，确认号=301
+\end{examplebox}
+
+\begin{examplebox}[例题5.6 拥塞控制过程]
+\textbf{题目}：TCP连接的拥塞窗口cwnd初始为1，ssthresh=16。假设没有发生超时，描述cwnd的变化过程直到cwnd=32。
+\tcblower
+\textbf{慢开始阶段}（cwnd < ssthresh=16）：
+
+cwnd指数增长：1→2→4→8→16
+
+\textbf{拥塞避免阶段}（cwnd ≥ ssthresh）：
+
+cwnd线性增长：16→17→18→...→32
+
+\textbf{总结}：
+\begin{itemize}[itemsep=0pt]
+    \item 慢开始：4个RTT（1→2→4→8→16）
+    \item 拥塞避免：16个RTT（16→17→...→32）
+    \item 共需20个RTT达到cwnd=32
+\end{itemize}
+\end{examplebox}
+
+\begin{examplebox}[例题5.7 TCP连接状态转换]
+\textbf{题目}：TCP客户端依次经历的状态变化是什么？
+\tcblower
+\textbf{建立连接}：
+\begin{enumerate}[itemsep=0pt]
+    \item CLOSED → SYN\_SENT（发送SYN）
+    \item SYN\_SENT → ESTABLISHED（收到SYN+ACK，发送ACK）
+\end{enumerate}
+
+\textbf{释放连接}（主动关闭方）：
+\begin{enumerate}[itemsep=0pt]
+    \item ESTABLISHED → FIN\_WAIT\_1（发送FIN）
+    \item FIN\_WAIT\_1 → FIN\_WAIT\_2（收到ACK）
+    \item FIN\_WAIT\_2 → TIME\_WAIT（收到FIN，发送ACK）
+    \item TIME\_WAIT → CLOSED（等待2MSL）
+\end{enumerate}
+\end{examplebox}
+
+\begin{examplebox}[例题5.8 滑动窗口]
+\textbf{题目}：发送方的发送窗口为400字节，已发送300字节但只收到对前200字节的确认。此时发送方还能发送多少字节？
+\tcblower
+发送窗口 = 400字节
+
+已发送未确认 = 300 - 200 = 100字节
+
+可用窗口 = 发送窗口 - 已发送未确认 = 400 - 100 = 300字节
+
+但实际已发送300字节，其中200字节已确认，100字节在途
+
+\textbf{还能发送} = 400 - 300 = \textbf{100字节}
+\end{examplebox}

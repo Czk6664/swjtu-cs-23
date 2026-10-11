@@ -1,0 +1,392 @@
+%========================================
+\chapter{网络层}
+%========================================
+\section{网络层服务}
+网络层的主要功能是实现不同网络之间的互联，为分组选择合适的路由。
+
+\subsection{两种服务模式}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{特性} & \textbf{虚电路服务} & \textbf{数据报服务} \\
+\midrule
+连接建立 & 需要 & 不需要 \\
+可靠性保证 & 网络保证 & 主机保证 \\
+分组路径 & 固定 & 可变 \\
+分组顺序 & 有序 & 可能乱序 \\
+典型应用 & ATM & \textbf{因特网} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{IPv4地址}
+\subsection{地址格式}
+32位二进制，用点分十进制表示：
+\begin{center}
+\texttt{10101100.00010000.00000001.00000001} $\Leftrightarrow$ \texttt{172.16.1.1}
+\end{center}
+
+\subsection{分类编址}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ccccc}
+\toprule
+\textbf{类别} & \textbf{首位} & \textbf{地址范围} & \textbf{网络数} & \textbf{每网主机数} \\
+\midrule
+A & 0 & 1.0.0.0-126.x.x.x & 126 & $2^{24}-2$ \\
+B & 10 & 128.0.0.0-191.255.x.x & $2^{14}$ & $2^{16}-2$ \\
+C & 110 & 192.0.0.0-223.255.255.x & $2^{21}$ & 254 \\
+D & 1110 & 224-239 & \multicolumn{2}{c}{多播地址} \\
+E & 1111 & 240-255 & \multicolumn{2}{c}{保留地址} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{特殊地址}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \texttt{0.0.0.0}：本网络本主机
+    \item \texttt{127.x.x.x}：环回测试地址
+    \item \texttt{255.255.255.255}：本网段广播
+    \item 主机号全0：网络地址
+    \item 主机号全1：直接广播地址
+\end{itemize}
+
+\subsection{私有地址}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item A类：\texttt{10.0.0.0/8}
+    \item B类：\texttt{172.16.0.0/12}
+    \item C类：\texttt{192.168.0.0/16}
+\end{itemize}
+
+\section{子网划分}
+\subsection{子网掩码}
+子网掩码用于区分IP地址中的网络部分和主机部分。
+
+\textbf{子网掩码的作用}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item IP地址 AND 子网掩码 = 网络地址
+    \item 用于判断两个IP地址是否在同一子网
+\end{itemize}
+
+\textbf{默认子网掩码}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item A类：\texttt{255.0.0.0}（/8）
+    \item B类：\texttt{255.255.0.0}（/16）
+    \item C类：\texttt{255.255.255.0}（/24）
+\end{itemize}
+
+\begin{examplebox}[例题4.1 子网划分]
+\textbf{题目}：C类地址\texttt{192.168.1.0}划分为6个子网，求子网掩码和每子网主机数。
+\tcblower
+需要$\lceil\log_2 6\rceil = 3$位子网号
+
+子网掩码：\texttt{255.255.255.224}（/27）
+
+主机位：$8-3=5$位，每子网主机数：$2^5-2=$ \textbf{30台}
+\end{examplebox}
+
+\section{CIDR无分类编址}
+CIDR消除了传统的A、B、C类地址的界限。
+
+\subsection{斜线记法}
+\texttt{IP地址/前缀长度}，如\texttt{192.168.1.0/24}
+
+\textbf{地址块大小}：$2^{32-n}$个地址（n为前缀长度）
+
+\subsection{最长前缀匹配}
+路由器转发时，选择与目的地址匹配的\textbf{最长前缀}的路由。
+
+\begin{examplebox}[例题4.2 最长前缀匹配]
+\textbf{题目}：目的地址\texttt{172.32.47.165}，路由表如下，转发给哪个路由器？
+\begin{center}\small
+\begin{tabular}{|c|c|}
+\hline
+目的网络 & 下一跳 \\
+\hline
+172.32.0.0/16 & R1 \\
+172.32.32.0/19 & R2 \\
+172.32.47.0/24 & R3 \\
+0.0.0.0/0 & R4 \\
+\hline
+\end{tabular}
+\end{center}
+\tcblower
+匹配分析：/16、/19、/24、/0都匹配
+
+最长前缀是/24 $\Rightarrow$ 转发给\textbf{R3}
+\end{examplebox}
+
+\section{VLSM变长子网掩码}
+VLSM允许在同一网络中使用不同长度的子网掩码。
+
+\begin{examplebox}[例题4.3 VLSM地址分配]
+\textbf{题目}：地址块\texttt{192.168.10.0/24}，分配给：销售部50台、技术部25台、财务部10台。
+\tcblower
+按需求从大到小分配：
+\begin{enumerate}[itemsep=0pt]
+    \item 销售部(50台)：用/26，分配\texttt{192.168.10.0/26}（62台）
+    \item 技术部(25台)：用/27，分配\texttt{192.168.10.64/27}（30台）
+    \item 财务部(10台)：用/28，分配\texttt{192.168.10.96/28}（14台）
+\end{enumerate}
+\end{examplebox}
+
+\begin{examplebox}[例题4.4 路由聚合]
+\textbf{题目}：将\texttt{10.1.192.0/24}、\texttt{10.1.193.0/24}、\texttt{10.1.194.0/24}、\texttt{10.1.195.0/24}聚合。
+\tcblower
+第三字节：192=11000000, 193=11000001, 194=11000010, 195=11000011
+
+共同前缀：前6位相同(110000)
+
+\textbf{聚合结果}：\texttt{10.1.192.0/22}
+\end{examplebox}
+
+\section{IP数据报格式}
+\subsection{首部格式}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{版本}（4位）：IPv4为4
+    \item \textbf{首部长度}（4位）：以4字节为单位，最小5（20字节）
+    \item \textbf{总长度}（16位）：整个数据报的长度，最大65535字节
+    \item \textbf{标识、标志、片偏移}：用于分片和重组
+    \item \textbf{生存时间TTL}（8位）：每经过一个路由器减1
+    \item \textbf{协议}（8位）：TCP(6)、UDP(17)、ICMP(1)
+    \item \textbf{首部校验和}（16位）：只校验首部
+\end{itemize}
+
+\subsection{IP分片}
+当IP数据报长度超过链路的MTU时，需要进行分片。
+
+\begin{examplebox}[例题4.5 IP分片]
+\textbf{题目}：一个4000字节的IP数据报（首部20字节），经过MTU=1500字节的链路，如何分片？
+\tcblower
+数据部分：$4000 - 20 = 3980$字节
+
+每个分片最大数据：$1500 - 20 = 1480$字节
+
+分片情况：
+\begin{center}\small
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+分片 & 数据长度 & 总长度 & 片偏移 & MF \\
+\hline
+1 & 1480 & 1500 & 0 & 1 \\
+2 & 1480 & 1500 & 185 & 1 \\
+3 & 1020 & 1040 & 370 & 0 \\
+\hline
+\end{tabular}
+\end{center}
+\end{examplebox}
+
+\section{路由选择协议}
+\subsection{RIP协议}
+基于距离向量的内部网关协议。
+
+\textbf{核心规则}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 以"跳数"作为度量标准
+    \item 最大跳数为15，跳数=16表示不可达
+    \item 每30秒向相邻路由器广播路由表
+\end{itemize}
+
+\subsection{OSPF协议}
+基于链路状态的内部网关协议。
+
+\textbf{核心特点}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 使用Dijkstra最短路径算法
+    \item 以"链路代价"作为度量标准
+    \item 无路由环路问题，收敛速度快
+\end{itemize}
+
+\subsection{BGP协议}
+自治系统之间使用的外部网关协议。
+
+\begin{notebox}
+\textbf{路由协议的封装方式}：
+\begin{itemize}[itemsep=0pt]
+    \item RIP：封装在UDP（端口520）中
+    \item OSPF：直接封装在IP（协议号89）中
+    \item BGP：封装在TCP（端口179）中
+\end{itemize}
+\end{notebox}
+
+\section{IP数据报转发}
+\subsection{转发规则}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item 计算自身网络地址：自身IP AND 子网掩码
+    \item 计算目的网络地址：目的IP AND 自身子网掩码
+    \item 若相同：直接交付；若不同：间接交付（发给网关）
+\end{enumerate}
+
+\begin{examplebox}[例题4.6 IP转发判断]
+\textbf{题目}：主机A的IP为192.168.1.100/24，要发送数据给192.168.1.50和192.168.2.50。
+\tcblower
+A的网络地址：192.168.1.0
+
+目的192.168.1.50的网络地址：192.168.1.0 → \textbf{直接交付}
+
+目的192.168.2.50的网络地址：192.168.2.0 → \textbf{间接交付}
+\end{examplebox}
+
+\section{ICMP协议}
+ICMP用于在主机和路由器之间传递控制信息和错误报告。
+
+\subsection{差错报告报文}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{终点不可达}：路由器无法转发数据报
+    \item \textbf{源点抑制}：因拥塞丢弃数据报
+    \item \textbf{时间超过}：TTL减为0时丢弃
+    \item \textbf{参数问题}：IP首部字段有错误
+    \item \textbf{改变路由}：通知源主机存在更优路径
+\end{itemize}
+
+\subsection{询问报文}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{回送请求/回答}：ping命令使用
+    \item \textbf{时间戳请求/回答}：用于时钟同步
+\end{itemize}
+
+\subsection{ICMP应用}
+\textbf{ping}：使用ICMP回送请求和回答，测试连通性
+
+\textbf{traceroute}：利用TTL递增和ICMP时间超过报文，逐跳发现路径
+
+\section{VPN与NAT}
+\subsection{虚拟专用网VPN}
+利用公用因特网作为专用网之间的通信载体，使用IP隧道技术封装内部数据报。
+
+\subsection{网络地址转换NAT}
+允许多个私有IP地址共享一个公网IP地址。
+
+\textbf{NAPT}：使用IP地址+端口号进行映射，一个公网IP可支持多台内网主机。
+
+\begin{examplebox}[例题4.7 网络设备与广播域]
+\textbf{题目}：下列网络设备中，能够抑制广播风暴的是？\\
+Ⅰ 中继器 \quad Ⅱ 集线器 \quad Ⅲ 网桥 \quad Ⅳ 路由器
+\tcblower
+\begin{itemize}[itemsep=0pt]
+    \item 中继器、集线器（物理层）：不隔离广播域
+    \item 网桥（数据链路层）：不隔离广播域
+    \item 路由器（网络层）：隔离广播域
+\end{itemize}
+\textbf{答案}：仅Ⅳ（路由器）
+\end{examplebox}
+
+\section{IPv6协议}
+IPv6是下一代互联网协议，解决IPv4地址枯竭问题。
+
+\subsection{IPv6地址特点}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{地址长度}：128位（IPv4为32位）
+    \item \textbf{地址数量}：$2^{128}$个，几乎无限
+    \item \textbf{表示方法}：冒号十六进制，如\texttt{2001:0db8:85a3:0000:0000:8a2e:0370:7334}
+    \item \textbf{简化规则}：前导0可省略，连续的0可用::表示（只能用一次）
+\end{itemize}
+
+\subsection{IPv6与IPv4的主要区别}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{特性} & \textbf{IPv4} & \textbf{IPv6} \\
+\midrule
+地址长度 & 32位 & 128位 \\
+首部长度 & 20-60字节 & 固定40字节 \\
+首部校验和 & 有 & 无 \\
+分片 & 路由器可分片 & 仅源主机分片 \\
+广播 & 支持 & 不支持（用多播替代） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{网络层综合例题}
+
+\begin{examplebox}[例题4.8 子网划分综合]
+\textbf{题目}：某单位分配到地址块\texttt{202.118.1.0/24}，需要划分为5个子网，子网1需要50台主机，子网2需要30台主机，子网3-5各需要10台主机。请设计地址分配方案。
+\tcblower
+采用VLSM变长子网掩码：
+
+\textbf{子网1}（50台）：需要6位主机号（$2^6-2=62\geq50$）
+\begin{itemize}[itemsep=0pt]
+    \item 地址块：\texttt{202.118.1.0/26}
+    \item 可用范围：\texttt{202.118.1.1 - 202.118.1.62}
+\end{itemize}
+
+\textbf{子网2}（30台）：需要5位主机号（$2^5-2=30\geq30$）
+\begin{itemize}[itemsep=0pt]
+    \item 地址块：\texttt{202.118.1.64/27}
+    \item 可用范围：\texttt{202.118.1.65 - 202.118.1.94}
+\end{itemize}
+
+\textbf{子网3}（10台）：需要4位主机号（$2^4-2=14\geq10$）
+\begin{itemize}[itemsep=0pt]
+    \item 地址块：\texttt{202.118.1.96/28}
+    \item 可用范围：\texttt{202.118.1.97 - 202.118.1.110}
+\end{itemize}
+
+\textbf{子网4}（10台）：
+\begin{itemize}[itemsep=0pt]
+    \item 地址块：\texttt{202.118.1.112/28}
+    \item 可用范围：\texttt{202.118.1.113 - 202.118.1.126}
+\end{itemize}
+
+\textbf{子网5}（10台）：
+\begin{itemize}[itemsep=0pt]
+    \item 地址块：\texttt{202.118.1.128/28}
+    \item 可用范围：\texttt{202.118.1.129 - 202.118.1.142}
+\end{itemize}
+\end{examplebox}
+
+\begin{examplebox}[例题4.9 路由表查找]
+\textbf{题目}：路由器R的路由表如下，分析目的地址为\texttt{172.32.57.14}的数据报如何转发。
+
+\begin{center}\small
+\begin{tabular}{|c|c|c|}
+\hline
+目的网络 & 子网掩码 & 下一跳 \\
+\hline
+172.32.0.0 & 255.255.0.0 & 接口0 \\
+172.32.32.0 & 255.255.224.0 & 接口1 \\
+172.32.56.0 & 255.255.252.0 & 接口2 \\
+0.0.0.0 & 0.0.0.0 & 192.168.1.1 \\
+\hline
+\end{tabular}
+\end{center}
+\tcblower
+对目的地址\texttt{172.32.57.14}逐条匹配：
+
+\textbf{条目1}（/16）：172.32.57.14 AND 255.255.0.0 = 172.32.0.0 ✓
+
+\textbf{条目2}（/19）：172.32.57.14 AND 255.255.224.0
+\begin{itemize}[itemsep=0pt]
+    \item 57 = 00111001，224 = 11100000，AND = 00100000 = 32
+    \item 结果：172.32.32.0 ✓
+\end{itemize}
+
+\textbf{条目3}（/22）：172.32.57.14 AND 255.255.252.0
+\begin{itemize}[itemsep=0pt]
+    \item 57 = 00111001，252 = 11111100，AND = 00111000 = 56
+    \item 结果：172.32.56.0 ✓
+\end{itemize}
+
+\textbf{条目4}（/0）：默认路由，总是匹配 ✓
+
+根据\textbf{最长前缀匹配}原则，选择/22（条目3），转发到\textbf{接口2}
+\end{examplebox}
+
+\begin{examplebox}[例题4.10 IP路由器功能]
+\textbf{题目}：下列关于IP路由器的描述，正确的是？\\
+Ⅰ 运行路由协议，设置路由表\\
+Ⅱ 监测到拥塞时，合理丢弃IP分组\\
+Ⅲ 对收到的IP分组进行差错校验，确保传输的IP分组不丢失\\
+Ⅳ 根据收到的IP分组的目的IP地址，将其转发到合适的输出线路上
+\tcblower
+\begin{itemize}[itemsep=0pt]
+    \item Ⅰ正确：路由器运行路由协议维护路由表
+    \item Ⅱ正确：拥塞时路由器会丢弃分组
+    \item Ⅲ错误：IP层不负责可靠传输，仅校验首部，出错则丢弃
+    \item Ⅳ正确：根据目的地址查表转发
+\end{itemize}
+
+\textbf{答案}：Ⅰ、Ⅱ、Ⅳ
+\end{examplebox}

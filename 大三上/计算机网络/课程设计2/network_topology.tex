@@ -1,0 +1,77 @@
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage{tikz}
+\usepackage{xeCJK}
+\setCJKmainfont{SimSun} % 设置中文字体，需要使用 XeLaTeX 编译
+
+\usetikzlibrary{shapes,arrows,positioning,calc,fit,backgrounds}
+
+\begin{document}
+
+\begin{tikzpicture}[
+    node distance=2.5cm,
+    server/.style={rectangle, draw, fill=blue!20, minimum size=1cm, align=center},
+    switch/.style={rectangle, draw, fill=green!20, minimum height=0.6cm, minimum width=1.5cm, align=center},
+    router/.style={circle, draw, fill=orange!20, minimum size=1cm, align=center},
+    firewall/.style={rectangle, draw, fill=red!20, minimum size=0.8cm, align=center},
+    internet_cloud/.style={cloud, draw, cloud puffs=10, cloud puff arc=120, aspect=2, fill=gray!10, minimum width=3cm, align=center},
+    ap/.style={circle, draw, fill=cyan!20, minimum size=0.6cm, align=center},
+    pc/.style={rectangle, draw, fill=yellow!20, minimum size=0.8cm, align=center},
+    connection/.style={thick, draw=black!70}
+]
+
+% 1. Internet Edge
+\node[internet_cloud] (internet) {互联网 (ISP/教育网)};
+\node[router, below=of internet] (routers) {AR6280 (出口路由)\\10.255.0.0/30};
+\node[firewall, below=of routers] (firewalls) {USG6630E (防火墙)};
+
+% 2. Core Layer (Cluster)
+\node[switch, below=1.5cm of firewalls, minimum width=4cm, minimum height=1.5cm] (core) {核心交换机集群 (Core)\\S12700E (CSS2)\\网关: 10.10.x.254};
+
+% 3. Services (Side of Core)
+\node[server, right=3.5cm of core] (servers) {服务器群 (Server)\\10.10.100.0/24};
+\node[switch, left=3.5cm of core] (ac) {AC6805 (无线控制器)\\设备管理 VLAN 10};
+
+% 4. Aggregation Layer
+\node[switch, below left=3cm and 2.5cm of core] (agg_teach) {教学汇聚 (Teaching)\\S7706};
+\node[switch, below=3cm of core] (agg_admin) {行政汇聚 (Admin)\\S7706};
+\node[switch, below right=3cm and 2.5cm of core] (agg_dorm) {宿舍汇聚 (Dorm)\\S7706};
+
+% 5. Access Layer
+\node[switch, below=1.5cm of agg_teach] (acc_teach) {教学接入\\S5735};
+\node[switch, below=1.5cm of agg_admin] (acc_admin) {行政接入\\S5735};
+\node[switch, below=1.5cm of agg_dorm] (acc_dorm) {宿舍接入 (PoE)\\S5735};
+
+% 6. Terminals
+\node[pc, below=0.8cm of acc_teach] (pc_teach) {多媒体/实验室\\10.10.30.0/24};
+\node[pc, below=0.8cm of acc_admin] (pc_admin) {行政办公PC\\10.10.20.0/24};
+\node[ap, below=0.8cm of acc_dorm] (ap_dorm) {Wi-Fi 6 AP (全覆盖)\\10.10.60.0/22};
+\node[pc, right=0.5cm of ap_dorm] (pc_student) {宿舍有线\\10.10.50.0/23};
+
+% Connections
+\draw[connection] (internet) -- (routers);
+\draw[connection] (routers) -- (firewalls);
+\draw[connection] (firewalls) -- (core);
+
+\draw[connection] (core) -- (agg_teach);
+\draw[connection] (core) -- (agg_admin);
+\draw[connection] (core) -- (agg_dorm);
+
+\draw[connection] (core) -- (servers);
+\draw[connection] (core) -- node[above, font=\footnotesize] {旁挂} (ac);
+
+\draw[connection] (agg_teach) -- (acc_teach);
+\draw[connection] (agg_admin) -- (acc_admin);
+\draw[connection] (agg_dorm) -- (acc_dorm);
+
+\draw[connection] (acc_teach) -- (pc_teach);
+\draw[connection] (acc_admin) -- (pc_admin);
+\draw[connection] (acc_dorm) -- (ap_dorm);
+\draw[connection] (acc_dorm) -- (pc_student);
+
+% Labels
+\node[draw, dashed, fit=(core) (ac) (servers), label=right:\textbf{核心层 (Core Layer)}] {};
+\node[draw, dashed, fit=(agg_teach) (agg_admin) (agg_dorm), label=right:\textbf{汇聚层 (Aggregation Layer)}] {};
+\node[draw, dashed, fit=(acc_teach) (acc_admin) (acc_dorm) (pc_student), label=right:\textbf{接入层 (Access Layer)}] {};
+
+\end{tikzpicture}
+\end{document}

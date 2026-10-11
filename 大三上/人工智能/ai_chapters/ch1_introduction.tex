@@ -1,0 +1,326 @@
+%========================================
+\chapter{人工智能概述}
+%========================================
+
+\section{人工智能的定义}
+
+\subsection{基本概念}
+\begin{conceptbox}
+\textbf{人工智能}（Artificial Intelligence, AI）是用人工方法在机器（计算机）上实现智能，或使机器具备类人智能的学科。
+
+\textbf{智能体}（Agent）是指能够感知环境并通过行动改变环境的实体。人也可以被看作是一种智能体。
+\end{conceptbox}
+
+人工智能是一门综合性学科，旨在构建智能机器以模拟、延伸和扩展人类智能。它融合了多个学科的理论与方法：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{上层来源学科}：脑科学、认知科学、心理学、系统科学、计算机科学、控制论、信息论
+    \item \textbf{核心能力}：推理、学习、规划、感知、知识获取、搜索、不确定性处理
+    \item \textbf{应用方向}：博弈、定理证明、语言图像理解、机器人学、专家系统
+\end{itemize}
+
+\subsection{人工智能的分类}
+
+\subsubsection{按功能划分（模拟人的智能）}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{感知智能}：视觉、听觉、触觉等感官能力
+    \item \textbf{认知智能}：语言理解、知识推理等思维能力
+    \item \textbf{创造智能}：灵感、顿悟等创新能力
+\end{enumerate}
+
+\subsubsection{按层次划分（从弱到强）}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{类型} & \textbf{特点} & \textbf{示例} \\
+\midrule
+弱人工智能 & 特定场景下的任务型AI & 语音助手、推荐系统 \\
+通用人工智能(AGI) & 能处理人类水平的任务，具备持续学习能力 & 尚未实现 \\
+超级人工智能 & 比人类更聪明 & 理论概念 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{tipbox}
+\textbf{记忆口诀}：
+\begin{itemize}[itemsep=0pt]
+    \item "三智"：感知、认知、创造 → 模拟人类智能
+    \item "三阶"：弱AI → AGI → 超级AI → 层次递进
+\end{itemize}
+\end{tipbox}
+
+
+\section{智能体（Intelligent Agent）}
+
+\subsection{智能体与环境}
+
+\begin{conceptbox}
+\textbf{智能体}（Agent）是指能够通过\textbf{传感器}（Sensors）感知环境，并通过\textbf{执行器}（Actuators）对环境产生作用的实体。
+\end{conceptbox}
+
+\textbf{PEAS模型}：描述智能体任务环境的四个维度：
+
+\subsection{智能体的结构类型}
+
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{简单反射型智能体}：基于当前感知直接做出反应（Condition-Action规则），不考虑历史。
+    \begin{itemize}
+        \item 例如：如果是红灯，则停车。
+    \end{itemize}
+    \item \textbf{基于模型的反射型智能体}：内部维护一个关于世界的\textbf{模型}（状态），用于处理部分可观察环境。
+    \item \textbf{基于目标的智能体}：行动是为了达成特定\textbf{目标}（Goal），需要规划。
+    \item \textbf{基于效用的智能体}：行动是为了最大化\textbf{效用}（Utility），即不仅要达成目标，还要"更快乐/更高效"。
+\end{enumerate}
+
+\subsection{BDI模型}
+一种典型的理性Agent理论模型：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{Belief}（信念）：Agent对环境的认知（我知道什么）。
+    \item \textbf{Desire}（愿望）：Agent想达成的状态（我想做什么）。
+    \item \textbf{Intention}（意图）：Agent决定去执行的行动计划（我决定做什么）。
+\end{itemize}
+
+\section{人工智能的发展历程}
+
+\subsection{发展阶段}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lll}
+\toprule
+\textbf{阶段} & \textbf{时间} & \textbf{特征} \\
+\midrule
+孕育期 & 1956年前 & 图灵测试提出、逻辑推理雏形 \\
+形成期 & 1956--1969 & "人工智能"概念诞生，早期突破 \\
+知识应用期 & 1970--1989 & 专家系统兴起，应用于医疗、化学等领域 \\
+学派融合期 & 1990--2000 & 不同学派融合，技术逐步成熟 \\
+智能科学兴起 & 2000年后 & 神经网络、深度学习爆发 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{重要里程碑}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{1950年}：图灵提出"图灵测试"
+    \item \textbf{1956年}：达特茅斯会议正式提出"人工智能"概念
+    \item \textbf{1982年}：专家系统R1投入商业使用
+    \item \textbf{1997年}：深蓝战胜国际象棋世界冠军卡斯帕罗夫
+    \item \textbf{2016年}：AlphaGo击败围棋世界冠军李世石
+    \item \textbf{2018年}：Apollo无人驾驶上路测试
+\end{itemize}
+
+\begin{notebox}
+AI经历了"高潮—低谷—复兴"的周期性发展，近年来因大数据和算力提升迎来爆发式增长。
+\end{notebox}
+
+\section{人工智能的研究学派}
+
+\subsection{三大主流学派}
+
+\begin{center}
+\begin{tikzpicture}[
+    level 1/.style={sibling distance=5cm,level distance=1.5cm},
+    every node/.style={draw,rounded corners,minimum height=0.6cm,font=\small}
+]
+\node {人工智能学派}
+    child {node[fill=red!10] {符号主义}}
+    child {node[fill=green!10] {连接主义}}
+    child {node[fill=blue!10] {行为主义}};
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{符号主义（Symbolicism）}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{别名}：逻辑主义、计算机学派
+    \item \textbf{原理}：基于符号操作和逻辑推理
+    \item \textbf{代表}：规则引擎、知识图谱、专家系统
+\end{itemize}
+
+\subsubsection{连接主义（Connectionism）}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{别名}：仿生学派、神经网络学派
+    \item \textbf{原理}：模仿人脑神经元连接机制，通过训练学习模式
+    \item \textbf{代表}：深度学习、CNN、RNN、Transformer
+\end{itemize}
+
+\subsubsection{行为主义（Actionism）}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{别名}：进化主义、控制论学派
+    \item \textbf{原理}：强调"感知—动作"闭环，注重环境交互
+    \item \textbf{代表}：强化学习、机器人自主导航
+\end{itemize}
+
+\begin{tipbox}
+三大学派分别对应"思维模拟"、"生物模拟"、"行为模拟"，共同推动AI演进。当前主流是连接主义（深度学习），但符号主义仍在知识工程中发挥重要作用。
+\end{tipbox}
+
+\section{人工智能的基本研究内容}
+
+\subsection{六大核心研究方向}
+\begin{enumerate}[leftmargin=2em,itemsep=0pt]
+    \item \textbf{知识表示}：如何存储知识？如语义网络、本体、框架
+    \item \textbf{知识推理}：如何从已知推出未知？如演绎推理、归纳推理
+    \item \textbf{知识应用}：如何利用知识解决问题？如专家系统
+    \item \textbf{机器学习}：让机器自动学习规律
+    \item \textbf{机器感知}：视觉、听觉等输入处理
+    \item \textbf{机器思维与行为}：决策、规划、行动
+\end{enumerate}
+
+\section{人工智能的应用领域}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{应用领域} & \textbf{说明} \\
+\midrule
+自动定理证明 & 形式化推理验证 \\
+问题求解与博弈 & 国际象棋、围棋等 \\
+专家系统 & 医疗诊断、故障排查 \\
+模式识别 & 人脸识别、指纹识别 \\
+机器视觉 & 图像识别、自动驾驶 \\
+自然语言处理 & 翻译、语音助手、ChatGPT \\
+人工神经网络 & 深度学习模型 \\
+分布式AI与多Agent系统 & 协同智能体 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{examplebox}[案例分析]
+\textbf{AlphaGo} = 连接主义 + 机器学习 + 博弈
+
+\textbf{Siri/小爱同学} = 自然语言处理 + 语音识别 + 专家系统
+
+\textbf{ChatGPT} = 深度学习 + 自然语言处理 + 强化学习
+\end{examplebox}
+
+\section{图灵测试}
+
+\begin{conceptbox}
+\textbf{图灵测试}是判断机器是否具备智能的实验方法，由图灵于1950年提出。实验由三个封闭房间组成，分别放置主持人、参与人和机器。主持人通过提问来判断谁是人、谁是机器。如果主持人无法区分，则认为该机器具备智能。
+\end{conceptbox}
+
+\begin{examplebox}[例题1.1 图灵测试]
+\textbf{问题}：什么是"图灵测试"？简单描述之。
+\tcblower
+\textbf{答}：图灵测试是为了判断一台机器是否具备智能的实验。实验由三个封闭的房间组成，分别放置主持人、参与人和机器。主持人向参与人和机器提问，通过提问的结果来判断谁是人，谁是机器。如果主持人无法判断谁是人、谁是机器，则这台机器具备智能，即所谓的"智能机器"。
+\end{examplebox}
+
+\section{习题与解答}
+
+\subsection{是非题}
+
+\begin{enumerate}[leftmargin=2em,itemsep=2pt]
+    \item 智能机器人的智能已经达到人类智能的水平。（×）
+    \item 人也可以作为Agent。（√）
+    \item 人工智能是1956年在美国达特茅斯会议上诞生的，由McCarthy教授提出"人工智能"这一术语。（√）
+\end{enumerate}
+
+\subsection{填空题}
+
+\begin{enumerate}[leftmargin=2em,itemsep=2pt]
+    \item 人工智能的研究途径有\underline{心理模拟}、\underline{生理模拟}和\underline{行为模拟}。
+    \item 人工智能的基本技术包括\underline{搜索技术}、\underline{推理技术}、\underline{知识表示和知识库技术}、\underline{归纳技术}、\underline{联想技术}。
+    \item 人工智能主要有\underline{博弈}、\underline{专家系统}和\underline{机器语言处理}等研究领域。
+    \item 人工智能三大学派是\underline{符号主义}、\underline{联结主义}、\underline{行为主义}。
+    \item AI的英文全称是\underline{Artificial Intelligence}。
+    \item 人工智能的远期目标是\underline{制造智能机器}，近期目标是\underline{实现机器智能}。
+\end{enumerate}
+
+\subsection{选择题}
+
+\begin{examplebox}[选择题1.1]
+\textbf{问题}：人工智能的含义最早由一位科学家于1950年提出，并且同时提出一个机器智能的测试模型，请问这个科学家是（\quad）
+
+A. 明斯基 \quad B. 扎德 \quad C. 图灵 \quad D. 冯·诺依曼
+\tcblower
+\textbf{答案}：C
+
+图灵于1950年提出了著名的"图灵测试"，用于判断机器是否具有智能。
+\end{examplebox}
+
+\begin{examplebox}[选择题1.2]
+\textbf{问题}：基于"有限合理性原理"和"物理符号系统假设"的人工智能学派一般指的是（\quad）
+
+A. 符号主义 \quad B. 联结主义 \quad C. 行为主义
+\tcblower
+\textbf{答案}：A
+
+符号主义基于物理符号系统假设，认为智能可以通过符号操作和逻辑推理来实现。
+\end{examplebox}
+
+\begin{examplebox}[选择题1.3]
+\textbf{问题}：神经网络研究属于下列哪个学派？（\quad）
+
+A. 符号主义 \quad B. 连接主义 \quad C. 行为主义 \quad D. 都不是
+\tcblower
+\textbf{答案}：B
+
+神经网络模仿人脑神经元的连接机制，属于连接主义（仿生学派）。
+\end{examplebox}
+
+\begin{examplebox}[选择题1.4]
+\textbf{问题}：1997年5月，著名的"人机大战"，最终计算机以3.5比2.5的总比分将世界国际象棋棋王卡斯帕罗夫击败，这台计算机被称为（\quad）
+
+A. 深蓝 \quad B. IBM \quad C. 深思 \quad D. 蓝天
+\tcblower
+\textbf{答案}：A
+
+IBM的"深蓝"（Deep Blue）是第一个在标准比赛时限内击败国际象棋世界冠军的计算机系统。
+\end{examplebox}
+
+\begin{examplebox}[选择题1.5]
+\textbf{问题}：下列哪个不是人工智能的研究领域？（\quad）
+
+A. 机器证明 \quad B. 模式识别 \quad C. 人工生命 \quad D. 编译原理
+\tcblower
+\textbf{答案}：D
+
+编译原理是计算机科学的基础学科，不属于人工智能的研究领域。
+\end{examplebox}
+
+\subsection{简答题}
+
+\begin{examplebox}[简答题1.1]
+\textbf{问题}：什么是人工智能？人工智能与传统计算机程序的区别是什么？
+\tcblower
+\textbf{答}：人工智能是研究如何制造人造的智能机器或智能系统来模拟人类智能活动的能力，以延伸人类智能的科学。
+
+人工智能程序与传统计算机程序的区别：
+\begin{enumerate}[itemsep=0pt]
+    \item AI以符号表示的知识为研究对象，而不是以数值数据为研究对象
+    \item AI采用启发式搜索方法，而不是普通的算法
+    \item AI中控制结构与知识是分离的
+    \item AI允许出现不正确的答案
+\end{enumerate}
+\end{examplebox}
+
+\begin{examplebox}[简答题1.2]
+\textbf{问题}：人工智能主要有哪几种研究途径和技术方法？简单说明之。
+\tcblower
+\textbf{答}：
+\begin{enumerate}[itemsep=0pt]
+    \item \textbf{符号智能}：主要以符号知识为基础，通过符号推理进行问题求解而实现的智能，主要包括知识工程和符号处理技术
+    \item \textbf{计算智能}：是以数据计算为基础，通过数值计算进行问题求解而实现的智能，包括人工神经网络、进化计算、模糊技术等
+\end{enumerate}
+\end{examplebox}
+
+\section{本章小结}
+
+本章介绍了人工智能的基本概念：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item AI的定义：用人工方法在机器上实现智能
+    \item AI的分类：按功能分（感知/认知/创造）、按层次分（弱AI/AGI/超级AI）
+    \item AI的发展历程：四个阶段 + 关键里程碑事件
+    \item AI的三大学派：符号主义、连接主义、行为主义
+    \item AI的研究内容：知识表示、推理、学习、感知、思维、行为
+    \item AI的应用领域：NLP、CV、机器人、专家系统、博弈等
+    \item 图灵测试：判断机器智能的经典方法
+\end{itemize}
+
+\textbf{重点掌握}：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+    \item 三大学派的区别与联系
+    \item 发展历程中的重要时间节点
+    \item AI的分类方式
+    \item 图灵测试的概念和意义
+\end{itemize}

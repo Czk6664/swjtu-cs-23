@@ -1,0 +1,204 @@
+
+%----------------------------------------
+\section{补充填空题 (17题)}
+%----------------------------------------
+
+\begin{enumerate}[leftmargin=2em,itemsep=1pt]
+\item 人工智能程序与传统的计算机程序相比，具有如下特点：(1) 以 \underline{\hspace{4em}} 为研究对象，而不是以数值数据为研究对象；(2) 采用 \underline{\hspace{4em}} 搜索方法，而不是普通的算法；(3) 控制结构与 \underline{\hspace{4em}} 是分离的；(4) 允许出现 \underline{\hspace{4em}} 的答案。
+\item 产生式系统包括知识库和推理机。知识库由 \underline{\hspace{4em}} 和数据库组成，因此知识库中存储 \underline{\hspace{4em}} 和 \underline{\hspace{4em}}。推理机是一个程序，推理方式有 \underline{\hspace{4em}} 推理、 \underline{\hspace{4em}} 推理和 \underline{\hspace{4em}} 推理。
+\item 状态空间搜索中，宽度优先搜索属于 \underline{\hspace{4em}} 搜索，A*算法属于 \underline{\hspace{4em}} 搜索。
+\item 归结方法是一种机械化的 \underline{\hspace{4em}} 向推理方法。
+\item 在归结原理中，空子句不含有文字，它 \underline{\hspace{4em}} 被任何解释满足，所以空子句是 \underline{\hspace{4em}} 的。归结过程出现空子句，说明出现了互补的文字对，说明子句集是 \underline{\hspace{4em}}。
+\item 遗传算法的主要操作有 \underline{\hspace{4em}}、\underline{\hspace{4em}} 和 \underline{\hspace{4em}}。
+\item 在状态空间搜索的一般过程中，常常需要 \underline{\hspace{4em}} 表和 \underline{\hspace{4em}} 表两个数据结构。OPEN表用于存放 \underline{\hspace{4em}} 的节点，CLOSED表用于存放 \underline{\hspace{4em}} 的节点。
+\item 在语义网络中，为了表示节点间属性的继承推理，规定了两个约定俗成的链，命名为 \underline{\hspace{4em}} 和 \underline{\hspace{4em}}。
+\item 人工智能是1956年，在 \underline{\hspace{4em}} 会议上首次被提出的。
+\item 在人工智能中，通常知识的表示方法有 \underline{\hspace{4em}} 表示法、产生式系统表示法、\underline{\hspace{4em}} 表示法、框架表示法、脚本表示法等。
+\item 开发专家系统需要解决 \underline{\hspace{4em}}、\underline{\hspace{4em}} 和 \underline{\hspace{4em}} 三个基本问题。
+\item 语义网络是用图的方法表示知识的，由节点和 \underline{\hspace{4em}} 组成。其中节点表示 \underline{\hspace{4em}}，弧表示节点间的 \underline{\hspace{4em}}。
+\item 评价一个搜索策略的主要指标有：\underline{\hspace{4em}}、\underline{\hspace{4em}}、时间复杂度和空间复杂度。
+\item 推理的形式主要有 \underline{\hspace{4em}} 推理、\underline{\hspace{4em}} 推理和 \underline{\hspace{4em}} 推理三种方式。
+\item XOR问题一般可以用 \underline{\hspace{4em}} 层感知器解决。
+\item 模糊逻辑中，重言式的值为 \underline{\hspace{4em}}。
+\end{enumerate}
+
+\textbf{参考答案：}
+\begin{enumerate}[label=\arabic*.]
+\item 符号表示的知识, 启发式, 知识, 不正确/不确定
+\item 规则库, 规则, 事实, 正向, 反向, 混合
+\item 盲目, 启发式
+\item 反
+\item 不能, 永假/不可满足, 不可满足
+\item 选择, 交叉, 变异
+\item OPEN, CLOSED, 待扩展/生成但未考察, 已扩展/已考察
+\item ISA, AKO (A Kind Of)
+\item 达特茅斯 (Dartmouth)
+\item 逻辑/谓词逻辑, 语义网络
+\item 知识获取, 知识表示, 知识运用
+\item 弧/有向弧, 事物/概念/属性, 语义关系
+\item 完备性, 最优性
+\item 正向, 反向, 双向 (或 演绎, 归纳, 溯因)
+\item 多 (或 双)
+\item 1
+\end{enumerate}
+
+%----------------------------------------
+\section{简答题 (10题)}
+%----------------------------------------
+
+\begin{enumerate}[leftmargin=2em,itemsep=1pt]
+\item 什么是“图灵测试”？简单描述之。
+\item 什么是人工智能？人工智能程序与传统的计算机程序有什么区别？
+\item 什么是产生式？产生式规则的语义是什么？
+\item 广度优先搜索与深度优先搜索各有什么特点？
+\item 什么是置换？置换是可交换的吗？
+\item “$\alpha$-$\beta$剪枝方法只是极小极大方法的一种近似，剪枝可能会遗漏掉最佳走步”，这种说法是否正确？为什么？
+\item 什么是知识工程？它对人工智能的发展有何重要作用？
+\item 先进专家系统具有哪些特点？
+\item 什么是语义网络？它主要包含哪两个部分？
+\item 什么是博弈树？在博弈树搜索中，MAX节点和MIN节点分别代表什么？
+\end{enumerate}
+
+\textbf{参考答案：}
+\begin{enumerate}[label=\arabic*.]
+\item 所谓“图灵测试”，是为了判断一台机器是否具备智能的实验。实验由三个封闭的房间组成，分别放置主持人、参与人和机器。主持人向参与人和机器提问，通过提问的结果来判断谁是人，谁是机器。如果主持人无法判断谁是人，谁是机器，则认为这台机器具备智能。
+\item AI是研究如何制造人造的智能机器或智能系统来模拟人类智能活动的能力，以延伸人类智能的科学。区别：AI以符号表示的知识为研究对象，而非数值数据；AI主要采用启发式搜索而非单纯的算法；AI中控制结构与知识是分离的；AI允许出现不确定的答案。
+\item 产生式规则基本形式：$P \to Q$ 或者 IF $P$ THEN $Q$。$P$是前提（前件），$Q$是结论或操作（后件）。语义：如果前提$P$被满足，则可推出结论$Q$或执行$Q$所规定的操作。
+\item 广度优先搜索：从初始节点开始，逐层遍历所有节点。优点是如果存在解，一定能找到最优解（最短路径）；缺点是存储空间消耗大。深度优先搜索：沿着一条路径一直搜索到底，直到无法继续或达到目标。优点是节省空间；缺点是可能陷入死循环（需设深度限制），且找到的不一定是最优解。
+\item 通常用有序对的集合$s=\{t_1/v_1, t_2/v_2, \dots, t_n/v_n\}$来表示任一置换，表示变量$v_i$被项$t_i$替换。一般来说，置换是不可交换的，即两个置换合成的结果与置换使用的次序有关。
+\item 不正确。$\alpha$-$\beta$剪枝方法利用已经搜索的信息，剪掉那些对于搜索最佳走步没有意义的分枝，其找到的最佳走步与极小极大方法找到的结果是一样的（它是精确的，不是近似）。
+\item 知识工程是以知识为处理对象，研究知识系统的开发方法、工具及理论的学科。它极大地推动了专家系统和人工智能其实用化发展，解决了“知识获取”这一瓶颈问题。
+\item (1)并行分布式处理功能；(2)多专家协同工作；(3)更强的自学习能力；(4)更新的推理机制；(5)自纠错和自完善能力；(6)先进的智能接口；(7)引入更多先进技术（如神经网络、模糊逻辑等）。
+\item 语义网络是一种用图来表示知识的结构。它主要包含节点（Nodes）和弧（Arcs/Links）。节点代表“事物”、“概念”、“属性”、“情况”等；弧代表节点之间的语义关系。
+\item 博弈树是描述博弈过程的树状图。MAX节点代表己方（希望得分最大），MIN节点代表对手（希望己方得分最小）。
+\end{enumerate}
+
+%----------------------------------------
+\section{综合应用题 (10题)}
+%----------------------------------------
+
+\begin{enumerate}[leftmargin=2em,itemsep=1em]
+
+\item \textbf{（机器人摆积木）} 设机器人有一只机械手，要处理的世界有一张桌子，桌上可堆放若干相同的方积木块。机械手有4个操作：Pickup(x)（从桌上拣起x）, Putdown(x)（放到桌上）, Stack(x,y)（把x叠在y上）, Upstack(x,y)（从y上拣起x）。
+\begin{enumerate}
+    \item 定义描述状态的谓词（如ON, ONTABLE, CLEAR, HANDEMPTY, HOLDING等）。
+    \item 给出初始状态：积木A, B在桌上，C在A上。目标状态：C在桌上，B在C上，A在B上。写出求解过程的操作序列。
+\end{enumerate}
+
+\item \textbf{（归结原理）} 设已知：
+\begin{enumerate}
+    \item 如果x是y的父亲，y是z的父亲，则x是z的祖父。
+    \item 每个人都有一个父亲。
+\end{enumerate}
+使用归结演绎推理证明：对于某人u，一定存在一个人v，v是u的祖父。
+
+\item \textbf{（产生式系统）} 已知规则库：
+\begin{itemize}
+    \item R1: IF (X身上有毛) THEN (X是哺乳动物)
+    \item R2: IF (X是哺乳动物) AND (X吃肉) THEN (X是食肉动物)
+    \item R3: IF (X是食肉动物) AND (X有黑色条纹) THEN (X是老虎)
+\end{itemize}
+事实库：\{阿娜身上有毛, 阿娜吃肉, 阿娜有黑色条纹\}。
+试模拟正向推理过程，推出阿娜是什么动物。
+
+\item \textbf{（框架表示）} 请构建一个“大学教师”的框架系统，包括Name, Age, Title（职称）, Department（系）, Course（教授课程）等槽，并给出一个具体的实例（如：张三，45岁，教授，计算机系，讲授人工智能）。
+
+\item \textbf{（逻辑推理）} 张某被盗，公安局派出5个人去调查。
+\begin{itemize}
+    \item 侦察员A说：“赵与钱中至少有一人作案”
+    \item 侦察员B说：“钱与孙中至少有一人作案”
+    \item 侦察员C说：“孙与李中至少有一人作案”
+    \item 侦察员D说：“赵与孙中至少有一人与此案无关”
+    \item 侦察员E说：“钱与李中至少有一人与此案无关”
+\end{itemize}
+如果这5个侦察员的话都是可信的，使用归结原理求出谁是盗窃犯。
+
+\item \textbf{（八数码问题）} 评价函数定义为 $f(x) = d(x) + W(x)$，其中 $d(x)$ 是深度，$W(x)$ 是“不在位数”。
+初始状态：
+$
+\begin{pmatrix}
+2 & 8 & 3 \\
+1 & 6 & 4 \\
+7 & 0 & 5
+\end{pmatrix}
+$
+目标状态：
+$
+\begin{pmatrix}
+1 & 2 & 3 \\
+8 & 0 & 4 \\
+7 & 6 & 5
+\end{pmatrix}
+$
+请画出搜索树的前几步（3层左右）。
+
+\item \textbf{（语义网络）} 请用语义网络表示下列事实：
+\begin{enumerate}
+    \item 树和草都是植物。
+    \item 树和草都有根和叶。
+    \item 水草是草，它长在水中。
+    \item 果树是树，会结果。
+    \item 苹果树是果树，结苹果。
+\end{enumerate}
+
+\item \textbf{（旅行推销员问题）} 下图是一个带权图（假设A, B, C, D四城，距离自定），请用代价优先（或A*）算法求从A出发遍历所有城市回到A的最短路径。
+（注：此处需自行构造简单图例或描述图结构）
+
+\item \textbf{（谓词逻辑形式化）} 将下列自然语言转化为谓词公式：
+\begin{enumerate}
+    \item 所有的人都要呼吸。
+    \item 每个学生都要参加考试。
+    \item 任何整数或是正的或是负的。
+    \item 不是每一个人都喜欢游泳。
+\end{enumerate}
+
+\item \textbf{（Hanoi塔）} 设有3个盘子（1号小，2号中，3号大）在A柱，要求移到B柱，可借助C柱。每次只能移一个，大盘不能压小盘。请写出移动序列。
+
+\end{enumerate}
+
+\textbf{参考答案概要：}
+\begin{enumerate}[label=\arabic*.]
+\item 
+(1) 谓词：ONTABLE(x), ON(x,y), CLEAR(x), HANDEMPTY, HOLDING(x)。
+(2) 操作序列：Unstack(C,A) $\to$ Putdown(C) $\to$ Pickup(B) $\to$ Stack(B,C) $\to$ Pickup(A) $\to$ Stack(A,B)。
+\item 
+(1) $F(x,y) \land F(y,z) \to GF(x,z)$
+(2) $\forall y \exists x F(x,y)$
+求证：$\exists u \exists v (P(u) \to GF(v,u))$。
+通过归结反演，将结论否定 $\neg (\exists v GF(v,u))$ (假设u存在) 化为子句，与前提子句集归结，最终得空子句。
+\item 
+Step 1: R1匹配(阿娜有毛) $\to$ (阿娜是哺乳动物)。
+Step 2: R2匹配(阿娜是哺乳动物, 吃肉) $\to$ (阿娜是食肉动物)。
+Step 3: R3匹配(阿娜是食肉动物, 有条纹) $\to$ (阿娜是老虎)。
+\item 
+Frame Teacher:
+  Slot Name: String
+  Slot Age: Int
+  Slot Title: (Prof, AssocProf, Lecturer)
+  Instance: 张三 (Name=张三, Age=45, Title=Prof, ...)
+\item 
+将每句话化为子句：
+A: $Z \lor Q$
+B: $Q \lor S$
+C: $S \lor L$
+D: $\neg Z \lor \neg S$
+E: $\neg Q \lor \neg L$
+结论：钱和孙是作案者。
+\item 
+计算 $W(x)$：初始状态不在位数为4 (1,2,6,8,0等位置错乱)。
+扩展初始节点，计算子节点的f值，选择最小f值节点继续扩展。
+\item 
+(略，画图表示继承关系ISA，属性关系Have/Can等)
+\item 
+使用Open/Closed表。
+Open: [A(0)]
+Pop A, Push B, C, D... sorted by cost.
+...
+\item 
+(1) $\forall x (Person(x) \to Breathe(x))$
+(2) $\forall x (Student(x) \to TakeExam(x))$
+(3) $\forall x (Integer(x) \to Positive(x) \lor Negative(x))$ [注：0除外，简化表达]
+(4) $\neg \forall x (Person(x) \to LikeSwim(x))$ 或 $\exists x (Person(x) \land \neg LikeSwim(x))$
+\item 
+A $\to$ B (1号), A $\to$ C (2号), B $\to$ C (1号), A $\to$ B (3号), C $\to$ A (1号), C $\to$ B (2号), A $\to$ B (1号)。
+\end{enumerate}
