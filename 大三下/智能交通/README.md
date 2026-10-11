@@ -1,146 +1,35 @@
-# 智能交通管理决策系统
+# 智能交通
 
-本项目正在从课程展示原型升级为可运行的智能交通管理决策系统 Demo。
+本目录整理程泽凯（2023 级、23 届）的课程学习资料，包括课件、本人作业及本人参与的课程项目。其他同学的独立作业、代收材料和无法确认归属的个人报告不收录。小组项目中保留原有作者与分工说明。
 
-## 目录
+[返回仓库首页](../../README.md)
 
-- `apps/web`：React 前端应用
-- `services/api`：FastAPI 后端、模型编排和任务基础设施
-- `课程设计`：早期静态原型与设计参考
-- `大作业1`：交通流预测实验资产
-- `大作业2`：目标识别实验资产
-- `openspec`：需求、设计、任务和变更文档
+## 资料导航
 
-## 当前进度
+- [.env.example](./.env.example)
+- [.gitignore](./.gitignore)
+- [大作业1](./%E5%A4%A7%E4%BD%9C%E4%B8%9A1)
+- [大作业2](./%E5%A4%A7%E4%BD%9C%E4%B8%9A2)
+- [大作业3](./%E5%A4%A7%E4%BD%9C%E4%B8%9A3)
+- [课程设计](./%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1)
+- [期末作业](./%E6%9C%9F%E6%9C%AB%E4%BD%9C%E4%B8%9A)
+- [学习资料说明.md](./%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%96%99%E8%AF%B4%E6%98%8E.md)
+- [apps](./apps)
+- [CLAUDE.md](./CLAUDE.md)
+- [design.md](./design.md)
+- [openspec](./openspec)
+- [scripts](./scripts)
+- [services](./services)
+- [start-backend.ps1](./start-backend.ps1)
+- [start-demo.ps1](./start-demo.ps1)
+- [start-frontend.ps1](./start-frontend.ps1)
 
-- 已完成前后端基础骨架
-- 已打通分析接口、结果查询和任务状态接口
-- 已接入大作业 1 和大作业 2 的实验结果读取
-- 已支持基础导出、任务轮询和浏览器端语音播报
-- 正在接入 “Windows 项目 + WSL Hermes” 任务执行方案
-
-## 快速启动
-
-### 一键启动
-
-在仓库根目录运行：
-
-```powershell
-.\start-demo.ps1
-```
-
-然后在浏览器打开：
-
-```text
-http://127.0.0.1:5173
-```
-
-### 单独启动后端
-
-```powershell
-cd services/api
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -e .
-uvicorn app.main:app --reload
-```
-
-### 单独启动前端
-
-```powershell
-cd apps/web
-npm install
-npm run dev
-```
-
-## WSL Hermes 接入说明
-
-Hermes Agent 官方不支持原生 Windows 运行，因此本项目采用：
-
-- Windows 继续运行前端和 FastAPI 后端
-- WSL2 中安装并运行 Hermes
-- Windows 后端通过 `wsl.exe` 调用 WSL 里的 Hermes
-- Hermes 的工作目录固定到当前项目在 WSL 中的映射路径
-
-### 已支持的配置项
-
-在根目录 `.env` 中可配置：
-
-- `HERMES_ENABLED`
-- `HERMES_COMMAND`
-- `HERMES_TIMEOUT_SECONDS`
-- `HERMES_WORKSPACE_ROOT`
-- `HERMES_WSL_ENABLED`
-- `HERMES_WSL_COMMAND`
-- `HERMES_WSL_DISTRIBUTION`
-- `HERMES_WSL_WORKSPACE_ROOT`
-- `HERMES_TEMPLATES_DIR`
-- `HERMES_PAYLOAD_DIR`
-- `HERMES_LOGS_DIR`
-
-### 前置条件
-
-1. 已安装 WSL2
-2. 已安装目标发行版，例如 `Ubuntu-22.04`
-3. 已在 WSL 发行版中完成 Hermes 安装和模型配置
-4. 当前项目目录可在 WSL 中访问，例如：
-
-```text
-D:\大三下\智能交通
--> /mnt/d/大三下/智能交通
-```
-
-### 启用方式
-
-将 `.env` 中至少配置为：
-
-```env
-HERMES_ENABLED=true
-HERMES_WSL_ENABLED=true
-HERMES_WSL_COMMAND=wsl.exe
-HERMES_WSL_DISTRIBUTION=Ubuntu-22.04
-HERMES_WSL_WORKSPACE_ROOT=/mnt/d/大三下/智能交通
-```
-
-启动后端时，如果 WSL、发行版、路径映射或 WSL 内 Hermes 不可用，应用会在启动阶段直接报错。
-
-### 当前行为
-
-- `report` 任务：通过 WSL Hermes 生成 Markdown 报告
-- `voice` 任务：通过 WSL Hermes 生成文本播报稿
-- `daily-summary` 任务：通过 WSL Hermes 生成 Markdown 总结
-- 如果 `HERMES_ENABLED=false`，系统会回退到本地 stub 逻辑
-
-### 常见排查
-
-- 检查 WSL 发行版：
-
-```powershell
-wsl.exe -l -q
-```
-
-- 检查 WSL 中 Hermes 是否可执行：
-
-```powershell
-wsl.exe -d Ubuntu-22.04 --cd /mnt/d/大三下/智能交通 bash -lc "command -v hermes"
-```
-
-- 如果路径映射错误，优先核对 `HERMES_WORKSPACE_ROOT` 和 `HERMES_WSL_WORKSPACE_ROOT`
-
-## 后续计划
-
-- 接入真实大模型决策 API
-- 完善 WSL Hermes 任务验证和端到端测试
-- 增加部署说明和最小演示流程
-
-## 课程学习资料声明
-
-本目录整理的是 2023 级（23 届）课程学习资料。目录导航与本次整理范围详见 [学习资料说明](学习资料说明.md)。
+单个新增文件达到 50 MiB 暂缓上传；大型原始训练数据集、依赖环境、安装程序、重复打包和构建缓存不收录。完整报告与源代码尽量保留，运行环境和数据须按项目说明自行准备。
 
 ## 使用说明与免责声明
 
 1. **资料背景**  
-   本仓库记录一名 2023 级同学的个人课程学习与作业情况，仅反映其当时的学习记录，并非学校、学院或任课教师发布的官方资料，也不代表 2023 级全体同学的作业水平。课程安排、题目与评分标准可能因年份和任课教师不同而变化，请以当前课堂要求为准。
+   本仓库记录程泽凯（2023 级）的个人课程学习与作业情况，仅反映其当时的学习记录，并非学校、学院或任课教师发布的官方资料，也不代表 2023 级全体同学的作业水平。课程安排、题目与评分标准可能因年份和任课教师不同而变化，请以当前课堂要求为准。
 
 2. **学术诚信**  
    请勿直接复制、原样抄袭、代交或冒用本仓库中的作业、报告和代码。可以参考其中的思路与实现方法，但应在独立理解的基础上独立完成自己的任务，遵守课程关于引用、合作与 AI 使用的规定，并在引用时注明来源。

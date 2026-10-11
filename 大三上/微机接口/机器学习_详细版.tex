@@ -1,0 +1,3490 @@
+\documentclass[12pt,a4paper]{ctexart}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{float}
+
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+% 定义定理环境
+\newtheorem{definition}{定义}[section]
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}{引理}[section]
+\newtheorem{corollary}{推论}[section]
+\newtheorem{example}{例}[section]
+\newtheorem{exercise}{例题}[section]
+\newtheorem{remark}{注}[section]
+
+% 定义彩色�?
+\tcbuselibrary{skins,breakable}
+\newtcolorbox{notebox}[1][]{
+  colback=blue!5!white,
+  colframe=blue!75!black,
+  fonttitle=\bfseries,
+  title=#1,
+  breakable
+}
+
+\newtcolorbox{examplebox}[1][]{
+  colback=green!5!white,
+  colframe=green!50!black,
+  fonttitle=\bfseries,
+  title=#1,
+  breakable
+}
+
+\newtcolorbox{importantbox}[1][]{
+  colback=red!5!white,
+  colframe=red!75!black,
+  fonttitle=\bfseries,
+  title=#1,
+  breakable
+}
+
+\title{\textbf{机器学习期末复习}}
+\author{基于詹老师ppt整理}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%========================================
+% �?�?绪论
+%========================================
+\section{绪论}
+
+\subsection{符号定义}
+
+\begin{definition}[标量]
+标量是单个数值，用小写字母表示，�?$x = 1$�?y = 5.2$�?
+\end{definition}
+
+\begin{definition}[向量]
+向量是一组有序数值的集合�?
+\[
+\mathbf{x} = [x_1, x_2, \cdots, x_d]^T = \begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_d \end{bmatrix}
+\]
+\end{definition}
+
+\begin{example}[向量表示]
+西瓜数据集中，一个样本可以用向量表示。设色泽、根蒂、敲声分别编码为数值：
+\begin{itemize}
+    \item 色泽：青�?1, 乌黑=2, 浅白=3
+    \item 根蒂：蜷�?1, 稍蜷=2, 硬挺=3
+    \item 敲声：浊�?1, 沉闷=2, 清脆=3
+\end{itemize}
+则样�?（青绿、蜷缩、浊响）可表示为 $\mathbf{x}_1 = [1, 1, 1]^T$�?
+\end{example}
+
+\begin{definition}[矩阵]
+矩阵是二维数组：
+\[
+X = \begin{bmatrix}
+x_{11} & x_{12} & \cdots & x_{1d} \\
+x_{21} & x_{22} & \cdots & x_{2d} \\
+\vdots & \vdots & \ddots & \vdots \\
+x_{m1} & x_{m2} & \cdots & x_{md}
+\end{bmatrix}_{m \times d}
+\]
+\end{definition}
+
+\begin{example}[数据矩阵]
+西瓜数据集的�?个样本（仅考虑色泽、根蒂、敲�?个属性）可表示为�?
+\[
+X = \begin{bmatrix}
+1 & 1 & 1 \\
+2 & 1 & 2 \\
+2 & 1 & 1
+\end{bmatrix}_{3 \times 3}
+\]
+�?行表示样�?，第1列表示色泽属性�?
+\end{example}
+
+\subsection{机器学习三要素详解}
+
+\begin{importantbox}[机器学习三要素]
+\begin{enumerate}
+    \item \textbf{模型}：假设空间，定义了所有可能的函数形式
+    \item \textbf{策略}：损失函数，评价模型好坏的标�?
+    \item \textbf{算法}：优化方法，求解最优参数的过程
+\end{enumerate}
+\end{importantbox}
+
+\begin{exercise}[三要素识别]
+对于西瓜分类问题，使用逻辑回归模型，识别其三要素�?
+
+\textbf{解}�?
+\begin{enumerate}
+    \item \textbf{模型}�?
+    \[
+    P(Y=\text{好瓜}|\mathbf{x}) = \frac{1}{1 + e^{-(\mathbf{w}^T\mathbf{x} + b)}}
+    \]
+    假设空间为所有可能的 $(\mathbf{w}, b)$ 组合�?
+    
+    \item \textbf{策略}：交叉熵损失
+    \[
+    Loss = -\sum_{i=1}^{17}\left[y_i\log P_i + (1-y_i)\log(1-P_i)\right]
+    \]
+    其中 $y_i = 1$ 表示好瓜�?y_i = 0$ 表示坏瓜�?
+    
+    \item \textbf{算法}：梯度下降法
+    \[
+    \mathbf{w}^{(t+1)} = \mathbf{w}^{(t)} - \eta \nabla Loss
+    \]
+\end{enumerate}
+\end{exercise}
+
+%========================================
+% �?�?模型评估与选择
+%========================================
+\section{模型评估与选择}
+
+\subsection{性能评估指标详解}
+
+\subsubsection{回归问题指标}
+
+\begin{exercise}[回归指标计算]
+某回归模型对5个样本的预测结果如下�?
+
+\begin{center}
+\begin{tabular}{c|ccccc}
+样本 & 1 & 2 & 3 & 4 & 5 \\
+\hline
+真实�?$y_i$ & 2.0 & 3.5 & 4.0 & 5.5 & 6.0 \\
+预测�?$f_i$ & 2.2 & 3.3 & 4.5 & 5.0 & 6.2 \\
+\end{tabular}
+\end{center}
+
+计算以下指标：\\
+1. \textbf{SSE}（残差平方和，Sum of Squared Errors）\\
+2. \textbf{MSE}（均方误差，Mean Squared Error）\\
+3. \textbf{RMSE}（均方根误差，Root Mean Squared Error）\\
+4. \textbf{MAE}（平均绝对误差，Mean Absolute Error�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算各样本误差
+\begin{center}
+\begin{tabular}{c|ccccc}
+样本 & 1 & 2 & 3 & 4 & 5 \\
+\hline
+$f_i - y_i$ & 0.2 & -0.2 & 0.5 & -0.5 & 0.2 \\
+$(f_i - y_i)^2$ & 0.04 & 0.04 & 0.25 & 0.25 & 0.04 \\
+$|f_i - y_i|$ & 0.2 & 0.2 & 0.5 & 0.5 & 0.2 \\
+\end{tabular}
+\end{center}
+
+\textbf{步骤2}：计算各指标
+\begin{align*}
+SSE &= \sum_{i=1}^{5}(f_i - y_i)^2 = 0.04 + 0.04 + 0.25 + 0.25 + 0.04 = 0.62 \\
+MSE &= \frac{SSE}{m} = \frac{0.62}{5} = 0.124 \\
+RMSE &= \sqrt{MSE} = \sqrt{0.124} = 0.352 \\
+MAE &= \frac{1}{m}\sum_{i=1}^{5}|f_i - y_i| = \frac{0.2 + 0.2 + 0.5 + 0.5 + 0.2}{5} = 0.32
+\end{align*}
+\end{exercise}
+
+\subsubsection{分类问题指标}
+
+\begin{exercise}[西瓜数据集：完整分类评估]
+某决策树模型对西瓜数据集17个样本的预测结果如下�?
+
+\begin{center}
+\begin{tabular}{c|cccccccccccccccccc}
+编号 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16 & 17 \\
+\hline
+真实 & �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?\\
+预测 & �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?& �?\\
+\end{tabular}
+\end{center}
+
+计算混淆矩阵、准确率、查准率、查全率、F1值�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：统计混淆矩�?
+\begin{itemize}
+    \item TP（真实好瓜，预测好瓜）：样本1,2,3,4,5,6 �?TP = 6
+    \item FN（真实好瓜，预测坏瓜）：样本7,8 �?FN = 2
+    \item FP（真实坏瓜，预测好瓜）：样本12,15 �?FP = 2
+    \item TN（真实坏瓜，预测坏瓜）：样本9,10,11,13,14,16,17 �?TN = 7
+\end{itemize}
+
+混淆矩阵�?
+\begin{center}
+\begin{tabular}{c|cc|c}
+ & 预测好瓜 & 预测坏瓜 & 合计 \\
+\hline
+真实好瓜 & 6 & 2 & 8 \\
+真实坏瓜 & 2 & 7 & 9 \\
+\hline
+合计 & 8 & 9 & 17 \\
+\end{tabular}
+\end{center}
+
+\textbf{步骤2}：计算各指标
+\begin{align*}
+acc &= \frac{TP + TN}{TP + FN + FP + TN} = \frac{6 + 7}{17} = \frac{13}{17} \approx 76.5\% \\
+P &= \frac{TP}{TP + FP} = \frac{6}{6 + 2} = \frac{6}{8} = 75\% \\
+R &= \frac{TP}{TP + FN} = \frac{6}{6 + 2} = \frac{6}{8} = 75\% \\
+F_1 &= \frac{2PR}{P + R} = \frac{2 \times 0.75 \times 0.75}{0.75 + 0.75} = \frac{1.125}{1.5} = 75\%
+\end{align*}
+\end{exercise}
+
+\subsection{偏差-方差分解详细推导}
+
+\begin{theorem}[偏差-方差分解]
+设真实函数为 $y(x)$，观测�?$y_D = y(x) + \epsilon$，其�?$\epsilon \sim N(0, \sigma^2)$。模型在数据�?$D$ 上训练得�?$f_D(x)$，则�?
+\[
+\mathbb{E}_D\left[(f_D - y_D)^2\right] = bias^2 + variance + noise
+\]
+\end{theorem}
+
+\textbf{详细推导}�?
+
+\textbf{步骤1}：定义符�?
+\begin{itemize}
+    \item $\bar{f} = \mathbb{E}_D[f_D]$：模型预测的期望�?
+    \item $y$：真实函数值（无噪声）
+    \item $y_D = y + \epsilon$：观测值（有噪声）
+\end{itemize}
+
+\textbf{步骤2}：展开期望泛化误差
+\begin{align*}
+\mathbb{E}_D[(f_D - y_D)^2] &= \mathbb{E}_D[(f_D - y + y - y_D)^2] \\
+&= \mathbb{E}_D[(f_D - y)^2 + (y - y_D)^2 + 2(f_D - y)(y - y_D)]
+\end{align*}
+
+\textbf{步骤3}：分析交叉项
+
+由于 $y - y_D = -\epsilon$，且 $\epsilon$ �?$f_D$ 独立�?\mathbb{E}[\epsilon] = 0$�?
+\begin{align*}
+\mathbb{E}_D[2(f_D - y)(y - y_D)] &= 2\mathbb{E}_D[(f_D - y)(-\epsilon)] \\
+&= -2\mathbb{E}_D[f_D - y] \cdot \mathbb{E}[\epsilon] \\
+&= 0
+\end{align*}
+
+\textbf{步骤4}：分解第一�?
+\begin{align*}
+\mathbb{E}_D[(f_D - y)^2] &= \mathbb{E}_D[(f_D - \bar{f} + \bar{f} - y)^2] \\
+&= \mathbb{E}_D[(f_D - \bar{f})^2] + (\bar{f} - y)^2 + 2\mathbb{E}_D[(f_D - \bar{f})(\bar{f} - y)]
+\end{align*}
+
+由于 $\mathbb{E}_D[f_D - \bar{f}] = 0$，交叉项�?�?
+\[
+\mathbb{E}_D[(f_D - y)^2] = \underbrace{\mathbb{E}_D[(f_D - \bar{f})^2]}_{variance} + \underbrace{(\bar{f} - y)^2}_{bias^2}
+\]
+
+\textbf{步骤5}：分析第二项
+\[
+\mathbb{E}_D[(y - y_D)^2] = \mathbb{E}[\epsilon^2] = \sigma^2 = noise
+\]
+
+\textbf{步骤6}：综合得�?
+\[
+\boxed{\mathbb{E}_D[(f_D - y_D)^2] = bias^2 + variance + \sigma^2}
+\]
+
+\begin{examplebox}[偏差-方差权衡示例]
+考虑西瓜分类问题�?
+\begin{itemize}
+    \item \textbf{简单模型}（如仅用"纹理"属性的决策树桩）：
+    \begin{itemize}
+        \item 偏差高：模型太简单，无法捕捉复杂模式
+        \item 方差低：不同训练集得到的模型相似
+        \item 结果：欠拟合
+    \end{itemize}
+    
+    \item \textbf{复杂模型}（如使用所有属性的深层决策树）�?
+    \begin{itemize}
+        \item 偏差低：模型足够复杂，能拟合训练数据
+        \item 方差高：对训练数据敏感，不同训练集差异大
+        \item 结果：过拟合
+    \end{itemize}
+\end{itemize}
+
+\textbf{详细讲解偏差-方差之间的关系}�?
+\begin{enumerate}
+    \item \textbf{偏差 (Bias)}：衡量了学习算法的期望预测与真实结果的偏离程度。刻画了学习算法本身的拟合能力�?
+    \item \textbf{方差 (Variance)}：衡量了同样大小的训练集的变动所导致的学习性能的变化。刻画了数据扰动所造成的影响�?
+    \item \textbf{噪声 (Noise)}：描述了在当前学习任务上任何学习算法所能达到的期望泛化误差的下界。刻画了学习任务本身的难度�?
+\end{enumerate}
+
+泛化误差是偏差、方差与噪声之和。随着训练强度的增加（如模型复杂度提高），偏差会逐渐减小，而方差会逐渐增大�?
+\begin{itemize}
+    \item 在训练不足时，偏差主导泛化误差（欠拟合）�?
+    \item 在过度训练后，方差主导泛化误差（过拟合）�?
+\end{itemize}
+我们需要寻找偏差与方差之和最小的点，即最佳平衡点�?
+\end{examplebox}
+
+
+%========================================
+% �?�?线性模�?
+%========================================
+\section{线性模型}
+
+\subsection{凸优化基础详解}
+
+\subsubsection{海森矩阵与凸性判定}
+
+\begin{definition}[海森矩阵]
+对于二元函数 $f(x_1, x_2)$，海森矩阵为�?
+\[
+H = \nabla^2 f = \begin{bmatrix}
+\frac{\partial^2 f}{\partial x_1^2} & \frac{\partial^2 f}{\partial x_1 \partial x_2} \\
+\frac{\partial^2 f}{\partial x_2 \partial x_1} & \frac{\partial^2 f}{\partial x_2^2}
+\end{bmatrix}
+\]
+\end{definition}
+
+\begin{theorem}[凸函数判定]
+函数 $f$ 是凸函数，当且仅当海森矩�?$H$ 半正定，即：
+\begin{enumerate}
+    \item 所有特征�?$\geq 0$
+    \item 或等价地：所有顺序主子式 $\geq 0$
+\end{enumerate}
+\end{theorem}
+
+\begin{exercise}[凸性验证]
+验证函数 $f(w_1, w_2) = w_1^2 + 2w_2^2 + w_1w_2$ 是否为凸函数�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算一阶偏�?
+\begin{align*}
+\frac{\partial f}{\partial w_1} &= 2w_1 + w_2 \\
+\frac{\partial f}{\partial w_2} &= 4w_2 + w_1
+\end{align*}
+
+\textbf{步骤2}：计算二阶偏导（海森矩阵�?
+\[
+H = \begin{bmatrix}
+\frac{\partial^2 f}{\partial w_1^2} & \frac{\partial^2 f}{\partial w_1 \partial w_2} \\
+\frac{\partial^2 f}{\partial w_2 \partial w_1} & \frac{\partial^2 f}{\partial w_2^2}
+\end{bmatrix} = \begin{bmatrix}
+2 & 1 \\
+1 & 4
+\end{bmatrix}
+\]
+
+\textbf{步骤3}：判定半正定�?
+
+方法一：计算特征�?
+\[
+\det(H - \lambda I) = (2-\lambda)(4-\lambda) - 1 = \lambda^2 - 6\lambda + 7 = 0
+\]
+\[
+\lambda = \frac{6 \pm \sqrt{36-28}}{2} = \frac{6 \pm 2\sqrt{2}}{2} = 3 \pm \sqrt{2}
+\]
+$\lambda_1 = 3 + \sqrt{2} \approx 4.41 > 0$�?\lambda_2 = 3 - \sqrt{2} \approx 1.59 > 0$
+
+方法二：顺序主子�?
+\begin{itemize}
+    \item 一阶主子式�?H_{11} = 2 > 0$
+    \item 二阶主子式：$\det(H) = 2 \times 4 - 1 \times 1 = 7 > 0$
+\end{itemize}
+
+\textbf{结论}�?H$ 正定（所有特征�?$> 0$），�?$f$ 是\textbf{严格凸函数}�?
+\end{exercise}
+
+\subsection{一元线性回归完整推导}
+
+\subsubsection{问题设定}
+
+给定训练数据 $\{(x_i, y_i)\}_{i=1}^{n}$，求模型 $f(x) = w_1 x + w_2$ 的最优参数�?
+
+\subsubsection{损失函数展开}
+
+\begin{align*}
+Loss(w_1, w_2) &= \sum_{i=1}^{n}(w_1 x_i + w_2 - y_i)^2 \\
+&= \sum_{i=1}^{n}\left[(w_1 x_i)^2 + w_2^2 + y_i^2 + 2w_1w_2x_i - 2w_1x_iy_i - 2w_2y_i\right] \\
+&= w_1^2\sum_{i=1}^{n}x_i^2 + nw_2^2 + \sum_{i=1}^{n}y_i^2 + 2w_1w_2\sum_{i=1}^{n}x_i - 2w_1\sum_{i=1}^{n}x_iy_i - 2w_2\sum_{i=1}^{n}y_i
+\end{align*}
+
+引入简化符号：
+\[
+S_{xx} = \sum x_i^2, \quad S_x = \sum x_i, \quad S_y = \sum y_i, \quad S_{xy} = \sum x_iy_i, \quad S_{yy} = \sum y_i^2
+\]
+
+则：
+\[
+Loss = w_1^2 S_{xx} + nw_2^2 + S_{yy} + 2w_1w_2 S_x - 2w_1 S_{xy} - 2w_2 S_y
+\]
+
+\subsubsection{求解最优参数}
+
+利用导数与驻点的性质，对 $Loss(w_1, w_2)$ 分别�?$w_1$ �?$w_2$ 的偏导数并令其为零：
+\begin{align}
+\frac{\partial Loss}{\partial w_1} &= 2w_1 S_{xx} + 2w_2 S_x - 2S_{xy} = 0 \label{eq:grad1} \\
+\frac{\partial Loss}{\partial w_2} &= 2nw_2 + 2w_1 S_x - 2S_y = 0 \label{eq:grad2}
+\end{align}
+
+联立上述 (1) (2) 式，即可求解出最优参�?$w_1^*$ �?$w_2^*$�?
+
+\begin{importantbox}[一元线性回归公式]
+\begin{align}
+w_1^* &= \frac{n\sum x_iy_i - \sum x_i \sum y_i}{n\sum x_i^2 - (\sum x_i)^2} = \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sum(x_i - \bar{x})^2} \\
+w_2^* &= \bar{y} - w_1^*\bar{x}
+\end{align}
+\end{importantbox}
+
+\begin{exercise}[一元线性回归完整计算]
+已知某次回归任务中，通过数据计算得到的损失函数展开式为�?
+\[
+Loss(w_1, w_2) = 55w_1^2 + 5w_2^2 + 30w_1w_2 - 315w_1 - 91.4w_2 + 461.57
+\]
+利用导数与驻点的性质求解最优参�?$w_1, w_2$�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算偏导数并令其为�?
+\begin{align*}
+\frac{\partial Loss}{\partial w_1} &= 110w_1 + 30w_2 - 315 = 0 \\
+\frac{\partial Loss}{\partial w_2} &= 30w_1 + 10w_2 - 91.4 = 0
+\end{align*}
+
+\textbf{步骤2}：求解联立方程组
+联立以上两式�?
+\[
+\begin{cases}
+110w_1 + 30w_2 = 315 \\
+30w_1 + 10w_2 = 91.4
+\end{cases}
+\]
+解得�?
+\[
+w_1^* = 2.04, \quad w_2^* = 3.02
+\]
+
+\textbf{步骤3}：判定极值性质
+计算二阶偏导数得到海森矩阵（Hessian Matrix）：
+\[
+\nabla^2 Loss = \begin{bmatrix}
+110 & 30 \\
+30 & 10
+\end{bmatrix}
+\]
+该矩阵的顺序主子式：
+\begin{itemize}
+    \item 一阶主子式�?110 > 0$
+    \item 二阶主子式：$110 \times 10 - 30 \times 30 = 1100 - 900 = 200 > 0$
+\end{itemize}
+由于 $\nabla^2 Loss$ 为正定矩阵，故该驻点是局部最小解�?
+
+\textbf{步骤4}：全域性质分析
+由于 $Loss(w_1, w_2)$ 是凸函数，该解即为全局最优解�?
+
+\textbf{步骤5}：最终模�?
+训练好的模型为：
+\[
+\boxed{f(x) = 2.04x + 3.02}
+\]
+\end{exercise}
+
+\begin{exercise}[一元线性回归完整计�?- 进阶例题]
+给定另一组数据：$(0, 1), (1, 3), (2, 5)$。已知该数据对应的损失函数展开式为�?
+\[
+Loss(w_1, w_2) = 5w_1^2 + 3w_2^2 + 6w_1w_2 - 26w_1 - 18w_2 + 35
+\]
+求其最优回归参数�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算一阶偏导数并令其为�?
+\begin{align*}
+\frac{\partial Loss}{\partial w_1} &= 10w_1 + 6w_2 - 26 = 0 \\
+\frac{\partial Loss}{\partial w_2} &= 6w_1 + 6w_2 - 18 = 0
+\end{align*}
+
+\textbf{步骤2}：求解驻�?
+联立方程�?
+\[
+\begin{cases}
+10w_1 + 6w_2 = 26 \\
+6w_1 + 6w_2 = 18
+\end{cases}
+\]
+上式减下式可得：$4w_1 = 8 \Rightarrow w_1 = 2$�?
+代入下式可得�?6(2) + 6w_2 = 18 \Rightarrow 6w_2 = 6 \Rightarrow w_2 = 1$�?
+故驻点为 $(w_1^*, w_2^*) = (2, 1)$�?
+
+\textbf{步骤3}：海森矩阵判�?
+\[
+\nabla^2 Loss = \begin{bmatrix}
+\frac{\partial^2 Loss}{\partial w_1^2} & \frac{\partial^2 Loss}{\partial w_1 \partial w_2} \\
+\frac{\partial^2 Loss}{\partial w_2 \partial w_1} & \frac{\partial^2 Loss}{\partial w_2^2}
+\end{bmatrix} = \begin{bmatrix}
+10 & 6 \\
+6 & 6
+\end{bmatrix}
+\]
+顺序主子式：
+\begin{itemize}
+    \item $Det(H_1) = 10 > 0$
+    \item $Det(H_2) = 10 \times 6 - 6 \times 6 = 24 > 0$
+\end{itemize}
+矩阵正定，且 $Loss$ 为凸函数，故 $(2, 1)$ 为全局最小解�?
+
+\textbf{步骤4}：最终模�?
+\[
+\boxed{f(x) = 2x + 1}
+\]
+\end{exercise}
+
+\subsection{多元线性回归矩阵推导}
+
+\subsubsection{矩阵形式损失函数}
+
+\begin{align*}
+Loss(\mathbf{w}) &= \sum_{i=1}^{m}(f(\mathbf{x}_i) - y_i)^2 = \sum_{i=1}^{m}(\mathbf{w}^T\mathbf{x}_i - y_i)^2 \\
+&= (X\mathbf{w} - \mathbf{y})^T(X\mathbf{w} - \mathbf{y})
+\end{align*}
+
+\textbf{展开}�?
+\begin{align*}
+Loss &= (X\mathbf{w})^T(X\mathbf{w}) - (X\mathbf{w})^T\mathbf{y} - \mathbf{y}^T(X\mathbf{w}) + \mathbf{y}^T\mathbf{y} \\
+&= \mathbf{w}^TX^TX\mathbf{w} - 2\mathbf{w}^TX^T\mathbf{y} + \mathbf{y}^T\mathbf{y}
+\end{align*}
+
+\subsubsection{矩阵求导}
+
+\begin{lemma}[矩阵求导公式]
+\begin{enumerate}
+    \item $\frac{\partial}{\partial \mathbf{w}}(\mathbf{w}^T\mathbf{a}) = \mathbf{a}$
+    \item $\frac{\partial}{\partial \mathbf{w}}(\mathbf{w}^TA\mathbf{w}) = 2A\mathbf{w}$（当 $A$ 对称时）
+\end{enumerate}
+\end{lemma}
+
+\textbf{应用}�?
+\begin{align*}
+\nabla_\mathbf{w} Loss &= \frac{\partial}{\partial \mathbf{w}}\left[\mathbf{w}^TX^TX\mathbf{w} - 2\mathbf{w}^TX^T\mathbf{y} + \mathbf{y}^T\mathbf{y}\right] \\
+&= 2X^TX\mathbf{w} - 2X^T\mathbf{y}
+\end{align*}
+
+�?$\nabla_\mathbf{w} Loss = 0$�?
+\[
+X^TX\mathbf{w} = X^T\mathbf{y}
+\]
+
+\begin{theorem}[多元线性回归正规方程]
+�?$X^TX$ 可逆，则最优解为：
+\[
+\mathbf{w}^* = (X^TX)^{-1}X^T\mathbf{y}
+\]
+\end{theorem}
+
+\begin{exercise}[多元线性回归矩阵计算]
+给定3个样本，2个特征：
+
+\begin{center}
+\begin{tabular}{c|cc|c}
+样本 & $x_1$ & $x_2$ & $y$ \\
+\hline
+1 & 1 & 2 & 5 \\
+2 & 2 & 1 & 6 \\
+3 & 3 & 3 & 10 \\
+\end{tabular}
+\end{center}
+
+用矩阵方法求�?$f(\mathbf{x}) = w_1x_1 + w_2x_2 + w_3$�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：构造增广矩�?
+\[
+X = \begin{bmatrix}
+1 & 2 & 1 \\
+2 & 1 & 1 \\
+3 & 3 & 1
+\end{bmatrix}, \quad
+\mathbf{y} = \begin{bmatrix} 5 \\ 6 \\ 10 \end{bmatrix}
+\]
+
+\textbf{步骤2}：计�?$X^TX$
+\[
+X^TX = \begin{bmatrix}
+1 & 2 & 3 \\
+2 & 1 & 3 \\
+1 & 1 & 1
+\end{bmatrix}
+\begin{bmatrix}
+1 & 2 & 1 \\
+2 & 1 & 1 \\
+3 & 3 & 1
+\end{bmatrix} = \begin{bmatrix}
+14 & 13 & 6 \\
+13 & 14 & 6 \\
+6 & 6 & 3
+\end{bmatrix}
+\]
+
+\textbf{步骤3}：计�?$X^T\mathbf{y}$
+\[
+X^T\mathbf{y} = \begin{bmatrix}
+1 & 2 & 3 \\
+2 & 1 & 3 \\
+1 & 1 & 1
+\end{bmatrix}
+\begin{bmatrix} 5 \\ 6 \\ 10 \end{bmatrix} = \begin{bmatrix}
+1 \times 5 + 2 \times 6 + 3 \times 10 \\
+2 \times 5 + 1 \times 6 + 3 \times 10 \\
+1 \times 5 + 1 \times 6 + 1 \times 10
+\end{bmatrix} = \begin{bmatrix} 47 \\ 46 \\ 21 \end{bmatrix}
+\]
+
+\textbf{步骤4}：求�?$(X^TX)^{-1}$（使用伴随矩阵法或高斯消元）
+
+经计算：
+\[
+(X^TX)^{-1} = \begin{bmatrix}
+2 & -1 & -2 \\
+-1 & 2 & -2 \\
+-2 & -2 & 9
+\end{bmatrix}
+\]
+
+\textbf{步骤5}：计算最优解
+\[
+\mathbf{w}^* = (X^TX)^{-1}X^T\mathbf{y} = \begin{bmatrix}
+2 & -1 & -2 \\
+-1 & 2 & -2 \\
+-2 & -2 & 9
+\end{bmatrix}
+\begin{bmatrix} 47 \\ 46 \\ 21 \end{bmatrix} = \begin{bmatrix} 6 \\ 3 \\ -12 \end{bmatrix} \times \frac{1}{3} = \begin{bmatrix} 2 \\ 1 \\ 1 \end{bmatrix}
+\]
+
+\textbf{最终模型}�?
+\[
+\boxed{f(\mathbf{x}) = 2x_1 + x_2 + 1}
+\]
+
+\textbf{验证}�?
+\begin{itemize}
+    \item $f(1, 2) = 2 \times 1 + 1 \times 2 + 1 = 5$ �?
+    \item $f(2, 1) = 2 \times 2 + 1 \times 1 + 1 = 6$ �?
+    \item $f(3, 3) = 2 \times 3 + 1 \times 3 + 1 = 10$ �?
+\end{itemize}
+\end{exercise}
+
+
+\subsection{逻辑回归详细推导}
+
+\subsubsection{从线性回归到逻辑回归}
+
+线性回归输出连续值，不适合分类问题。逻辑回归通过Sigmoid函数将输出映射到 $(0, 1)$，表示概率�?
+
+\subsubsection{Sigmoid函数性质详解}
+
+\begin{definition}[Sigmoid函数]
+\[
+\sigma(z) = \frac{1}{1 + e^{-z}}
+\]
+\end{definition}
+
+\textbf{性质推导}�?
+
+\textbf{性质1}：值域�?$(0, 1)$
+\begin{itemize}
+    \item �?$z \to +\infty$�?e^{-z} \to 0$�?\sigma(z) \to 1$
+    \item �?$z \to -\infty$�?e^{-z} \to +\infty$�?\sigma(z) \to 0$
+    \item �?$z = 0$�?\sigma(0) = \frac{1}{1+1} = 0.5$
+\end{itemize}
+
+\textbf{性质2}：导�?$\sigma'(z) = \sigma(z)(1 - \sigma(z))$
+
+\textbf{推导}�?
+\begin{align*}
+\sigma'(z) &= \frac{d}{dz}\left(\frac{1}{1 + e^{-z}}\right) \\
+&= -\frac{1}{(1 + e^{-z})^2} \cdot (-e^{-z}) \\
+&= \frac{e^{-z}}{(1 + e^{-z})^2} \\
+&= \frac{1}{1 + e^{-z}} \cdot \frac{e^{-z}}{1 + e^{-z}} \\
+&= \sigma(z) \cdot \frac{1 + e^{-z} - 1}{1 + e^{-z}} \\
+&= \sigma(z) \cdot \left(1 - \frac{1}{1 + e^{-z}}\right) \\
+&= \sigma(z)(1 - \sigma(z))
+\end{align*}
+
+\textbf{性质3}：对称�?$\sigma(-z) = 1 - \sigma(z)$
+
+\textbf{推导}�?
+\begin{align*}
+\sigma(-z) &= \frac{1}{1 + e^{z}} = \frac{e^{-z}}{e^{-z} + 1} = \frac{e^{-z}}{1 + e^{-z}} \\
+1 - \sigma(z) &= 1 - \frac{1}{1 + e^{-z}} = \frac{e^{-z}}{1 + e^{-z}}
+\end{align*}
+�?$\sigma(-z) = 1 - \sigma(z)$�?
+
+\subsubsection{逻辑回归要素详解}
+
+\begin{itemize}
+    \item \textbf{模型}�?
+    \begin{align*}
+    P(Y = 1|\mathbf{x}) &= \frac{1}{1 + e^{-\mathbf{w}^T\mathbf{x}}} \\
+    P(Y = 0|\mathbf{x}) &= 1 - \frac{1}{1 + e^{-\mathbf{w}^T\mathbf{x}}}
+    \end{align*}
+    
+    \item \textbf{训练数据}�?
+    \[
+    \left\{ (x_1, y_1), (x_2, y_2), \dots, (x_m, y_m) \right\}
+    \]
+    
+    \item \textbf{策略：似然函数}
+    \[
+    L(\mathbf{w}) = \prod_{i=1}^{m} \left( \frac{1}{1 + e^{-\mathbf{w}^T\mathbf{x}_i}} \right)^{y_i} \left( 1 - \frac{1}{1 + e^{-\mathbf{w}^T\mathbf{x}_i}} \right)^{(1-y_i)}
+    \]
+    
+    \item \textbf{算法：梯度下降}
+    \[
+    \mathbf{w}^* = \arg \max_{\mathbf{w}} L(\mathbf{w})
+    \]
+    通过�?$\ln L(\mathbf{w})$ 求偏导并利用梯度下降法求解�?
+\end{itemize}
+
+\subsubsection{似然函数推导（详细版）}
+
+�?$\sigma_i = \sigma(\mathbf{w}^T\mathbf{x}_i)$，则对数似然为：
+\begin{align*}
+\ell(\mathbf{w}) &= \ln L(\mathbf{w}) = \sum_{i=1}^{m} \left[y_i \ln\sigma_i + (1-y_i)\ln(1-\sigma_i)\right]
+\end{align*}
+
+\textbf{负对数似然（交叉熵损失）}�?
+\[
+J(\mathbf{w}) = -\ell(\mathbf{w}) = -\sum_{i=1}^{m} \left[y_i \ln\sigma_i + (1-y_i)\ln(1-\sigma_i)\right]
+\]
+
+\subsubsection{梯度推导}
+
+对单个样�?$i$�?
+\begin{align*}
+\frac{\partial}{\partial \mathbf{w}}\left[-y_i\log\sigma_i - (1-y_i)\log(1-\sigma_i)\right]
+\end{align*}
+
+�?$z_i = \mathbf{w}^T\mathbf{x}_i$，则 $\sigma_i = \sigma(z_i)$�?
+
+\textbf{链式法则}�?
+\begin{align*}
+\frac{\partial}{\partial \mathbf{w}} &= \frac{\partial}{\partial \sigma_i} \cdot \frac{\partial \sigma_i}{\partial z_i} \cdot \frac{\partial z_i}{\partial \mathbf{w}}
+\end{align*}
+
+\textbf{各部分计算}�?
+\begin{align*}
+\frac{\partial}{\partial \sigma_i}\left[-y_i\log\sigma_i - (1-y_i)\log(1-\sigma_i)\right] &= -\frac{y_i}{\sigma_i} + \frac{1-y_i}{1-\sigma_i} \\
+\frac{\partial \sigma_i}{\partial z_i} &= \sigma_i(1-\sigma_i) \\
+\frac{\partial z_i}{\partial \mathbf{w}} &= \mathbf{x}_i
+\end{align*}
+
+\textbf{合并}�?
+\begin{align*}
+\frac{\partial J_i}{\partial \mathbf{w}} &= \left(-\frac{y_i}{\sigma_i} + \frac{1-y_i}{1-\sigma_i}\right) \cdot \sigma_i(1-\sigma_i) \cdot \mathbf{x}_i \\
+&= \left[-y_i(1-\sigma_i) + (1-y_i)\sigma_i\right] \cdot \mathbf{x}_i \\
+&= \left[-y_i + y_i\sigma_i + \sigma_i - y_i\sigma_i\right] \cdot \mathbf{x}_i \\
+&= (\sigma_i - y_i) \cdot \mathbf{x}_i
+\end{align*}
+
+\begin{importantbox}[逻辑回归梯度公式]
+\[
+\nabla J(\mathbf{w}) = \sum_{i=1}^{m}(\sigma(\mathbf{w}^T\mathbf{x}_i) - y_i)\mathbf{x}_i = X^T(\boldsymbol{\sigma} - \mathbf{y})
+\]
+其中 $\boldsymbol{\sigma} = [\sigma_1, \sigma_2, \cdots, \sigma_m]^T$�?
+\end{importantbox}
+
+\begin{exercise}[逻辑回归梯度下降]
+给定3个样本：
+
+\begin{center}
+\begin{tabular}{c|cc|c}
+样本 & $x_1$ & $x_2$ & $y$ \\
+\hline
+1 & 1 & 1 & 1 \\
+2 & 2 & 0 & 1 \\
+3 & 0 & 2 & 0 \\
+\end{tabular}
+\end{center}
+
+初始参数 $\mathbf{w} = [0, 0, 0]^T$（含偏置），学习�?$\eta = 0.5$。执行一次梯度下降更新�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：构造增广矩�?
+\[
+X = \begin{bmatrix}
+1 & 1 & 1 \\
+2 & 0 & 1 \\
+0 & 2 & 1
+\end{bmatrix}, \quad
+\mathbf{y} = \begin{bmatrix} 1 \\ 1 \\ 0 \end{bmatrix}
+\]
+
+\textbf{步骤2}：计算当前预�?
+\[
+\mathbf{z} = X\mathbf{w} = \begin{bmatrix} 0 \\ 0 \\ 0 \end{bmatrix}
+\]
+\[
+\boldsymbol{\sigma} = \sigma(\mathbf{z}) = \begin{bmatrix} 0.5 \\ 0.5 \\ 0.5 \end{bmatrix}
+\]
+
+\textbf{步骤3}：计算梯�?
+\[
+\boldsymbol{\sigma} - \mathbf{y} = \begin{bmatrix} 0.5 - 1 \\ 0.5 - 1 \\ 0.5 - 0 \end{bmatrix} = \begin{bmatrix} -0.5 \\ -0.5 \\ 0.5 \end{bmatrix}
+\]
+
+\[
+\nabla J = X^T(\boldsymbol{\sigma} - \mathbf{y}) = \begin{bmatrix}
+1 & 2 & 0 \\
+1 & 0 & 2 \\
+1 & 1 & 1
+\end{bmatrix}
+\begin{bmatrix} -0.5 \\ -0.5 \\ 0.5 \end{bmatrix} = \begin{bmatrix}
+-0.5 - 1 + 0 \\
+-0.5 + 0 + 1 \\
+-0.5 - 0.5 + 0.5
+\end{bmatrix} = \begin{bmatrix} -1.5 \\ 0.5 \\ -0.5 \end{bmatrix}
+\]
+
+\textbf{步骤4}：更新参�?
+\[
+\mathbf{w}^{new} = \mathbf{w} - \eta \nabla J = \begin{bmatrix} 0 \\ 0 \\ 0 \end{bmatrix} - 0.5 \begin{bmatrix} -1.5 \\ 0.5 \\ -0.5 \end{bmatrix} = \begin{bmatrix} 0.75 \\ -0.25 \\ 0.25 \end{bmatrix}
+\]
+
+\textbf{更新后模型}�?
+\[
+P(Y=1|\mathbf{x}) = \sigma(0.75x_1 - 0.25x_2 + 0.25)
+\]
+\end{exercise}
+
+\begin{exercise}[逻辑回归预测计算]
+现用逻辑回归模型求解一个二分类问题，训练得到的模型为：
+\[
+P(Y = 1|\mathbf{x}) = \frac{1}{1 + e^{-(1.2x_1 + 0.6x_2 - 10)}}
+\]
+计算样本 $\mathbf{x}_1 = [3, 4]^T$�?\mathbf{x}_2 = [5, 6]^T$�?\mathbf{x}_3 = [7, 8]^T$ 的预测标签�?
+
+\textbf{解}�?
+
+将样本代入到模型计算概率�?
+
+\textbf{样本1}�?\mathbf{x}_1 = [3, 4]^T$
+\[
+P(Y = 1|\mathbf{x}_1) = \frac{1}{1 + e^{-(1.2 \times 3 + 0.6 \times 4 - 10)}} = \frac{1}{1 + e^{4}} \approx 0.018 < 0.5
+\]
+
+\textbf{样本2}�?\mathbf{x}_2 = [5, 6]^T$
+\[
+P(Y = 1|\mathbf{x}_2) = \frac{1}{1 + e^{-(1.2 \times 5 + 0.6 \times 6 - 10)}} = \frac{1}{1 + e^{0.4}} \approx 0.4013 < 0.5
+\]
+
+\textbf{样本3}�?\mathbf{x}_3 = [7, 8]^T$
+\[
+P(Y = 1|\mathbf{x}_3) = \frac{1}{1 + e^{-(1.2 \times 7 + 0.6 \times 8 - 10)}} = \frac{1}{1 + e^{-3.2}} \approx 0.9608 > 0.5
+\]
+
+\textbf{结论}�?
+根据阈�?0.5 判定，样�?$[3, 4]^T, [5, 6]^T, [7, 8]^T$ 的预测标签依次是 \textbf{0, 0, 1}�?
+\end{exercise}
+
+\begin{exercise}[西瓜数据集：逻辑回归应用]
+使用西瓜数据集的"密度"�?含糖�?两个连续属性（假设已提取），训练逻辑回归模型�?
+
+假设经过多次迭代后得到模型：
+\[
+P(\text{好瓜}|\mathbf{x}) = \sigma(3.5 \times \text{密度} + 2.8 \times \text{含糖率} - 2.1)
+\]
+
+预测以下样本�?
+\begin{center}
+\begin{tabular}{c|cc}
+样本 & 密度 & 含糖�?\\
+\hline
+A & 0.7 & 0.4 \\
+B & 0.3 & 0.2 \\
+C & 0.6 & 0.5 \\
+\end{tabular}
+\end{center}
+
+\textbf{解}�?
+
+\textbf{样本A}�?
+\begin{align*}
+z_A &= 3.5 \times 0.7 + 2.8 \times 0.4 - 2.1 = 2.45 + 1.12 - 2.1 = 1.47 \\
+P_A &= \sigma(1.47) = \frac{1}{1 + e^{-1.47}} = \frac{1}{1 + 0.229} = 0.814
+\end{align*}
+$P_A = 81.4\% > 50\%$，预测为\textbf{好瓜}�?
+
+\textbf{样本B}�?
+\begin{align*}
+z_B &= 3.5 \times 0.3 + 2.8 \times 0.2 - 2.1 = 1.05 + 0.56 - 2.1 = -0.49 \\
+P_B &= \sigma(-0.49) = \frac{1}{1 + e^{0.49}} = \frac{1}{1 + 1.632} = 0.380
+\end{align*}
+$P_B = 38.0\% < 50\%$，预测为\textbf{坏瓜}�?
+
+\textbf{样本C}�?
+\begin{align*}
+z_C &= 3.5 \times 0.6 + 2.8 \times 0.5 - 2.1 = 2.1 + 1.4 - 2.1 = 1.4 \\
+P_C &= \sigma(1.4) = \frac{1}{1 + e^{-1.4}} = \frac{1}{1 + 0.247} = 0.802
+\end{align*}
+$P_C = 80.2\% > 50\%$，预测为\textbf{好瓜}�?
+\end{exercise}
+
+\subsection{线性判别分析（LDA）详细推导}
+
+\subsubsection{问题设定}
+
+给定二分类数据集 $D = \{(\mathbf{x}_i, y_i)\}$�?y_i \in \{0, 1\}$�?
+
+设：
+\begin{itemize}
+    \item $D_0$：类�?的样本集�?|D_0| = m_0$
+    \item $D_1$：类�?的样本集�?|D_1| = m_1$
+    \item $\boldsymbol{\mu}_0 = \frac{1}{m_0}\sum_{\mathbf{x} \in D_0}\mathbf{x}$：类�?的均值向�?
+    \item $\boldsymbol{\mu}_1 = \frac{1}{m_1}\sum_{\mathbf{x} \in D_1}\mathbf{x}$：类�?的均值向�?
+    \item $\Sigma_0, \Sigma_1$：两类的协方差矩�?
+\end{itemize}
+
+\subsubsection{投影分析}
+
+将样本投影到方向 $\mathbf{w}$ 上：$z = \mathbf{w}^T\mathbf{x}$
+
+投影后的类均值：
+\begin{align*}
+\tilde{\mu}_0 &= \mathbf{w}^T\boldsymbol{\mu}_0 \\
+\tilde{\mu}_1 &= \mathbf{w}^T\boldsymbol{\mu}_1
+\end{align*}
+
+投影后的类方差：
+\begin{align*}
+\tilde{\sigma}_0^2 &= \sum_{\mathbf{x} \in D_0}(\mathbf{w}^T\mathbf{x} - \mathbf{w}^T\boldsymbol{\mu}_0)^2 = \mathbf{w}^T\Sigma_0\mathbf{w} \\
+\tilde{\sigma}_1^2 &= \sum_{\mathbf{x} \in D_1}(\mathbf{w}^T\mathbf{x} - \mathbf{w}^T\boldsymbol{\mu}_1)^2 = \mathbf{w}^T\Sigma_1\mathbf{w}
+\end{align*}
+
+\subsubsection{目标函数推导}
+
+\textbf{目标}：最大化类间距离，最小化类内方差�?
+
+\textbf{Fisher准则}�?
+\[
+J(\mathbf{w}) = \frac{(\tilde{\mu}_1 - \tilde{\mu}_0)^2}{\tilde{\sigma}_0^2 + \tilde{\sigma}_1^2}
+\]
+
+\textbf{展开}�?
+\begin{align*}
+(\tilde{\mu}_1 - \tilde{\mu}_0)^2 &= (\mathbf{w}^T\boldsymbol{\mu}_1 - \mathbf{w}^T\boldsymbol{\mu}_0)^2 \\
+&= [\mathbf{w}^T(\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0)]^2 \\
+&= \mathbf{w}^T(\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0)(\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0)^T\mathbf{w} \\
+&= \mathbf{w}^T S_b \mathbf{w}
+\end{align*}
+
+其中 $S_b = (\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0)(\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0)^T$ 为\textbf{类间散度矩阵}�?
+
+\begin{align*}
+\tilde{\sigma}_0^2 + \tilde{\sigma}_1^2 &= \mathbf{w}^T\Sigma_0\mathbf{w} + \mathbf{w}^T\Sigma_1\mathbf{w} \\
+&= \mathbf{w}^T(\Sigma_0 + \Sigma_1)\mathbf{w} \\
+&= \mathbf{w}^T S_w \mathbf{w}
+\end{align*}
+
+其中 $S_w = \Sigma_0 + \Sigma_1$ 为\textbf{类内散度矩阵}�?
+
+\textbf{目标函数}�?
+\[
+J(\mathbf{w}) = \frac{\mathbf{w}^T S_b \mathbf{w}}{\mathbf{w}^T S_w \mathbf{w}}
+\]
+
+\subsubsection{最优解推导}
+
+�?$J(\mathbf{w})$ 求导并令其为零�?
+
+�?$\mathbf{w}^T S_b \mathbf{w} = a$�?\mathbf{w}^T S_w \mathbf{w} = b$，则 $J = a/b$�?
+
+\[
+\frac{\partial J}{\partial \mathbf{w}} = \frac{2S_b\mathbf{w} \cdot b - a \cdot 2S_w\mathbf{w}}{b^2} = 0
+\]
+
+即：
+\[
+S_b\mathbf{w} \cdot b = S_w\mathbf{w} \cdot a
+\]
+\[
+S_b\mathbf{w} = \frac{a}{b} S_w\mathbf{w} = J \cdot S_w\mathbf{w}
+\]
+
+由于 $S_b\mathbf{w} = (\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0)(\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0)^T\mathbf{w}$ 的方向总是 $(\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0)$�?
+
+�?$S_w\mathbf{w} = \lambda(\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0)$，得�?
+\[
+\mathbf{w}^* = S_w^{-1}(\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0)
+\]
+
+\begin{exercise}[LDA计算示例]
+给定二分类数据：
+
+类别0�?\mathbf{x}_1 = [1, 2]^T$�?\mathbf{x}_2 = [2, 1]^T$
+
+类别1�?\mathbf{x}_3 = [4, 5]^T$�?\mathbf{x}_4 = [5, 4]^T$
+
+求LDA投影方向�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算类均�?
+\begin{align*}
+\boldsymbol{\mu}_0 &= \frac{1}{2}([1,2]^T + [2,1]^T) = [1.5, 1.5]^T \\
+\boldsymbol{\mu}_1 &= \frac{1}{2}([4,5]^T + [5,4]^T) = [4.5, 4.5]^T
+\end{align*}
+
+\textbf{步骤2}：计算类内散度矩�?
+\begin{align*}
+\Sigma_0 &= \sum_{\mathbf{x} \in D_0}(\mathbf{x} - \boldsymbol{\mu}_0)(\mathbf{x} - \boldsymbol{\mu}_0)^T \\
+&= [-0.5, 0.5]^T[-0.5, 0.5] + [0.5, -0.5]^T[0.5, -0.5] \\
+&= \begin{bmatrix} 0.25 & -0.25 \\ -0.25 & 0.25 \end{bmatrix} + \begin{bmatrix} 0.25 & -0.25 \\ -0.25 & 0.25 \end{bmatrix} = \begin{bmatrix} 0.5 & -0.5 \\ -0.5 & 0.5 \end{bmatrix}
+\end{align*}
+
+同理�?\Sigma_1 = \begin{bmatrix} 0.5 & -0.5 \\ -0.5 & 0.5 \end{bmatrix}$
+
+\[
+S_w = \Sigma_0 + \Sigma_1 = \begin{bmatrix} 1 & -1 \\ -1 & 1 \end{bmatrix}
+\]
+
+\textbf{步骤3}：计�?$\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0$
+\[
+\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0 = [4.5 - 1.5, 4.5 - 1.5]^T = [3, 3]^T
+\]
+
+\textbf{步骤4}：求 $S_w^{-1}$
+
+由于 $S_w$ 奇异（行列式�?），使用伪逆或添加正则化�?
+
+添加正则化：$S_w' = S_w + 0.1I = \begin{bmatrix} 1.1 & -1 \\ -1 & 1.1 \end{bmatrix}$
+
+\[
+S_w'^{-1} = \frac{1}{1.1 \times 1.1 - 1} \begin{bmatrix} 1.1 & 1 \\ 1 & 1.1 \end{bmatrix} = \frac{1}{0.21} \begin{bmatrix} 1.1 & 1 \\ 1 & 1.1 \end{bmatrix}
+\]
+
+\textbf{步骤5}：计算投影方�?
+\[
+\mathbf{w}^* \propto S_w'^{-1}(\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0) = \frac{1}{0.21} \begin{bmatrix} 1.1 & 1 \\ 1 & 1.1 \end{bmatrix} \begin{bmatrix} 3 \\ 3 \end{bmatrix} = \frac{1}{0.21} \begin{bmatrix} 6.3 \\ 6.3 \end{bmatrix}
+\]
+
+归一化后�?\mathbf{w}^* = [1, 1]^T / \sqrt{2} = [0.707, 0.707]^T$
+
+\textbf{结论}：最优投影方向为 $\mathbf{w}^* = [1, 1]^T$（或其归一化形式），即�?5°方向投影�?
+\end{exercise}
+
+
+%========================================
+% �?�?决策�?
+%========================================
+\section{决策树}
+
+\subsection{信息论基础}
+
+\subsubsection{信息量}
+
+\begin{definition}[信息量]
+事件 $A$ 发生的信息量定义为：
+\[
+I(A) = -\log_2 P(A)
+\]
+概率越小的事件，发生时提供的信息量越大�?
+\end{definition}
+
+\begin{example}[信息量计算]
+\begin{itemize}
+    \item 抛硬币正面朝上（$P = 0.5$）：$I = -\log_2 0.5 = 1$ bit
+    \item 掷骰子出�?�?P = 1/6$）：$I = -\log_2(1/6) = \log_2 6 \approx 2.58$ bit
+    \item 必然事件�?P = 1$）：$I = -\log_2 1 = 0$ bit
+\end{itemize}
+\end{example}
+
+\subsubsection{信息熵详解}
+
+\begin{definition}[信息熵]
+随机变量 $X$ 的信息熵是其信息量的期望�?
+\[
+H(X) = \mathbb{E}[I(X)] = -\sum_{i=1}^{n} P(x_i) \log_2 P(x_i)
+\]
+\end{definition}
+
+\begin{theorem}[信息熵的性质]
+\begin{enumerate}
+    \item 非负性：$H(X) \geq 0$
+    \item 当且仅当 $X$ 为确定性变量时�?H(X) = 0$
+    \item 对于 $n$ 个等概率事件�?H(X) = \log_2 n$（最大熵�?
+\end{enumerate}
+\end{theorem}
+
+\begin{exercise}[西瓜数据集：信息熵计算]
+计算西瓜数据集（17个样本，8个好瓜，9个坏瓜）的信息熵�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算各类概�?
+\begin{align*}
+P(\text{好瓜}) &= \frac{8}{17} \approx 0.471 \\
+P(\text{坏瓜}) &= \frac{9}{17} \approx 0.529
+\end{align*}
+
+\textbf{步骤2}：计算对数�?
+\begin{align*}
+\log_2 0.471 &= \frac{\ln 0.471}{\ln 2} = \frac{-0.753}{0.693} \approx -1.087 \\
+\log_2 0.529 &= \frac{\ln 0.529}{\ln 2} = \frac{-0.637}{0.693} \approx -0.919
+\end{align*}
+
+\textbf{步骤3}：计算信息熵
+\begin{align*}
+Ent(D) &= -P(\text{好瓜})\log_2 P(\text{好瓜}) - P(\text{坏瓜})\log_2 P(\text{坏瓜}) \\
+&= -0.471 \times (-1.087) - 0.529 \times (-0.919) \\
+&= 0.512 + 0.486 \\
+&= \boxed{0.998}
+\end{align*}
+
+\textbf{解释}：信息熵接近1（最大值为 $\log_2 2 = 1$），说明数据集的不确定性较高，两类样本分布较均匀�?
+\end{exercise}
+
+\subsection{信息增益完整计算}
+
+\begin{exercise}[西瓜数据集：所有属性的信息增益]
+计算西瓜数据集中"色泽"�?根蒂"�?敲声"三个属性的信息增益，并选择最优划分属性�?
+
+\textbf{数据统计}�?
+
+\begin{center}
+\begin{tabular}{c|ccc|c}
+\multirow{2}{*}{属性} & \multicolumn{3}{c|}{取值分布} & \multirow{2}{*}{} \\
+& 取�?& 好瓜 & 坏瓜 & \\
+\hline
+\multirow{3}{*}{色泽} & 青绿 & 3 & 3 & 6 \\
+& 乌黑 & 4 & 2 & 6 \\
+& 浅白 & 1 & 4 & 5 \\
+\hline
+\multirow{3}{*}{根蒂} & 蜷缩 & 5 & 3 & 8 \\
+& 稍蜷 & 3 & 4 & 7 \\
+& 硬挺 & 0 & 2 & 2 \\
+\hline
+\multirow{3}{*}{敲声} & 浊响 & 6 & 4 & 10 \\
+& 沉闷 & 2 & 3 & 5 \\
+& 清脆 & 0 & 2 & 2 \\
+\end{tabular}
+\end{center}
+
+\textbf{解}�?
+
+根节点信息熵�?Ent(D) = 0.998$
+
+\textbf{�?）色泽属性}
+
+各分支信息熵�?
+\begin{align*}
+Ent(D^{\text{青绿}}) &= -\frac{3}{6}\log_2\frac{3}{6} - \frac{3}{6}\log_2\frac{3}{6} = -0.5 \times (-1) - 0.5 \times (-1) = 1.0 \\
+Ent(D^{\text{乌黑}}) &= -\frac{4}{6}\log_2\frac{4}{6} - \frac{2}{6}\log_2\frac{2}{6} \\
+&= -0.667 \times (-0.585) - 0.333 \times (-1.585) = 0.390 + 0.528 = 0.918 \\
+Ent(D^{\text{浅白}}) &= -\frac{1}{5}\log_2\frac{1}{5} - \frac{4}{5}\log_2\frac{4}{5} \\
+&= -0.2 \times (-2.322) - 0.8 \times (-0.322) = 0.464 + 0.258 = 0.722
+\end{align*}
+
+信息增益�?
+\begin{align*}
+Gain(D, \text{色泽}) &= Ent(D) - \sum_v \frac{|D^v|}{|D|} Ent(D^v) \\
+&= 0.998 - \left(\frac{6}{17} \times 1.0 + \frac{6}{17} \times 0.918 + \frac{5}{17} \times 0.722\right) \\
+&= 0.998 - (0.353 + 0.324 + 0.212) \\
+&= 0.998 - 0.889 = \boxed{0.109}
+\end{align*}
+
+\textbf{�?）根蒂属性}
+
+各分支信息熵�?
+\begin{align*}
+Ent(D^{\text{蜷缩}}) &= -\frac{5}{8}\log_2\frac{5}{8} - \frac{3}{8}\log_2\frac{3}{8} \\
+&= -0.625 \times (-0.678) - 0.375 \times (-1.415) = 0.424 + 0.531 = 0.954 \\
+Ent(D^{\text{稍蜷}}) &= -\frac{3}{7}\log_2\frac{3}{7} - \frac{4}{7}\log_2\frac{4}{7} \\
+&= -0.429 \times (-1.222) - 0.571 \times (-0.807) = 0.524 + 0.461 = 0.985 \\
+Ent(D^{\text{硬挺}}) &= -\frac{0}{2}\log_2\frac{0}{2} - \frac{2}{2}\log_2\frac{2}{2} = 0 - 0 = 0
+\end{align*}
+
+信息增益�?
+\begin{align*}
+Gain(D, \text{根蒂}) &= 0.998 - \left(\frac{8}{17} \times 0.954 + \frac{7}{17} \times 0.985 + \frac{2}{17} \times 0\right) \\
+&= 0.998 - (0.449 + 0.406 + 0) \\
+&= 0.998 - 0.855 = \boxed{0.143}
+\end{align*}
+
+\textbf{�?）敲声属性}
+
+各分支信息熵�?
+\begin{align*}
+Ent(D^{\text{浊响}}) &= -\frac{6}{10}\log_2\frac{6}{10} - \frac{4}{10}\log_2\frac{4}{10} \\
+&= -0.6 \times (-0.737) - 0.4 \times (-1.322) = 0.442 + 0.529 = 0.971 \\
+Ent(D^{\text{沉闷}}) &= -\frac{2}{5}\log_2\frac{2}{5} - \frac{3}{5}\log_2\frac{3}{5} \\
+&= -0.4 \times (-1.322) - 0.6 \times (-0.737) = 0.529 + 0.442 = 0.971 \\
+Ent(D^{\text{清脆}}) &= 0 \quad \text{（全为坏瓜）}
+\end{align*}
+
+信息增益�?
+\begin{align*}
+Gain(D, \text{敲声}) &= 0.998 - \left(\frac{10}{17} \times 0.971 + \frac{5}{17} \times 0.971 + \frac{2}{17} \times 0\right) \\
+&= 0.998 - (0.571 + 0.286 + 0) \\
+&= 0.998 - 0.857 = \boxed{0.141}
+\end{align*}
+
+\textbf{结论}�?
+\begin{center}
+\begin{tabular}{c|c}
+属�?& 信息增益 \\
+\hline
+色泽 & 0.109 \\
+根蒂 & \textbf{0.143} \\
+敲声 & 0.141 \\
+\end{tabular}
+\end{center}
+
+"根蒂"的信息增益最大，应选择"根蒂"作为根节点的划分属性�?
+\end{exercise}
+
+\subsection{信息熵与纯度 (Intuition)}
+
+\begin{importantbox}[直观理解：什么是信息熵？]
+信息熵（Entropy）衡量的是系统的“混乱程度”或“不确定性”�?
+\begin{itemize}
+    \item \textbf{如果你很有把握}：比如袋子里全是红球，你摸出一个球，必然是红色的。此时系统很单纯，不确定性极低，信息熵趋近于 0�?
+    \item \textbf{如果你毫无头绪}：比如袋子里红橙黄绿青蓝紫各一个，你摸出一个球，什么颜色都有可能。此时系统极其混乱，不确定性极高，信息熵达到最大�?
+\end{itemize}
+在决策树中，我们的目标就�?*通过询问属性（分叉），让每一个子集变得尽可能“纯”（同一类样本聚在一起）**。信息熵下降得越多，说明这次分裂对事物的认知提升越大，这就是所谓的“信息增益”�?
+\end{importantbox}
+
+\subsection{基尼指数完整计算}
+
+\begin{exercise}[西瓜数据集：基尼指数计算]
+计算西瓜数据集中"纹理"属性的基尼指数�?
+
+\textbf{数据统计}�?
+\begin{center}
+\begin{tabular}{c|cc|c}
+纹理 & 好瓜 & 坏瓜 & 合计 \\
+\hline
+清晰 & 7 & 2 & 9 \\
+稍糊 & 1 & 4 & 5 \\
+模糊 & 0 & 3 & 3 \\
+\end{tabular}
+\end{center}
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算各分支基尼�?
+
+\textbf{清晰}�?个样本）�?
+\begin{align*}
+Gini(D^{\text{清晰}}) &= 1 - \left(\frac{7}{9}\right)^2 - \left(\frac{2}{9}\right)^2 \\
+&= 1 - \frac{49}{81} - \frac{4}{81} = 1 - \frac{53}{81} = \frac{28}{81} \approx 0.346
+\end{align*}
+
+\textbf{稍糊}�?个样本）�?
+\begin{align*}
+Gini(D^{\text{稍糊}}) &= 1 - \left(\frac{1}{5}\right)^2 - \left(\frac{4}{5}\right)^2 \\
+&= 1 - \frac{1}{25} - \frac{16}{25} = 1 - \frac{17}{25} = \frac{8}{25} = 0.32
+\end{align*}
+
+\textbf{模糊}�?个样本，全为坏瓜）：
+\begin{align*}
+Gini(D^{\text{模糊}}) &= 1 - 0^2 - 1^2 = 0
+\end{align*}
+
+\textbf{步骤2}：计算基尼指�?
+\begin{align*}
+Gini\_index(D, \text{纹理}) &= \sum_v \frac{|D^v|}{|D|} Gini(D^v) \\
+&= \frac{9}{17} \times 0.346 + \frac{5}{17} \times 0.32 + \frac{3}{17} \times 0 \\
+&= 0.183 + 0.094 + 0 \\
+&= \boxed{0.277}
+\end{align*}
+
+\textbf{比较}：根节点基尼值为
+\[
+Gini(D) = 1 - \left(\frac{8}{17}\right)^2 - \left(\frac{9}{17}\right)^2 = 1 - 0.222 - 0.280 = 0.498
+\]
+
+�?纹理"划分后，基尼指数�?.498降到0.277，降低了44\%，说�?纹理"是一个好的划分属性�?
+\end{exercise}
+
+\subsection{决策树构建完整示例}
+
+\begin{exercise}[西瓜数据集：构建决策树]
+使用信息增益准则，为西瓜数据集构建决策树（仅使用色泽、根蒂、敲声三个属性）�?
+
+\textbf{解}�?
+
+\textbf{第一层}：选择根节�?
+
+由前面计算：$Gain(\text{根蒂}) = 0.143$ 最大，选择"根蒂"作为根节点�?
+
+�?根蒂"划分后：
+\begin{itemize}
+    \item 蜷缩�?个样本（5�?坏）
+    \item 稍蜷�?个样本（3�?坏）
+    \item 硬挺�?个样本（0�?坏）�?全为坏瓜，标记为叶节�?坏瓜"
+\end{itemize}
+
+\textbf{第二层}：对"蜷缩"分支继续划分
+
+样本集：8个（5�?坏）�?Ent = 0.954$
+
+计算剩余属性的信息增益�?
+
+\textbf{色泽}�?
+\begin{itemize}
+    \item 青绿�?个（2�?坏）�?Ent = 0.918$
+    \item 乌黑�?个（3�?坏）�?Ent = 0.811$
+    \item 浅白�?个（0�?坏）�?Ent = 0$
+\end{itemize}
+\[
+Gain = 0.954 - \left(\frac{3}{8} \times 0.918 + \frac{4}{8} \times 0.811 + \frac{1}{8} \times 0\right) = 0.954 - 0.750 = 0.204
+\]
+
+\textbf{敲声}�?
+\begin{itemize}
+    \item 浊响�?个（4�?坏）�?Ent = 0.722$
+    \item 沉闷�?个（1�?坏）�?Ent = 0.918$
+\end{itemize}
+\[
+Gain = 0.954 - \left(\frac{5}{8} \times 0.722 + \frac{3}{8} \times 0.918\right) = 0.954 - 0.795 = 0.159
+\]
+
+选择"色泽"�?Gain = 0.204$）继续划分�?
+
+\textbf{第二层}：对"稍蜷"分支继续划分
+
+样本集：7个（3�?坏）�?Ent = 0.985$
+
+类似计算后，选择最优属性继续划�?..
+
+\textbf{最终决策树}（简化版）：
+\begin{verbatim}
+                    [根蒂]
+                   /  |  \
+               蜷缩 稍蜷 硬挺
+                /    |     \
+            [色泽] [敲声]  坏瓜
+            / | \   / \
+          ...  ... ...
+\end{verbatim}
+\end{exercise}
+
+\subsection{连续属性处理详解}
+
+\begin{exercise}[连续属性划分]
+假设西瓜数据集有"密度"属性（连续值），数据如下：
+
+\begin{center}
+\begin{tabular}{c|cccccccc}
+样本 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+\hline
+密度 & 0.697 & 0.774 & 0.634 & 0.608 & 0.556 & 0.403 & 0.481 & 0.437 \\
+标签 & �?& �?& �?& �?& �?& �?& �?& �?\\
+\end{tabular}
+\end{center}
+
+求最优划分点�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：排�?
+\begin{center}
+\begin{tabular}{c|cccccccc}
+排序�?& 6 & 8 & 7 & 5 & 4 & 3 & 1 & 2 \\
+\hline
+密度 & 0.403 & 0.437 & 0.481 & 0.556 & 0.608 & 0.634 & 0.697 & 0.774 \\
+标签 & �?& �?& �?& �?& �?& �?& �?& �?\\
+\end{tabular}
+\end{center}
+
+\textbf{步骤2}：计算候选划分点
+\begin{align*}
+t_1 &= (0.403 + 0.437)/2 = 0.420 \\
+t_2 &= (0.437 + 0.481)/2 = 0.459 \\
+t_3 &= (0.481 + 0.556)/2 = 0.519 \\
+t_4 &= (0.556 + 0.608)/2 = 0.582 \\
+t_5 &= (0.608 + 0.634)/2 = 0.621 \\
+t_6 &= (0.634 + 0.697)/2 = 0.666 \\
+t_7 &= (0.697 + 0.774)/2 = 0.736
+\end{align*}
+
+\textbf{步骤3}：计算各划分点的信息增益
+
+�?$t_3 = 0.519$ 为例�?
+\begin{itemize}
+    \item $D^- = \{6, 8, 7\}$�?个坏瓜，$Ent(D^-) = 0$
+    \item $D^+ = \{5, 4, 3, 1, 2\}$�?个好瓜，$Ent(D^+) = 0$
+\end{itemize}
+\[
+Gain(D, \text{密度}, t_3) = Ent(D) - \frac{3}{8} \times 0 - \frac{5}{8} \times 0 = 0.954
+\]
+
+\textbf{结论}�?t_3 = 0.519$ 是最优划分点，能完美分开好瓜和坏瓜�?
+\end{exercise}
+
+
+%========================================
+% �?�?神经网络
+%========================================
+\section{神经网络}
+
+\subsection{感知机学习算法}
+
+\begin{definition}[感知机]
+感知机是最简单的神经网络，用于二分类�?
+\[
+f(\mathbf{x}) = sign(\mathbf{w}^T\mathbf{x} - \theta)
+\]
+其中 $sign(z) = +1$ �?$z \geq 0$，否�?$sign(z) = -1$�?\theta$ 为阈值�?
+\end{definition}
+
+\begin{theorem}[感知机学习规则]
+对于误分类样�?$(\mathbf{x}_i, y_i)$，更新规则为�?
+\begin{align}
+\mathbf{w} &\leftarrow \mathbf{w} + \eta y_i \mathbf{x}_i \\
+\theta &\leftarrow \theta - \eta y_i
+\end{align}
+其中 $\eta > 0$ 为学习率�?
+\end{theorem}
+
+\begin{exercise}[神经网络：前向传播计算]
+有如图所示的神经网络结构，网络所有节点激活函数均�?Sigmoid 函数 $\sigma(z) = \frac{1}{1+e^{-z}}$。参数设定如下：
+\begin{itemize}
+    \item \textbf{输入层}�?\mathbf{x} = [1, 2, 3]^T$
+    \item \textbf{权重矩阵（输入层到隐层）}�?
+    \[
+    W = \begin{bmatrix} W_{11} & W_{12} \\ W_{21} & W_{22} \\ W_{31} & W_{32} \end{bmatrix} = \begin{bmatrix} 2 & -2 \\ 1 & -3 \\ 4 & 1 \end{bmatrix}
+    \]
+    \item \textbf{隐层偏置}�?b_1 = 14, b_2 = -4$
+    \item \textbf{权重（隐层到输出层）}�?V_1 = 1, V_2 = 2$
+    \item \textbf{输出层偏置}�?\theta = 2$
+\end{itemize}
+
+试计算神经网络对输入 $[1, 2, 3]^T$ 的输出值�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算隐层各节点输入�?
+\begin{align*}
+z_1 &= W_{11}x_1 + W_{21}x_2 + W_{31}x_3 - b_1 = 2 \times 1 + 1 \times 2 + 4 \times 3 - 14 = 2 \\
+z_2 &= W_{12}x_1 + W_{22}x_2 + W_{32}x_3 - b_2 = -2 \times 1 + (-3) \times 2 + 1 \times 3 - (-4) = -1
+\end{align*}
+
+\textbf{步骤2}：计算隐层节点激活值：
+\begin{align*}
+a_1 &= \sigma(z_1) = \sigma(2) = \frac{1}{1 + e^{-2}} \approx 0.8808 \\
+a_2 &= \sigma(z_2) = \sigma(-1) = \frac{1}{1 + e^{1}} \approx 0.2689
+\end{align*}
+
+\textbf{步骤3}：计算输出层节点输入�?
+\[
+t = V_1a_1 + V_2a_2 - \theta = 1 \times 0.8808 + 2 \times 0.2689 - 2 = -0.5814
+\]
+
+\textbf{步骤4}：计算模型最终输出值：
+\[
+\boxed{y = \sigma(t) = \sigma(-0.5814) = \frac{1}{1 + e^{0.5814}} \approx 0.3586}
+\]
+\end{exercise}
+
+\subsection{多层神经网络前向传播}
+
+\begin{exercise}[两隐层网络前向传播]
+给定神经网络结构：输入层2节点，隐�?�?节点，隐�?�?节点，输出层1节点�?
+
+参数�?
+\begin{itemize}
+    \item 输入�?\mathbf{x} = [1, 2]^T$
+    \item 隐层1权重�?W^{(1)} = \begin{bmatrix} 0.1 & 0.2 & 0.3 \\ 0.4 & 0.5 & 0.6 \end{bmatrix}$，偏�?$\mathbf{b}^{(1)} = [0.1, 0.1, 0.1]^T$
+    \item 隐层2权重�?W^{(2)} = \begin{bmatrix} 0.2 & 0.3 \\ 0.4 & 0.5 \\ 0.6 & 0.7 \end{bmatrix}$，偏�?$\mathbf{b}^{(2)} = [0.1, 0.1]^T$
+    \item 输出层权重：$\mathbf{w}^{(3)} = [0.5, 0.5]^T$，偏�?$b^{(3)} = 0.1$
+    \item 激活函数：ReLU�?f(z) = \max(0, z)$�?
+\end{itemize}
+
+计算网络输出�?
+
+\textbf{解}�?
+
+\textbf{隐层1计算}�?
+\[
+\mathbf{z}^{(1)} = (W^{(1)})^T \mathbf{x} + \mathbf{b}^{(1)} = \begin{bmatrix} 0.1 & 0.4 \\ 0.2 & 0.5 \\ 0.3 & 0.6 \end{bmatrix} \begin{bmatrix} 1 \\ 2 \end{bmatrix} + \begin{bmatrix} 0.1 \\ 0.1 \\ 0.1 \end{bmatrix}
+\]
+\[
+= \begin{bmatrix} 0.1 + 0.8 \\ 0.2 + 1.0 \\ 0.3 + 1.2 \end{bmatrix} + \begin{bmatrix} 0.1 \\ 0.1 \\ 0.1 \end{bmatrix} = \begin{bmatrix} 1.0 \\ 1.3 \\ 1.6 \end{bmatrix}
+\]
+\[
+\mathbf{a}^{(1)} = ReLU(\mathbf{z}^{(1)}) = \begin{bmatrix} 1.0 \\ 1.3 \\ 1.6 \end{bmatrix}
+\]
+
+\textbf{隐层2计算}�?
+\[
+\mathbf{z}^{(2)} = (W^{(2)})^T \mathbf{a}^{(1)} + \mathbf{b}^{(2)} = \begin{bmatrix} 0.2 & 0.4 & 0.6 \\ 0.3 & 0.5 & 0.7 \end{bmatrix} \begin{bmatrix} 1.0 \\ 1.3 \\ 1.6 \end{bmatrix} + \begin{bmatrix} 0.1 \\ 0.1 \end{bmatrix}
+\]
+\[
+= \begin{bmatrix} 0.2 + 0.52 + 0.96 \\ 0.3 + 0.65 + 1.12 \end{bmatrix} + \begin{bmatrix} 0.1 \\ 0.1 \end{bmatrix} = \begin{bmatrix} 1.78 \\ 2.17 \end{bmatrix}
+\]
+\[
+\mathbf{a}^{(2)} = ReLU(\mathbf{z}^{(2)}) = \begin{bmatrix} 1.78 \\ 2.17 \end{bmatrix}
+\]
+
+\textbf{输出层计算}�?
+\[
+z^{(3)} = (\mathbf{w}^{(3)})^T \mathbf{a}^{(2)} + b^{(3)} = 0.5 \times 1.78 + 0.5 \times 2.17 + 0.1 = 0.89 + 1.085 + 0.1 = 2.075
+\]
+
+\[
+y = \sigma(2.075) = \frac{1}{1 + e^{-2.075}} = \frac{1}{1 + 0.126} = \boxed{0.888}
+\]
+\end{exercise}
+
+\subsection{反向传播 (BP) 算法标量演示（掌握版）}
+
+针对单变量（标量）情况，BP 算法的核心是微积分中的\textbf{链式法则}。考虑一个最简单的 1-1-1 结构：输�?$x \rightarrow$ 隐层 $h \rightarrow$ 输出�?$y$�?
+
+\subsubsection{符号与前向传播流程}
+
+为了彻底掌握 BP 算法的细节，我们考虑一个极简�?1-1-1 神经元结构。该网络包含一个输入层神经元、一个隐层神经元和一个输出层神经元�?
+
+\textbf{前向传播计算公式}�?
+\begin{enumerate}
+    \item \textbf{隐层输入}�?\alpha = v \cdot x$ �?v$ 为输入到隐层的权重）
+    \item \textbf{隐层输出}�?b = \sigma(\alpha - \gamma)$ �?\gamma$ 为隐层阈值）
+    \item \textbf{输出层输入}�?\beta = w \cdot b$ �?w$ 为隐层到输出层的权重�?
+    \item \textbf{输出层输出}�?\hat{y} = \sigma(\beta - \theta)$ �?\theta$ 为输出层阈值）
+    \item \textbf{损失函数}（以均方误差为例）：$E = \frac{1}{2}(\hat{y} - y)^2$
+\end{enumerate}
+
+\begin{notebox}[Sigmoid 导数重要性质]
+对于 $\sigma(z) = \frac{1}{1+e^{-z}}$，其导数�?$\sigma'(z) = \sigma(z)(1 - \sigma(z))$�?
+在推导中，这一性质将极大地简化表达�?
+\end{notebox}
+
+\subsubsection{标量链式更新推导全程}
+
+BP 算法的本质是根据链式法则将“误差”从输出层逐层向前传导�?
+
+\textbf{1. 输出层权�?$w$ 的更新}�?
+我们希望求出 $\frac{\partial E}{\partial w}$，根据链式法则：
+\[
+\frac{\partial E}{\partial w} = \frac{\partial E}{\partial \hat{y}} \cdot \frac{\partial \hat{y}}{\partial \beta} \cdot \frac{\partial \beta}{\partial w}
+\]
+拆解各部分：
+\begin{itemize}
+    \item $\frac{\partial E}{\partial \hat{y}} = \frac{\partial}{\partial \hat{y}} \left[ \frac{1}{2}(\hat{y}-y)^2 \right] = (\hat{y} - y)$
+    \item $\frac{\partial \hat{y}}{\partial \beta} = \sigma'(\beta - \theta) = \hat{y}(1 - \hat{y})$
+    \item $\frac{\partial \beta}{\partial w} = \frac{\partial (w \cdot b)}{\partial w} = b$
+\end{itemize}
+合并得：
+\[
+\frac{\partial E}{\partial w} = (\hat{y} - y) \cdot \hat{y}(1 - \hat{y}) \cdot b
+\]
+
+\textbf{2. 隐层权重 $v$ 的更新}�?
+由于 $v$ 的变化需要跨过两个层级影响最终误差，链式路径更长�?
+\[
+\frac{\partial E}{\partial v} = \frac{\partial E}{\partial \hat{y}} \cdot \frac{\partial \hat{y}}{\partial \beta} \cdot \frac{\partial \beta}{\partial b} \cdot \frac{\partial b}{\partial \alpha} \cdot \frac{\partial \alpha}{\partial v}
+\]
+拆解补充部分�?
+\begin{itemize}
+    \item $\frac{\partial \beta}{\partial b} = w$
+    \item $\frac{\partial b}{\partial \alpha} = \sigma'(\alpha - \gamma) = b(1 - b)$
+    \item $\frac{\partial \alpha}{\partial v} = x$
+\end{itemize}
+合并得：
+\[
+\frac{\partial E}{\partial v} = \underbrace{(\hat{y} - y) \hat{y}(1 - \hat{y})}_{\text{输出层误差项 } \delta_{out}} \cdot \underbrace{w \cdot b(1 - b)}_{\text{隐层梯度修正}} \cdot x
+\]
+
+\textbf{3. 阈�?$\theta$ �?$\gamma$ 的更新}�?
+\begin{itemize}
+    \item \textbf{输出层阈值}�?\frac{\partial E}{\partial \theta} = \frac{\partial E}{\partial \hat{y}} \cdot \frac{\partial \hat{y}}{\partial \theta} = (\hat{y} - y) \cdot [-\hat{y}(1-\hat{y})]$
+    \item \textbf{隐层阈值}�?\frac{\partial E}{\partial \gamma} = \frac{\partial E}{\partial \hat{y}} \cdot \frac{\partial \hat{y}}{\partial \beta} \cdot \frac{\partial \beta}{\partial b} \cdot \frac{\partial b}{\partial \gamma} = \delta_{out} \cdot w \cdot [-b(1-b)]$
+\end{itemize}
+
+\textbf{总结更新法则}�?
+设学习率�?$\eta$，则各参数更新量为：
+$\Delta w = -\eta \frac{\partial E}{\partial w}, \Delta v = -\eta \frac{\partial E}{\partial v}, \Delta \theta = -\eta \frac{\partial E}{\partial \theta}, \Delta \gamma = -\eta \frac{\partial E}{\partial \gamma}$�?
+
+\begin{exercise}[极简 1-1-1 网络 BP 计算]
+已知：输�?$x=0.5$，目�?$y=0.01$。当前参�?$v=0.2, w=0.4$，阈�?$\gamma=0, \theta=0$，学习率 $\eta=0.5$。执行一�?BP 参数更新�?
+
+\textbf{解}�?
+
+\textbf{步骤1：前向传播}
+\begin{itemize}
+    \item $\alpha = v \cdot x = 0.2 \times 0.5 = 0.1 \Rightarrow b = \sigma(0.1) = \frac{1}{1 + e^{-0.1}} \approx 0.5250$
+    \item $\beta = w \cdot b = 0.4 \times 0.5250 = 0.21 \Rightarrow \hat{y} = \sigma(0.21) = \frac{1}{1 + e^{-0.21}} \approx 0.5523$
+\end{itemize}
+
+\textbf{步骤2：计算输出层误差�?$\delta_{out}$}
+\[
+\delta_{out} = (\hat{y} - y) \cdot \hat{y}(1 - \hat{y}) = (0.5523 - 0.01) \times 0.5523 \times (1 - 0.5523) \approx 0.5423 \times 0.2473 = 0.1341
+\]
+
+\textbf{步骤3：更新输出层权重 $w$}
+\[
+\Delta w = -\eta \cdot \delta_{out} \cdot b = -0.5 \times 0.1341 \times 0.5250 = -0.0352
+\]
+\[
+w_{new} = w + \Delta w = 0.4 - 0.0352 = \boxed{0.3648}
+\]
+
+\textbf{步骤4：计算隐层误差项 $\delta_{hidden}$}
+\[
+\delta_{hidden} = \delta_{out} \cdot w \cdot b(1 - b) = 0.1341 \times 0.4 \times 0.5250 \times (1 - 0.5250) \approx 0.0134
+\]
+
+\textbf{步骤5：更新隐层权�?$v$}
+\[
+\Delta v = -\eta \cdot \delta_{hidden} \cdot x = -0.5 \times 0.0134 \times 0.5 = -0.00335
+\]
+\[
+v_{new} = v + \Delta v = 0.2 - 0.00335 = \boxed{0.19665}
+\]
+
+\textbf{步骤6：更新阈�?$\theta$ �?$\gamma$}
+\begin{itemize}
+    \item \textbf{输出层阈值}�?\Delta \theta = -\eta \cdot \delta_{out} \cdot (-1) = \eta \delta_{out} = 0.5 \times 0.1341 \approx 0.0671$
+    \item \textbf{隐层阈值}�?\Delta \gamma = -\eta \cdot \delta_{hidden} \cdot (-1) = \eta \delta_{hidden} = 0.5 \times 0.0134 \approx 0.0067$
+\end{itemize}
+\[
+\theta_{new} = 0 + 0.0671 = 0.0671, \quad \gamma_{new} = 0 + 0.0067 = 0.0067
+\]
+\end{exercise}
+
+\begin{importantbox}[深度理解：为什么叫“误差反向传播”？]
+通过标量推导，我们可以直观地看到梯度是如何“流动”的�?
+\begin{enumerate}
+    \item \textbf{直接责任人}：输出层误差 $\delta_{out} = (\hat{y}-y)\sigma'$ 直接量化了输出与目标的差距�?
+    \item \textbf{间接责任人}：隐层误�?$\delta_{hidden} = \delta_{out} \cdot w \cdot \sigma'$。你会发现，隐层并不直接接触目标 $y$，它的误差项是由输出层误�?$\delta_{out}$ 通过权重 $w$ “传回”来的�?
+\end{enumerate}
+这就是“反向传播”的真谛�?*将最终的损失，按照权重的大小，公平地分摊给网络中每一个参数�?* 权重越大，分担的责任（梯度）也就越大�?
+\end{importantbox}
+
+
+%========================================
+% �?�?支持向量�?
+%========================================
+\section{支持向量机}
+
+\subsection{间隔与支持向量详解}
+
+\subsubsection{点到超平面距离推导}
+
+\begin{theorem}[点到超平面距离]
+�?$\mathbf{x}_0$ 到超平面 $\mathbf{w}^T\mathbf{x} + b = 0$ 的距离为�?
+\[
+d = \frac{|\mathbf{w}^T\mathbf{x}_0 + b|}{\|\mathbf{w}\|}
+\]
+\end{theorem}
+
+\textbf{推导}�?
+
+设超平面上任意一�?$\mathbf{x}_1$，则 $\mathbf{w}^T\mathbf{x}_1 + b = 0$�?
+
+�?$\mathbf{x}_1$ �?$\mathbf{x}_0$ 的向量为 $\mathbf{x}_0 - \mathbf{x}_1$�?
+
+$\mathbf{x}_0$ 到超平面的距离等于该向量在法向量 $\mathbf{w}$ 方向上的投影长度�?
+\begin{align*}
+d &= \left|\frac{\mathbf{w}^T(\mathbf{x}_0 - \mathbf{x}_1)}{\|\mathbf{w}\|}\right| \\
+&= \left|\frac{\mathbf{w}^T\mathbf{x}_0 - \mathbf{w}^T\mathbf{x}_1}{\|\mathbf{w}\|}\right| \\
+&= \left|\frac{\mathbf{w}^T\mathbf{x}_0 + b - (\mathbf{w}^T\mathbf{x}_1 + b)}{\|\mathbf{w}\|}\right| \\
+&= \left|\frac{\mathbf{w}^T\mathbf{x}_0 + b - 0}{\|\mathbf{w}\|}\right| \\
+&= \frac{|\mathbf{w}^T\mathbf{x}_0 + b|}{\|\mathbf{w}\|}
+\end{align*}
+
+\subsubsection{间隔推导}
+
+对于二分类问题，标签 $y_i \in \{+1, -1\}$�?
+
+\textbf{函数间隔}�?
+\[
+\hat{\gamma}_i = y_i(\mathbf{w}^T\mathbf{x}_i + b)
+\]
+
+当分类正确时�?\hat{\gamma}_i > 0$�?
+
+\textbf{几何间隔}�?
+\[
+\gamma_i = \frac{y_i(\mathbf{w}^T\mathbf{x}_i + b)}{\|\mathbf{w}\|} = \frac{\hat{\gamma}_i}{\|\mathbf{w}\|}
+\]
+
+\textbf{间隔归一化}�?
+
+由于 $(\mathbf{w}, b)$ �?$(k\mathbf{w}, kb)$ 表示同一超平面，可以�?$\mathbf{w}$ 进行缩放使得�?
+\[
+\min_i \hat{\gamma}_i = 1
+\]
+
+此时，支持向量满�?$y_i(\mathbf{w}^T\mathbf{x}_i + b) = 1$，间隔为�?
+\[
+\gamma = \frac{2}{\|\mathbf{w}\|}
+\]
+
+\subsection{硬间隔SVM完整求解}
+
+\begin{exercise}[线性支持向量机：作�?6]
+训练样本�?
+\begin{center}
+\begin{tabular}{c|cc|c}
+样本 & $x_1$ & $x_2$ & $y$ \\
+\hline
+1 & 3 & 3 & +1 \\
+2 & 4 & 3 & +1 \\
+3 & 1 & 1 & -1 \\
+\end{tabular}
+\end{center}
+
+用原始问题和对偶问题两种方法求解�?
+
+\textbf{方法一：原始问题}
+
+\textbf{步骤1}：建立优化问�?
+\begin{align*}
+\min_{w_1, w_2, b} \quad & \frac{1}{2}(w_1^2 + w_2^2) \\
+\text{s.t.} \quad & y_1(w_1 x_{11} + w_2 x_{12} + b) \geq 1 \\
+& y_2(w_1 x_{21} + w_2 x_{22} + b) \geq 1 \\
+& y_3(w_1 x_{31} + w_2 x_{32} + b) \geq 1
+\end{align*}
+
+代入数据�?
+\begin{align*}
+& 3w_1 + 3w_2 + b \geq 1 \quad \text{(样本1)} \\
+& 4w_1 + 3w_2 + b \geq 1 \quad \text{(样本2)} \\
+& -(w_1 + w_2 + b) \geq 1 \quad \text{(样本3)}
+\end{align*}
+
+\textbf{步骤2}：分析约�?
+
+由约�?�?w_1 + w_2 + b \leq -1$
+
+由约�?�?3w_1 + 3w_2 + b \geq 1$
+
+两式相减�?2w_1 + 2w_2 \geq 2$，即 $w_1 + w_2 \geq 1$
+
+\textbf{步骤3}：利用KKT条件
+
+在最优解处，至少有一个约束取等号（支持向量）�?
+
+假设样本1和样�?是支持向量：
+\begin{align*}
+3w_1 + 3w_2 + b &= 1 \\
+w_1 + w_2 + b &= -1
+\end{align*}
+
+两式相减�?2w_1 + 2w_2 = 2$，即 $w_1 + w_2 = 1$
+
+由对称性，�?$w_1 = w_2 = 0.5$
+
+代入第二个方程：$0.5 + 0.5 + b = -1$，得 $b = -2$
+
+\textbf{步骤4}：验�?
+\begin{itemize}
+    \item 样本1�?3 \times 0.5 + 3 \times 0.5 - 2 = 1 \geq 1$ �?
+    \item 样本2�?4 \times 0.5 + 3 \times 0.5 - 2 = 1.5 \geq 1$ �?
+    \item 样本3�?-(1 \times 0.5 + 1 \times 0.5 - 2) = -(-1) = 1 \geq 1$ �?
+\end{itemize}
+
+\textbf{方法二：对偶问题}
+
+\begin{notebox}[为什么要解对偶问题？]
+�?SVM 中，我们往往不直接解原始问题，而是转向其对偶形式，原因有三�?
+\begin{enumerate}
+    \item \textbf{引入核函数}：对偶问题的目标函数只涉及样本间的内�?$\mathbf{x}_i^T\mathbf{x}_j$，这为通过核函数处理非线性问题埋下了伏笔�?
+    \item \textbf{支持向量的稀疏性}：最优解中只有支持向量对应的 $\alpha_i > 0$，这使得推理非常高效�?
+    \item \textbf{求解更简单}：当维度 $d$ 远大于样本数 $m$ 时，解对偶问题通常速度更快�?
+\end{enumerate}
+\end{notebox}
+
+\textbf{步骤1}：建立对偶问�?
+
+通过拉格朗日乘子法，将原约束优化问题转化为拉格朗日函数：
+\[
+\min_{\mathbf{w}, b} \max_{\alpha} \left[ \frac{1}{2}\|\mathbf{w}\|^2 + \sum_{i=1}^{m} \alpha_i (1 - y_i(\mathbf{w}^T\mathbf{x}_i + b)) \right]
+\]
+其中 $\alpha_i \geq 0$ 为拉格朗日乘子。其对偶问题为：
+\begin{align*}
+\max_{\alpha} \quad & \sum_{i=1}^{3}\alpha_i - \frac{1}{2}\sum_{i=1}^{3}\sum_{j=1}^{3}\alpha_i\alpha_j y_i y_j \mathbf{x}_i^T\mathbf{x}_j \\
+\text{s.t.} \quad & \sum_{i=1}^{3}\alpha_i y_i = 0 \\
+& \alpha_i \geq 0
+\end{align*}
+
+\textbf{步骤2}：计算内积矩�?
+\begin{align*}
+\mathbf{x}_1^T\mathbf{x}_1 &= 9 + 9 = 18 \\
+\mathbf{x}_1^T\mathbf{x}_2 &= 12 + 9 = 21 \\
+\mathbf{x}_1^T\mathbf{x}_3 &= 3 + 3 = 6 \\
+\mathbf{x}_2^T\mathbf{x}_2 &= 16 + 9 = 25 \\
+\mathbf{x}_2^T\mathbf{x}_3 &= 4 + 3 = 7 \\
+\mathbf{x}_3^T\mathbf{x}_3 &= 1 + 1 = 2
+\end{align*}
+
+\textbf{步骤3}：展开目标函数
+
+�?$\alpha_1, \alpha_2, \alpha_3$ 对应样本1, 2, 3�?
+
+$y_1 = y_2 = +1$�?y_3 = -1$
+
+\begin{align*}
+L(\alpha) &= \alpha_1 + \alpha_2 + \alpha_3 \\
+&\quad - \frac{1}{2}\left[\alpha_1^2 \cdot 1 \cdot 1 \cdot 18 + \alpha_2^2 \cdot 1 \cdot 1 \cdot 25 + \alpha_3^2 \cdot (-1)(-1) \cdot 2\right] \\
+&\quad - \frac{1}{2}\left[2\alpha_1\alpha_2 \cdot 1 \cdot 1 \cdot 21 + 2\alpha_1\alpha_3 \cdot 1 \cdot (-1) \cdot 6 + 2\alpha_2\alpha_3 \cdot 1 \cdot (-1) \cdot 7\right] \\
+&= \alpha_1 + \alpha_2 + \alpha_3 - 9\alpha_1^2 - 12.5\alpha_2^2 - \alpha_3^2 - 21\alpha_1\alpha_2 + 6\alpha_1\alpha_3 + 7\alpha_2\alpha_3
+\end{align*}
+
+约束�?\alpha_1 + \alpha_2 - \alpha_3 = 0$，即 $\alpha_3 = \alpha_1 + \alpha_2$
+
+\textbf{步骤4}：代入约束，化为无约束问�?
+
+�?$\alpha_3 = \alpha_1 + \alpha_2$，代入：
+\begin{align*}
+L &= \alpha_1 + \alpha_2 + (\alpha_1 + \alpha_2) - 9\alpha_1^2 - 12.5\alpha_2^2 - (\alpha_1 + \alpha_2)^2 \\
+&\quad - 21\alpha_1\alpha_2 + 6\alpha_1(\alpha_1 + \alpha_2) + 7\alpha_2(\alpha_1 + \alpha_2) \\
+&= 2\alpha_1 + 2\alpha_2 - 9\alpha_1^2 - 12.5\alpha_2^2 - \alpha_1^2 - 2\alpha_1\alpha_2 - \alpha_2^2 \\
+&\quad - 21\alpha_1\alpha_2 + 6\alpha_1^2 + 6\alpha_1\alpha_2 + 7\alpha_1\alpha_2 + 7\alpha_2^2 \\
+&= 2\alpha_1 + 2\alpha_2 + (-9 - 1 + 6)\alpha_1^2 + (-12.5 - 1 + 7)\alpha_2^2 + (-2 - 21 + 6 + 7)\alpha_1\alpha_2 \\
+&= 2\alpha_1 + 2\alpha_2 - 4\alpha_1^2 - 6.5\alpha_2^2 - 10\alpha_1\alpha_2
+\end{align*}
+
+\textbf{步骤5}：求极�?
+\begin{align*}
+\frac{\partial L}{\partial \alpha_1} &= 2 - 8\alpha_1 - 10\alpha_2 = 0 \\
+\frac{\partial L}{\partial \alpha_2} &= 2 - 13\alpha_2 - 10\alpha_1 = 0
+\end{align*}
+
+解方程组�?
+\begin{align*}
+8\alpha_1 + 10\alpha_2 &= 2 \\
+10\alpha_1 + 13\alpha_2 &= 2
+\end{align*}
+
+第一式乘5，第二式�?�?
+\begin{align*}
+40\alpha_1 + 50\alpha_2 &= 10 \\
+40\alpha_1 + 52\alpha_2 &= 8
+\end{align*}
+
+相减�?-2\alpha_2 = 2$�?\alpha_2 = -1$（不满足 $\alpha_2 \geq 0$�?
+
+说明样本2不是支持向量，令 $\alpha_2 = 0$�?
+\[
+8\alpha_1 = 2 \Rightarrow \alpha_1 = 0.25
+\]
+\[
+\alpha_3 = \alpha_1 + \alpha_2 = 0.25
+\]
+
+代入目标函数可得此时的极值为�?L(\boldsymbol{\alpha}^*) = 0.25$�?
+
+\textbf{步骤6}：KKT 条件与参数恢�?
+
+根据 KKT 条件中的对偶互补性条件：$\alpha_i^* (1 - y_i(\mathbf{w}^{*T}\mathbf{x}_i + b^*)) = 0$。由�?$\alpha_1^*, \alpha_3^* > 0$，样�?1 和样�?3 为支持向量，满足 $y_i(\mathbf{w}^T\mathbf{x}_i + b) = 1$�?
+\begin{align*}
+\mathbf{w} &= \sum_{i=1}^{3}\alpha_i y_i \mathbf{x}_i \\
+&= 0.25 \times (+1) \times [3, 3]^T + 0 \times (+1) \times [4, 3]^T + 0.25 \times (-1) \times [1, 1]^T \\
+&= [0.75, 0.75]^T + [0, 0]^T + [-0.25, -0.25]^T \\
+&= [0.5, 0.5]^T
+\end{align*}
+
+由支持向量（样本1）计�?$b$�?
+\[
+y_1(\mathbf{w}^T\mathbf{x}_1 + b) = 1
+\]
+\[
+1 \times (0.5 \times 3 + 0.5 \times 3 + b) = 1
+\]
+\[
+3 + b = 1 \Rightarrow b = -2
+\]
+
+\textbf{最终结果}�?
+\[
+\boxed{f(\mathbf{x}) = sign(0.5x_1 + 0.5x_2 - 2)}
+\]
+
+支持向量：样�? $[3, 3]^T$ 和样�? $[1, 1]^T$�?\alpha > 0$�?
+\end{exercise}
+
+\subsection{核函数详解}
+
+\begin{importantbox}[核技�?(Kernel Trick) 的直观理解]
+核技巧是机器学习中最精妙的思想之一�?
+\begin{itemize}
+    \item \textbf{背景}：很多数据在原始空间（如 2D）是线性不可分的，但在高维空间（如 3D 或更高）却可能变的可分�?
+    \item \textbf{问题}：直接进行高维特征转�?$\phi(\mathbf{x})$ 会面临“维数灾难”，计算量极其庞大�?
+    \item \textbf{核技巧的魔力}：通过定义核函�?$\kappa(\mathbf{x}_1, \mathbf{x}_2) = \phi(\mathbf{x}_1)^T\phi(\mathbf{x}_2)$，我们可以在低维空间直接算出高维空间里的内积，�?*不需要知道显式的 $\phi(\mathbf{x})$ 映射公式**。这就像是在不离开地面的情况下，却完成了在云端才有的计算�?
+\end{itemize}
+\end{importantbox}
+
+\begin{exercise}[多项式核SVM]
+使用二次多项式核 $\kappa(\mathbf{x}_i, \mathbf{x}_j) = (\mathbf{x}_i^T\mathbf{x}_j + 1)^2$ 处理以下非线性可分数据：
+
+\begin{center}
+\begin{tabular}{c|cc|c}
+样本 & $x_1$ & $x_2$ & $y$ \\
+\hline
+1 & 1 & 0 & +1 \\
+2 & 0 & 1 & +1 \\
+3 & 0 & 0 & -1 \\
+\end{tabular}
+\end{center}
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算核矩阵
+
+\begin{align*}
+\kappa(\mathbf{x}_1, \mathbf{x}_1) &= (1 \times 1 + 0 \times 0 + 1)^2 = 4 \\
+\kappa(\mathbf{x}_1, \mathbf{x}_2) &= (1 \times 0 + 0 \times 1 + 1)^2 = 1 \\
+\kappa(\mathbf{x}_1, \mathbf{x}_3) &= (1 \times 0 + 0 \times 0 + 1)^2 = 1 \\
+\kappa(\mathbf{x}_2, \mathbf{x}_2) &= (0 \times 0 + 1 \times 1 + 1)^2 = 4 \\
+\kappa(\mathbf{x}_2, \mathbf{x}_3) &= (0 \times 0 + 1 \times 0 + 1)^2 = 1 \\
+\kappa(\mathbf{x}_3, \mathbf{x}_3) &= (0 \times 0 + 0 \times 0 + 1)^2 = 1
+\end{align*}
+
+核矩阵：
+\[
+K = \begin{bmatrix} 4 & 1 & 1 \\ 1 & 4 & 1 \\ 1 & 1 & 1 \end{bmatrix}
+\]
+
+\textbf{步骤2}：建立对偶问�?
+\begin{align*}
+\max_{\alpha} \quad & \alpha_1 + \alpha_2 + \alpha_3 - \frac{1}{2}\sum_{i,j}\alpha_i\alpha_j y_i y_j \kappa(\mathbf{x}_i, \mathbf{x}_j) \\
+\text{s.t.} \quad & \alpha_1 + \alpha_2 - \alpha_3 = 0, \quad \alpha_i \geq 0
+\end{align*}
+
+\textbf{步骤3}：展开目标函数
+
+$y_1 = y_2 = +1$�?y_3 = -1$
+
+\begin{align*}
+L &= \alpha_1 + \alpha_2 + \alpha_3 \\
+&\quad - \frac{1}{2}[4\alpha_1^2 + 4\alpha_2^2 + \alpha_3^2 + 2\alpha_1\alpha_2 - 2\alpha_1\alpha_3 - 2\alpha_2\alpha_3]
+\end{align*}
+
+代入 $\alpha_3 = \alpha_1 + \alpha_2$�?
+\begin{align*}
+L &= 2\alpha_1 + 2\alpha_2 - \frac{1}{2}[4\alpha_1^2 + 4\alpha_2^2 + (\alpha_1 + \alpha_2)^2 \\
+&\quad + 2\alpha_1\alpha_2 - 2\alpha_1(\alpha_1 + \alpha_2) - 2\alpha_2(\alpha_1 + \alpha_2)] \\
+&= 2\alpha_1 + 2\alpha_2 - \frac{1}{2}[4\alpha_1^2 + 4\alpha_2^2 + \alpha_1^2 + 2\alpha_1\alpha_2 + \alpha_2^2 \\
+&\quad + 2\alpha_1\alpha_2 - 2\alpha_1^2 - 2\alpha_1\alpha_2 - 2\alpha_1\alpha_2 - 2\alpha_2^2] \\
+&= 2\alpha_1 + 2\alpha_2 - \frac{1}{2}[3\alpha_1^2 + 3\alpha_2^2]
+\end{align*}
+
+\textbf{步骤4}：求极�?
+\begin{align*}
+\frac{\partial L}{\partial \alpha_1} &= 2 - 3\alpha_1 = 0 \Rightarrow \alpha_1 = \frac{2}{3} \\
+\frac{\partial L}{\partial \alpha_2} &= 2 - 3\alpha_2 = 0 \Rightarrow \alpha_2 = \frac{2}{3}
+\end{align*}
+
+$\alpha_3 = \alpha_1 + \alpha_2 = \frac{4}{3}$
+
+\textbf{步骤5}：决策函�?
+\[
+f(\mathbf{x}) = sign\left(\sum_{i=1}^{3}\alpha_i y_i \kappa(\mathbf{x}_i, \mathbf{x}) + b\right)
+\]
+
+计算 $b$（使用支持向量样�?）：
+\[
+\sum_{i=1}^{3}\alpha_i y_i \kappa(\mathbf{x}_i, \mathbf{x}_1) + b = y_1 = 1
+\]
+\[
+\frac{2}{3} \times 1 \times 4 + \frac{2}{3} \times 1 \times 1 + \frac{4}{3} \times (-1) \times 1 + b = 1
+\]
+\[
+\frac{8}{3} + \frac{2}{3} - \frac{4}{3} + b = 1
+\]
+\[
+2 + b = 1 \Rightarrow b = -1
+\]
+
+\textbf{最终决策函数}�?
+\[
+f(\mathbf{x}) = sign\left(\frac{2}{3}\kappa(\mathbf{x}_1, \mathbf{x}) + \frac{2}{3}\kappa(\mathbf{x}_2, \mathbf{x}) - \frac{4}{3}\kappa(\mathbf{x}_3, \mathbf{x}) - 1\right)
+\]
+\end{exercise}
+
+\begin{exercise}[非线性支持向量机：示例]
+训练集共三个样本，其中正例为 $\mathbf{x}^{(1)}=[3,3]^T$, $\mathbf{x}^{(2)}=[4,3]^T$，负例为 $\mathbf{x}^{(3)}=[1,1]^T$。分类模型选用非线性支持向量机，核函数选择高斯�?$\kappa(\mathbf{x}_i, \mathbf{x}_j) = \exp(-\frac{\|\mathbf{x}_i - \mathbf{x}_j\|^2}{2\sigma^2})$，设 $\sigma=1$。写出非线性支持向量机的对偶优化问题�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算核函数�?
+\begin{align*}
+\kappa(\mathbf{x}_1, \mathbf{x}_1) &= 1 \\
+\kappa(\mathbf{x}_2, \mathbf{x}_2) &= 1 \\
+\kappa(\mathbf{x}_3, \mathbf{x}_3) &= 1 \\
+\kappa(\mathbf{x}_1, \mathbf{x}_2) &= \exp\left(-\frac{(3-4)^2 + (3-3)^2}{2 \times 1^2}\right) = \exp(-0.5) \\
+\kappa(\mathbf{x}_1, \mathbf{x}_3) &= \exp\left(-\frac{(3-1)^2 + (3-1)^2}{2}\right) = \exp(-4) \\
+\kappa(\mathbf{x}_2, \mathbf{x}_3) &= \exp\left(-\frac{(4-1)^2 + (3-1)^2}{2}\right) = \exp(-6.5)
+\end{align*}
+
+\textbf{步骤2}：建立对偶目标函�?
+\begin{align*}
+maximize: \quad & \sum_{i=1}^3 \alpha_i - \frac{1}{2} \sum_{i=1}^3 \sum_{j=1}^3 \alpha_i \alpha_j y_i y_j \kappa(\mathbf{x}_i, \mathbf{x}_j) \\
+= \quad & \alpha_1 + \alpha_2 + \alpha_3 - 0.5\alpha_1^2 - 0.5\alpha_2^2 - 0.5\alpha_3^2 \\
+& - \exp(-0.5)\alpha_1\alpha_2 + \exp(-4)\alpha_1\alpha_3 + \exp(-6.5)\alpha_2\alpha_3
+\end{align*}
+
+\textbf{步骤3}：建立约束条�?
+\begin{align*}
+subject to: \quad & \sum_{i=1}^3 \alpha_i y_i = 1 \cdot \alpha_1 + 1 \cdot \alpha_2 + (-1) \cdot \alpha_3 = 0 \\
+& \alpha_i \geq 0, \quad i = 1, 2, 3
+\end{align*}
+\end{exercise}
+
+
+
+%========================================
+% �?�?贝叶斯分类器
+%========================================
+\section{贝叶斯分类器}
+
+\subsection{贝叶斯定理与分类问题}
+
+在机器学习分类任务中，我们通常将样本特征和类别看作随机变量�?
+\begin{itemize}
+    \item $\mathbf{X}$�?d$ 维空间中的随机变量（特征向量�?
+    \item $Y$�?1$ 维空间中的随机变量（类别标签），取值为 $\{c_1, c_2, \cdots, c_k\}$
+\end{itemize}
+
+\begin{theorem}[贝叶斯定理]
+对于给定的样�?$\mathbf{x}$，其属于类别 $c_i$ 的概率（后验概率）计算公式为�?
+\[
+P(Y = c_i | \mathbf{X} = \mathbf{x}) = \frac{P(Y = c_i) P(\mathbf{X} = \mathbf{x} | Y = c_i)}{P(\mathbf{X} = \mathbf{x})}
+\]
+\end{theorem}
+
+\textbf{公式各部分的含义}�?
+\begin{itemize}
+    \item $P(Y = c_i | \mathbf{X} = \mathbf{x})$：\textbf{后验概率}。观测到特征 $\mathbf{x}$ 后对分类结果的判断�?
+    \item $P(Y = c_i)$：\textbf{先验概率}。在观测样本前，根据历史统计得到的各类别的初始比例�?
+    \item $P(\mathbf{X} = \mathbf{x} | Y = c_i)$：\textbf{条件概率}（似然）。该类别样本在各特征上的分布情况�?
+    \item $P(\mathbf{X} = \mathbf{x})$：\textbf{全概率}（证据因子）。用于归一化，由于对所有类别均相同，分类决策时通常可忽略�?
+\end{itemize}
+
+\begin{remark}
+贝叶斯分类器的目标是寻找能使后验概率 $P(Y = c_i | \mathbf{X} = \mathbf{x})$ 最大化的类�?$c_i$�?
+\end{remark}
+
+\subsection{贝叶斯决策论 (Bayesian Decision Theory)}
+
+\begin{definition}[贝叶斯风险]
+若对错分类的惩罚不同，我们定义\textbf{期望损失}（贝叶斯风险）：
+\[
+R(c_i | \mathbf{x}) = \sum_{j=1}^k \lambda_{ij} P(c_j | \mathbf{x})
+\]
+其中 $\lambda_{ij}$ 表示将属�?$c_j$ 的样本误分类�?$c_i$ 的损失�?
+\end{definition}
+
+\begin{theorem}[贝叶斯判定准则]
+为了最小化总体风险，只需在每个样本上选择能使条件风险 $R(c | \mathbf{x})$ 最小的类别标签�?
+\[
+h^*(\mathbf{x}) = \arg \min_{c \in \mathcal{Y}} R(c | \mathbf{x})
+\]
+$h^*$ 被称为\textbf{贝叶斯最优分类器}。特别地，若损失函数�?0-1 损失，则决策准则简化为使后验概�?$P(c|\mathbf{x})$ 最大化�?
+\end{theorem}
+
+\subsection{判别式模型与生成式模型}
+
+\begin{importantbox}[一个直观的例子：识别羊和狗]
+假设我们要区分照片里的是羊还是狗�?
+\begin{itemize}
+    \item \textbf{生成式模型}（如朴素贝叶斯）：它会先去学习羊长什么样（分布）、狗长什么样（分布）。当你给它一张新照片时，它会对比这张照片更像羊还是更像狗。它关注的是**事物的内在特�?*�?
+    \item \textbf{判别式模型}（如 SVM、逻辑回归）：它不去关心羊或狗具体长什么样，它只关心两者的**分界�?*在哪里。当你给它一张新照片时，它只需看这张照片落在分界线的哪一侧。它关注的是**事物间的差异**�?
+\end{itemize}
+\end{importantbox}
+
+\begin{itemize}
+    \item \textbf{判别式模�?(Discriminative)}：直接建�?$P(c|\mathbf{x})$ 或决策函�?$f(\mathbf{x})$。例如：逻辑回归、SVM、神经网络、决策树�?
+    \item \textbf{生成式模�?(Generative)}：先建模联合概率分布 $P(\mathbf{x}, c)$（通常通过 $P(c)P(\mathbf{x}|c)$ 得到），然后再推�?$P(c|\mathbf{x})$。例如：朴素贝叶斯、隐马尔可夫模型 (HMM)�?
+\end{itemize}
+
+\subsection{朴素贝叶斯分类器 (Naive Bayes)}
+
+\begin{definition}[属性条件独立性假设]
+由于直接估计 $P(\mathbf{x}|c)$�?d$ 维联合分布）面临严重的参数爆炸和数据稀疏问题，朴素贝叶斯假设：\textbf{所有属性相互独立地对分类结果产生影响}�?
+\[
+P(\mathbf{x} | c) = P(x_1, x_2, \dots, x_d | c) = \prod_{j=1}^d P(x_j | c)
+\]
+\end{definition}
+
+\begin{theorem}[朴素贝叶斯判定准则]
+基于以上假设，后验概率可改写为：
+\[
+P(c | \mathbf{x}) = \frac{P(c) \prod_{j=1}^d P(x_j | c)}{P(\mathbf{x})}
+\]
+由于 $P(\mathbf{x})$ 对所有类相同，判定准则为�?
+\[
+h_{nb}(\mathbf{x}) = \arg \max_{c \in \mathcal{Y}} P(c) \prod_{j=1}^d P(x_j | c)
+\]
+\end{theorem}
+
+\subsection{朴素贝叶斯完整计算}
+
+\begin{exercise}[西瓜数据集：朴素贝叶斯详细计算]
+使用西瓜数据集（17个样本），预测样�?色泽=乌黑，根�?蜷缩，敲�?沉闷"是否为好瓜�?
+
+\textbf{数据统计}�?
+\begin{itemize}
+    \item 好瓜�?�?
+    \item 坏瓜�?�?
+\end{itemize}
+
+各属性在不同类别下的分布�?
+\begin{center}
+\begin{tabular}{c|c|cc}
+属�?& 取�?& 好瓜中数�?& 坏瓜中数�?\\
+\hline
+\multirow{3}{*}{色泽} & 青绿 & 3 & 3 \\
+& 乌黑 & 4 & 2 \\
+& 浅白 & 1 & 4 \\
+\hline
+\multirow{3}{*}{根蒂} & 蜷缩 & 5 & 3 \\
+& 稍蜷 & 3 & 4 \\
+& 硬挺 & 0 & 2 \\
+\hline
+\multirow{3}{*}{敲声} & 浊响 & 6 & 4 \\
+& 沉闷 & 2 & 3 \\
+& 清脆 & 0 & 2 \\
+\end{tabular}
+\end{center}
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算类先验概率
+\begin{align*}
+P(\text{好瓜}) &= \frac{8}{17} = 0.471 \\
+P(\text{坏瓜}) &= \frac{9}{17} = 0.529
+\end{align*}
+
+\textbf{步骤2}：计算条件概�?
+
+对于好瓜类：
+\begin{align*}
+P(\text{色泽=乌黑}|\text{好瓜}) &= \frac{4}{8} = 0.5 \\
+P(\text{根蒂=蜷缩}|\text{好瓜}) &= \frac{5}{8} = 0.625 \\
+P(\text{敲声=沉闷}|\text{好瓜}) &= \frac{2}{8} = 0.25
+\end{align*}
+
+对于坏瓜类：
+\begin{align*}
+P(\text{色泽=乌黑}|\text{坏瓜}) &= \frac{2}{9} = 0.222 \\
+P(\text{根蒂=蜷缩}|\text{坏瓜}) &= \frac{3}{9} = 0.333 \\
+P(\text{敲声=沉闷}|\text{坏瓜}) &= \frac{3}{9} = 0.333
+\end{align*}
+
+\textbf{步骤3}：计算后验概率（未归一化）
+
+好瓜�?
+\begin{align*}
+P(\text{好瓜}) \times P(\mathbf{x}|\text{好瓜}) &= 0.471 \times 0.5 \times 0.625 \times 0.25 \\
+&= 0.471 \times 0.0781 \\
+&= 0.0368
+\end{align*}
+
+坏瓜�?
+\begin{align*}
+P(\text{坏瓜}) \times P(\mathbf{x}|\text{坏瓜}) &= 0.529 \times 0.222 \times 0.333 \times 0.333 \\
+&= 0.529 \times 0.0246 \\
+&= 0.0130
+\end{align*}
+
+\textbf{步骤4}：归一化（可选）
+\begin{align*}
+P(\text{好瓜}|\mathbf{x}) &= \frac{0.0368}{0.0368 + 0.0130} = \frac{0.0368}{0.0498} = 73.9\% \\
+P(\text{坏瓜}|\mathbf{x}) &= \frac{0.0130}{0.0498} = 26.1\%
+\end{align*}
+
+\textbf{步骤5}：预�?
+
+由于 $P(\text{好瓜}|\mathbf{x}) = 73.9\% > P(\text{坏瓜}|\mathbf{x}) = 26.1\%$
+
+\textbf{预测结果}：\boxed{\text{好瓜}}
+\end{exercise}
+
+\subsection{拉普拉斯平滑详解}
+
+\begin{exercise}[拉普拉斯平滑应用]
+预测样本"色泽=青绿，根�?硬挺，敲�?清脆"�?
+
+注意：好瓜中"根蒂=硬挺"�?敲声=清脆"的数量都�?�?
+
+\textbf{不使用平滑}�?
+\begin{align*}
+P(\text{根蒂=硬挺}|\text{好瓜}) &= \frac{0}{8} = 0 \\
+P(\text{敲声=清脆}|\text{好瓜}) &= \frac{0}{8} = 0
+\end{align*}
+
+\[
+P(\text{好瓜}) \times P(\mathbf{x}|\text{好瓜}) = 0.471 \times \frac{3}{8} \times 0 \times 0 = 0
+\]
+
+这导致好瓜的后验概率�?，即使其他属性支持好瓜！
+
+\textbf{使用拉普拉斯平滑}�?
+
+设类别数 $K = 2$，各属性取值数 $N_{\text{色泽}} = 3$�?N_{\text{根蒂}} = 3$�?N_{\text{敲声}} = 3$�?
+
+平滑后的先验概率�?
+\begin{align*}
+P(\text{好瓜}) &= \frac{8 + 1}{17 + 2} = \frac{9}{19} = 0.474 \\
+P(\text{坏瓜}) &= \frac{9 + 1}{17 + 2} = \frac{10}{19} = 0.526
+\end{align*}
+
+平滑后的条件概率（好瓜类）：
+\begin{align*}
+P(\text{色泽=青绿}|\text{好瓜}) &= \frac{3 + 1}{8 + 3} = \frac{4}{11} = 0.364 \\
+P(\text{根蒂=硬挺}|\text{好瓜}) &= \frac{0 + 1}{8 + 3} = \frac{1}{11} = 0.091 \\
+P(\text{敲声=清脆}|\text{好瓜}) &= \frac{0 + 1}{8 + 3} = \frac{1}{11} = 0.091
+\end{align*}
+
+平滑后的条件概率（坏瓜类）：
+\begin{align*}
+P(\text{色泽=青绿}|\text{坏瓜}) &= \frac{3 + 1}{9 + 3} = \frac{4}{12} = 0.333 \\
+P(\text{根蒂=硬挺}|\text{坏瓜}) &= \frac{2 + 1}{9 + 3} = \frac{3}{12} = 0.25 \\
+P(\text{敲声=清脆}|\text{坏瓜}) &= \frac{2 + 1}{9 + 3} = \frac{3}{12} = 0.25
+\end{align*}
+
+计算后验概率�?
+
+好瓜�?
+\[
+0.474 \times 0.364 \times 0.091 \times 0.091 = 0.474 \times 0.00301 = 0.00143
+\]
+
+坏瓜�?
+\[
+0.526 \times 0.333 \times 0.25 \times 0.25 = 0.526 \times 0.0208 = 0.0109
+\]
+
+\textbf{预测结果}�?0.0109 > 0.00143$，预测为\boxed{\text{坏瓜}}
+\end{exercise}
+
+\subsection{连续属性贝叶斯详解}
+
+\begin{exercise}[高斯朴素贝叶斯完整计算]
+给定训练数据�?个连续特征）�?
+
+\begin{center}
+\begin{tabular}{c|cc|c}
+样本 & $x_1$ & $x_2$ & $y$ \\
+\hline
+1 & 1.0 & 2.0 & +1 \\
+2 & 1.5 & 1.8 & +1 \\
+3 & 2.0 & 2.2 & +1 \\
+4 & 5.0 & 8.0 & -1 \\
+5 & 5.5 & 7.5 & -1 \\
+6 & 6.0 & 8.5 & -1 \\
+\end{tabular}
+\end{center}
+
+预测样本 $\mathbf{x} = [3.0, 4.0]^T$�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算类先验概率
+\begin{align*}
+P(Y = +1) &= \frac{3}{6} = 0.5 \\
+P(Y = -1) &= \frac{3}{6} = 0.5
+\end{align*}
+
+\textbf{步骤2}：估计正态分布参�?
+
+\textbf{类别 +1}（样�?, 2, 3）：
+\begin{align*}
+\mu_{+1,1} &= \frac{1.0 + 1.5 + 2.0}{3} = 1.5 \\
+\sigma_{+1,1}^2 &= \frac{(1.0-1.5)^2 + (1.5-1.5)^2 + (2.0-1.5)^2}{3} = \frac{0.25 + 0 + 0.25}{3} = 0.167 \\
+\mu_{+1,2} &= \frac{2.0 + 1.8 + 2.2}{3} = 2.0 \\
+\sigma_{+1,2}^2 &= \frac{(2.0-2.0)^2 + (1.8-2.0)^2 + (2.2-2.0)^2}{3} = \frac{0 + 0.04 + 0.04}{3} = 0.027
+\end{align*}
+
+\textbf{类别 -1}（样�?, 5, 6）：
+\begin{align*}
+\mu_{-1,1} &= \frac{5.0 + 5.5 + 6.0}{3} = 5.5 \\
+\sigma_{-1,1}^2 &= \frac{(5.0-5.5)^2 + (5.5-5.5)^2 + (6.0-5.5)^2}{3} = \frac{0.25 + 0 + 0.25}{3} = 0.167 \\
+\mu_{-1,2} &= \frac{8.0 + 7.5 + 8.5}{3} = 8.0 \\
+\sigma_{-1,2}^2 &= \frac{(8.0-8.0)^2 + (7.5-8.0)^2 + (8.5-8.0)^2}{3} = \frac{0 + 0.25 + 0.25}{3} = 0.167
+\end{align*}
+
+\textbf{步骤3}：计算概率密�?
+
+高斯概率密度函数�?
+\[
+p(x|\mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)
+\]
+
+对于 $\mathbf{x} = [3.0, 4.0]^T$�?
+
+\textbf{类别 +1}�?
+\begin{align*}
+p(x_1=3.0|Y=+1) &= \frac{1}{\sqrt{2\pi \times 0.167}} \exp\left(-\frac{(3.0-1.5)^2}{2 \times 0.167}\right) \\
+&= \frac{1}{1.025} \exp\left(-\frac{2.25}{0.334}\right) \\
+&= 0.976 \times \exp(-6.74) \\
+&= 0.976 \times 0.00118 = 0.00115
+\end{align*}
+
+\begin{align*}
+p(x_2=4.0|Y=+1) &= \frac{1}{\sqrt{2\pi \times 0.027}} \exp\left(-\frac{(4.0-2.0)^2}{2 \times 0.027}\right) \\
+&= \frac{1}{0.412} \exp\left(-\frac{4.0}{0.054}\right) \\
+&= 2.43 \times \exp(-74.1) \\
+&\approx 0 \quad \text{（极小值）}
+\end{align*}
+
+\textbf{类别 -1}�?
+\begin{align*}
+p(x_1=3.0|Y=-1) &= \frac{1}{\sqrt{2\pi \times 0.167}} \exp\left(-\frac{(3.0-5.5)^2}{2 \times 0.167}\right) \\
+&= 0.976 \times \exp\left(-\frac{6.25}{0.334}\right) \\
+&= 0.976 \times \exp(-18.7) \\
+&\approx 0 \quad \text{（极小值）}
+\end{align*}
+
+\begin{align*}
+p(x_2=4.0|Y=-1) &= \frac{1}{\sqrt{2\pi \times 0.167}} \exp\left(-\frac{(4.0-8.0)^2}{2 \times 0.167}\right) \\
+&= 0.976 \times \exp\left(-\frac{16}{0.334}\right) \\
+&= 0.976 \times \exp(-47.9) \\
+&\approx 0 \quad \text{（极小值）}
+\end{align*}
+
+\textbf{步骤4}：比较后验概�?
+
+由于两类的概率密度都极小，但类别 +1 �?$x_1$ 概率密度相对较大�?3.0$ 更接�?$\mu_{+1,1} = 1.5$），
+
+实际计算中，比较对数后验概率更稳定：
+\begin{align*}
+\log P(+1|\mathbf{x}) &\propto \log P(+1) + \log p(x_1|+1) + \log p(x_2|+1) \\
+&= \log 0.5 + (-6.74) + (-74.1) = -0.69 - 80.84 = -81.53
+\end{align*}
+
+\begin{align*}
+\log P(-1|\mathbf{x}) &\propto \log P(-1) + \log p(x_1|-1) + \log p(x_2|-1) \\
+&= \log 0.5 + (-18.7) + (-47.9) = -0.69 - 66.6 = -67.29
+\end{align*}
+
+由于 $-67.29 > -81.53$，预测为 \boxed{Y = -1}
+
+\textbf{注}：虽然样�?$[3.0, 4.0]$ 看起来更接近类别 +1 的中心，但由于类�?+1 的方差很小，该样本落在其分布的极端尾部，概率密度反而更低�?
+\end{exercise}
+
+
+%========================================
+% �?�?集成学习
+%========================================
+\section{集成学习}
+
+\subsection{集成学习基本概念}
+
+\begin{definition}[集成学习]
+集成学习通过构建并结合多个学习器来完成学习任务，也称为多分类器系统或基于委员会的学习�?
+\end{definition}
+
+\begin{importantbox}[集成学习的两个核心问题]
+\begin{enumerate}
+    \item \textbf{如何生成个体学习器}：Bagging、Boosting�?
+    \item \textbf{如何结合个体学习器}：投票法、平均法、学习法�?
+\end{enumerate}
+\end{importantbox}
+
+\subsection{Bagging与随机森林}
+
+\subsubsection{Bootstrap采样}
+
+\begin{definition}[Bootstrap采样]
+从含 $m$ 个样本的数据集中，有放回地随机抽�?$m$ 次，形成一个新的训练集�?
+\end{definition}
+
+\begin{theorem}[Bootstrap样本覆盖率]
+一个样本在一次Bootstrap采样中不被选中的概率为�?
+\[
+\left(1 - \frac{1}{m}\right)^m \approx \frac{1}{e} \approx 36.8\%
+\]
+因此，约63.2\%的原始样本会出现在Bootstrap样本中�?
+\end{theorem}
+
+\textbf{推导}�?
+\begin{align*}
+\lim_{m \to \infty} \left(1 - \frac{1}{m}\right)^m &= \lim_{m \to \infty} \left[\left(1 - \frac{1}{m}\right)^{-m}\right]^{-1} = e^{-1} \approx 0.368
+\end{align*}
+
+\begin{exercise}[Bagging预测]
+使用5个决策树基学习器进行Bagging分类，对样本 $\mathbf{x}$ 的预测结果为�?
+
+\begin{center}
+\begin{tabular}{c|ccccc}
+学习�?& 1 & 2 & 3 & 4 & 5 \\
+\hline
+预测 & 好瓜 & 坏瓜 & 好瓜 & 好瓜 & 坏瓜 \\
+\end{tabular}
+\end{center}
+
+\textbf{解}�?
+
+投票统计�?
+\begin{itemize}
+    \item 好瓜�?�?
+    \item 坏瓜�?�?
+\end{itemize}
+
+最终预测：\boxed{\text{好瓜}}（多数投票）
+\end{exercise}
+
+\subsubsection{随机森林}
+
+\begin{definition}[随机森林]
+随机森林是Bagging的扩展，在构建每棵决策树时：
+\begin{enumerate}
+    \item 使用Bootstrap采样获取训练�?
+    \item 在每个节点分裂时，从 $d$ 个属性中随机选择 $k$ 个属性（通常 $k = \log_2 d$�?
+    \item 从这 $k$ 个属性中选择最优属性进行分�?
+\end{enumerate}
+\end{definition}
+
+\begin{exercise}[随机森林属性选择]
+西瓜数据集有6个属性（色泽、根蒂、敲声、纹理、脐部、触感），构建随机森林�?
+
+在某节点分裂时，随机选择了属性\{色泽, 敲声, 脐部\}�?k = \lfloor\log_2 6\rfloor = 2$，这里取3个），各属性的信息增益为：
+
+\begin{center}
+\begin{tabular}{c|ccc}
+属�?& 色泽 & 敲声 & 脐部 \\
+\hline
+信息增益 & 0.109 & 0.141 & 0.285 \\
+\end{tabular}
+\end{center}
+
+\textbf{解}：在随机选择�?个属性中�?脐部"的信息增益最大（0.285），选择"脐部"进行分裂�?
+
+\textbf{注}：虽然全局最优属性是"纹理"�?Gain = 0.296$），但由于随机森林的随机属性选择机制�?纹理"未被选中，因此选择了次优属�?脐部"�?
+\end{exercise}
+
+\subsection{Boosting}
+
+\subsubsection{AdaBoost算法}
+
+\begin{notebox}[AdaBoost 的“重构”思想]
+AdaBoost 之所以强大，在于它对错误样本的“执着”：
+\begin{enumerate}
+    \item \textbf{不放弃差生}：每一轮，算法会自动提高被误分类样本的权重。这强迫下一轮的学习器必须更关注这些“难题”，直到它们被攻克�?
+    \item \textbf{优胜劣汰}：计算准确的学习器会获得更高的发言�?($\alpha_t$)，而表现较差的学习器投票权则会被压缩�?
+    \item \textbf{化腐朽为神奇}：通过这种“关注难�?+ 加权组合”的方式，哪怕是一群只比随机猜测稍好一点的“弱学习器”，组合起来也能成为一个极强的分类器�?
+\end{enumerate}
+\end{notebox}
+
+\begin{definition}[AdaBoost]
+AdaBoost（Adaptive Boosting）是一种迭代算法：
+\begin{enumerate}
+    \item 初始化样本权�?$w_i = 1/m$
+    \item 训练基学习器，计算加权错误率
+    \item 根据错误率计算学习器权重
+    \item 更新样本权重（增加误分类样本权重�?
+    \item 重复步骤2-4，直到达到指定数量或错误率为0
+\end{enumerate}
+\end{definition}
+
+\begin{theorem}[AdaBoost权重公式]
+设基学习�?$h_t$ 的加权错误率�?$\epsilon_t$，则�?
+\begin{enumerate}
+    \item 学习器权重：$\alpha_t = \frac{1}{2}\ln\frac{1-\epsilon_t}{\epsilon_t}$
+    \item 样本权重更新�?w_i^{(t+1)} = \frac{w_i^{(t)}}{Z_t} \times \begin{cases} e^{-\alpha_t} & \text{分类正确} \\ e^{\alpha_t} & \text{分类错误} \end{cases}$
+\end{enumerate}
+其中 $Z_t$ 为归一化因子�?
+\end{theorem}
+
+\begin{exercise}[AdaBoost完整计算]
+给定5个样本的二分类问题：
+
+\begin{center}
+\begin{tabular}{c|ccccc}
+样本 & 1 & 2 & 3 & 4 & 5 \\
+\hline
+真实标签 & +1 & +1 & -1 & -1 & +1 \\
+\end{tabular}
+\end{center}
+
+第一个基学习�?$h_1$ 预测结果为：
+
+\begin{center}
+\begin{tabular}{c|ccccc}
+样本 & 1 & 2 & 3 & 4 & 5 \\
+\hline
+$h_1$预测 & +1 & +1 & +1 & -1 & -1 \\
+正确? & �?& �?& �?& �?& �?\\
+\end{tabular}
+\end{center}
+
+计算 $h_1$ 的权重和更新后的样本权重�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：初始权�?
+\[
+w_i^{(1)} = \frac{1}{5} = 0.2, \quad i = 1, 2, 3, 4, 5
+\]
+
+\textbf{步骤2}：计算加权错误率
+
+误分类样本：3�?
+\[
+\epsilon_1 = w_3^{(1)} + w_5^{(1)} = 0.2 + 0.2 = 0.4
+\]
+
+\textbf{步骤3}：计算学习器权重
+\[
+\alpha_1 = \frac{1}{2}\ln\frac{1-\epsilon_1}{\epsilon_1} = \frac{1}{2}\ln\frac{0.6}{0.4} = \frac{1}{2}\ln 1.5 = \frac{1}{2} \times 0.405 = 0.203
+\]
+
+\textbf{步骤4}：更新样本权�?
+
+正确分类的样本（1, 2, 4）：
+\[
+w_i^{(2)} \propto w_i^{(1)} \cdot e^{-\alpha_1} = 0.2 \times e^{-0.203} = 0.2 \times 0.816 = 0.163
+\]
+
+错误分类的样本（3, 5）：
+\[
+w_i^{(2)} \propto w_i^{(1)} \cdot e^{\alpha_1} = 0.2 \times e^{0.203} = 0.2 \times 1.225 = 0.245
+\]
+
+\textbf{步骤5}：归一�?
+\[
+Z_1 = 3 \times 0.163 + 2 \times 0.245 = 0.489 + 0.490 = 0.979
+\]
+
+归一化后的权重：
+\begin{center}
+\begin{tabular}{c|ccccc}
+样本 & 1 & 2 & 3 & 4 & 5 \\
+\hline
+$w_i^{(2)}$ & 0.167 & 0.167 & 0.250 & 0.167 & 0.250 \\
+\end{tabular}
+\end{center}
+
+\textbf{结论}�?
+\begin{itemize}
+    \item $h_1$ 的权�?$\alpha_1 = 0.203$
+    \item 误分类样本（3, 5）的权重�?.2增加�?.25
+    \item 正确分类样本的权重从0.2降低�?.167
+    \item 下一轮学习器会更关注样本3�?
+\end{itemize}
+\end{exercise}
+
+\begin{exercise}[AdaBoost最终预测]
+经过3轮训练，得到3个基学习器及其权重：
+
+\begin{center}
+\begin{tabular}{c|c|ccccc}
+学习�?& 权重 $\alpha$ & \multicolumn{5}{c}{对各样本的预测} \\
+& & 1 & 2 & 3 & 4 & 5 \\
+\hline
+$h_1$ & 0.42 & +1 & +1 & +1 & -1 & -1 \\
+$h_2$ & 0.65 & +1 & +1 & -1 & -1 & +1 \\
+$h_3$ & 0.92 & +1 & -1 & -1 & +1 & +1 \\
+\end{tabular}
+\end{center}
+
+计算对样�?的最终预测�?
+
+\textbf{解}�?
+
+AdaBoost最终预测：
+\[
+H(\mathbf{x}) = sign\left(\sum_{t=1}^{T} \alpha_t h_t(\mathbf{x})\right)
+\]
+
+对样�?�?
+\begin{align*}
+\sum_{t=1}^{3} \alpha_t h_t(\mathbf{x}_3) &= 0.42 \times (+1) + 0.65 \times (-1) + 0.92 \times (-1) \\
+&= 0.42 - 0.65 - 0.92 \\
+&= -1.15
+\end{align*}
+
+\[
+H(\mathbf{x}_3) = sign(-1.15) = -1
+\]
+
+\textbf{最终预测}：样�?为\boxed{-1}�?
+\end{exercise}
+
+\begin{exercise}[AdaBoost 算法：作�?8]
+给定 10 个样本的数据集如下：
+\begin{center}
+\small
+\begin{tabular}{c|cccccccccc}
+\toprule
+$x_i$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+$y_i$ & 1 & 1 & 1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+基学习器 $h(x)$ 为决策树桩（门限分类器），其形式为：
+\[
+h(x) = \begin{cases} +1, x < v \\ -1, x > v \end{cases} \quad \text{或} \quad h(x) = \begin{cases} -1, x < v \\ +1, x > v \end{cases}
+\]
+其中 $v \in \{1.5, 2.5, \cdots, 9.5\}$。使�?AdaBoost 算法训练�?
+
+\textbf{解}�?
+
+\textbf{�?1 轮迭代}�?
+\begin{itemize}
+    \item 初始权重 $w_{1,i} = 0.1$�?
+    \item 测试不同阈�?$v$ 下的错误�?$\epsilon$�?
+    \begin{center}
+    \small
+    \begin{tabular}{c|c|ccccccccc}
+    \toprule
+    分类准则 & $v$ & 1.5 & 2.5 & 3.5 & 4.5 & 5.5 & 6.5 & 7.5 & 8.5 & 9.5 \\
+    \hline
+    $x<v \to +1$ & $\epsilon$ & 0.5 & 0.4 & \textbf{0.3} & 0.4 & 0.5 & 0.6 & 0.5 & 0.4 & 0.3 \\
+    $x<v \to -1$ & $\epsilon$ & 0.5 & 0.6 & 0.7 & 0.6 & 0.5 & 0.4 & 0.5 & 0.6 & 0.7 \\
+    \bottomrule
+    \end{tabular}
+    \end{center}
+    \item 最小值出现在 $v=3.5$（或 9.5，此处�?3.5），得到 $h_1(x) = \begin{cases} +1, x < 3.5 \\ -1, x > 3.5 \end{cases}$�?
+    \item 错误�?$\epsilon_1 = 0.3$，计算权�?$\alpha_1 = \frac{1}{2}\ln\frac{1-0.3}{0.3} \approx 0.4236$�?
+\end{itemize}
+
+\textbf{�?2 轮迭代}�?
+\begin{itemize}
+    \item 更新并归一化权�?$w_{2,i}$�?
+    \[ Z_1 = \sum_{i=1}^{10} w_{1,i} e^{-\alpha_1 y_i h_1(x_i)} = 7 \times 0.1 e^{-0.4236} + 3 \times 0.1 e^{0.4236} \approx 0.458 + 0.458 = 0.916 \]
+    归一化后，正确样本权�?$\approx 0.072$，错误样本（7, 8, 9）权�?$\approx 0.167$�?
+    \item 再次寻找最优阈值，此时 $v=9.5$ �?$x < v$ �?$+1$ 时，错误率最小：$\epsilon_2 = 0.072 \times 3 = 0.216$�?
+    \item 选择 $h_2(x) = \begin{cases} +1, x < 9.5 \\ -1, x > 9.5 \end{cases}$�?
+    \item 计算权重 $\alpha_2 = \frac{1}{2}\ln\frac{1-0.216}{0.216} \approx 0.6496$�?
+\end{itemize}
+
+\textbf{�?3 轮迭代}�?
+\begin{itemize}
+    \item 更新权重 $w_{3,i}$。经过计算选择 $h_3(x) = \begin{cases} -1, x < 6.5 \\ +1, x > 6.5 \end{cases}$�?
+    \item 计算权重 $\alpha_3 \approx 0.7514$�?
+\end{itemize}
+
+\textbf{权重分布与预测汇总表}�?
+\begin{center}
+\footnotesize
+\begin{tabular}{c|cccccccccc}
+\toprule
+$x_i$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+\hline
+$w_{1,i}$ & 0.1 & 0.1 & 0.1 & 0.1 & 0.1 & 0.1 & 0.1 & 0.1 & 0.1 & 0.1 \\
+$h_1(x)$ & +1 & +1 & +1 & -1 & -1 & -1 & -1 & -1 & -1 & -1 \\
+$w_{2,i}$ & 0.072 & 0.072 & 0.072 & 0.072 & 0.072 & 0.072 & 0.167 & 0.167 & 0.167 & 0.072 \\
+$h_2(x)$ & +1 & +1 & +1 & +1 & +1 & +1 & +1 & +1 & +1 & -1 \\
+$w_{3,i}$ & 0.046 & 0.046 & 0.046 & 0.167 & 0.167 & 0.167 & 0.106 & 0.106 & 0.106 & 0.046 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{最终集成模型}�?
+\[
+H(x) = sign\left(0.4236h_1(x) + 0.6496h_2(x) + 0.7514h_3(x)\right)
+\]
+
+\textbf{验证集成模型错误率}�?
+\begin{itemize}
+    \item 对于 $x=1,2,3$�?H(x) = sign(0.4236+0.6496-0.7514) = sign(0.3218) = +1$ （正确）
+    \item 对于 $x=4,5,6$�?H(x) = sign(-0.4236+0.6496-0.7514) = sign(-0.5254) = -1$ （正确）
+    \item 对于 $x=7,8,9$�?H(x) = sign(-0.4236+0.6496+0.7514) = sign(0.9774) = +1$ （正确）
+    \item 对于 $x=10$�?H(x) = sign(-0.4236-0.6496-0.7514) = sign(-1.8246) = -1$ （正确）
+\end{itemize}
+最终集成模型在训练集上的错误率�?\textbf{0\%}�?
+\end{exercise}
+
+
+\subsection{结合策略}
+
+\subsubsection{投票法}
+
+\begin{definition}[投票法]
+对于分类问题，常用的投票策略有：
+\begin{enumerate}
+    \item \textbf{绝对多数投票}：某类得票超过半数才预测为该类，否则拒绝预测
+    \item \textbf{相对多数投票}：预测为得票最多的类别
+    \item \textbf{加权投票}�?H(\mathbf{x}) = \arg\max_c \sum_{i=1}^{T} w_i \cdot \mathbb{I}(h_i(\mathbf{x}) = c)$
+\end{enumerate}
+\end{definition}
+
+\subsubsection{平均法}
+
+\begin{definition}[平均法]
+对于回归问题或概率输出：
+\begin{enumerate}
+    \item \textbf{简单平均}�?H(\mathbf{x}) = \frac{1}{T}\sum_{i=1}^{T} h_i(\mathbf{x})$
+    \item \textbf{加权平均}�?H(\mathbf{x}) = \sum_{i=1}^{T} w_i h_i(\mathbf{x})$，其�?$\sum w_i = 1$
+\end{enumerate}
+\end{definition}
+
+\begin{exercise}[回归集成]
+3个回归模型对样本 $\mathbf{x}$ 的预测值分别为�?
+
+\begin{center}
+\begin{tabular}{c|ccc}
+模型 & 1 & 2 & 3 \\
+\hline
+预测�?& 10.5 & 12.0 & 11.2 \\
+权重 & 0.3 & 0.5 & 0.2 \\
+\end{tabular}
+\end{center}
+
+计算简单平均和加权平均的预测结果�?
+
+\textbf{解}�?
+
+简单平均：
+\[
+H(\mathbf{x}) = \frac{10.5 + 12.0 + 11.2}{3} = \frac{33.7}{3} = 11.23
+\]
+
+加权平均�?
+\[
+H(\mathbf{x}) = 0.3 \times 10.5 + 0.5 \times 12.0 + 0.2 \times 11.2 = 3.15 + 6.0 + 2.24 = 11.39
+\]
+\end{exercise}
+
+%========================================
+% �?�?聚类算法
+%========================================
+\section{聚类算法}
+
+\subsection{聚类任务}
+
+\begin{definition}[聚类任务]
+�?$m$ 个无标签样本 $D = \{\mathbf{x}_1, \mathbf{x}_2, \cdots, \mathbf{x}_m\}$ 划分�?$k$ 个不相交的簇 $C_i$，满足：
+\begin{itemize}
+    \item $\bigcup_{i=1}^k C_i = D$
+    \item $C_i \cap C_j = \emptyset, \quad i, j = 1, 2, \cdots, k, \quad i \neq j$
+\end{itemize}
+聚类结果通常用簇标签向量 $\boldsymbol{\lambda} = [\lambda_1, \lambda_2, \cdots, \lambda_m]$ 表示，其�?$\lambda_i \in \{1, 2, \cdots, k\}$ 为样�?$\mathbf{x}_i$ 的簇标签�?
+\end{definition}
+
+\subsection{k 均值聚类算�?(k-means)}
+
+\subsubsection{算法原理}
+k 均值聚类通过最小化平方误差来划分簇�?
+\[
+E = \sum_{i=1}^{k} \sum_{\mathbf{x} \in C_i} \|\mathbf{x} - \boldsymbol{\mu}_i\|_2^2
+\]
+其中 $\boldsymbol{\mu}_i = \frac{1}{|C_i|} \sum_{\mathbf{x} \in C_i} \mathbf{x}$ 是簇 $C_i$ 的均值向量�?
+
+\begin{notebox}[复杂度说明]
+�?$m$ 个样本划分为 $k$ 个簇的所有可能分法数量为第二�?Stirling 数：
+\[
+S(m, k) = \frac{1}{k!} \sum_{j=0}^k (-1)^{k-j} \binom{k}{j} j^m
+\]
+这是一个极其庞大的数字，因此直接搜索全局最优解�?NP 难问题，k 均值算法采用贪心启发式迭代求解�?
+\end{notebox}
+
+求解该问题是 NP 难的，通常采用贪心启发式迭代求解：
+\begin{notebox}[k 均值聚类算法步骤]
+\begin{enumerate}
+    \item \textbf{初始化}：随机选取 $k$ 个点作为初始聚类中心 $\{\boldsymbol{\mu}_1, \boldsymbol{\mu}_2, \cdots, \boldsymbol{\mu}_k\}$�?
+    \item \textbf{重复以下步骤直到收敛}�?
+    \begin{itemize}
+        \item \textbf{分配簇标签}：计算每个样本到各中心点的距离，将样本分配给最近中心点所在的簇�?
+        \item \textbf{更新聚类中心}：重新计算每个簇的均值，更新为新的聚类中心�?
+    \end{itemize}
+    \item \textbf{输出}：聚类结�?$\{C_1, C_2, \cdots, C_k\}$�?
+\end{enumerate}
+\end{notebox}
+
+\begin{exercise}[k 均值算法迭代：作业 10]
+现有 5 个样本：
+$\mathbf{x}_1 = [0, 0]^T$, $\mathbf{x}_2 = [0, 2]^T$, $\mathbf{x}_3 = [2, 0]^T$, $\mathbf{x}_4 = [4, 6]^T$, $\mathbf{x}_5 = [6, 6]^T$�?
+使用 k 均值方法聚�?2 个簇。初始中心选为 $\boldsymbol{\mu}_1 = [1, 1]^T$ �?$\boldsymbol{\mu}_2 = [2, 1]^T$�?
+
+\textbf{解}�?
+
+\textbf{�?1 轮迭代}�?
+\begin{itemize}
+    \item 计算距离并分配：
+    \begin{itemize}
+        \item $d(\mathbf{x}_1, \boldsymbol{\mu}_1) = \sqrt{(1-0)^2+(1-0)^2} = \sqrt{2}$, $d(\mathbf{x}_1, \boldsymbol{\mu}_2) = \sqrt{(2-0)^2+(1-0)^2} = \sqrt{5}$�?\mathbf{x}_1 \in C_1$�?
+        \item $d(\mathbf{x}_2, \boldsymbol{\mu}_1) = \sqrt{1^2+(-1)^2} = \sqrt{2}$, $d(\mathbf{x}_2, \boldsymbol{\mu}_2) = \sqrt{2^2+(-1)^2} = \sqrt{5}$�?\mathbf{x}_2 \in C_1$�?
+        \item $d(\mathbf{x}_3, \boldsymbol{\mu}_1) = \sqrt{(-1)^2+1^2} = \sqrt{2}$, $d(\mathbf{x}_3, \boldsymbol{\mu}_2) = \sqrt{0^2+1^2} = 1$�?\mathbf{x}_3 \in C_2$�?
+        \item $d(\mathbf{x}_4, \boldsymbol{\mu}_1) = \sqrt{(-3)^2+(-5)^2} = \sqrt{34}$, $d(\mathbf{x}_4, \boldsymbol{\mu}_2) = \sqrt{(-2)^2+(-5)^2} = \sqrt{29}$�?\mathbf{x}_4 \in C_2$�?
+        \item $d(\mathbf{x}_5, \boldsymbol{\mu}_1) = \sqrt{(-5)^2+(-5)^2} = \sqrt{50}$, $d(\mathbf{x}_5, \boldsymbol{\mu}_2) = \sqrt{(-4)^2+(-5)^2} = \sqrt{41}$�?\mathbf{x}_5 \in C_2$�?
+    \end{itemize}
+    \item �?1 轮结果：$C_1 = \{\mathbf{x}_1, \mathbf{x}_2\}$, $C_2 = \{\mathbf{x}_3, \mathbf{x}_4, \mathbf{x}_5\}$�?
+    \item 更新中心�?
+    $\boldsymbol{\mu}_1 = \frac{\mathbf{x}_1+\mathbf{x}_2}{2} = [0, 1]^T$
+    $\boldsymbol{\mu}_2 = \frac{\mathbf{x}_3+\mathbf{x}_4+\mathbf{x}_5}{3} = [\frac{2+4+6}{3}, \frac{0+6+6}{3}]^T = [4, 4]^T$
+\end{itemize}
+
+\textbf{�?2 轮迭代}�?
+\begin{itemize}
+    \item 计算距离并分配：
+    \begin{itemize}
+        \item $d(\mathbf{x}_1, \boldsymbol{\mu}_1) = 1, d(\mathbf{x}_1, \boldsymbol{\mu}_2) = \sqrt{32}$�?\mathbf{x}_1 \in C_1$�?
+        \item $d(\mathbf{x}_2, \boldsymbol{\mu}_1) = 1, d(\mathbf{x}_2, \boldsymbol{\mu}_2) = \sqrt{16+4} = \sqrt{20}$�?\mathbf{x}_2 \in C_1$�?
+        \item $d(\mathbf{x}_3, \boldsymbol{\mu}_1) = \sqrt{4+1} = \sqrt{5}, d(\mathbf{x}_3, \boldsymbol{\mu}_2) = \sqrt{4+16} = \sqrt{20}$�?\mathbf{x}_3 \in C_1$�?
+        \item $d(\mathbf{x}_4, \boldsymbol{\mu}_1) = \sqrt{16+25} = \sqrt{41}, d(\mathbf{x}_4, \boldsymbol{\mu}_2) = \sqrt{0+4} = 2$�?\mathbf{x}_4 \in C_2$�?
+        \item $d(\mathbf{x}_5, \boldsymbol{\mu}_1) = \sqrt{36+25} = \sqrt{61}, d(\mathbf{x}_5, \boldsymbol{\mu}_2) = \sqrt{4+4} = \sqrt{8}$�?\mathbf{x}_5 \in C_2$�?
+    \end{itemize}
+    \item �?2 轮结果：$C_1 = \{\mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3\}$, $C_2 = \{\mathbf{x}_4, \mathbf{x}_5\}$�?
+    \item 更新中心�?
+    $\boldsymbol{\mu}_1 = [\frac{0+0+2}{3}, \frac{0+2+0}{3}]^T \approx [0.67, 0.67]^T$
+    $\boldsymbol{\mu}_2 = [\frac{4+6}{2}, \frac{6+6}{2}]^T = [5, 6]^T$
+\end{itemize}
+
+\textbf{�?3 轮迭代}�?
+\begin{itemize}
+    \item 再次计算距离发现分配未变�?
+    \begin{itemize}
+        \item $d(\mathbf{x}_3, \boldsymbol{\mu}_1) = \sqrt{(2-0.67)^2 + (0-0.67)^2} \approx \sqrt{1.33^2 + 0.67^2} \approx 1.49$
+        \item $d(\mathbf{x}_3, \boldsymbol{\mu}_2) = \sqrt{(2-5)^2 + (0-6)^2} = \sqrt{9+36} = \sqrt{45} \approx 6.71$
+        \item 其他点同理，$C_1 = \{\mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3\}$, $C_2 = \{\mathbf{x}_4, \mathbf{x}_5\}$�?
+    \end{itemize}
+    \item 聚类中心不再变化，算法收敛于 $C_1 = \{\mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3\}$, $C_2 = \{\mathbf{x}_4, \mathbf{x}_5\}$�?
+\end{itemize}
+\end{exercise}
+
+\subsubsection{k 均值的改进}
+\begin{itemize}
+    \item \textbf{k-means++}：通过更优的初始聚类中心选取方式提高算法稳定性和收敛速度�?
+    \item \textbf{k-medians}：使用曼哈顿距离，选取对应维度的中位数作为更新中心，减少外点影响�?
+\end{itemize}
+
+\subsection{聚类结果评价指标}
+
+\subsubsection{外部指标 (External Indices)}
+将聚类结果与参考模型进行比较。设�?$a, b, c, d$ 如下（针对所有样本对 $(\mathbf{x}_i, \mathbf{x}_j), i < j$）：
+\begin{itemize}
+    \item $a$ (SS)：聚类同，参考同�?
+    \item $b$ (SD)：聚类同，参考异�?
+    \item $c$ (DS)：聚类异，参考同�?
+    \item $d$ (DD)：聚类异，参考异�?
+\end{itemize}
+总样本对数量 $\binom{m}{2} = a+b+c+d$�?
+
+常用指标（值越大越好）�?
+\begin{itemize}
+    \item \textbf{Jaccard 系数 (JC)}�?JC = \frac{a}{a+b+c}$
+    \item \textbf{FM 指数 (FMI)}�?FMI = \sqrt{\frac{a}{a+b} \cdot \frac{a}{a+c}}$
+    \item \textbf{Rand 指数 (RI)}�?RI = \frac{2(a+d)}{m(m-1)} = \frac{a+d}{\binom{m}{2}}$
+\end{itemize}
+
+\begin{exercise}[外部指标计算]
+现有 5 个样本，聚类结果�?$C_1 = \{x_1, x_2, x_3\}, C_2 = \{x_4, x_5\}$。假设真实标签为 $C^*_1 = \{x_1, x_2\}, C^*_2 = \{x_3, x_4, x_5\}$。计�?JC、FMI �?RI�?
+
+\textbf{解}�?
+\begin{itemize}
+    \item $SS = \{ \{x_1, x_2\}, \{x_4, x_5\} \}$, $a = |SS| = 2$
+    \item $SD = \{ \{x_1, x_3\}, \{x_2, x_3\} \}$, $b = |SD| = 2$
+    \item $DS = \{ \{x_3, x_4\}, \{x_3, x_5\} \}$, $c = |DS| = 2$
+    \item $DD = \{ \{x_1, x_4\}, \{x_1, x_5\}, \{x_2, x_4\}, \{x_2, x_5\} \}$, $d = |DD| = 4$
+\end{itemize}
+计算得：
+\begin{itemize}
+    \item $JC = \frac{2}{2+2+2} = \frac{1}{3} \approx 0.333$
+    \item $FMI = \sqrt{\frac{2}{4} \cdot \frac{2}{4}} = 0.5$
+    \item $RI = \frac{2+4}{10} = 0.6$
+\end{itemize}
+\end{exercise}
+
+\subsubsection{内部指标 (Internal Indices)}
+定义簇内距离与簇间距离：
+\begin{itemize}
+    \item \textbf{簇内平均距离} $avg(C)$�?
+    \[
+    avg(C) = \frac{2}{|C|(|C|-1)} \sum_{1 \le i < j \le |C|} d(\mathbf{x}_i, \mathbf{x}_j)
+    \]
+    \item \textbf{簇直径} $diam(C)$�?
+    \[
+    diam(C) = \max_{1 \le i < j \le |C|} d(\mathbf{x}_i, \mathbf{x}_j)
+    \]
+    \item \textbf{簇间最小距离} $d_{min}(C_i, C_j)$�?
+    \[
+    d_{min}(C_i, C_j) = \min_{\mathbf{x}_p \in C_i, \mathbf{x}_q \in C_j} d(\mathbf{x}_p, \mathbf{x}_q)
+    \]
+    \item \textbf{簇间中心距离} $d_{cen}(C_i, C_j)$�?
+    \[
+    d_{cen}(C_i, C_j) = d(\boldsymbol{\mu}_i, \boldsymbol{\mu}_j)
+    \]
+\end{itemize}
+
+常用指标�?
+\begin{itemize}
+    \item \textbf{DB 指数 (DBI)}：值越小越好�?
+    \[
+    DBI = \frac{1}{k} \sum_{i=1}^k \max_{j \neq i} \left( \frac{avg(C_i) + avg(C_j)}{d_{cen}(C_i, C_j)} \right)
+    \]
+    \item \textbf{Dunn 指数 (DI)}：值越大越好�?
+    \[
+    DI = \min_{1 \le i \le k} \left\{ \min_{j \neq i} \left( \frac{d_{min}(C_i, C_j)}{\max_{1 \le l \le k} diam(C_l)} \right) \right\}
+    \]
+\end{itemize}
+
+\begin{exercise}[Dunn 指数计算]
+现有五点�?\mathbf{x}_1=[0,0], \mathbf{x}_2=[0,2], \mathbf{x}_3=[2,0], \mathbf{x}_4=[4,6], \mathbf{x}_5=[6,6]$�?
+聚类 1�?C_1=\{\mathbf{x}_1,\mathbf{x}_2,\mathbf{x}_3\}, C_2=\{\mathbf{x}_4,\mathbf{x}_5\}$�?
+聚类 2�?C_1=\{\mathbf{x}_1,\mathbf{x}_2\}, C_2=\{\mathbf{x}_3,\mathbf{x}_4,\mathbf{x}_5\}$�?
+计算两个结果�?DI 指数�?
+
+\textbf{解}�?
+\textbf{聚类 1}�?
+\begin{itemize}
+    \item $diam(C_1) = d(\mathbf{x}_2, \mathbf{x}_3) = \sqrt{2^2+2^2} = \sqrt{8}$�?diam(C_2) = d(\mathbf{x}_4, \mathbf{x}_5) = 2$�?\max diam = \sqrt{8}$�?
+    \item $d_{min}(C_1, C_2)$: 经计�?$\mathbf{x}_2$ �?$\mathbf{x}_4$ 距离最近，$d_{min} = d(\mathbf{x}_2, \mathbf{x}_4) = \sqrt{4^2+4^2} = \sqrt{32}$�?
+    \item $DI_1 = \frac{\sqrt{32}}{\sqrt{8}} = \sqrt{4} = 2$�?
+\end{itemize}
+
+\textbf{聚类 2}�?
+\begin{itemize}
+    \item $diam(C_1) = 2$�?diam(C_2) = d(\mathbf{x}_3, \mathbf{x}_5) = \sqrt{4^2+6^2} = \sqrt{52}$�?\max diam = \sqrt{52}$�?
+    \item $d_{min}(C_1, C_2) = d(\mathbf{x}_1, \mathbf{x}_3) = 2$�?
+    \item $DI_2 = \frac{2}{\sqrt{52}} = \frac{2}{2\sqrt{13}} = \frac{\sqrt{13}}{13} \approx 0.277$�?
+\end{itemize}
+结论：聚�?1 的效果更好（DI 值更大）�?
+\end{exercise}
+
+
+
+%========================================
+% 附录：西瓜数据集
+%========================================
+\appendix
+\section{西瓜数据�?2.0}
+
+\subsection{完整数据}
+
+\begin{table}[H]
+\centering
+\caption{西瓜数据�?2.0}
+\small
+\begin{tabular}{cccccccc}
+\toprule
+\textbf{编号} & \textbf{色泽} & \textbf{根蒂} & \textbf{敲声} & \textbf{纹理} & \textbf{脐部} & \textbf{触感} & \textbf{好瓜} \\
+\midrule
+1 & 青绿 & 蜷缩 & 浊响 & 清晰 & 凹陷 & 硬滑 & �?\\
+2 & 乌黑 & 蜷缩 & 沉闷 & 清晰 & 凹陷 & 硬滑 & �?\\
+3 & 乌黑 & 蜷缩 & 浊响 & 清晰 & 凹陷 & 硬滑 & �?\\
+4 & 青绿 & 蜷缩 & 沉闷 & 清晰 & 凹陷 & 硬滑 & �?\\
+5 & 浅白 & 蜷缩 & 浊响 & 清晰 & 凹陷 & 硬滑 & �?\\
+6 & 青绿 & 稍蜷 & 浊响 & 清晰 & 稍凹 & 软粘 & �?\\
+7 & 乌黑 & 稍蜷 & 浊响 & 稍糊 & 稍凹 & 软粘 & �?\\
+8 & 乌黑 & 稍蜷 & 浊响 & 清晰 & 稍凹 & 硬滑 & �?\\
+9 & 乌黑 & 稍蜷 & 沉闷 & 稍糊 & 稍凹 & 硬滑 & �?\\
+10 & 青绿 & 硬挺 & 清脆 & 清晰 & 平坦 & 软粘 & �?\\
+11 & 浅白 & 硬挺 & 清脆 & 模糊 & 平坦 & 硬滑 & �?\\
+12 & 浅白 & 蜷缩 & 浊响 & 模糊 & 平坦 & 软粘 & �?\\
+13 & 青绿 & 稍蜷 & 浊响 & 稍糊 & 凹陷 & 硬滑 & �?\\
+14 & 浅白 & 稍蜷 & 沉闷 & 稍糊 & 凹陷 & 硬滑 & �?\\
+15 & 乌黑 & 稍蜷 & 浊响 & 清晰 & 稍凹 & 软粘 & �?\\
+16 & 浅白 & 蜷缩 & 浊响 & 模糊 & 平坦 & 硬滑 & �?\\
+17 & 青绿 & 蜷缩 & 沉闷 & 稍糊 & 稍凹 & 硬滑 & �?\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{统计信息汇总}
+
+\subsubsection{类别分布}
+\begin{itemize}
+    \item 好瓜（正例）�?个样本（编号1-8），占比 $\frac{8}{17} \approx 47.1\%$
+    \item 坏瓜（反例）�?个样本（编号9-17），占比 $\frac{9}{17} \approx 52.9\%$
+\end{itemize}
+
+\subsubsection{各属性条件概率表}
+
+\begin{table}[H]
+\centering
+\caption{属性条件概率（用于朴素贝叶斯）}
+\begin{tabular}{c|c|cc|cc}
+\toprule
+\multirow{2}{*}{属性} & \multirow{2}{*}{取值} & \multicolumn{2}{c|}{数量} & \multicolumn{2}{c}{条件概率} \\
+& & 好瓜 & 坏瓜 & $P(\cdot|\text{好})$ & $P(\cdot|\text{坏})$ \\
+\midrule
+\multirow{3}{*}{色泽} & 青绿 & 3 & 3 & 3/8=0.375 & 3/9=0.333 \\
+& 乌黑 & 4 & 2 & 4/8=0.500 & 2/9=0.222 \\
+& 浅白 & 1 & 4 & 1/8=0.125 & 4/9=0.444 \\
+\midrule
+\multirow{3}{*}{根蒂} & 蜷缩 & 5 & 3 & 5/8=0.625 & 3/9=0.333 \\
+& 稍蜷 & 3 & 4 & 3/8=0.375 & 4/9=0.444 \\
+& 硬挺 & 0 & 2 & 0/8=0.000 & 2/9=0.222 \\
+\midrule
+\multirow{3}{*}{敲声} & 浊响 & 6 & 4 & 6/8=0.750 & 4/9=0.444 \\
+& 沉闷 & 2 & 3 & 2/8=0.250 & 3/9=0.333 \\
+& 清脆 & 0 & 2 & 0/8=0.000 & 2/9=0.222 \\
+\midrule
+\multirow{3}{*}{纹理} & 清晰 & 7 & 2 & 7/8=0.875 & 2/9=0.222 \\
+& 稍糊 & 1 & 4 & 1/8=0.125 & 4/9=0.444 \\
+& 模糊 & 0 & 3 & 0/8=0.000 & 3/9=0.333 \\
+\midrule
+\multirow{3}{*}{脐部} & 凹陷 & 6 & 1 & 6/8=0.750 & 1/9=0.111 \\
+& 稍凹 & 2 & 4 & 2/8=0.250 & 4/9=0.444 \\
+& 平坦 & 0 & 4 & 0/8=0.000 & 4/9=0.444 \\
+\midrule
+\multirow{2}{*}{触感} & 硬滑 & 6 & 6 & 6/8=0.750 & 6/9=0.667 \\
+& 软粘 & 2 & 3 & 2/8=0.250 & 3/9=0.333 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{信息增益汇总}
+
+\begin{table}[H]
+\centering
+\caption{各属性的信息增益}
+\begin{tabular}{c|ccc}
+\toprule
+属�?& $Ent(D)$ & 划分后加权熵 & $Gain(D, a)$ \\
+\midrule
+色泽 & 0.998 & 0.889 & 0.109 \\
+根蒂 & 0.998 & 0.855 & 0.143 \\
+敲声 & 0.998 & 0.857 & 0.141 \\
+纹理 & 0.998 & 0.702 & 0.296 \\
+脐部 & 0.998 & 0.713 & 0.285 \\
+触感 & 0.998 & 0.992 & 0.006 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{结论}�?纹理"属性的信息增益最大（0.296），是构建决策树时的最优根节点划分属性�?
+
+\subsection{常用计算公式速查}
+
+\begin{longtable}{|c|l|l|}
+\caption{机器学习常用计算公式汇总表} \\
+\hline
+\textbf{类别} & \textbf{名称} & \textbf{公式} \\
+\hline
+\endfirsthead
+\hline
+\textbf{类别} & \textbf{名称} & \textbf{公式} \\
+\hline
+\endhead
+\hline
+\multirow{4}{*}{线性模型} & 最小二乘解 & $\mathbf{w}^* = (X^TX)^{-1}X^T\mathbf{y}$ \\
+\cline{2-3}
+& 岭回归解 & $\mathbf{w}^* = (X^TX + \lambda I)^{-1}X^T\mathbf{y}$ \\
+\cline{2-3}
+& 逻辑回归 & $P(y=1|\mathbf{x}) = \frac{1}{1 + e^{-(\mathbf{w}^T\mathbf{x} + b)}}$ \\
+\cline{2-3}
+& 均方误差 (MSE) & $MSE = \frac{1}{m}\sum_{i=1}^m (f(\mathbf{x}_i) - y_i)^2$ \\
+\cline{2-3}
+& 决定系数 ($R^2$) & $R^2 = 1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y}_i)^2}$ \\
+\hline
+\multirow{3}{*}{决策树} & 信息�?& $Ent(D) = -\sum_{k=1}^{|y|} p_k \log_2 p_k$ \\
+\cline{2-3}
+& 信息增益 & $Gain(D, a) = Ent(D) - \sum_{v=1}^V \frac{|D^v|}{|D|} Ent(D^v)$ \\
+\cline{2-3}
+& 基尼�?& $Gini(D) = 1 - \sum_{k=1}^{|y|} p_k^2$ \\
+\hline
+\multirow{4}{*}{SVM} & 几何间隔 & $\gamma = \frac{2}{\|\mathbf{w}\|}$ \\
+\cline{2-3}
+& Hinge Loss & $\ell_{hinge}(z) = \max(0, 1-z)$ \\
+\cline{2-3}
+& 高斯�?(RBF) & $\kappa(\mathbf{x}_i, \mathbf{x}_j) = \exp(-\frac{\|\mathbf{x}_i-\mathbf{x}_j\|^2}{2\sigma^2})$ \\
+\cline{2-3}
+& 对偶约束 & $\sum \alpha_i y_i = 0, \quad \alpha_i \ge 0$ \\
+\cline{2-3}
+& 对偶目标函数 & $L(\boldsymbol{\alpha}) = \sum \alpha_i - \frac{1}{2}\sum\sum \alpha_i\alpha_j y_iy_j \kappa(\mathbf{x}_i,\mathbf{x}_j)$ \\
+\hline
+\multirow{3}{*}{贝叶斯} & 贝叶斯公�?& $P(c|\mathbf{x}) = \frac{P(c)P(\mathbf{x}|c)}{P(\mathbf{x})}$ \\
+\cline{2-3}
+& 朴素贝叶�?& $h_{nb}(\mathbf{x}) = \arg\max_{c} P(c)\prod_{j=1}^d P(x_j|c)$ \\
+\cline{2-3}
+& 拉普拉斯平滑 & $\hat{P}(c) = \frac{|D_c|+1}{|D|+N}, \hat{P}(x_i|c) = \frac{|D_{c,x_i}|+1}{|D_c|+N_i}$ \\
+\hline
+\multirow{3}{*}{集成学习} & 学习器权�?$\alpha_t$ & $\alpha_t = \frac{1}{2}\ln\frac{1-\epsilon_t}{\epsilon_t}$ \\
+\cline{2-3}
+& 权重更新 & $w_i^{(t+1)} = \frac{w_i^{(t)}}{Z_t} \exp(-\alpha_t y_i h_t(x_i))$ \\
+\cline{2-3}
+& 结合策略 & $H(\mathbf{x}) = sign\left(\sum_{t=1}^T \alpha_t h_t(\mathbf{x})\right)$ \\
+\hline
+\multirow{3}{*}{神经网络} & Sigmoid & $\sigma(z) = \frac{1}{1 + e^{-z}}$ \\
+\cline{2-3}
+& Softmax & $P(y=k|\mathbf{x}) = \frac{e^{z_k}}{\sum_{j=1}^K e^{z_j}}$ \\
+\cline{2-3}
+& Sigmoid 导数 & $\sigma'(z) = \sigma(z)(1 - \sigma(z))$ \\
+\cline{2-3}
+& 交叉熵损�?& $L = -\sum y \log \hat{y}$ \\
+\hline
+\multirow{3}{*}{聚类} & 闵可夫斯基距�?& $d_{mk}(\mathbf{x}_i, \mathbf{x}_j) = (\sum |x_{iu}-x_{ju}|^p)^{1/p}$ \\
+\cline{2-3}
+& Dunn 指数 (DI) & $DI = \min \frac{d_{min}(C_i, C_j)}{\max diam(C_l)}$ \\
+\cline{2-3}
+& DB 指数 (DBI) & $DBI = \frac{1}{k}\sum \max \frac{avg(C_i)+avg(C_j)}{d_{cen}(C_i,C_j)}$ \\
+\hline
+\multirow{4}{*}{性能度量} & 准确�?(Acc) & $Acc = \frac{TP+TN}{TP+TN+FP+FN}$ \\
+\cline{2-3}
+& 查准�?(P) & $P = \frac{TP}{TP+FP}$ \\
+\cline{2-3}
+& 查全�?(R) & $R = \frac{TP}{TP+FN}$ \\
+\cline{2-3}
+& F1 �?& $F1 = \frac{2 \cdot P \cdot R}{P+R}$ \\
+\hline
+\multirow{3}{*}{距离计算} & 欧氏距离 & $d_{ed} = \sqrt{\sum (x_i - y_i)^2}$ \\
+\cline{2-3}
+& 曼哈顿距�?& $d_{man} = \sum |x_i - y_i|$ \\
+\cline{2-3}
+& 切比雪夫距离 & $d_{ch} = \max |x_i - y_i|$ \\
+\hline
+\multirow{3}{*}{降维与特征} & LDA 目标函数 & $J = \frac{\mathbf{w}^T \mathbf{S}_b \mathbf{w}}{\mathbf{w}^T \mathbf{S}_w \mathbf{w}}$ \\
+\cline{2-3}
+& PCA 方差最大化 & $\max \text{tr}(\mathbf{W}^T \mathbf{X}\mathbf{X}^T \mathbf{W}), \text{s.t.} \mathbf{W}^T\mathbf{W} = \mathbf{I}$ \\
+\cline{2-3}
+& KL 散度 & $D_{KL}(P\|Q) = \sum P(x) \log \frac{P(x)}{Q(x)}$ \\
+\hline
+\multirow{2}{*}{其他} & EM 算法 Q 函数 & $Q(\theta, \theta^t) = \mathbb{E}_{Z|\mathbf{x},\theta^t}[\ln P(\mathbf{x}, Z|\theta)]$ \\
+\cline{2-3}
+& 样本标准�?& $s = \sqrt{\frac{1}{m-1}\sum (x_i - \bar{x})^2}$ \\
+\hline
+\end{longtable}
+
+\subsection{决策树补充例题}
+
+\begin{exercise}[完整决策树构建]
+使用西瓜数据集的�?个样本（4�?坏），仅使用"色泽"�?根蒂"两个属性，构建完整决策树�?
+
+\textbf{数据}�?
+\begin{center}
+\begin{tabular}{c|cc|c}
+编号 & 色泽 & 根蒂 & 好瓜 \\
+\hline
+1 & 青绿 & 蜷缩 & �?\\
+2 & 乌黑 & 蜷缩 & �?\\
+3 & 乌黑 & 蜷缩 & �?\\
+4 & 青绿 & 蜷缩 & �?\\
+5 & 青绿 & 稍蜷 & �?\\
+6 & 乌黑 & 稍蜷 & �?\\
+7 & 浅白 & 硬挺 & �?\\
+8 & 浅白 & 蜷缩 & �?\\
+\end{tabular}
+\end{center}
+
+\textbf{解}�?
+
+\textbf{第一层}：计算根节点信息�?
+\[
+Ent(D) = -\frac{4}{8}\log_2\frac{4}{8} - \frac{4}{8}\log_2\frac{4}{8} = -0.5 \times (-1) - 0.5 \times (-1) = 1.0
+\]
+
+\textbf{计算各属性信息增益}�?
+
+\textbf{色泽}�?
+\begin{itemize}
+    \item 青绿�?个）�?�?坏，$Ent = -\frac{2}{3}\log_2\frac{2}{3} - \frac{1}{3}\log_2\frac{1}{3} = 0.918$
+    \item 乌黑�?个）�?�?坏，$Ent = 0.918$
+    \item 浅白�?个）�?�?坏，$Ent = 0$
+\end{itemize}
+\[
+Gain(\text{色泽}) = 1.0 - \frac{3}{8} \times 0.918 - \frac{3}{8} \times 0.918 - \frac{2}{8} \times 0 = 1.0 - 0.689 = 0.311
+\]
+
+\textbf{根蒂}�?
+\begin{itemize}
+    \item 蜷缩�?个）�?�?坏，$Ent = -\frac{4}{5}\log_2\frac{4}{5} - \frac{1}{5}\log_2\frac{1}{5} = 0.722$
+    \item 稍蜷�?个）�?�?坏，$Ent = 0$
+    \item 硬挺�?个）�?�?坏，$Ent = 0$
+\end{itemize}
+\[
+Gain(\text{根蒂}) = 1.0 - \frac{5}{8} \times 0.722 - \frac{2}{8} \times 0 - \frac{1}{8} \times 0 = 1.0 - 0.451 = 0.549
+\]
+
+选择"根蒂"作为根节点（$Gain = 0.549 > 0.311$）�?
+
+\textbf{第二层}：对"蜷缩"分支继续划分
+
+样本集：\{1,2,3,4,8\}�?�?坏）�?Ent = 0.722$
+
+�?色泽"划分�?
+\begin{itemize}
+    \item 青绿�?个）�?�?坏，$Ent = 0$
+    \item 乌黑�?个）�?�?坏，$Ent = 0$
+    \item 浅白�?个）�?�?坏，$Ent = 0$
+\end{itemize}
+\[
+Gain = 0.722 - 0 = 0.722
+\]
+
+\textbf{最终决策树}�?
+\begin{verbatim}
+                [根蒂]
+               /  |  \
+           蜷缩 稍蜷 硬挺
+            /    |     \
+        [色泽]  坏瓜   坏瓜
+        / | \
+     青绿 乌黑 浅白
+      |    |    |
+    好瓜  好瓜  坏瓜
+\end{verbatim}
+\end{exercise}
+
+\subsection{神经网络补充}
+
+\begin{exercise}[多次迭代训练]
+使用前面反向传播例题的网络，继续训练2次迭代，观察损失变化�?
+
+\textbf{�?次迭代}（使用更新后的参数）�?
+
+前向传播�?
+\begin{align*}
+z_1^{(1)} &= 0.1497 \times 0.05 + 0.1993 \times 0.10 + 0.35 = 0.3774 \\
+z_2^{(1)} &= 0.2496 \times 0.05 + 0.2992 \times 0.10 + 0.35 = 0.3924 \\
+a_1^{(1)} &= \sigma(0.3774) = 0.5932 \\
+a_2^{(1)} &= \sigma(0.3924) = 0.5968 \\
+z^{(2)} &= 0.3593 \times 0.5932 + 0.4590 \times 0.5968 + 0.5313 = 1.0782 \\
+\hat{y} &= \sigma(1.0782) = 0.7462
+\end{align*}
+
+损失�?
+\[
+E = \frac{1}{2}(0.7462 - 0.01)^2 = \frac{1}{2}(0.7362)^2 = 0.271
+\]
+
+损失�?.279降到0.271，下降了�?\%�?
+
+继续迭代...经过�?00次迭代后，损失可降至接近0�?
+\end{exercise}
+
+\subsection{软间隔SVM详解}
+
+\begin{notebox}[替代损失函数：Hinge Loss]
+由于 0-1 损失函数非凸、非连续，软间隔 SVM 实际上是采用�?\textbf{Hinge Loss（合页损失）}�?
+\[
+\ell_{hinge}(z) = \max(0, 1-z)
+\]
+在此损失下，优化目标等价于：
+\[
+\min_{\mathbf{w}, b} \left[ \frac{1}{2}\|\mathbf{w}\|^2 + C \sum_{i=1}^m \ell_{hinge}(y_i(\mathbf{w}^T\mathbf{x}_i + b)) \right]
+\]
+其中松弛变量 $\xi_i = \max(0, 1 - y_i(\mathbf{w}^T\mathbf{x}_i + b))$�?
+\end{notebox}
+
+\begin{exercise}[软间隔SVM]
+给定数据（含噪声点）�?
+\begin{center}
+\begin{tabular}{c|cc|c}
+样本 & $x_1$ & $x_2$ & $y$ \\
+\hline
+1 & 3 & 3 & +1 \\
+2 & 4 & 3 & +1 \\
+3 & 1 & 1 & -1 \\
+4 & 2 & 2 & +1 (噪声) \\
+\end{tabular}
+\end{center}
+
+样本4是噪声点（实际应�?1但标记为+1）。使用软间隔SVM�?C = 1$�?
+
+\textbf{解}�?
+
+软间隔优化问题：
+\begin{align*}
+\min \quad & \frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^{4}\xi_i \\
+\text{s.t.} \quad & y_i(\mathbf{w}^T\mathbf{x}_i + b) \geq 1 - \xi_i \\
+& \xi_i \geq 0
+\end{align*}
+
+对偶问题约束变为 $0 \leq \alpha_i \leq C = 1$�?
+
+由于样本4是噪声，最优解会让 $\xi_4 > 0$（允许误分类），而不是强行拟合噪声点�?
+
+最终决策边界仍接近 $x_1 + x_2 = 4$，但会有所调整以平衡间隔和误分类惩罚�?
+\end{exercise}
+
+\subsection{贝叶斯分类器补充}
+
+\begin{exercise}[半朴素贝叶斯]
+朴素贝叶斯假设属性独立，但实际中属性可能相关。半朴素贝叶斯放松独立性假设�?
+
+\textbf{AODE（平均一依赖估计）}�?
+\[
+P(c|\mathbf{x}) \propto \sum_{i: |D_{x_i}| \geq m'} P(c, x_i) \prod_{j=1}^{d} P(x_j | c, x_i)
+\]
+
+其中 $m'$ 为阈值（通常�?0），$D_{x_i}$ 为属�?$x_i$ 取特定值的样本集�?
+
+\textbf{优点}：考虑了属性间的一阶依赖关系，比朴素贝叶斯更准确�?
+\end{exercise}
+
+%========================================
+% 附录C：集成学习补�?
+%========================================
+\section{集成学习补充}
+
+\subsection{Bagging详解}
+
+\begin{definition}[Bootstrap采样]
+从含 $m$ 个样本的数据集中，有放回地随机抽�?$m$ 次，形成一个新的训练集�?
+\end{definition}
+
+\begin{theorem}[Bootstrap样本覆盖率]
+一个样本在一次Bootstrap采样中不被选中的概率为�?
+\[
+\left(1 - \frac{1}{m}\right)^m \approx \frac{1}{e} \approx 36.8\%
+\]
+因此，约63.2\%的原始样本会出现在Bootstrap样本中�?
+\end{theorem}
+
+\begin{exercise}[Bagging预测]
+使用3个基学习器进行Bagging分类，对样本 $\mathbf{x}$ 的预测结果为�?
+\begin{itemize}
+    \item 学习�?：类别A
+    \item 学习�?：类别B
+    \item 学习�?：类别A
+\end{itemize}
+
+\textbf{解}：投票结果为类别A�?票）> 类别B�?票），最终预测为\textbf{类别A}�?
+\end{exercise}
+
+\subsection{Boosting详解}
+
+\begin{exercise}[AdaBoost权重更新]
+给定5个样本，初始权重均为 $w_i = 0.2$。第一个基学习器误分类了样�?和样�?�?
+
+计算更新后的样本权重（设 $\alpha_1 = 0.5$）�?
+
+\textbf{解}�?
+
+\textbf{步骤1}：计算加权错误率
+\[
+\epsilon_1 = w_3 + w_5 = 0.2 + 0.2 = 0.4
+\]
+
+\textbf{步骤2}：计算学习器权重
+\[
+\alpha_1 = \frac{1}{2}\ln\frac{1-\epsilon_1}{\epsilon_1} = \frac{1}{2}\ln\frac{0.6}{0.4} = \frac{1}{2}\ln 1.5 = 0.203
+\]
+
+\textbf{步骤3}：更新样本权�?
+
+正确分类的样本（1,2,4）：
+\[
+w_i^{new} = w_i \cdot e^{-\alpha_1} = 0.2 \times e^{-0.203} = 0.2 \times 0.816 = 0.163
+\]
+
+错误分类的样本（3,5）：
+\[
+w_i^{new} = w_i \cdot e^{\alpha_1} = 0.2 \times e^{0.203} = 0.2 \times 1.225 = 0.245
+\]
+
+\textbf{步骤4}：归一�?
+\[
+Z = 3 \times 0.163 + 2 \times 0.245 = 0.489 + 0.490 = 0.979
+\]
+
+归一化后�?
+\begin{itemize}
+    \item 样本1,2,4�?w = 0.163/0.979 = 0.167$
+    \item 样本3,5�?w = 0.245/0.979 = 0.250$
+\end{itemize}
+
+\textbf{结论}：误分类样本的权重增加，下一轮学习器会更关注这些样本�?
+\end{exercise}
+
+\subsection{随机森林}
+
+\begin{definition}[随机森林]
+随机森林是Bagging的扩展，在构建每棵决策树时：
+\begin{enumerate}
+    \item 使用Bootstrap采样获取训练�?
+    \item 在每个节点分裂时，从 $d$ 个属性中随机选择 $k$ 个属性（通常 $k = \log_2 d$�?
+    \item 从这 $k$ 个属性中选择最优属性进行分�?
+\end{enumerate}
+\end{definition}
+
+\begin{exercise}[随机森林属性选择]
+数据集有16个属性，构建随机森林。在某节点分裂时，随机选择了属性\{2, 5, 8, 11\}，各属性的信息增益为：
+\begin{center}
+\begin{tabular}{c|cccc}
+属�?& 2 & 5 & 8 & 11 \\
+\hline
+信息增益 & 0.15 & 0.22 & 0.18 & 0.12 \\
+\end{tabular}
+\end{center}
+
+\textbf{解}�?
+\begin{itemize}
+    \item $k = \log_2 16 = 4$（随机选择4个属性）
+    \item 在这4个属性中，属�?的信息增益最大（0.22�?
+    \item 选择属�?进行分裂
+\end{itemize}
+\end{exercise}
+
+\section{����ָ��������������}
+
+\subsection{��������ָ��}
+
+\begin{itemize}
+    \item \textbf{׼ȷ�� (Accuracy)}������Ԥ����ȷ������ռ�������ı�����
+    \begin{itemize}
+        \item \textit{ֱ������}�����������ж�ԡ�
+        \item \textit{������}�������ƽ�⣨�����������⣩ʱ������ƭ�ԡ�
+    \end{itemize}
+    
+    \item \textbf{��׼�� (Precision/׼ȷ��)}�������б�Ԥ��Ϊ�����������У���ʵΪ�����ı�����
+    \begin{itemize}
+        \item \textit{���Ĺ�ע}��Ԥ������������ж����ǿ��׵ģ���ץ������
+    \end{itemize}
+    
+    \item \textbf{��ȫ�� (Recall/�ٻ���)}����������ʵΪ�����������У���Ԥ��Ϊ�����ı�����
+    \begin{itemize}
+        \item \textit{���Ĺ�ע}��ԭ������������������ץ�����˶��٣���©������
+    \end{itemize}
+    
+    \item \textbf{F1-score}����׼�����ȫ�ʵĵ���ƽ����
+    \begin{itemize}
+        \item \textit{ֱ������}���ۺϿ�����Precision��Recall��ֻ�����߶���ʱF1�Ż�ߡ�
+    \end{itemize}
+\end{itemize}
+
+\subsection{�ؼ�������Ӱ��}
+
+\begin{itemize}
+    \item \textbf{SVM �е� �ͷ����� $C
+}��ƽ�⡰�����С���롰��������
+    \begin{itemize}
+        \item \textbf{$C
+ �ܴ�}��������༫���޷����ܡ�ģ�ͻ�ͨ����С�����ǿ�����ÿһ������ $\rightarrow$ ���׹���ϡ�
+        \item \textbf{$C
+ ��С}�������ء�����㹻����������һ��������������� $\rightarrow$ ����Ƿ��ϡ�
+    \end{itemize}
+    
+    \item \textbf{SVM �е� RBF �˲��� $\gamma
+}��
+    \begin{itemize}
+        \item \textbf{$\gamma
+ �ܴ�}����˹�ֲ��ܡ��⡱��ÿ��������Ӱ�췶Χ��С��ģ�ͼ��临�ӣ�ֻ��ע�ֲ�������
+        \item \textbf{$\gamma
+ ��С}����˹�ֲ��ܡ�ƽ��������Ӱ�췶Χ�㡣ģ�͸�ƽ������עȫ�֡�
+    \end{itemize}
+    
+    \item \textbf{�������ѧϰ�� $\eta
+}��
+    \begin{itemize}
+        \item \textbf{$\eta
+ ����}���������²�������̫�����������Ž⸽����������ɢ��
+        \item \textbf{$\eta
+ ��С}���������²���̫С��ѵ���ٶȼ��仺������������ֲ���Сֵ��
+    \end{itemize}
+    
+    \item \textbf{�������е�����/��֦}��
+    \begin{itemize}
+        \item \textit{Ŀ��}������������Ȼ�Ҷ�ӽڵ�������ֹ������̫���ȥ���ѵ������ϸ΢����������ϣ���
+    \end{itemize}
+\end{itemize}
+
+\subsection{����ָ��}
+
+\begin{itemize}
+    \item \textbf{DB ָ�� (DBI)}��
+    \begin{itemize}
+        \item \textit{����}���������ڵĽ��ն���ؼ������ȡ�
+        \item \textit{����}��ֵԽС��˵�����ڴ�ұ���Խ�����Ҵغʹ�֮��ֵ�Խ����
+    \end{itemize}
+    
+    \item \textbf{Dunn ָ�� (DI)}��
+    \begin{itemize}
+        \item \textit{����}������������֮����Զ�ľ����У���С���Ǹ�Խ��Խ�á�ֵԽ�󣬾���Ч��Խ������
+    \end{itemize}
+\end{itemize}
+
+\end{document}
