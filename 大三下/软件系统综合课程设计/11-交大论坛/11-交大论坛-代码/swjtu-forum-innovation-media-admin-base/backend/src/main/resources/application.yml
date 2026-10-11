@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: swjtu-forum
+
+  datasource:
+    url: ${DB_URL:jdbc:h2:file:./data/swjtu-forum-local;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: ${JPA_FORMAT_SQL:false}
+        dialect: ${JPA_DIALECT:org.hibernate.dialect.H2Dialect}
+
+  sql:
+    init:
+      mode: never
+
+  h2:
+    console:
+      enabled: ${H2_CONSOLE_ENABLED:true}
+      path: /h2-console
+
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: ${REDIS_DATABASE:0}
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+
+jwt:
+  secret: ${JWT_SECRET:swjtu-forum-local-secret-key-change-before-public-deploy}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+app:
+  bootstrap:
+    enabled: ${APP_BOOTSTRAP_ENABLED:true}
+    admin-username: ${APP_ADMIN_USERNAME:admin}
+    admin-password: ${APP_ADMIN_PASSWORD:admin123456}
+    admin-email: ${APP_ADMIN_EMAIL:admin@swjtu.local}
+
+logging:
+  level:
+    com.swjtu.forum: ${APP_LOG_LEVEL:INFO}
+    org.springframework.security: ${SECURITY_LOG_LEVEL:INFO}
+    # 降噪：把启动期冗余的连接池 / ORM / H2 INFO 收敛到 WARN（仅日志级别，可用环境变量覆盖）
+    com.zaxxer.hikari: ${HIKARI_LOG_LEVEL:WARN}
+    org.hibernate: ${HIBERNATE_LOG_LEVEL:WARN}
+    org.hibernate.SQL: ${HIBERNATE_SQL_LOG_LEVEL:WARN}
+    org.h2: ${H2_LOG_LEVEL:WARN}

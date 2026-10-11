@@ -1,0 +1,24 @@
+spring:
+  config:
+    activate:
+      on-profile: mysql
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/swjtu_forum?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  h2:
+    console:
+      enabled: false
+
+demo:
+  seed:
+    enabled: ${DEMO_SEED_ENABLED:true}
+    run-on-demo-profile: false
