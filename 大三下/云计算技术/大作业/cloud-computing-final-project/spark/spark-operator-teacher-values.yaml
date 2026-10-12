@@ -1,0 +1,23 @@
+image:
+  registry: swr.cn-south-1.myhuaweicloud.com
+  repository: czk-course/spark-operator
+  tag: "2.5.0"
+  pullPolicy: IfNotPresent
+  pullSecrets:
+    - name: swr-secret
+
+webhook:
+  enable: false
+
+controller:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
+spark:
+  jobNamespaces:
+    - default

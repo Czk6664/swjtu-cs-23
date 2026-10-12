@@ -1,0 +1,17 @@
+[
+  {
+    "mode": "pandas",
+    "run": 1,
+    "seconds": 1.007332
+  },
+  {
+    "mode": "pandas",
+    "run": 2,
+    "seconds": 1.178784
+  },
+  {
+    "mode": "pandas",
+    "run": 3,
+    "seconds": 1.205749
+  }
+]

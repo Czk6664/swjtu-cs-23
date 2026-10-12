@@ -1,0 +1,34 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: pyspark-wordcount
+  namespace: default
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: apache/spark-py:v3.4.0
+  imagePullPolicy: IfNotPresent
+  mainApplicationFile: local:///opt/spark/examples/src/main/python/wordcount.py
+  arguments:
+    - file:///opt/spark/data/mllib/sample_fpgrowth.txt
+  sparkVersion: "3.4.0"
+  sparkConf:
+    spark.kubernetes.driver.request.cores: "10m"
+    spark.kubernetes.executor.request.cores: "10m"
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    coreRequest: "10m"
+    memory: "512m"
+    serviceAccount: spark-op-spark-operator-spark
+    labels:
+      version: "3.4.0"
+  executor:
+    cores: 1
+    coreRequest: "10m"
+    instances: 2
+    memory: "1g"
+    labels:
+      version: "3.4.0"

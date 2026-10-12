@@ -1,0 +1,12 @@
+FROM apache/spark-py:v3.4.0
+
+USER root
+WORKDIR /opt/spark/work
+
+COPY wordcount.py /opt/spark/work/wordcount.py
+COPY analysis.py /opt/spark/work/analysis.py
+COPY data/sample.txt /opt/spark/work/data/sample.txt
+COPY data/sample_movies.csv /opt/spark/work/data/sample_movies.csv
+
+RUN chown -R 185:0 /opt/spark/work
+USER 185

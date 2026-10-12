@@ -1,0 +1,11 @@
+[
+  {"mode": "pandas", "seconds": 12.84},
+  {"mode": "pandas", "seconds": 12.51},
+  {"mode": "pandas", "seconds": 12.77},
+  {"mode": "pyspark-1-executor", "seconds": 10.92},
+  {"mode": "pyspark-1-executor", "seconds": 10.74},
+  {"mode": "pyspark-1-executor", "seconds": 10.86},
+  {"mode": "pyspark-2-executors", "seconds": 7.31},
+  {"mode": "pyspark-2-executors", "seconds": 7.12},
+  {"mode": "pyspark-2-executors", "seconds": 7.24}
+]

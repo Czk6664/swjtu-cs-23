@@ -1,0 +1,11 @@
+movie_id,title,rating,genre,year,country,vote_count
+1,The Spring Cloud,8.7,Drama,2021,China,2450
+2,Container Hero,7.9,Action,2020,USA,1800
+3,Redis Memory,8.1,Sci-Fi,2022,,1320
+4,Empty Score,,Comedy,2019,China,850
+5,Spark Journey,9.0,Drama,2023,China,3600
+6,Parallel Night,8.4,Sci-Fi,2021,USA,2210
+7,Missing Genre,7.2,,2020,Japan,540
+8,Old Classic,8.8,Romance,1998,France,4200
+9,Top Queue,8.2,Action,2023,China,1980
+10,Small Sample,6.9,Comedy,2022,China,

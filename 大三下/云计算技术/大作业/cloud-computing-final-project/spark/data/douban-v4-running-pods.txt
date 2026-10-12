@@ -1,0 +1,4 @@
+﻿NAME                                                  READY   STATUS      RESTARTS      AGE     IP             NODE           NOMINATED NODE   READINESS GATES
+courseprojectdoubananalysis-09d6159e69540482-exec-1   1/1     Running     0             7s      10.244.0.19    192.168.0.23   <none>           <none>
+courseprojectdoubananalysis-09d6159e69540482-exec-2   1/1     Running     0             7s      10.244.0.146   192.168.0.59   <none>           <none>
+pyspark-douban-analysis-driver                        1/1     Running     0             15s     10.244.0.18    192.168.0.23   <none>           <none>

@@ -1,0 +1,10 @@
+FROM swr.cn-south-1.myhuaweicloud.com/czk-course/pyspark:v9
+
+USER root
+WORKDIR /opt/spark/work
+
+COPY analysis.py /opt/spark/work/analysis.py
+COPY data/douban_movies.csv /opt/spark/work/data/douban_movies.csv
+
+RUN chown -R spark:root /opt/spark/work
+USER spark

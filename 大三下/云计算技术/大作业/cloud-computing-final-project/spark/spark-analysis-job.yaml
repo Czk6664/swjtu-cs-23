@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spark-analysis-cleaning
+  namespace: default
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: spark-analysis-cleaning
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: swr-secret
+      containers:
+        - name: spark-analysis
+          image: swr.cn-south-1.myhuaweicloud.com/czk-course/pyspark:v9
+          imagePullPolicy: IfNotPresent
+          command:
+            - /opt/spark/bin/spark-submit
+            - --master
+            - local[2]
+            - /opt/spark/work/analysis.py
+            - file:///opt/spark/work/data/sample_movies.csv
+          volumeMounts:
+            - name: analysis-code
+              mountPath: /opt/spark/work/analysis.py
+              subPath: analysis.py
+            - name: analysis-data
+              mountPath: /opt/spark/work/data/sample_movies.csv
+              subPath: sample_movies.csv
+          resources:
+            requests:
+              cpu: 50m
+              memory: 512Mi
+            limits:
+              cpu: 1
+              memory: 1Gi
+      volumes:
+        - name: analysis-code
+          configMap:
+            name: spark-analysis-code
+        - name: analysis-data
+          configMap:
+            name: spark-analysis-data

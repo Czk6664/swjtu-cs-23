@@ -1,0 +1,4 @@
+mode,mean_seconds,std_seconds,speedup_vs_pandas
+pandas,12.7067,0.1739,1.0000
+pyspark-1-executor,10.8400,0.0917,1.1722
+pyspark-2-executors,7.2233,0.0961,1.7591
