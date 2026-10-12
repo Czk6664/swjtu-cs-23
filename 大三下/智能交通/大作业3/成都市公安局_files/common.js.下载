@@ -1,0 +1,109 @@
+/**
+ * 收藏本站
+ * @param title 网站标题
+ * @param url   网站地址
+ */
+function addFavorite(title, url) {
+  try {
+    window.external.addFavorite(url, title);
+  } catch (e) {
+    try {
+      window.sidebar.addPanel(title, url, "");
+    } catch (e) {
+      var str = '抱歉，您所使用的浏览器无法完成此操作。\n\n加入收藏失败，请使用Ctrl+D进行收藏添加';
+      window.layer ? layer.confirm(str,{icon: 5, title: '成都市公安局门户网'}) : alert(str);
+    }
+  }
+}
+
+/**
+ * textarea文本长度限制
+ * @param id       DOM节点ID
+ * @param maxLen   最大字节长度（注：中文是2个字节）
+ */
+function textareaLength(id, maxLen) {
+  var val = document.getElementById(id).value,curLen = 0, strLen = 0;
+
+  for (var i = 0, len = val.length; i < len; i++) {
+    if (val.charCodeAt(i) > 127 || val.charCodeAt(i) == 94) {
+      curLen += 2;
+    } else {
+      curLen++;
+    }
+  }
+
+  if (curLen > maxLen) {
+    if (strLen == 0) strLen = maxLen;
+    document.getElementById(id).value = val.substring(0, strLen);
+    window.layer ? layer.msg('内容长度不能超过' + (maxLen / 2) + '个字') : alert('内容长度不能超过' + maxLen / 2 + '个字');
+  }
+}
+
+(function (win, doc, undefined) {
+  $(doc).ready(function () {
+    // 模拟页面加载
+    $('.app').animate({opacity: 1},500);
+    $('.loader').fadeOut(500, function () {
+      $(this).remove();
+    });
+
+    // 顶部导航吸顶
+    _headerFixed.call(win);
+    $(win).scroll(_headerFixed.bind(win));
+    function _headerFixed() {
+      $('.header')[$(this).scrollTop() >= 580 ? 'addClass' : 'removeClass']('fixed');
+      $('.header .hd-foot')[$(this).scrollTop() >= 580 ? 'addClass' : 'removeClass']('animated slideInDown');
+    }
+    $('.header .hd-swiper') && new Swiper('.header .hd-swiper', {
+      loop: true,
+      effect: 'fade',
+      autoplay: true
+    });
+
+    // 导航-副导航控制
+    var _navInit = $('.hd-foot .hd-nav .item.active').index();
+    $('.header .hd-foot .hd-nav').on('mouseover', '.item', function () {
+      $(this).addClass('active').siblings().removeClass('active');
+     $('.header .hd-foot').one('mouseleave', function () {
+       $('.hd-foot .hd-nav .item').siblings().removeClass('active');
+       if (_navInit != -1) $('.hd-foot .hd-nav .item').eq(_navInit).addClass('active');
+     });
+    });
+
+    // 内页Tab样式控制
+    if ($('.inner-list .inner-tabs, .inner-form .inner-tabs')) {
+      var _tabIndex = $('.inner-list .inner-tabs, .inner-form .inner-tabs').find('.active').index();
+      $('.inner-list .inner-tabs .tab, .inner-form .inner-tabs .tab').on('mouseenter',function () {
+        $(this).addClass('active').siblings().removeClass('active');
+      });
+      $('.inner-list .inner-tabs, .inner-form .inner-tabs').on('mouseleave', function () {
+        $(this).find('.tab').siblings().removeClass('active');
+        if (_tabIndex != -1) $(this).find('.tab').eq(_tabIndex).addClass('active');
+      });
+    }
+
+    // 侧边栏收缩
+    if ($('#float')) {
+      $('#float > .icon-btn').on('click', function () {
+        if ($('#float').data('hide')) {
+          $('#float').data('hide', false);
+          $('#float').addClass('open').removeClass('hide');
+          $('#float > .icon-btn').prop('title', '收起').addClass('icon-hide').removeClass('icon-show');
+        } else {
+          $('#float').data('hide', true);
+          $('#float').addClass('hide').removeClass('open');
+          $('#float > .icon-btn').prop('title', '展开').addClass('icon-show').removeClass('icon-hide');
+        }
+      });
+    }
+
+    // 回到顶部
+    if ($('#toTop')) {
+      $('#toTop').on('click', function () {
+        $('body, html').animate({scrollTop: 0}, 300);
+      });
+    }
+  });
+})(window, document);
+
+

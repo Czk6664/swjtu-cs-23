@@ -1,0 +1,10 @@
+# Select an AutoDL PyTorch CUDA image first. Do not reinstall torch here.
+transformers>=4.50,<5
+peft>=0.12
+datasets>=2.20
+accelerate>=0.33
+bitsandbytes>=0.43
+modelscope>=1.20
+swanlab>=0.5
+pyyaml>=6.0
+sentencepiece>=0.2

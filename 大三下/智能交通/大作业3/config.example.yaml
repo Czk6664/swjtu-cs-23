@@ -1,0 +1,66 @@
+# 大作业3 配置示例。复制为 config.yaml 后按需修改。
+# 原型默认全部走「离线模式」，无需任何模型下载或外部 API Key。
+
+# ---------- 大模型 (基座/对话) ----------
+llm:
+  # provider: offline | ollama_native | openai_compatible
+  #   offline           —— 不下载模型，用基于检索+模板的应答器，原型可直接跑通
+  #   ollama_native     —— 接本机 Ollama /api/chat，并固定关闭思考输出
+  #   openai_compatible —— 接 DeepSeek/本地 vLLM 的 OpenAI 兼容接口（需联网/部署）
+  provider: offline
+  # ollama_native 使用 http://127.0.0.1:11434；openai_compatible 通常使用 .../v1
+  base_url: http://127.0.0.1:8000/v1     # 例如本地 vLLM/Ollama/DeepSeek
+  api_key: ""                            # 切勿硬编码到代码；用环境变量 TRAVELQA_LLM_API_KEY 覆盖
+  model: deepseek-llm-7b-chat            # 基座模型；微调后改成你的 LoRA 合并模型名
+
+# ---------- 向量检索 (RAG 知识库) ----------
+embedding:
+  # provider: offline_hash | sentence_transformers
+  #   offline_hash          —— 纯 Python 哈希词袋向量，零依赖零下载，用于原型/CI
+  #   sentence_transformers —— 真实语义向量（需安装 sentence-transformers 并下载模型）
+  provider: offline_hash
+  model: BAAI/bge-m3                     # 仅 sentence_transformers 生效；推荐 BGE-M3（中文/长文本/混合检索）
+
+# ---------- 检索策略 ----------
+retrieval:
+  # mode: hybrid | vector
+  #   hybrid —— 向量检索 + BM25 关键词检索，RRF 融合排序（推荐）
+  #   vector —— 纯向量检索（向后兼容）
+  mode: hybrid
+  top_k: 4                               # 最终送入大模型的知识片段数
+  min_score: 0.05                        # 向量检索最低相似度阈值
+  rerank_top_k: 4                        # Reranker 重排后保留的片段数
+  reranker:
+    # provider: offline | sentence_transformers
+    #   offline              —— 基于关键词重叠的简单 rerank，零依赖，用于原型
+    #   sentence_transformers —— 真实交叉编码器（需安装 sentence-transformers 并下载模型）
+    provider: offline
+    model: BAAI/bge-reranker-v2-m3       # 仅 sentence_transformers 生效；推荐 BGE Reranker
+
+# ---------- 外部工具 ----------
+tools:
+  weather:
+    provider: mock                       # mock | amap
+    api_base: https://restapi.amap.com/v3/weather/weatherInfo
+    api_key_env: TRAVELQA_AMAP_KEY       # 与路径规划共用一个高德 Web 服务 Key
+    adcode: "510100"                     # 成都市行政区划代码
+  route:
+    provider: mock                       # mock | amap
+    api_key_env: TRAVELQA_AMAP_KEY
+    city: 成都
+    adcode: "510100"                     # POI 搜索限制在成都市
+
+# ---------- 高阶要求：接入大作业1/2 ----------
+integrations:
+  forecast:                              # 大作业1 STAEformer 交通流预测
+    enabled: true
+    results_dir: ../大作业1/results       # 读取 *_results.json
+  detection:                             # 大作业2 YOLO/TT100K 交通目标识别
+    enabled: true
+    dataset_yaml: ../大作业2/traffic_sign_detection/configs/dataset/tt100k.yaml
+    run_csv: ../大作业2/exp_C_704_b8_w0_e50/exp_C_704_b8_w0_e50/results.csv
+
+# ---------- 路径 ----------
+paths:
+  raw_dir: data/raw                      # 抓取的原始 HTML/JSON（含 URL+抓取时间）
+  kb_dir: data/kb                        # 处理后的知识库（chunks + 向量索引）

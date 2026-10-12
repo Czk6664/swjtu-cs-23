@@ -1,0 +1,125 @@
+
+% =============================================================================
+% 大作业3 参考文献库
+% 主题：大小模型协同的智能交通出行问答系统（RAG / DeepSeek / Dify / BGE /
+%       BM25 / RRF / (Q)LoRA / 大作业1 STAEformer / 大作业2 YOLO-TT100K）
+% =============================================================================
+
+% --- 基座模型 ---
+@article{deepseek_llm,
+  title={DeepSeek LLM: Scaling Open-Source Language Models with Longtermism},
+  author={{DeepSeek-AI}},
+  journal={arXiv preprint arXiv:2401.02954},
+  year={2024},
+  url={https://arxiv.org/abs/2401.02954}
+}
+
+% --- 应用框架 ---
+@misc{dify,
+  title={{Dify}: An Open-Source LLMOps Platform for Building Production-Ready AI Applications},
+  author={{Dify.AI}},
+  year={2024},
+  howpublished={\url{https://docs.dify.ai/}},
+  note={Accessed: 2026-05-26}
+}
+
+% --- 检索增强生成 (RAG) ---
+@article{rag,
+  title={Retrieval-Augmented Generation for Knowledge-Intensive {NLP} Tasks},
+  author={Lewis, Patrick and Perez, Ethan and Piktus, Aleksandra and Petroni, Fabio and Karpukhin, Vladimir and Goyal, Naman and K{\"u}ttler, Heinrich and Lewis, Mike and Yih, Wen-tau and Rockt{\"a}schel, Tim and Riedel, Sebastian and Kiela, Douwe},
+  journal={Advances in Neural Information Processing Systems},
+  volume={33},
+  pages={9459--9474},
+  year={2020}
+}
+
+% --- Embedding / Reranker ---
+@article{bge_m3,
+  title={{BGE M3-Embedding}: Multi-Lingual, Multi-Functionality, Multi-Granularity Text Embeddings Through Self-Knowledge Distillation},
+  author={Chen, Jianlv and Xiao, Shitao and Zhang, Peitian and Liu, Kun and Chen, Qiusheng and Wang, Dong and Xiao, Zhicheng and Liu, Ji-Rong},
+  journal={arXiv preprint arXiv:2402.03216},
+  year={2024},
+  url={https://arxiv.org/abs/2402.03216}
+}
+
+@misc{bge_reranker,
+  title={{BGE Reranker v2-m3}: A Multilingual Cross-Encoder Reranker},
+  author={{BAAI}},
+  year={2024},
+  howpublished={\url{https://huggingface.co/BAAI/bge-reranker-v2-m3}},
+  note={Accessed: 2026-05-26}
+}
+
+% --- BM25 / RRF ---
+@inproceedings{bm25,
+  title={Okapi at {TREC-3}},
+  author={Robertson, Stephen E. and Walker, Steve and Jones, Susan and others},
+  booktitle={Proceedings of the Third Text REtrieval Conference (TREC-3)},
+  pages={109--126},
+  year={1995}
+}
+
+@inproceedings{rrf,
+  title={Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank Learning Methods},
+  author={Cormack, Gordon V. and Clarke, Charles L. A. and B{\"u}ttcher, Stefan},
+  booktitle={Proceedings of the 32nd International ACM SIGIR Conference on Research and Development in Information Retrieval},
+  pages={758--759},
+  year={2009},
+  doi={10.1145/1571941.1572114}
+}
+
+% --- 微调 (LoRA / QLoRA) ---
+@inproceedings{lora,
+  title={{LoRA}: Low-Rank Adaptation of Large Language Models},
+  author={Hu, Edward J. and Shen, Yelong and Wallis, Phillip and Allen-Zhu, Zeyuan and Li, Yuanzhi and Wang, Shean and Wang, Lu and Chen, Weizhu},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2022},
+  url={https://openreview.net/forum?id=nZeVKeeFYf9}
+}
+
+@article{qlora,
+  title={{QLoRA}: Efficient Finetuning of Quantized {LLMs}},
+  author={Dettmers, Tim and Pagnoni, Artidoro and Holtzman, Ari and Zettlemoyer, Luke},
+  journal={Advances in Neural Information Processing Systems},
+  volume={36},
+  year={2024}
+}
+
+% --- 大作业1 集成：STAEformer 交通流预测 ---
+@article{staeformer,
+  title={{STAEformer}: Spatio-Temporal Adaptive Embedding Transformer for Traffic Flow Prediction},
+  author={Liu, Hangchen and Dong, Zheng and Jiang, Renhe and Deng, Jinliang and Deng, Jindong and Chen, Quanjun and Bai, Xiang},
+  journal={IEEE Transactions on Intelligent Transportation Systems},
+  volume={24},
+  number={9},
+  pages={9401--9414},
+  year={2023},
+  doi={10.1109/TITS.2023.3269549}
+}
+
+% --- 大作业2 集成：YOLO / TT100K ---
+@inproceedings{tt100k_dataset,
+  title={Traffic-Sign Detection and Classification in the Wild},
+  author={Zhu, Zhe and Liang, Dun and Zhang, Songhai and Huang, Xiaolei and Li, Baoli and Hu, Shimin},
+  booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages={2110--2118},
+  year={2016},
+  doi={10.1109/CVPR.2016.232}
+}
+
+@inproceedings{yolo,
+  title={You Only Look Once: Unified, Real-Time Object Detection},
+  author={Redmon, Joseph and Divvala, Santosh and Girshick, Ross and Farhadi, Ali},
+  booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages={779--788},
+  year={2016},
+  doi={10.1109/CVPR.2016.91}
+}
+
+@misc{ultralytics_yolo11,
+  title={Ultralytics {YOLO11}},
+  author={{Ultralytics}},
+  year={2024},
+  howpublished={\url{https://docs.ultralytics.com/models/yolo11/}},
+  note={Accessed: 2026-05-26}
+}
