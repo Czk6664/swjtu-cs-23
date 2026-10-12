@@ -1,0 +1,250 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{ctex}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{forest}
+
+\usetikzlibrary{arrows,positioning,shapes,decorations.pathreplacing}
+
+\geometry{margin=1in}
+
+\title{STAEformer 模型架构图}
+\author{}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{STAEformer 整体架构图}
+
+\begin{figure}[H]
+	\centering
+	\begin{tikzpicture}[
+			node distance=0.8cm and 2cm,
+			box/.style={rectangle, draw, fill=blue!10, minimum width=2.5cm, minimum height=0.8cm, font=\small},
+			arrow/.style={->, thick, >=stealth},
+			text node/.style={font=\small}
+		]
+
+		\node[box, fill=green!20] (input) {输入 $(B, T_{in}, N, C)$};
+		\node[box, right=of input] (proj) {Input Projection};
+		\node[box, right=of proj] (embed) {时空自适应嵌入};
+		\node[box, fill=yellow!20, right=of embed] (temporal) {Temporal Attention};
+		\node[box, fill=orange!20, right=of temporal] (spatial) {Spatial Attention};
+		\node[box, fill=purple!20, right=of spatial] (output) {Mixed Projection};
+		\node[box, fill=red!20, right=of output] (result) {输出 $(B, T_{out}, N, 1)$};
+
+		\draw[arrow] (input) -- (proj);
+		\draw[arrow] (proj) -- (embed);
+		\draw[arrow] (embed) -- (temporal);
+		\draw[arrow] (temporal) -- (spatial);
+		\draw[arrow] (spatial) -- (output);
+		\draw[arrow] (output) -- (result);
+
+		\node[below=0.3cm of embed, text width=3cm, align=center] {%
+			\small
+			\begin{tabular}{l}
+				Time-of-Day嵌入 (24维) \\
+				Day-of-Week嵌入 (24维) \\
+				Adaptive嵌入 (80维)    \\
+				\textbf{总计: 152维}
+			\end{tabular}
+		};
+
+	\end{tikzpicture}
+	\caption{STAEformer 整体架构}
+\end{figure}
+
+\section{时空自适应嵌入机制}
+
+\begin{figure}[H]
+	\centering
+	\begin{tikzpicture}[
+			node distance=0.5cm and 1.5cm,
+			tensor/.style={rectangle, draw, fill=blue!20, minimum width=1.5cm, minimum height=1cm},
+			embed/.style={rectangle, draw, fill=green!20, minimum width=1cm, minimum height=0.6cm},
+			concat/.style={rectangle, draw, fill=yellow!20, minimum width=0.8cm, minimum height=1.5cm},
+			arrow/.style={->, thick, >=stealth},
+		]
+
+		\node[anchor=south] (title) at (current bounding box.north) {\textbf{自适应嵌入矩阵} $(T_{in} \times N \times D_{adp})$};
+		\node[below=of title] {};
+
+		\node[tensor] (T) at (0,0) {$T_{in}=12$};
+		\node[tensor, right=of T] (N) {$N=207$};
+		\node[tensor, right=of N] (D) {$D_{adp}=80$};
+
+		\node[below=1cm of T, text centered] {时间步};
+		\node[below=1cm of N, text centered] {节点数};
+		\node[below=1cm of D, text centered] {嵌入维度};
+
+		\node[draw, rectangle, fill=gray!10, minimum width=5cm, minimum height=2cm, right=2cm of D] (params) {};
+		\node at (params) {参数量: $12 \times 207 \times 80 = 198,720$};
+
+	\end{tikzpicture}
+	\caption{时空自适应嵌入矩阵结构}
+\end{figure}
+
+\section{嵌入融合机制详解}
+
+\begin{figure}[H]
+	\centering
+	\begin{tikzpicture}[
+			node distance=0.3cm and 1cm,
+			box/.style={rectangle, draw, fill=blue!15, minimum width=2.8cm, minimum height=0.7cm, font=\small},
+			arrow/.style={->, thick, >=stealth},
+		]
+
+		\node[anchor=south] (title) at (current bounding box.north) {\textbf{嵌入融合过程}};
+		\node[below=of title] {};
+
+		\node[box, fill=blue!15] (x) at (0,0) {原始输入 $X$ $(B,T,N,C)$};
+		\node[box, fill=blue!15, right=of x] (proj) {$W_{proj}$ Linear$(C \rightarrow 24)$};
+		\node[box, fill=green!15, right=of proj] (tod) {ToD Embed $(T \times 288 \rightarrow 24)$};
+		\node[box, fill=orange!15, right=of tod] (dow) {DoW Embed $(7 \rightarrow 24)$};
+		\node[box, fill=purple!15, right=of dow] (adp) {Adaptive $(T \times N \times 80)$};
+		\node[box, fill=red!15, right=of adp] (cat) {Concat};
+		\node[box, fill=gray!15, right=of cat] (total) {融合特征 $(B,T,N,152)$};
+
+		\draw[arrow] (x) -- (proj);
+		\draw[arrow] (proj) -- (tod);
+		\draw[arrow] (tod) -- (dow);
+		\draw[arrow] (dow) -- (adp);
+		\draw[arrow] (adp) -- (cat);
+		\draw[arrow] (cat) -- (total);
+
+	\end{tikzpicture}
+	\caption{嵌入融合流程图}
+\end{figure}
+
+\section{多头注意力机制}
+
+\begin{figure}[H]
+	\centering
+	\begin{tikzpicture}[
+			node distance=0.5cm and 1cm,
+			qkv/.style={rectangle, draw, fill=blue!15, minimum width=1.5cm, minimum height=0.6cm, font=\tiny},
+			head/.style={rectangle, draw, fill=yellow!20, minimum width=1cm, minimum height=0.5cm},
+			arrow/.style={->, thick, >=stealth},
+		]
+
+		\node[anchor=south] (title) at (current bounding box.north) {\textbf{Multi-Head Self-Attention}};
+		\node[below=of title] {};
+
+		\node[anchor=south west] at (0,0) (Q) {$Q = X W_Q$};
+		\node[anchor=south west] at (3,0) (K) {$K = X W_K$};
+		\node[anchor=south west] at (6,0) (V) {$V = X W_V$};
+
+		\node[draw, rectangle, fill=gray!10, minimum width=8cm, minimum height=3cm, below=1cm of Q] (heads) {};
+		\node at (heads.north west) [anchor=south west] {\textbf{多头分割}};
+
+		\foreach \i in {1,...,4} {
+				\node[head] (h\i) at (\i*1.5cm-1.5cm, -2cm) {$Head_\i$};
+			}
+
+		\node[below=of heads] (concat) {Concat \& Linear};
+
+		\node[draw, rectangle, fill=green!15, minimum width=1.5cm, minimum height=0.6cm, right=of concat] (score) {Softmax};
+
+		\node[draw, rectangle, fill=blue!15, minimum width=1.5cm, minimum height=0.6cm, right=of score] (out) {Output};
+
+		\draw[arrow] (Q) -- +(0, -1) -| (heads.west);
+		\draw[arrow] (K) -- +(0, -1) -| (heads.west);
+		\draw[arrow] (V) -- +(0, -1) -| (heads.west);
+
+		\draw[arrow] (heads) -- (concat);
+		\draw[arrow] (concat) -- (score);
+		\draw[arrow] (score) -- (out);
+
+		\node at (heads.north east) [anchor=north east] {%
+			\tiny
+			\begin{tabular}{l}
+				$Head_i = Attention(Q_i, K_i, V_i)$ \\
+				$= softmax(\frac{Q_i K_i^T}{\sqrt{d_k}}) V_i$
+			\end{tabular}
+		};
+
+	\end{tikzpicture}
+	\caption{多头注意力机制}
+\end{figure}
+
+\section{时空交替注意力}
+
+\begin{figure}[H]
+	\centering
+	\begin{tikzpicture}[
+			node distance=1cm and 2cm,
+			layer/.style={rectangle, draw, fill=blue!20, minimum width=3cm, minimum height=1cm, font=\small},
+			arrow/.style={->, thick, >=stealth},
+		]
+
+		\node[anchor=south] (title) at (current bounding box.north) {\textbf{时空交替Transformer层}};
+		\node[below=of title] {};
+
+		\node[layer=blue] (ln1) at (0,0) {LayerNorm};
+		\node[layer=yellow, right=of ln1] (ta) {Temporal Attention};
+		\node[layer=blue, right=of ta] (ln2) {LayerNorm};
+		\node[layer=orange, right=of ln2] (sa) {Spatial Attention};
+		\node[layer=blue, right=of sa] (ln3) {LayerNorm};
+		\node[layer=green, right=of ln3] (ff) {Feed Forward};
+		\node[layer=blue, right=of ff] (ln4) {LayerNorm};
+
+		\draw[arrow] (ln1) -- (ta);
+		\draw[arrow] (ta) -- (ln2);
+		\draw[arrow] (ln2) -- (sa);
+		\draw[arrow] (sa) -- (ln3);
+		\draw[arrow] (ln3) -- (ff);
+		\draw[arrow] (ff) -- (ln4);
+
+		\node[below=2cm of ta, text width=3cm, align=center] {%
+			\tiny
+			$\times 3$ 层
+		};
+
+		\draw[dashed, thick] (-1.5cm, -1cm) rectangle (8.5cm, 1.5cm);
+
+	\end{tikzpicture}
+	\caption{时空交替注意力层结构}
+\end{figure}
+
+\section{Mixed Projection 输出映射}
+
+\begin{figure}[H]
+	\centering
+	\begin{tikzpicture}[
+			node distance=0.5cm and 1.5cm,
+			box/.style={rectangle, draw, fill=blue!15, minimum width=2.5cm, minimum height=0.8cm, font=\small},
+			arrow/.style={->, thick, >=stealth},
+		]
+
+		\node[anchor=south] (title) at (current bounding box.north) {\textbf{Mixed Projection 输出映射}};
+		\node[below=of title] {};
+
+		\node[box=blue] (input) at (0,0) {$X$ $(B, T_{in}, N, D_{model})$};
+		\node[box=gray, right=of input] (transpose) {transpose $(B,N,T_{in},D)$};
+		\node[box=gray, right=of transpose] (reshape) {reshape $(B,N,T_{in} \cdot D)$};
+		\node[box=purple, right=of reshape] (linear) {Linear $(T_{in} \cdot D \rightarrow T_{out})$};
+		\node[box=gray, right=of linear] (view) {view $(B,N,T_{out},1)$};
+		\node[box=gray, right=of view] (transpose2) {transpose $(B,T_{out},N,1)$};
+
+		\draw[arrow] (input) -- (transpose);
+		\draw[arrow] (transpose) -- (reshape);
+		\draw[arrow] (reshape) -- (linear);
+		\draw[arrow] (linear) -- (view);
+		\draw[arrow] (view) -- (transpose2);
+
+	\end{tikzpicture}
+	\caption{Mixed Projection 输出映射}
+\end{figure}
+
+\end{document}

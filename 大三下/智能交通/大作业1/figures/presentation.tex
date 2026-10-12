@@ -1,0 +1,1015 @@
+﻿% !TEX program = xelatex
+\documentclass[10pt,aspectratio=169]{ctexbeamer}
+
+\usetheme[progressbar=frametitle,numbering=fraction]{metropolis}
+\usepackage{appendixnumberbeamer}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,calc,fit,backgrounds,arrows.meta,shapes.geometric}
+\usepackage{xcolor}
+\usepackage{fontawesome5}
+
+\input{./_input-tex-settings.tex}
+
+\definecolor{MainBlue}{HTML}{0F4C81}
+\definecolor{AccentTeal}{HTML}{138A8A}
+\definecolor{SoftGold}{HTML}{D89B2B}
+\definecolor{LightBg}{HTML}{F5F7FA}
+\definecolor{TextDark}{HTML}{1F2D3D}
+\definecolor{SoftRed}{HTML}{C85C5C}
+
+\setbeamercolor{normal text}{fg=TextDark,bg=white}
+\setbeamercolor{frametitle}{fg=white,bg=MainBlue}
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{subtitle}{fg=white}
+\setbeamercolor{progress bar}{fg=SoftGold,bg=MainBlue!25}
+\setbeamercolor{block title}{fg=white,bg=MainBlue}
+\setbeamercolor{block body}{fg=TextDark,bg=LightBg}
+\setbeamercolor{alertblock title}{fg=white,bg=SoftRed}
+\setbeamercolor{alertblock body}{fg=TextDark,bg=SoftRed!8}
+\setbeamercolor{exampleblock title}{fg=white,bg=AccentTeal}
+\setbeamercolor{exampleblock body}{fg=TextDark,bg=AccentTeal!8}
+\setbeamercolor{itemize item}{fg=MainBlue}
+\setbeamercolor{itemize subitem}{fg=AccentTeal}
+\setbeamercolor{section in toc}{fg=MainBlue}
+
+\setbeamertemplate{footline}{
+  \leavevmode
+  \hbox{
+    \begin{beamercolorbox}[wd=.82\paperwidth,ht=2.6ex,dp=1.2ex,leftskip=1em]{author in head/foot}
+      \usebeamerfont{author in head/foot}智能交通课程汇报 \hfill STAEformer 模型研究与优化
+    \end{beamercolorbox}
+    \begin{beamercolorbox}[wd=.18\paperwidth,ht=2.6ex,dp=1.2ex,center]{date in head/foot}
+      \insertframenumber/\inserttotalframenumber
+    \end{beamercolorbox}
+  }
+}
+
+\setbeamertemplate{headline}{}
+\setbeamertemplate{navigation symbols}{}
+
+\newcommand{\keymetric}[3]{
+  \begin{tikzpicture}
+    \node[
+      rounded corners=8pt,
+      fill=LightBg,
+      draw=#1!70,
+      line width=0.8pt,
+      minimum width=3.1cm,
+      minimum height=1.38cm,
+      align=center
+    ] {
+      {\large\bfseries\color{#1} #2}\\[2pt]
+      {\small #3}
+    };
+  \end{tikzpicture}
+}
+
+\newcommand{\featurepill}[2]{
+  \begin{tikzpicture}[baseline=(x.base)]
+    \node[
+      rounded corners=10pt,
+      fill=#1!12,
+      draw=#1!70,
+      line width=0.7pt,
+      inner xsep=7pt,
+      inner ysep=4pt
+    ] (x) {\scriptsize\bfseries\color{#1} #2};
+  \end{tikzpicture}
+}
+
+\newcommand{\sectionpagecontent}[1]{
+  \begin{frame}[plain]
+    \begin{tikzpicture}[remember picture,overlay]
+      \fill[MainBlue] (current page.south west) rectangle (current page.north east);
+      \fill[SoftGold] ([xshift=-1.2cm,yshift=1.2cm]current page.south east) circle (2.2cm);
+      \fill[AccentTeal!80] ([xshift=1.0cm,yshift=-0.8cm]current page.north west) circle (1.7cm);
+    \end{tikzpicture}
+    \vspace*{2.2cm}
+    {\color{white}\fontsize{24}{30}\selectfont\bfseries #1\par}
+    \vspace{0.4cm}
+    {\color{white!85}\large 面向交通流预测的模型分析、结构理解与实验总结}
+  \end{frame}
+}
+
+\AtBeginSection{
+  \sectionpagecontent{\insertsectionhead}
+}
+
+\title{交通流预测模型设计与优化}
+\subtitle{基于 STAEformer 的调研、分析与实验汇报}
+\author{智能交通课程作业}
+\institute{交通预测方向专题报告}
+\date{2026年3月25日}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[MainBlue] (current page.south west) rectangle (current page.north east);
+    \fill[AccentTeal!85] ([xshift=-2.0cm,yshift=1.6cm]current page.south east) circle (3.0cm);
+    \fill[SoftGold!92] ([xshift=1.3cm,yshift=-1.0cm]current page.north west) circle (2.1cm);
+    \draw[white, line width=1.2pt, rounded corners=8pt]
+      ([xshift=1.0cm,yshift=-1.1cm]current page.north west)
+      rectangle
+      ([xshift=-1.0cm,yshift=1.1cm]current page.south east);
+  \end{tikzpicture}
+
+  \vspace*{1.45cm}
+  {\color{white}\fontsize{22}{26}\selectfont\bfseries 交通流预测模型设计与优化\par}
+  \vspace{0.25cm}
+  {\color{white!88}\Large 基于 STAEformer 的调研、分析与实验汇报\par}
+  \vspace{0.65cm}
+
+  \begin{columns}[T]
+    \begin{column}{0.62\textwidth}
+      \begin{block}{报告定位}
+        \begin{itemize}
+          \item 聚焦交通流预测任务中的时空依赖建模问题
+          \item 从方法对比、模型结构、关键创新和实验结果展开
+          \item 目标是给出“为什么选它、它怎么做、效果是否成立”的完整论证
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{exampleblock}{关键词}
+        \centering
+        Transformer\\[2pt]
+        时空建模\\[2pt]
+        自适应嵌入\\[2pt]
+        多步预测
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.35cm}
+  {\color{white!90}\normalsize 智能交通课程作业 \hfill 2026年3月25日}
+\end{frame}
+
+\begin{frame}{汇报目录}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+
+\section{研究背景与问题定义}
+
+\begin{frame}{研究背景：为什么要做交通流预测}
+  \begin{columns}[T]
+    \begin{column}{0.60\textwidth}
+      \begin{block}{任务背景}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item 交通流预测是智能交通系统的核心关键技术，直接支撑精细化管控、动态路径规划和出行时间估计
+          \item 随着城市路网规模持续扩大，拥堵频发、效率下降等问题使高精度预测成为现实刚需
+          \item 该任务本质上属于典型时空序列预测，需要同时处理历史依赖、节点关联和外部扰动
+        \end{itemize}
+      \end{block}
+
+      \begin{alertblock}{应用价值}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item 为智能信号配时、诱导发布和拥堵预警提供前置决策依据
+          \item 可预测流量、速度、占有率等关键交通状态量
+          \item 兼具学术价值与工程部署意义，适合作为课程大作业研究对象
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.36\textwidth}
+      \centering
+      \keymetric{MainBlue}{多节点}{路网级联合预测}
+
+      \vspace{0.18cm}
+      \keymetric{AccentTeal}{多步长}{未来连续时刻输出}
+
+      \vspace{0.18cm}
+      \keymetric{SoftGold}{多因素}{时间与空间共同作用}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{任务定义与评价目标}
+  \begin{columns}[T]
+    \begin{column}{0.53\textwidth}
+      \begin{block}{预测任务定义}
+        \small
+        给定历史观测序列
+        \[
+          X \in \mathbb{R}^{B \times T_{in} \times N \times C},
+        \]
+        其中 $B$ 表示 batch，$T_{in}$ 表示历史时间步，$N$ 表示传感器节点数，$C$ 表示输入特征维度；
+        模型输出未来多步预测
+        \[
+          \hat{Y} \in \mathbb{R}^{B \times T_{out} \times N \times 1}.
+        \]
+      \end{block}
+      \begin{exampleblock}{核心挑战}
+        \small 空间依赖复杂、时间模式多尺度、突发事件频繁，使得交通流预测必须同时具备精度、鲁棒性和可部署性。
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      \begin{block}{评价目标}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item \textbf{MAE}：绝对误差，直观反映预测偏差
+          \item \textbf{RMSE}：对大误差更敏感
+          \item \textbf{MAPE}：便于衡量相对误差
+        \end{itemize}
+      \end{block}
+
+      \begin{alertblock}{理想模型应满足}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item 准确率高
+          \item 参数规模合理
+          \item 训练稳定、易复现
+          \item 对不同数据集有较好泛化性
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{研究目标与章节安排}
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \begin{block}{研究目标}
+        \begin{enumerate}\setlength{\itemsep}{3pt}
+          \item 调研统计学习、RNN、GNN 与 Transformer 系列方法的发展脉络
+          \item 以 STAEformer 为核心对象分析其嵌入机制、编码结构与预测流程
+          \item 基于公开数据集完成模型复现，并用 MAE / RMSE / MAPE 验证结果
+          \item 从长序列、异常事件、计算成本和外部因素建模等角度分析不足
+          \item 在复现基础上提出改进模块，为后续研究提供可落地方向
+        \end{enumerate}
+      \end{block}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \begin{exampleblock}{报告主线}
+        \featurepill{MainBlue}{调研}
+        \featurepill{AccentTeal}{复现}
+        \featurepill{SoftGold}{分析}
+
+        \vspace{0.18cm}
+        \featurepill{SoftRed}{改进}
+        \featurepill{AccentTeal}{对比}
+        \featurepill{MainBlue}{总结}
+      \end{exampleblock}
+
+      \begin{alertblock}{一句话概括}
+        本次汇报采用“复现 - 分析 - 改进”的完整研究思路，而不是只介绍论文结论。
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\section{方法调研与模型选型}
+
+\begin{frame}{主流方法对比}
+  \begin{table}
+    \centering
+    \scriptsize
+    \renewcommand{\arraystretch}{1.18}
+    \resizebox{0.98\linewidth}{!}{
+    \begin{tabular}{>{\raggedright\arraybackslash}p{1.6cm} >{\raggedright\arraybackslash}p{2.0cm} >{\centering\arraybackslash}p{1.7cm} >{\centering\arraybackslash}p{1.7cm} >{\raggedright\arraybackslash}p{2.8cm}}
+      \toprule
+      \textbf{方法类别} & \textbf{代表模型} & \textbf{时间建模} & \textbf{空间建模} & \textbf{主要局限} \\
+      \midrule
+      CNN 类 & TCN / STGCN & 局部卷积 & 依赖预定义图 & 感受野有限，长依赖建模不充分 \\
+      RNN 类 & LSTM / GRU & 递归记忆 & 弱或间接建模 & 串行计算，长序列训练效率低 \\
+      GNN 类 & DCRNN / Graph WaveNet & 较强 & 显式图传播 & 需要图结构或复杂传播机制 \\
+      Transformer 类 & GMAN / ASTTN / STAEformer & 全局注意力 & 可学习或分离建模 & 需控制计算复杂度 \\
+      \bottomrule
+    \end{tabular}
+    }
+  \end{table}
+
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \begin{block}{选择 Transformer 路线的原因}
+        \begin{itemize}
+          \item 更擅长捕获长程依赖，适合多步交通预测
+          \item 并行计算友好，训练效率优于纯 RNN 结构
+          \item 模型表达能力强，便于统一时间和空间信息
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \begin{exampleblock}{选型结论}
+        \featurepill{MainBlue}{长程依赖}
+        \featurepill{AccentTeal}{并行训练}
+        \featurepill{SoftGold}{结构清晰}
+
+        \vspace{0.15cm}
+        \small STAEformer 同时兼顾效果、结构简洁性和复现可行性，因此被选为本次分析对象。
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{为什么选择 STAEformer}
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \begin{block}{模型优势}
+        \begin{enumerate}
+          \item 不强依赖人工构造图结构，降低先验设计负担
+          \item 将时空注意力拆分，缓解直接联合注意力带来的高复杂度
+          \item 自适应嵌入可以直接学习“节点-时间”级别的表示
+          \item 结构比较清晰，便于解释模型每个模块的功能
+        \end{enumerate}
+      \end{block}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \begin{alertblock}{适合作业汇报的原因}
+        \begin{itemize}
+          \item 既有理论亮点
+          \item 又能清楚展示代码实现
+          \item 实验结果易于量化呈现
+        \end{itemize}
+      \end{alertblock}
+
+      \begin{exampleblock}{一句话概括}
+        STAEformer 的核心思路是：用可学习嵌入替代固定图先验，用时空分离注意力提高效率。
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{选题模型概述}
+  \begin{columns}[T]
+    \begin{column}{0.57\textwidth}
+      \begin{block}{STAEformer 的核心思想}
+        STAEformer 全称为 \textbf{Spatio-Temporal Adaptive Embedding Transformer}。其设计重点不是堆叠复杂模块，而是先构造高质量时空表示，再交给较简洁的 Transformer 骨干完成建模。
+      \end{block}
+
+      \begin{exampleblock}{与常见复杂模型的区别}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item 不强调图卷积、门控模块和多分支结构的反复叠加
+          \item 更强调“高质量时空表示 + 简洁骨干”的范式
+          \item 通过统一嵌入将空间依赖与时间动态隐式融合到同一特征空间
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.39\textwidth}
+      \begin{alertblock}{模型定位}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item 预测精度高
+          \item 结构规整清晰
+          \item 实现难度可控
+          \item 复现与部署友好
+        \end{itemize}
+      \end{alertblock}
+
+      \begin{block}{结论}
+        借助高质量前期嵌入，Vanilla Transformer 也能有效建模复杂交通时空依赖，并实现较好的性能与工程平衡。
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\section{模型结构与关键机制}
+
+\begin{frame}{STAEformer 整体框架}
+  \centering
+  \resizebox{0.96\linewidth}{!}{
+  \begin{tikzpicture}[
+    node distance=0.55cm and 0.7cm,
+    module/.style={rounded corners=6pt, minimum width=2.0cm, minimum height=1.0cm, align=center, draw, line width=0.8pt},
+    arrow/.style={-{Latex[length=3mm]}, thick, MainBlue}
+  ]
+    \node[module, fill=AccentTeal!18, draw=AccentTeal] (input) {输入序列\\$X(B,T,N,C)$};
+    \node[module, fill=MainBlue!10, draw=MainBlue, right=of input] (proj) {线性映射\\Input Projection};
+    \node[module, fill=SoftGold!20, draw=SoftGold, right=of proj] (embed) {时空自适应\\嵌入融合};
+    \node[module, fill=AccentTeal!18, draw=AccentTeal, right=of embed] (temp) {Temporal\\Attention};
+    \node[module, fill=MainBlue!12, draw=MainBlue, right=of temp] (spatial) {Spatial\\Attention};
+    \node[module, fill=SoftGold!20, draw=SoftGold, right=of spatial] (ffn) {FFN\\前馈网络};
+    \node[module, fill=SoftRed!15, draw=SoftRed, right=of ffn] (out) {Mixed\\Projection};
+    \node[module, fill=green!18!white, draw=green!50!black, right=of out] (pred) {预测输出\\$\hat{Y}$};
+
+    \draw[arrow] (input) -- (proj);
+    \draw[arrow] (proj) -- (embed);
+    \draw[arrow] (embed) -- (temp);
+    \draw[arrow] (temp) -- (spatial);
+    \draw[arrow] (spatial) -- (ffn);
+    \draw[arrow] (ffn) -- (out);
+    \draw[arrow] (out) -- (pred);
+  \end{tikzpicture}
+  }
+
+  \vspace{0.3cm}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{输入输出维度}
+        历史输入通常为 $(B,12,N,3)$，未来输出为 $(B,12,N,1)$，适用于多节点、多步长预测场景。
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{exampleblock}{结构特点}
+        模型主干保持简洁，把复杂性集中在“嵌入设计”和“注意力分解”上，解释性较好。
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{关键创新一：时空自适应嵌入}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \begin{block}{嵌入组成}
+        \begin{table}
+          \centering
+          \scriptsize
+          \renewcommand{\arraystretch}{1.14}
+          \resizebox{0.98\linewidth}{!}{
+          \begin{tabular}{lcc}
+            \toprule
+            \textbf{嵌入类型} & \textbf{维度} & \textbf{作用} \\
+            \midrule
+            Input Embedding & 24 & 原始特征映射 \\
+            ToD Embedding & 24 & 时间片信息编码 \\
+            DoW Embedding & 24 & 星期模式编码 \\
+            Adaptive Embedding & 80 & 节点-时间联合表示 \\
+            \midrule
+            总维度 & 152 & 统一输入表示 \\
+            \bottomrule
+          \end{tabular}
+          }
+        \end{table}
+      \end{block}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \begin{alertblock}{设计意义}
+        \begin{itemize}
+          \item 不再完全依赖静态邻接矩阵
+          \item 让模型自行学习不同节点在不同时间片的潜在关系
+          \item 提升对复杂交通模式的表达能力
+        \end{itemize}
+      \end{alertblock}
+
+      \begin{exampleblock}{直观理解}
+        固定图结构刻画的是“谁和谁可能相关”，自适应嵌入更进一步学习“在什么时间、相关到什么程度”。
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{自适应嵌入与图神经网络对比}
+  \begin{table}
+    \centering
+    \scriptsize
+    \renewcommand{\arraystretch}{1.2}
+    \resizebox{0.96\linewidth}{!}{
+    \begin{tabular}{>{\raggedright\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{2.7cm} >{\centering\arraybackslash}p{2.8cm} >{\centering\arraybackslash}p{2.0cm}}
+      \toprule
+      \textbf{方面} & \textbf{图神经网络} & \textbf{STAEformer} & \textbf{说明} \\
+      \midrule
+      图结构依赖 & 需要预定义邻接矩阵 & 不需要 & 减轻图先验设计负担 \\
+      空间建模方式 & 基于图结构稀疏连接 & 全连接自适应关系 & 更偏数据驱动 \\
+      灵活性 & 受固定图结构约束 & 可学习节点-时间表示 & 对复杂关联更灵活 \\
+      复杂度 & $\mathcal{O}(E \times D)$ & $\mathcal{O}(N^2 \times D)$ & 大规模路网下需关注开销 \\
+      \bottomrule
+    \end{tabular}
+    }
+  \end{table}
+
+  \vspace{0.15cm}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{exampleblock}{优势}
+        不需要手工给定固定图结构，能够从数据中直接学习潜在时空关系。
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{代价}
+        当节点数增大时，空间注意力复杂度仍然较高，这也是后续改进的重要出发点。
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{关键创新二：时空分离注意力}
+  \begin{columns}[T]
+    \begin{column}{0.54\textwidth}
+      \begin{block}{核心思路}
+        \small
+        如果直接对 $(T \times N)$ 个时空 token 做联合注意力，计算和显存开销会迅速增大。STAEformer 将其拆分为：
+        \begin{itemize}
+          \item 先沿时间维度做 Temporal Attention
+          \item 再沿空间维度做 Spatial Attention
+        \end{itemize}
+        这样在保留建模能力的同时，能显著降低复杂度。
+      \end{block}
+
+      \begin{exampleblock}{复杂度对比}
+        联合时空注意力约为 $\mathcal{O}((TN)^2)$，分离后可近似写作 $\mathcal{O}(T^2 + N^2)$，更适合实际训练。
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \resizebox{0.9\linewidth}{!}{
+      \begin{tikzpicture}[
+        box/.style={rounded corners=5pt, draw, minimum width=2.9cm, minimum height=0.9cm, align=center},
+        line/.style={-{Latex[length=2.5mm]}, thick}
+      ]
+        \node[box, fill=MainBlue!10, draw=MainBlue] (x) {输入表示 $H$};
+        \node[box, fill=AccentTeal!15, draw=AccentTeal, below=0.45cm of x] (t) {Temporal Attention};
+        \node[box, fill=SoftGold!18, draw=SoftGold, below=0.45cm of t] (s) {Spatial Attention};
+        \node[box, fill=SoftRed!12, draw=SoftRed, below=0.45cm of s] (y) {输出表示};
+        \draw[line] (x) -- (t);
+        \draw[line] (t) -- (s);
+        \draw[line] (s) -- (y);
+      \end{tikzpicture}
+      }
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{STAE Layer 内部结构}
+  \begin{center}
+    \resizebox{0.96\linewidth}{!}{
+    \begin{tikzpicture}[
+      node distance=0.38cm and 0.55cm,
+      unit/.style={rounded corners=5pt, draw, minimum width=1.8cm, minimum height=0.82cm, align=center},
+      arrow/.style={-{Latex[length=2.8mm]}, thick}
+    ]
+      \node[unit, fill=gray!12] (x) {输入 $x$};
+      \node[unit, fill=MainBlue!12, draw=MainBlue, right=of x] (ln1) {LayerNorm};
+      \node[unit, fill=AccentTeal!16, draw=AccentTeal, right=of ln1] (ta) {Temporal\\Attention};
+      \node[unit, fill=MainBlue!12, draw=MainBlue, right=of ta] (ln2) {LayerNorm};
+      \node[unit, fill=SoftGold!18, draw=SoftGold, right=of ln2] (sa) {Spatial\\Attention};
+      \node[unit, fill=MainBlue!12, draw=MainBlue, right=of sa] (ln3) {LayerNorm};
+      \node[unit, fill=SoftRed!12, draw=SoftRed, right=of ln3] (ffn) {Feed\\Forward};
+      \node[unit, fill=gray!12, right=of ffn] (y) {输出 $y$};
+
+      \draw[arrow] (x) -- (ln1);
+      \draw[arrow] (ln1) -- (ta);
+      \draw[arrow] (ta) -- (ln2);
+      \draw[arrow] (ln2) -- (sa);
+      \draw[arrow] (sa) -- (ln3);
+      \draw[arrow] (ln3) -- (ffn);
+      \draw[arrow] (ffn) -- (y);
+
+      \draw[dashed, thick, MainBlue] ($(x.north)+(0,0.38)$) to[bend left=18] ($(ta.north)+(0,0.38)$);
+      \draw[dashed, thick, SoftGold!80!black] ($(ta.south)+(0,-0.36)$) to[bend right=18] ($(sa.south)+(0,-0.36)$);
+      \draw[dashed, thick, SoftRed!85!black] ($(sa.north)+(0,0.38)$) to[bend left=18] ($(y.north)+(0,0.38)$);
+    \end{tikzpicture}
+    }
+  \end{center}
+
+  \vspace{0.35cm}
+  \begin{block}{模块理解}
+    一个 STAE Layer 可以看成“归一化 + 时间建模 + 空间建模 + 非线性映射”的串联模块，多层堆叠后逐步提升时空表征能力。
+  \end{block}
+\end{frame}
+
+\begin{frame}{输出层：Mixed Projection 的作用}
+  \begin{columns}[T]
+    \begin{column}{0.54\textwidth}
+      \begin{block}{为什么不用逐步自回归输出}
+        传统逐步预测往往误差会累积，而 Mixed Projection 直接将隐藏表示映射为未来多个时间步，能够更稳定地完成多步预测。
+      \end{block}
+      \begin{exampleblock}{优势}
+        \begin{itemize}
+          \item 端到端输出未来序列
+          \item 减少滚动预测带来的误差传播
+          \item 结构简单，和主干模块衔接自然
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \resizebox{0.9\linewidth}{!}{
+      \begin{tikzpicture}[
+        box/.style={rounded corners=5pt, draw, minimum width=3.1cm, minimum height=0.82cm, align=center},
+        arrow/.style={-{Latex[length=2.6mm]}, thick}
+      ]
+        \node[box, fill=MainBlue!10, draw=MainBlue] (a) {隐藏表示 $H$};
+        \node[box, fill=gray!10, below=0.42cm of a] (b) {重排 / reshape};
+        \node[box, fill=SoftGold!18, draw=SoftGold, below=0.42cm of b] (c) {线性映射到 $T_{out}$};
+        \node[box, fill=AccentTeal!15, draw=AccentTeal, below=0.42cm of c] (d) {预测输出 $\hat{Y}$};
+        \draw[arrow] (a) -- (b);
+        \draw[arrow] (b) -- (c);
+        \draw[arrow] (c) -- (d);
+      \end{tikzpicture}
+      }
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\section{实验设置与结果分析}
+
+\begin{frame}{实验设计与评价指标}
+  \begin{columns}[T]
+    \begin{column}{0.56\textwidth}
+      \begin{block}{实验设计}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item 使用公开交通数据集开展复现实验，核心验证模型短时多步预测能力
+          \item 通过定量指标、定性曲线和工程开销三条线共同评价模型
+          \item 在复现 STAEformer 基线后，再引入改进模块做横向对比
+        \end{itemize}
+      \end{block}
+
+      \begin{exampleblock}{结果分析维度}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item 定量分析：MAE / RMSE / MAPE 的整体对比
+          \item 定性分析：高峰期、平峰期与突变点的拟合表现
+          \item 工程分析：参数量、显存占用、训练耗时和推理速度
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.40\textwidth}
+      \begin{alertblock}{指标说明}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item \textbf{MAE}：整体偏差越小越好
+          \item \textbf{RMSE}：更关注极端误差
+          \item \textbf{MAPE}：便于跨模型跨数据集比较
+        \end{itemize}
+      \end{alertblock}
+
+      \begin{block}{预期验证结论}
+        STAEformer 应在短时预测精度、收敛效率和结构简洁性上体现较强综合优势。
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{实验配置概览}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \begin{block}{主要超参数}
+        \begin{table}
+          \centering
+          \scriptsize
+          \renewcommand{\arraystretch}{1.12}
+          \begin{tabular}{lc}
+            \toprule
+            \textbf{参数} & \textbf{取值} \\
+            \midrule
+            num\_nodes & 207 \\
+            in\_steps / out\_steps & 12 / 12 \\
+            input\_dim / output\_dim & 3 / 1 \\
+            model\_dim & 152 \\
+            num\_heads & 4 \\
+            num\_layers & 3 \\
+            feed\_forward\_dim & 256 \\
+            adaptive\_embedding\_dim & 80 \\
+            \bottomrule
+          \end{tabular}
+        \end{table}
+      \end{block}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{alertblock}{配置特点}
+        \begin{itemize}
+          \item 模型容量适中
+          \item 不依赖超大显存即可训练
+          \item 结构设计与论文实现保持一致
+        \end{itemize}
+      \end{alertblock}
+
+      \begin{exampleblock}{说明}
+        \featurepill{MainBlue}{207 节点}
+        \featurepill{AccentTeal}{3 层编码}
+        \featurepill{SoftGold}{4 头注意力}
+
+        \vspace{0.18cm}
+        这类配置适合课程作业场景，既有研究价值，也具有较强可复现性。
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{模型复现：当前已完成内容}
+  \begin{columns}[T]
+    \begin{column}{0.56\textwidth}
+      \begin{block}{基线复现进展}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item 已完成 STAEformer 基线训练脚本梳理与参数核对
+          \item 本地改进实验框架已搭建，包含 Baseline、EFF、DGL、LA、MST 五类模型
+          \item 当前仓库中已有 \textbf{PEMS08} 基线训练日志，可确认数据划分、模型参数量和训练入口已跑通
+        \end{itemize}
+      \end{block}
+
+      \begin{exampleblock}{PEMS08 已确认信息}
+        Train: 10700，Val: 3567，Test: 3566；输入窗口 12，输出窗口 12；总参数量 \textbf{1,223,460}。
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.40\textwidth}
+      \begin{alertblock}{已完成证据}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item \texttt{baseline\_PEMS08\_train.log}
+          \item \texttt{train\_baseline.py}
+          \item \texttt{train.py}
+          \item 各改进模型 \texttt{model.py}
+        \end{itemize}
+      \end{alertblock}
+
+      \begin{block}{说明}
+        目前仓库里尚未生成各模型完整 \texttt{json} 结果文件，因此本页只展示已确认复现数据，不虚构最终误差指标。
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{复现实验数据与工程信息}
+  \begin{table}
+    \centering
+    \scriptsize
+    \renewcommand{\arraystretch}{1.18}
+    \resizebox{0.96\linewidth}{!}{
+    \begin{tabular}{>{\centering\arraybackslash}p{1.6cm} >{\centering\arraybackslash}p{1.7cm} >{\centering\arraybackslash}p{1.5cm} >{\centering\arraybackslash}p{1.6cm} >{\centering\arraybackslash}p{1.8cm} >{\centering\arraybackslash}p{1.8cm}}
+      \toprule
+      \textbf{数据集} & \textbf{节点数} & \textbf{采样间隔} & \textbf{输入/输出步长} & \textbf{本地已确认信息} & \textbf{备注} \\
+      \midrule
+      PEMS08 & 170 & 5 min & 12 / 12 & Train 10700 / Val 3567 / Test 3566 & 已有训练日志 \\
+      METR-LA & 207 & 5 min & 12 / 12 & 参数配置已整理 & 待补复现结果 \\
+      PEMS-BAY & 325 & 5 min & 12 / 12 & 参数配置已整理 & 待补复现结果 \\
+      \bottomrule
+    \end{tabular}
+    }
+  \end{table}
+
+  \vspace{0.15cm}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{exampleblock}{工程侧观察}
+        STAEformer 基线在 PEMS08 上参数量约 1.22M，属于较易复现、便于后续做模块化改进的骨干模型。
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{汇报建议}
+        口头说明时可强调：本次作业不是停留在阅读论文，而是已经把复现入口、配置和改进框架都搭了起来。
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{复现结果展示页设计}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \begin{block}{基线模型结果表}
+        \begin{table}
+          \centering
+          \scriptsize
+          \renewcommand{\arraystretch}{1.15}
+          \begin{tabular}{lccc}
+            \toprule
+            \textbf{模型} & \textbf{MAE} & \textbf{RMSE} & \textbf{MAPE} \\
+            \midrule
+            STAEformer Baseline & 待补 & 待补 & 待补 \\
+            \bottomrule
+          \end{tabular}
+        \end{table}
+      \end{block}
+
+      \begin{exampleblock}{当前状态}
+        由于结果 \texttt{json} 尚未生成，误差指标位先留作实验完成后的填充位置；表格结构已经留好，可直接替换。
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \begin{block}{本页建议讲法}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item 先说明复现环境、数据集和训练配置
+          \item 再展示基线误差指标与训练开销
+          \item 最后引出“为什么还需要做改进”
+        \end{itemize}
+      \end{block}
+
+      \begin{alertblock}{过渡作用}
+        这一页的重点是把“复现成功”与“继续优化”顺畅衔接起来。
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{结果解读：模型表现为什么更好}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{性能优势来源}
+        \begin{itemize}
+          \item 自适应嵌入提高了对复杂空间关系的表达能力
+          \item 分离注意力兼顾了时间依赖和空间依赖
+          \item 多步直接预测减少了误差累积
+          \item 结构清晰，训练过程中更稳定
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{实验汇报可强调的观察}
+        \begin{itemize}
+          \item 短时预测和中时预测都保持较好精度
+          \item 在多节点路网场景中泛化性更强
+          \item 相较传统图模型，对图先验依赖更弱
+          \item 在效果和实现复杂度之间取得更好平衡
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.1cm}
+  \begin{alertblock}{答辩表达建议}
+    如果老师更关注“你做了什么”，这一页可以口头补充：代码复现、参数理解、模块拆解、误差指标对比和模型优缺点分析。
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{模型不足与问题定位}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{当前局限}
+        \begin{itemize}
+          \item 长序列预测场景下误差仍可能逐步积累
+          \item 极端突发事件下仍可能预测失稳
+          \item 自适应嵌入可解释性仍然有限
+          \item 大规模路网下空间注意力计算成本较高
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{exampleblock}{后续优化方向}
+        \begin{itemize}
+          \item 融合天气、事件、节假日等外部因素
+          \item 引入动态图或在线更新机制增强空间依赖刻画
+          \item 使用轻量化注意力降低大图计算开销
+          \item 采用多尺度时间建模提升长周期建模能力
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.25cm}
+  \begin{block}{总结判断}
+    STAEformer 不是简单地“把 Transformer 用在交通预测上”，而是围绕交通数据的时空特性做了结构化改造，因此更适合作为课程汇报中的重点分析对象。
+  \end{block}
+\end{frame}
+
+\section{改进方案设计}
+
+\begin{frame}{改进方案总览}
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \begin{block}{四类改进模块}
+        \begin{enumerate}\setlength{\itemsep}{3pt}
+          \item \textbf{EFF}：外部特征融合，引入天气、节假日、道路事件等信息
+          \item \textbf{DGL}：动态图结构学习，增强节点间动态空间依赖建模
+          \item \textbf{LA}：轻量化注意力，降低大规模路网下的计算开销
+          \item \textbf{MST}：多尺度时间建模，联合建模短期、日周期和周周期
+        \end{enumerate}
+      \end{block}
+
+      \begin{exampleblock}{总体原则}
+        在不破坏 STAEformer “高质量时空表示 + 简洁 Transformer 骨干” 设计范式的前提下，采用模块化方式嵌入改进组件。
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \begin{alertblock}{改进目标}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item 更强异常场景适应能力
+          \item 更灵活的空间依赖建模
+          \item 更低推理成本
+          \item 更稳的长序列预测表现
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{四类改进模块的实现思路}
+  \begin{table}
+    \centering
+    \scriptsize
+    \renewcommand{\arraystretch}{1.18}
+    \resizebox{0.98\linewidth}{!}{
+    \begin{tabular}{>{\centering\arraybackslash}p{1.0cm} >{\centering\arraybackslash}p{2.3cm} >{\centering\arraybackslash}p{4.2cm} >{\centering\arraybackslash}p{2.6cm}}
+      \toprule
+      \textbf{简称} & \textbf{改进方向} & \textbf{实现要点} & \textbf{主要收益} \\
+      \midrule
+      EFF & 外部特征融合 & 将天气、节假日、事件等特征编码后与原始交通状态共同输入嵌入层 & 强化异常场景鲁棒性 \\
+      DGL & 动态图学习 & 基于实时交通状态动态生成邻接关系或图结构表示 & 增强空间依赖灵活性 \\
+      LA & 轻量化注意力 & 用稀疏、线性或分块注意力替代稠密注意力 & 降低复杂度与推理成本 \\
+      MST & 多尺度时间建模 & 分别编码短期、日周期、周周期信息后再做特征融合 & 提升长时预测稳定性 \\
+      \bottomrule
+    \end{tabular}
+    }
+  \end{table}
+
+  \vspace{0.15cm}
+  \begin{alertblock}{实现方式}
+    改进模块均已在 `improvements/` 目录中建立独立实现入口，便于和基线模型做公平对比。
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{改进后的整体实现思路}
+  \centering
+  \resizebox{0.95\linewidth}{!}{
+  \begin{tikzpicture}[
+    node distance=0.4cm and 0.55cm,
+    box/.style={rounded corners=6pt, minimum width=2.05cm, minimum height=0.9cm, align=center, draw, line width=0.8pt},
+    arrow/.style={-{Latex[length=2.8mm]}, thick, MainBlue}
+  ]
+    \node[box, fill=SoftGold!18, draw=SoftGold] (eff) {外部特征融合\\EFF};
+    \node[box, fill=AccentTeal!14, draw=AccentTeal, right=of eff] (mst) {多尺度时间\\编码 MST};
+    \node[box, fill=MainBlue!10, draw=MainBlue, right=of mst] (embed) {时空自适应嵌入\\+ 动态图学习 DGL};
+    \node[box, fill=SoftRed!12, draw=SoftRed, right=of embed] (attn) {轻量化注意力\\Transformer};
+    \node[box, fill=green!18!white, draw=green!50!black, right=of attn] (out) {预测输出};
+    \draw[arrow] (eff) -- (mst);
+    \draw[arrow] (mst) -- (embed);
+    \draw[arrow] (embed) -- (attn);
+    \draw[arrow] (attn) -- (out);
+  \end{tikzpicture}
+  }
+
+  \vspace{0.25cm}
+  \begin{block}{设计原则}
+    输入端新增外部特征融合与多尺度时间编码，嵌入层增强动态空间关系学习，编码层用轻量化注意力替代稠密注意力，输出层保持不变。
+  \end{block}
+\end{frame}
+
+\section{改进结果与对比}
+
+\begin{frame}{改进实验结果表设计}
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \begin{block}{模型对比表}
+        \begin{table}
+          \centering
+          \scriptsize
+          \renewcommand{\arraystretch}{1.15}
+          \begin{tabular}{lccccc}
+            \toprule
+            \textbf{模型} & \textbf{MAE} & \textbf{RMSE} & \textbf{MAPE} & \textbf{参数量} & \textbf{推理} \\
+            \midrule
+            Baseline & 待补 & 待补 & 待补 & 1.22M & 待补 \\
+            EFF & 待补 & 待补 & 待补 & $\sim$1.3M & 待补 \\
+            DGL & 待补 & 待补 & 待补 & $\sim$1.4M & 待补 \\
+            LA & 待补 & 待补 & 待补 & $\sim$1.2M & 待补 \\
+            MST & 待补 & 待补 & 待补 & $\sim$1.3M & 待补 \\
+            \bottomrule
+          \end{tabular}
+        \end{table}
+      \end{block}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \begin{alertblock}{本页用途}
+        \begin{itemize}\setlength{\itemsep}{2pt}
+          \item 用于展示最终实验结果
+          \item 当前参数量可先填入工程估计值
+        \item 指标结果待 \texttt{results/*.json} 生成后补齐
+        \end{itemize}
+      \end{alertblock}
+
+      \begin{exampleblock}{结论模板}
+        可以按“谁精度最好、谁速度最快、谁最适合部署”三个角度总结改进效果。
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{改进结果的分析口径}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{若结果显示 EFF 最优}
+        说明外部因素确实对异常场景和高波动时段具有显著补充作用。
+      \end{block}
+
+      \begin{block}{若结果显示 DGL 最优}
+        说明静态嵌入之外，动态空间结构学习对复杂路网建模仍有增益。
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{若结果显示 LA 最快}
+        说明轻量化注意力在大规模路网部署中更具工程价值。
+      \end{block}
+
+      \begin{block}{若结果显示 MST 更稳}
+        说明多尺度时间编码有助于提升长时依赖建模和长序列预测稳定性。
+      \end{block}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.15cm}
+  \begin{alertblock}{答辩建议}
+    如果最终只跑出部分实验，也可以明确说明：已完成基线复现，改进模型框架已实现，当前重点展示的是设计逻辑、对比框架与可补充的结果页。
+  \end{alertblock}
+\end{frame}
+
+\section{总结}
+
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[MainBlue] (current page.south west) rectangle (current page.north east);
+    \fill[AccentTeal!85] ([xshift=-1.5cm,yshift=1.1cm]current page.south east) circle (2.3cm);
+    \fill[SoftGold!95] ([xshift=1.3cm,yshift=-0.9cm]current page.north west) circle (1.8cm);
+  \end{tikzpicture}
+
+  \vspace*{2.1cm}
+  \begin{center}
+    {\color{white}\fontsize{24}{30}\selectfont\bfseries 汇报总结\par}
+    \vspace{0.55cm}
+    {\color{white!92}\Large STAEformer 通过时空自适应嵌入与分离注意力机制，\\实现了对交通流时空依赖的高效建模。\par}
+    \vspace{0.9cm}
+    {\color{white!85}\large 关键词：结构清晰、效果优秀、适合复现、便于讲解}
+  \end{center}
+\end{frame}
+
+\begin{frame}[standout]
+  谢谢观看
+\end{frame}
+
+\end{document}

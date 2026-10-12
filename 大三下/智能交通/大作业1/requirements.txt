@@ -1,0 +1,42 @@
+# ============================================
+# STAEformer Traffic Prediction Environment
+# ============================================
+
+# Python Version: 3.8 - 3.10 (recommended: 3.9)
+
+# Core Deep Learning Framework
+torch>=1.12.0,<2.3.0
+torchvision>=0.13.0
+
+# Data Processing
+numpy>=1.21.0,<1.27.0
+pandas>=1.3.0,<2.2.0
+scipy>=1.7.0
+
+# Visualization
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Model Utilities
+torchinfo>=1.7.0
+pyyaml>=6.0
+
+# Machine Learning
+scikit-learn>=1.0.0
+
+# Progress Bar
+tqdm>=4.62.0
+
+# ============================================
+# CUDA Compatibility Reference
+# ============================================
+# PyTorch 1.12.x -> CUDA 11.3, 11.6
+# PyTorch 1.13.x -> CUDA 11.6, 11.7
+# PyTorch 2.0.x -> CUDA 11.7, 11.8
+# PyTorch 2.1.x -> CUDA 11.8, 12.1
+# PyTorch 2.2.x -> CUDA 11.8, 12.1
+# 
+# Install PyTorch with CUDA:
+# CUDA 11.8: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+# CUDA 12.1: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+# ============================================

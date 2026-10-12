@@ -1,0 +1,46 @@
+% !TEX program = xelatex
+% 完整编译方法 2: xelatex -> bibtex -> xelatex -> xelatex
+% Auriga theme
+% https://github.com/anishathalye/auriga
+
+\documentclass[14pt,aspectratio=169]{ctexbeamer}
+
+\input{../_input-tex/settings-chinese-fonts.tex} % 中文字体设定
+
+\usepackage{pgfpages}
+\usepackage{fancyvrb}
+\usepackage{tikz}
+\usepackage{pgfplots}
+
+\usetheme{auriga}
+\usecolortheme{auriga}
+
+% define some colors for a consistent theme across slides
+\definecolor{red}{RGB}{181, 23, 0}
+\definecolor{blue}{RGB}{0, 118, 186}
+\definecolor{gray}{RGB}{146, 146, 146}
+
+\input{../_input-tex/frame-chinese-title.tex} % 标题页
+
+\begin{document}
+
+{
+  % rather than use the frame options [noframenumbering,plain], we make the
+  % color match, so that the indicated page numbers match PDF page numbers
+  \setbeamercolor{page number in head/foot}{fg=background canvas.bg}
+  \begin{frame}
+    \titlepage
+  \end{frame}
+}
+
+\input{../_input-tex/frame-chinese-fonts.tex} % 中文字体测试
+\input{../_input-tex/frame-chinese-theorem.tex} % 定理环境中文或英文显示测试
+\input{slides/bullets}
+\input{slides/split}
+\input{slides/figure}
+\input{slides/centered}
+\input{slides/monospace}
+\input{slides/brackets}
+\input{slides/link}
+
+\end{document}

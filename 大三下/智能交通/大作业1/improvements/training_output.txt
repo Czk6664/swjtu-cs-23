@@ -1,0 +1,28 @@
+============================================================
+Model: STAEformer (Baseline)
+Dataset: PEMS08
+============================================================
+Model Args: {
+  "num_nodes": 170,
+  "in_steps": 12,
+  "out_steps": 12,
+  "input_embedding_dim": 24,
+  "tod_embedding_dim": 24,
+  "dow_embedding_dim": 24,
+  "adaptive_embedding_dim": 80,
+  "feed_forward_dim": 256,
+  "num_heads": 4,
+  "num_layers": 3,
+  "dropout": 0.1
+}
+
+Loading dataset...
+Trainset:	x-(10700, 12, 170, 3)	y-(10700, 12, 170, 1)
+Valset:  	x-(3567, 12, 170, 3)  	y-(3567, 12, 170, 1)
+Testset:	x-(3566, 12, 170, 3)	y-(3566, 12, 170, 1)
+
+Initializing model...
+Total parameters: 1,223,460
+Trainable parameters: 1,223,460
+
+Training...
