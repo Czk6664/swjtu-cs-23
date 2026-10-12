@@ -1,0 +1,21 @@
+model: yolo11n.pt
+train:
+  data: configs/dataset/tt100k.yaml
+  epochs: 100
+  imgsz: 640
+  batch: 16
+  device: "0"
+  workers: 4
+  project: runs/tt100k
+  name: yolo11n_tt100k
+  pretrained: true
+val:
+  data: configs/dataset/tt100k.yaml
+  imgsz: 640
+  batch: 16
+  device: "0"
+predict:
+  imgsz: 640
+  conf: 0.25
+  save: true
+  line_width: 2

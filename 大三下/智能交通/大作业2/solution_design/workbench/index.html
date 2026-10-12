@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>交通态势智能感知工作台</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero-card">
+      <div class="hero-copy">
+        <p class="eyebrow">Traffic Situation Workbench</p>
+        <h1>交通场景多目标精准识别与态势研判</h1>
+        <p class="hero-text">
+          这个页面现在可以本地直接调用两个模型能力：一侧运行 YOLO11n 交通标志识别，
+          另一侧读取 STAEformer 交通流预测结果，并在同一工作台里生成联合态势分析结论。
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#runtime">开始演示</a>
+          <a class="btn btn-secondary" href="#fusion">查看态势分析</a>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">交通标志类别</span>
+            <strong class="kpi-value">12</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">检测模型</span>
+            <strong class="kpi-value">YOLO11n</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">预测模型</span>
+            <strong class="kpi-value">STAEformer</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">主实验 mAP50</span>
+            <strong class="kpi-value">0.7580</strong>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="runtime" class="section-block">
+        <div class="section-heading">
+          <p class="section-kicker">Runtime Demo</p>
+          <h2>双模型联动演示</h2>
+          <p>上传交通场景图片或直接选择样例图运行识别，再选择一个交通流预测案例，页面会自动给出综合态势判断。</p>
+        </div>
+
+        <div class="runtime-grid">
+          <article class="panel-card control-card">
+            <div class="card-header">
+              <div>
+                <p class="card-kicker">Detection</p>
+                <h3>交通目标识别</h3>
+              </div>
+              <span class="pill">YOLO11n</span>
+            </div>
+            <label class="field-label" for="sampleSelect">样例图</label>
+            <select id="sampleSelect" class="field-input"></select>
+            <label class="field-label" for="imageInput">上传图片</label>
+            <input id="imageInput" class="field-input" type="file" accept="image/*">
+            <div class="preview-card">
+              <span class="preview-label">当前待检测图片</span>
+              <img id="samplePreview" class="preview-image" alt="待检测样例图">
+            </div>
+            <button id="detectButton" class="btn btn-primary btn-block" type="button">运行识别</button>
+          </article>
+
+          <article class="panel-card control-card">
+            <div class="card-header">
+              <div>
+                <p class="card-kicker">Forecast</p>
+                <h3>交通流量预测</h3>
+              </div>
+              <span class="pill">STAEformer</span>
+            </div>
+            <label class="field-label" for="forecastSelect">预测案例</label>
+            <select id="forecastSelect" class="field-input"></select>
+            <div class="hint-box">
+              <strong>当前演示方式</strong>
+              <p>读取大作业 1 已完成的 STAEformer 结果文件，保证答辩时页面能稳定展示预测能力。</p>
+            </div>
+            <button id="forecastButton" class="btn btn-primary btn-block" type="button">运行预测</button>
+            <div class="inline-stats">
+              <div>
+                <span class="mini-label">默认案例</span>
+                <strong id="defaultCaseLabel">METRLA</strong>
+              </div>
+              <div>
+                <span class="mini-label">预测步长</span>
+                <strong id="defaultHorizonLabel">12</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel-card status-card">
+            <div class="card-header">
+              <div>
+                <p class="card-kicker">Status</p>
+                <h3>运行状态</h3>
+              </div>
+              <span id="statusBadge" class="status-tag">待启动</span>
+            </div>
+            <p id="statusText">页面加载后会先连接本地桥接服务，随后你可以分别运行识别和预测。</p>
+            <ul class="status-list">
+              <li><span>桥接服务</span><strong id="serviceState">检查中</strong></li>
+              <li><span>检测结果</span><strong id="detectState">未运行</strong></li>
+              <li><span>预测结果</span><strong id="forecastState">未运行</strong></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-block">
+        <div class="section-heading">
+          <p class="section-kicker">Outputs</p>
+          <h2>模型结果回显</h2>
+          <p>两个模块的结构化输出会在这里同步更新，支持你直接截图进汇报或报告。</p>
+        </div>
+
+        <div class="runtime-grid results-grid">
+          <article class="panel-card result-card">
+            <div class="card-header">
+              <div>
+                <p class="card-kicker">Detection Result</p>
+                <h3>识别结果</h3>
+              </div>
+              <span id="detectSummaryPill" class="pill pill-muted">等待识别</span>
+            </div>
+            <div class="result-image-shell">
+              <img id="detectResultImage" class="result-image" alt="检测结果图">
+            </div>
+            <div class="metric-grid" id="detectMetrics">
+              <div class="metric-box">
+                <span>目标数量</span>
+                <strong>--</strong>
+              </div>
+              <div class="metric-box">
+                <span>最高置信度</span>
+                <strong>--</strong>
+              </div>
+              <div class="metric-box">
+                <span>限制类标志</span>
+                <strong>--</strong>
+              </div>
+            </div>
+            <div>
+              <h4>类别摘要</h4>
+              <ul id="detectClassList" class="bullet-list"></ul>
+            </div>
+          </article>
+
+          <article class="panel-card result-card">
+            <div class="card-header">
+              <div>
+                <p class="card-kicker">Forecast Result</p>
+                <h3>预测结果</h3>
+              </div>
+              <span id="forecastSummaryPill" class="pill pill-muted">等待预测</span>
+            </div>
+            <div class="metric-grid" id="forecastMetrics">
+              <div class="metric-box">
+                <span>MAE</span>
+                <strong>--</strong>
+              </div>
+              <div class="metric-box">
+                <span>RMSE</span>
+                <strong>--</strong>
+              </div>
+              <div class="metric-box">
+                <span>MAPE</span>
+                <strong>--</strong>
+              </div>
+            </div>
+            <div class="table-shell">
+              <table>
+                <thead>
+                  <tr>
+                    <th>步长</th>
+                    <th>RMSE</th>
+                    <th>MAE</th>
+                    <th>MAPE</th>
+                  </tr>
+                </thead>
+                <tbody id="forecastTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="fusion" class="section-block">
+        <div class="section-heading">
+          <p class="section-kicker">Fusion</p>
+          <h2>交通态势研判</h2>
+          <p>将道路规则语义和未来流量趋势放在一起解释，形成的综合结论。</p>
+        </div>
+        <div class="logic-card fusion-grid">
+          <div class="logic-step fusion-primary">
+            <span class="logic-index">01</span>
+            <h3>综合风险等级</h3>
+            <p id="fusionRiskLabel" class="fusion-risk">待生成</p>
+            <p id="fusionSummary">请先运行识别和预测两个模块，系统会自动生成综合分析结果。</p>
+          </div>
+          <div class="logic-step">
+            <span class="logic-index">02</span>
+            <h3>识别侧解释</h3>
+            <p id="fusionDetectionText">尚未获得交通标志识别信息。</p>
+          </div>
+          <div class="logic-step">
+            <span class="logic-index">03</span>
+            <h3>预测侧解释</h3>
+            <p id="fusionForecastText">尚未获得交通流趋势信息。</p>
+          </div>
+        </div>
+        <div class="panel-card result-card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <div>
+              <p class="card-kicker">AI Analysis</p>
+              <h3>AI 态势研判</h3>
+            </div>
+            <span id="aiStatusBadge" class="pill pill-muted">等待输入</span>
+          </div>
+          <p id="aiFusionText" class="ai-output">请先运行识别和预测两个模块，AI 将自动生成态势研判结论。</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>

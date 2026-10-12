@@ -1,0 +1,30 @@
+model: models/yolo11n-cbam.yaml
+train:
+  data: configs/dataset/tt100k.yaml
+  epochs: 50
+  imgsz: 704
+  batch: 16
+  device: "0"
+  workers: 8
+  project: runs/tt100k
+  name: yolo11n_cbam_704_e50
+  pretrained: true
+  optimizer: auto
+  lr0: 0.01
+  lrf: 0.01
+  momentum: 0.937
+  weight_decay: 0.0005
+  warmup_epochs: 3.0
+  warmup_momentum: 0.8
+  warmup_bias_lr: 0.1
+  close_mosaic: 10
+val:
+  data: configs/dataset/tt100k.yaml
+  imgsz: 704
+  batch: 16
+  device: "0"
+predict:
+  imgsz: 704
+  conf: 0.25
+  save: true
+  line_width: 2

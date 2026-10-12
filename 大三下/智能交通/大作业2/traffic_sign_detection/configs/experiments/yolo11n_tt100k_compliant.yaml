@@ -1,0 +1,29 @@
+model: yolo11n.pt
+train:
+  data: configs/dataset/tt100k.yaml
+  epochs: 20
+  imgsz: 704
+  batch: 8
+  device: "0"
+  workers: 0
+  project: runs/tt100k
+  name: yolo11n_tt100k_compliant_704_e20
+  pretrained: true
+  amp: true
+  cache: false
+  seed: 0
+  deterministic: true
+  close_mosaic: 10
+val:
+  data: configs/dataset/tt100k.yaml
+  imgsz: 704
+  batch: 8
+  device: "0"
+  workers: 0
+  split: val
+  plots: true
+predict:
+  imgsz: 704
+  conf: 0.25
+  save: true
+  line_width: 2

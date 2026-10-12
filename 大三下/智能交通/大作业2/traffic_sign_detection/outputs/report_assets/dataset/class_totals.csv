@@ -1,0 +1,13 @@
+class_id,class_name,source_name,objects
+0,tt100k_pn,pn,3176
+1,tt100k_pne,pne,2384
+2,tt100k_i5,i5,1734
+3,tt100k_p11,p11,1582
+4,tt100k_pl40,pl40,1413
+5,tt100k_pl50,pl50,1073
+6,tt100k_pl80,pl80,904
+7,tt100k_p26,p26,840
+8,tt100k_pl60,pl60,835
+9,tt100k_i4,i4,814
+10,tt100k_pl100,pl100,673
+11,tt100k_pl30,pl30,640

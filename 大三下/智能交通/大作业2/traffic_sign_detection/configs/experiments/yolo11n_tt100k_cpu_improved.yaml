@@ -1,0 +1,25 @@
+model: yolo11n.yaml
+train:
+  data: configs/dataset/tt100k.yaml
+  epochs: 2
+  imgsz: 416
+  batch: 4
+  device: cpu
+  workers: 0
+  project: outputs/runs
+  name: yolo11n_tt100k_cpu_improved
+  pretrained: false
+  fraction: 0.08
+  cache: false
+  close_mosaic: 0
+val:
+  data: configs/dataset/tt100k.yaml
+  imgsz: 416
+  batch: 4
+  device: cpu
+  workers: 0
+predict:
+  imgsz: 416
+  conf: 0.25
+  save: true
+  line_width: 2

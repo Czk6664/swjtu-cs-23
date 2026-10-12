@@ -1,0 +1,6 @@
+ultralytics>=8.4.0
+pyyaml>=6.0
+numpy>=1.24
+torch>=2.0
+matplotlib>=3.7
+sahi>=0.11.16

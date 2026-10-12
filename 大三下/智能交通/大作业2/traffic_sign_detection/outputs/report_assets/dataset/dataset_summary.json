@@ -1,0 +1,353 @@
+{
+  "dataset_root": "D:\\大三下\\智能交通\\大作业2\\traffic_sign_detection\\data\\tt100k_yolo",
+  "class_count": 12,
+  "nonempty_class_count": 12,
+  "split_rows": [
+    {
+      "split": "train",
+      "images": 5110,
+      "label_files": 5110,
+      "objects": 11292
+    },
+    {
+      "split": "val",
+      "images": 1460,
+      "label_files": 1460,
+      "objects": 3154
+    },
+    {
+      "split": "test",
+      "images": 730,
+      "label_files": 730,
+      "objects": 1622
+    }
+  ],
+  "per_class_rows": [
+    {
+      "split": "train",
+      "class_id": 0,
+      "class_name": "tt100k_pn",
+      "source_name": "pn",
+      "objects": 2228
+    },
+    {
+      "split": "train",
+      "class_id": 1,
+      "class_name": "tt100k_pne",
+      "source_name": "pne",
+      "objects": 1689
+    },
+    {
+      "split": "train",
+      "class_id": 2,
+      "class_name": "tt100k_i5",
+      "source_name": "i5",
+      "objects": 1230
+    },
+    {
+      "split": "train",
+      "class_id": 3,
+      "class_name": "tt100k_p11",
+      "source_name": "p11",
+      "objects": 1123
+    },
+    {
+      "split": "train",
+      "class_id": 4,
+      "class_name": "tt100k_pl40",
+      "source_name": "pl40",
+      "objects": 991
+    },
+    {
+      "split": "train",
+      "class_id": 5,
+      "class_name": "tt100k_pl50",
+      "source_name": "pl50",
+      "objects": 757
+    },
+    {
+      "split": "train",
+      "class_id": 6,
+      "class_name": "tt100k_pl80",
+      "source_name": "pl80",
+      "objects": 623
+    },
+    {
+      "split": "train",
+      "class_id": 7,
+      "class_name": "tt100k_p26",
+      "source_name": "p26",
+      "objects": 575
+    },
+    {
+      "split": "train",
+      "class_id": 8,
+      "class_name": "tt100k_pl60",
+      "source_name": "pl60",
+      "objects": 593
+    },
+    {
+      "split": "train",
+      "class_id": 9,
+      "class_name": "tt100k_i4",
+      "source_name": "i4",
+      "objects": 565
+    },
+    {
+      "split": "train",
+      "class_id": 10,
+      "class_name": "tt100k_pl100",
+      "source_name": "pl100",
+      "objects": 469
+    },
+    {
+      "split": "train",
+      "class_id": 11,
+      "class_name": "tt100k_pl30",
+      "source_name": "pl30",
+      "objects": 449
+    },
+    {
+      "split": "val",
+      "class_id": 0,
+      "class_name": "tt100k_pn",
+      "source_name": "pn",
+      "objects": 622
+    },
+    {
+      "split": "val",
+      "class_id": 1,
+      "class_name": "tt100k_pne",
+      "source_name": "pne",
+      "objects": 454
+    },
+    {
+      "split": "val",
+      "class_id": 2,
+      "class_name": "tt100k_i5",
+      "source_name": "i5",
+      "objects": 327
+    },
+    {
+      "split": "val",
+      "class_id": 3,
+      "class_name": "tt100k_p11",
+      "source_name": "p11",
+      "objects": 293
+    },
+    {
+      "split": "val",
+      "class_id": 4,
+      "class_name": "tt100k_pl40",
+      "source_name": "pl40",
+      "objects": 273
+    },
+    {
+      "split": "val",
+      "class_id": 5,
+      "class_name": "tt100k_pl50",
+      "source_name": "pl50",
+      "objects": 208
+    },
+    {
+      "split": "val",
+      "class_id": 6,
+      "class_name": "tt100k_pl80",
+      "source_name": "pl80",
+      "objects": 195
+    },
+    {
+      "split": "val",
+      "class_id": 7,
+      "class_name": "tt100k_p26",
+      "source_name": "p26",
+      "objects": 168
+    },
+    {
+      "split": "val",
+      "class_id": 8,
+      "class_name": "tt100k_pl60",
+      "source_name": "pl60",
+      "objects": 165
+    },
+    {
+      "split": "val",
+      "class_id": 9,
+      "class_name": "tt100k_i4",
+      "source_name": "i4",
+      "objects": 162
+    },
+    {
+      "split": "val",
+      "class_id": 10,
+      "class_name": "tt100k_pl100",
+      "source_name": "pl100",
+      "objects": 151
+    },
+    {
+      "split": "val",
+      "class_id": 11,
+      "class_name": "tt100k_pl30",
+      "source_name": "pl30",
+      "objects": 136
+    },
+    {
+      "split": "test",
+      "class_id": 0,
+      "class_name": "tt100k_pn",
+      "source_name": "pn",
+      "objects": 326
+    },
+    {
+      "split": "test",
+      "class_id": 1,
+      "class_name": "tt100k_pne",
+      "source_name": "pne",
+      "objects": 241
+    },
+    {
+      "split": "test",
+      "class_id": 2,
+      "class_name": "tt100k_i5",
+      "source_name": "i5",
+      "objects": 177
+    },
+    {
+      "split": "test",
+      "class_id": 3,
+      "class_name": "tt100k_p11",
+      "source_name": "p11",
+      "objects": 166
+    },
+    {
+      "split": "test",
+      "class_id": 4,
+      "class_name": "tt100k_pl40",
+      "source_name": "pl40",
+      "objects": 149
+    },
+    {
+      "split": "test",
+      "class_id": 5,
+      "class_name": "tt100k_pl50",
+      "source_name": "pl50",
+      "objects": 108
+    },
+    {
+      "split": "test",
+      "class_id": 6,
+      "class_name": "tt100k_pl80",
+      "source_name": "pl80",
+      "objects": 86
+    },
+    {
+      "split": "test",
+      "class_id": 7,
+      "class_name": "tt100k_p26",
+      "source_name": "p26",
+      "objects": 97
+    },
+    {
+      "split": "test",
+      "class_id": 8,
+      "class_name": "tt100k_pl60",
+      "source_name": "pl60",
+      "objects": 77
+    },
+    {
+      "split": "test",
+      "class_id": 9,
+      "class_name": "tt100k_i4",
+      "source_name": "i4",
+      "objects": 87
+    },
+    {
+      "split": "test",
+      "class_id": 10,
+      "class_name": "tt100k_pl100",
+      "source_name": "pl100",
+      "objects": 53
+    },
+    {
+      "split": "test",
+      "class_id": 11,
+      "class_name": "tt100k_pl30",
+      "source_name": "pl30",
+      "objects": 55
+    }
+  ],
+  "total_rows": [
+    {
+      "class_id": 0,
+      "class_name": "tt100k_pn",
+      "source_name": "pn",
+      "objects": 3176
+    },
+    {
+      "class_id": 1,
+      "class_name": "tt100k_pne",
+      "source_name": "pne",
+      "objects": 2384
+    },
+    {
+      "class_id": 2,
+      "class_name": "tt100k_i5",
+      "source_name": "i5",
+      "objects": 1734
+    },
+    {
+      "class_id": 3,
+      "class_name": "tt100k_p11",
+      "source_name": "p11",
+      "objects": 1582
+    },
+    {
+      "class_id": 4,
+      "class_name": "tt100k_pl40",
+      "source_name": "pl40",
+      "objects": 1413
+    },
+    {
+      "class_id": 5,
+      "class_name": "tt100k_pl50",
+      "source_name": "pl50",
+      "objects": 1073
+    },
+    {
+      "class_id": 6,
+      "class_name": "tt100k_pl80",
+      "source_name": "pl80",
+      "objects": 904
+    },
+    {
+      "class_id": 7,
+      "class_name": "tt100k_p26",
+      "source_name": "p26",
+      "objects": 840
+    },
+    {
+      "class_id": 8,
+      "class_name": "tt100k_pl60",
+      "source_name": "pl60",
+      "objects": 835
+    },
+    {
+      "class_id": 9,
+      "class_name": "tt100k_i4",
+      "source_name": "i4",
+      "objects": 814
+    },
+    {
+      "class_id": 10,
+      "class_name": "tt100k_pl100",
+      "source_name": "pl100",
+      "objects": 673
+    },
+    {
+      "class_id": 11,
+      "class_name": "tt100k_pl30",
+      "source_name": "pl30",
+      "objects": 640
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+path: data/tt100k_yolo
+train: images/train
+val: images/val
+test: images/test
+names:
+- tt100k_pn
+- tt100k_pne
+- tt100k_i5
+- tt100k_p11
+- tt100k_pl40
+- tt100k_pl50
+- tt100k_pl80
+- tt100k_p26
+- tt100k_pl60
+- tt100k_i4
+- tt100k_pl100
+- tt100k_pl30
+source_to_target:
+  pn: tt100k_pn
+  pne: tt100k_pne
+  i5: tt100k_i5
+  p11: tt100k_p11
+  pl40: tt100k_pl40
+  pl50: tt100k_pl50
+  pl80: tt100k_pl80
+  p26: tt100k_p26
+  pl60: tt100k_pl60
+  i4: tt100k_i4
+  pl100: tt100k_pl100
+  pl30: tt100k_pl30

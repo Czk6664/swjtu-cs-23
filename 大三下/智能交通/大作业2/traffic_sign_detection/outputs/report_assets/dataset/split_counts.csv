@@ -1,0 +1,4 @@
+split,images,label_files,objects
+train,5110,5110,11292
+val,1460,1460,3154
+test,730,730,1622
