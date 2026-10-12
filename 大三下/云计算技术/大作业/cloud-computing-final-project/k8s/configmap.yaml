@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: default
+data:
+  REDIS_HOST: "redis-svc"
+  REDIS_PORT: "6379"
+  APP_ENV: "production"
+  STUDENT_NAME: "程泽凯，王晨羽"
+  STUDENT_ID: "2023112621,2023114337"
+  STUDENT_CLASS: "2023-04班"

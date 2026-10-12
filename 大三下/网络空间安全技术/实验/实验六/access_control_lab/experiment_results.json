@@ -1,0 +1,292 @@
+{
+  "results": {
+    "访问矩阵实验": [
+      {
+        "测试编号": "MX-01",
+        "测试场景": "已授权主体访问已授权客体",
+        "输入条件": "subject=alice, resource=repo, action=read, context={}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (MATRIX_ACTION_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "访问矩阵单元格包含该操作，授权通过。"
+      },
+      {
+        "测试编号": "MX-02",
+        "测试场景": "主体存在但矩阵未授权",
+        "输入条件": "subject=alice, resource=payroll, action=write, context={}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (MATRIX_ACTION_NOT_GRANTED)",
+        "是否一致": "是",
+        "结果分析": "矩阵中没有对应操作权限，按默认拒绝处理。"
+      },
+      {
+        "测试编号": "MX-03",
+        "测试场景": "未知主体访问",
+        "输入条件": "subject=unknown_user, resource=repo, action=read, context={}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (UNKNOWN_SUBJECT)",
+        "是否一致": "是",
+        "结果分析": "主体表中不存在该 subject_id，授权失败。"
+      },
+      {
+        "测试编号": "MX-04",
+        "测试场景": "未知客体访问",
+        "输入条件": "subject=alice, resource=unknown_resource, action=read, context={}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (UNKNOWN_RESOURCE)",
+        "是否一致": "是",
+        "结果分析": "资源表中不存在该 resource_id，授权失败。"
+      },
+      {
+        "测试编号": "MX-05",
+        "测试场景": "修改矩阵后重新验证",
+        "输入条件": "subject=bob, resource=repo, action=read, context={}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (MATRIX_ACTION_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "访问矩阵单元格包含该操作，授权通过。"
+      }
+    ],
+    "ACL / DAC 实验": [
+      {
+        "测试编号": "AC-01",
+        "测试场景": "用户 ACL 直接授权",
+        "输入条件": "subject=alice, resource=repo, action=write, context={}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (ACL_ENTRY_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "资源 ACL 中存在匹配的用户或组允许条目。"
+      },
+      {
+        "测试编号": "AC-02",
+        "测试场景": "组 ACL 授权",
+        "输入条件": "subject=frank, resource=repo, action=read, context={}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (ACL_ENTRY_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "资源 ACL 中存在匹配的用户或组允许条目。"
+      },
+      {
+        "测试编号": "AC-03",
+        "测试场景": "未命中 ACL 默认拒绝",
+        "输入条件": "subject=dave, resource=repo, action=write, context={}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (ACL_NO_MATCH_DEFAULT_DENY)",
+        "是否一致": "是",
+        "结果分析": "未命中任何 ACL 允许条目，默认拒绝。"
+      },
+      {
+        "测试编号": "AC-04",
+        "测试场景": "资源侧 ACL 授权写操作",
+        "输入条件": "subject=dave, resource=repo, action=write, context={}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (ACL_ENTRY_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "资源 ACL 中存在匹配的用户或组允许条目。"
+      },
+      {
+        "测试编号": "AC-05",
+        "测试场景": "非授权组访问敏感资源",
+        "输入条件": "subject=alice, resource=payroll, action=read, context={}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (ACL_NO_MATCH_DEFAULT_DENY)",
+        "是否一致": "是",
+        "结果分析": "未命中任何 ACL 允许条目，默认拒绝。"
+      }
+    ],
+    "RBAC 实验": [
+      {
+        "测试编号": "RB-01",
+        "测试场景": "角色具备资源写权限",
+        "输入条件": "subject=alice, resource=repo, action=write, context={}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (RBAC_PERMISSION_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "激活角色汇总后的权限集合包含目标资源和操作。"
+      },
+      {
+        "测试编号": "RB-02",
+        "测试场景": "角色具备审计读取权限",
+        "输入条件": "subject=carol, resource=audit_log, action=read, context={}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (RBAC_PERMISSION_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "激活角色汇总后的权限集合包含目标资源和操作。"
+      },
+      {
+        "测试编号": "RB-03",
+        "测试场景": "低权限角色访问未授权资源",
+        "输入条件": "subject=dave, resource=strategy_doc, action=read, context={}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (RBAC_PERMISSION_NOT_GRANTED)",
+        "是否一致": "是",
+        "结果分析": "低权限角色没有目标资源操作权限。"
+      },
+      {
+        "测试编号": "RB-04",
+        "测试场景": "互斥角色同时激活",
+        "输入条件": "subject=frank, resource=repo, action=read, context={}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (RBAC_MUTUALLY_EXCLUSIVE_ROLES)",
+        "是否一致": "是",
+        "结果分析": "会话同时激活互斥角色，违反职责分离约束。"
+      },
+      {
+        "测试编号": "RB-05",
+        "测试场景": "管理角色执行审批操作",
+        "输入条件": "subject=erin, resource=strategy_doc, action=approve, context={}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (RBAC_PERMISSION_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "激活角色汇总后的权限集合包含目标资源和操作。"
+      }
+    ],
+    "MAC 标签控制实验": [
+      {
+        "测试编号": "MA-01",
+        "测试场景": "同级标签读取",
+        "输入条件": "subject=bob, resource=payroll, action=read, context={}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (MAC_LABEL_RULE_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "主体等级与客体标签满足 MAC 读写规则。"
+      },
+      {
+        "测试编号": "MA-02",
+        "测试场景": "低级别主体向上读取",
+        "输入条件": "subject=dave, resource=strategy_doc, action=read, context={}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (MAC_NO_READ_UP)",
+        "是否一致": "是",
+        "结果分析": "低级别主体读取高级别客体，违反 no read up。"
+      },
+      {
+        "测试编号": "MA-03",
+        "测试场景": "高级别主体读取低级别客体",
+        "输入条件": "subject=erin, resource=public_news, action=read, context={}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (MAC_LABEL_RULE_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "主体等级与客体标签满足 MAC 读写规则。"
+      },
+      {
+        "测试编号": "MA-04",
+        "测试场景": "高级别主体向下写",
+        "输入条件": "subject=erin, resource=public_news, action=write, context={}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (MAC_NO_WRITE_DOWN)",
+        "是否一致": "是",
+        "结果分析": "高级别主体写入低级别客体，违反 no write down。"
+      },
+      {
+        "测试编号": "MA-05",
+        "测试场景": "public 主体读取 public 客体",
+        "输入条件": "subject=dave, resource=public_news, action=read, context={}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (MAC_LABEL_RULE_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "主体等级与客体标签满足 MAC 读写规则。"
+      }
+    ],
+    "ABAC 条件策略实验": [
+      {
+        "测试编号": "AB-01",
+        "测试场景": "部门、设备、风险均满足",
+        "输入条件": "subject=alice, resource=repo, action=read, context={'device_state': 'managed', 'risk': 2, 'time': '10:00', 'location': 'office'}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (ABAC_POLICY_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "请求属性满足允许策略，授权通过。"
+      },
+      {
+        "测试编号": "AB-02",
+        "测试场景": "设备状态不满足",
+        "输入条件": "subject=alice, resource=repo, action=read, context={'device_state': 'unmanaged', 'risk': 2, 'time': '10:00', 'location': 'office'}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (ABAC_DENY_OVERRIDES)",
+        "是否一致": "是",
+        "结果分析": "同时命中允许和拒绝策略，deny-overrides 返回拒绝。"
+      },
+      {
+        "测试编号": "AB-03",
+        "测试场景": "财务部门办公时间访问",
+        "输入条件": "subject=bob, resource=payroll, action=read, context={'device_state': 'managed', 'risk': 2, 'time': '10:00', 'location': 'office'}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (ABAC_POLICY_ALLOWED)",
+        "是否一致": "是",
+        "结果分析": "请求属性满足允许策略，授权通过。"
+      },
+      {
+        "测试编号": "AB-04",
+        "测试场景": "超出办公时间访问",
+        "输入条件": "subject=bob, resource=payroll, action=read, context={'device_state': 'managed', 'risk': 2, 'time': '21:00', 'location': 'office'}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (ABAC_NO_POLICY_MATCH_DEFAULT_DENY)",
+        "是否一致": "是",
+        "结果分析": "属性条件不满足任何允许策略，默认拒绝。"
+      },
+      {
+        "测试编号": "AB-05",
+        "测试场景": "敏感资源缺少二次验证",
+        "输入条件": "subject=dave, resource=strategy_doc, action=read, context={'device_state': 'managed', 'risk': 2, 'time': '10:00', 'location': 'office'}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (ABAC_DENY_OVERRIDES)",
+        "是否一致": "是",
+        "结果分析": "同时命中允许和拒绝策略，deny-overrides 返回拒绝。"
+      }
+    ],
+    "策略冲突与组合实验": [
+      {
+        "测试编号": "CF-01",
+        "测试场景": "deny-overrides 冲突处理",
+        "输入条件": "subject=bob, resource=payroll, action=read, context={'device_state': 'managed', 'risk': 5, 'time': '10:00', 'location': 'office', 'conflict_case': True}",
+        "期望结果": "Deny",
+        "实际结果": "Deny (ABAC_DENY_OVERRIDES)",
+        "是否一致": "是",
+        "结果分析": "同时命中允许和拒绝策略，deny-overrides 返回拒绝。"
+      },
+      {
+        "测试编号": "CF-02",
+        "测试场景": "permit-overrides 冲突处理",
+        "输入条件": "subject=bob, resource=payroll, action=read, context={'device_state': 'managed', 'risk': 5, 'time': '10:00', 'location': 'office', 'conflict_case': True}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (ABAC_PERMIT_OVERRIDES)",
+        "是否一致": "是",
+        "结果分析": "同时命中允许和拒绝策略，permit-overrides 返回允许。"
+      },
+      {
+        "测试编号": "CF-03",
+        "测试场景": "first-applicable 冲突处理",
+        "输入条件": "subject=bob, resource=payroll, action=read, context={'device_state': 'managed', 'risk': 5, 'time': '10:00', 'location': 'office', 'conflict_case': True}",
+        "期望结果": "Permit",
+        "实际结果": "Permit (ABAC_FIRST_APPLICABLE_PERMIT)",
+        "是否一致": "是",
+        "结果分析": "按策略顺序采用第一条适用的 Permit 策略。"
+      }
+    ]
+  },
+  "audit": {
+    "total_requests": 28,
+    "permit_requests": 15,
+    "deny_requests": 13,
+    "most_common_deny_reason": "ABAC_DENY_OVERRIDES",
+    "sensitive_resource_access_count": 12,
+    "repeat_failed_subjects": {
+      "alice": 4,
+      "dave": 4,
+      "bob": 2
+    },
+    "deny_reason_counts": {
+      "MATRIX_ACTION_NOT_GRANTED": 1,
+      "UNKNOWN_SUBJECT": 1,
+      "UNKNOWN_RESOURCE": 1,
+      "ACL_NO_MATCH_DEFAULT_DENY": 2,
+      "RBAC_PERMISSION_NOT_GRANTED": 1,
+      "RBAC_MUTUALLY_EXCLUSIVE_ROLES": 1,
+      "MAC_NO_READ_UP": 1,
+      "MAC_NO_WRITE_DOWN": 1,
+      "ABAC_DENY_OVERRIDES": 3,
+      "ABAC_NO_POLICY_MATCH_DEFAULT_DENY": 1
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}用户注册{% endblock %}
+{% block content %}
+<div class="card auth-card">
+  <h2>用户注册</h2>
+  <form method="post" action="{{ url_for('register') }}">
+    <label>用户名</label>
+    <input type="text" name="username" required autofocus placeholder="请输入用户名">
+    
+    <label>密码</label>
+    <input type="password" name="password" required placeholder="请输入密码">
+    
+    <button type="submit">注册</button>
+  </form>
+  <p class="hint">密码要求：至少 8 位，且同时包含字母和数字。<br>
+     密码以 PBKDF2-SHA256 加盐哈希存储，绝不明文保存。</p>
+</div>
+{% endblock %}

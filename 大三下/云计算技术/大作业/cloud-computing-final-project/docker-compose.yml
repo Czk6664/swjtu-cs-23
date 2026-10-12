@@ -1,0 +1,43 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-docker.m.daocloud.io/library/python:3.11-slim}
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}
+    image: cloud-course-backend:v1
+    ports:
+      - "5000:5000"
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      STUDENT_NAME: ${STUDENT_NAME:-程泽凯，王晨羽}
+      STUDENT_ID: ${STUDENT_ID:-2023112621,2023114337}
+      STUDENT_CLASS: ${STUDENT_CLASS:-2023-04班}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    depends_on:
+      redis:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NGINX_IMAGE: ${NGINX_IMAGE:-docker.m.daocloud.io/library/nginx:1.25-alpine}
+    image: cloud-course-frontend:v1
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  redis:
+    image: ${REDIS_IMAGE:-docker.m.daocloud.io/library/redis:7-alpine}
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

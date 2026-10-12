@@ -1,0 +1,223 @@
+实验公共参数：
+- 用户：u01，u02（用于时间同步模式干净测试）
+- 口令表：L=[111111,222222,333333,444444,555555]，初始 pos=0
+- 计数器模式：初始 counter = 0；服务器验证窗口 look_ahead=3
+- 时间同步模式：step=30s，allowed_window=1（允许 ±1 个时间槽）；基准时间戳 t0=1700000000
+
+
+实验A：静态口令对照 (Baseline)
+
+TC-A1
+操作描述：正常认证
+测试输入：(u01, "static_pass")
+预期结果：通过
+实际输出与分析：a. 返回值：success=True，错误码：OK。b. 服务器状态：静态口令模式无 pos/counter/used slot 状态推进。c. 日志字段：user=u01, mode=static, result=pass, reason=none。
+结果判定：一致。口令正确，因此认证通过。
+
+TC-A2
+操作描述：错误口令
+测试输入：(u01, "wrong_pass")
+预期结果：拒绝：比较失败
+实际输出与分析：a. 返回值：success=False，错误码：PASSWORD_MISMATCH。b. 服务器状态：无状态变化。c. 日志字段：user=u01, mode=static, result=reject, reason=比较失败。
+结果判定：一致。提交口令与服务器保存口令不一致。
+
+TC-A3
+操作描述：重放攻击
+测试输入：截获 TC-A1 的消息 (id=u01, pass="static_pass") 再次提交
+预期结果：通过
+实际输出与分析：a. 返回值：success=True，错误码：OK。b. 服务器状态：无已用记录，无状态推进。c. 日志字段：user=u01, mode=static, result=pass, attack=replay。
+结果判定：一致。静态口令缺少新鲜性检查，旧认证消息仍可通过。
+
+
+实验B：共享口令表型 OTP
+
+TC-B1
+操作描述：正常认证，使用 pos=0 的口令
+测试输入：(u01, 111111, pos=0)
+预期结果：通过
+实际输出与分析：a. 返回值：success=True，错误码：OK。b. 服务器状态：pos: 0 -> 1。c. 日志字段：user=u01, mode=list, received_otp=111111, expected_otp=111111, pos=0, result=pass。
+结果判定：一致。提交 OTP 与当前位置口令一致。
+
+TC-B2
+操作描述：重放攻击
+测试输入：重放 TC-B1 的消息 (id=u01, otp="111111")
+预期结果：拒绝：复用失败
+实际输出与分析：a. 返回值：success=False，错误码：OTP_REUSED_OR_EXPIRED。b. 服务器状态：当前 pos=1，保持不变。c. 日志字段：user=u01, mode=list, received_otp=111111, current_pos=1, expected_otp=222222, result=reject, reason=复用失败。
+结果判定：一致。旧位置口令已使用，重放被拒绝。
+
+TC-B3
+操作描述：篡改 OTP
+测试输入：(u01, "999999")，当前服务器 pos=1
+预期结果：拒绝：比较失败
+实际输出与分析：a. 返回值：success=False，错误码：OTP_MISMATCH。b. 服务器状态：pos=1，不推进。c. 日志字段：user=u01, mode=list, received_otp=999999, expected_otp=222222, result=reject, reason=比较失败。
+结果判定：一致。篡改后的 OTP 与服务器期望值不一致。
+
+TC-B4
+操作描述：指针失步，客户端超前 1 位
+测试输入：client pos=2, server pos=1
+预期结果：拒绝：新鲜性失败
+实际输出与分析：a. 返回值：success=False，错误码：POSITION_OUT_OF_SYNC。b. 服务器状态：server_pos=1，不推进。c. 日志字段：user=u01, mode=list, client_pos=2, server_pos=1, received_otp=333333, expected_otp=222222, result=reject, reason=新鲜性失败。
+结果判定：一致。客户端和服务器位置不同步，当前口令不新鲜。
+
+
+实验C：计数器/序列同步型 OTP
+
+TC-C0
+操作描述：生成规则自检
+测试输入：1. 用 c=5 生成两次；2. 用 c=5 和 c=6 生成
+预期结果：通过
+实际输出与分析：a. 返回值：success=True，错误码：SELF_CHECK_OK。b. 服务器状态：自检不改变服务器 counter。c. 日志字段：mode=counter, c5_repeat_equal=True, c5_c6_equal=False, result=pass。
+结果判定：一致。同一计数器输出一致，不同计数器输出不同。
+
+TC-C1
+操作描述：正常认证
+测试输入：(u01, otp_c0, counter=0)
+预期结果：通过
+实际输出与分析：a. 返回值：success=True，错误码：OK。b. 服务器状态：counter: 0 -> 1。c. 日志字段：user=u01, mode=counter, received_counter=0, server_counter=0, result=pass。
+结果判定：一致。客户端 counter 与服务器 counter 一致。
+
+TC-C2
+操作描述：重放攻击
+测试输入：重放 TC-C1 的消息 (c=0)
+预期结果：拒绝：复用失败
+实际输出与分析：a. 返回值：success=False，错误码：COUNTER_REUSED。b. 服务器状态：当前 counter=1，保持不变。c. 日志字段：user=u01, mode=counter, received_counter=0, server_counter=1, result=reject, reason=复用失败。
+结果判定：一致。counter=0 已经使用，旧消息被拒绝。
+
+TC-C3
+操作描述：窗口内漂移
+测试输入：server=1, client=3
+预期结果：通过
+实际输出与分析：a. 返回值：success=True，错误码：OK_WITH_RESYNC。b. 服务器状态：counter: 1 -> 4。c. 日志字段：user=u01, mode=counter, server_counter=1, received_counter=3, look_ahead=3, allowed_range=1-4, result=pass。
+结果判定：一致。客户端计数器在允许窗口内，因此通过并推进服务器状态。
+
+TC-C4
+操作描述：窗口外漂移
+测试输入：server=4, client=10
+预期结果：拒绝：新鲜性失败
+实际输出与分析：a. 返回值：success=False，错误码：COUNTER_OUT_OF_WINDOW。b. 服务器状态：counter=4，不推进。c. 日志字段：user=u01, mode=counter, server_counter=4, received_counter=10, look_ahead=3, allowed_range=4-7, result=reject, reason=新鲜性失败。
+结果判定：一致。客户端计数器超出允许窗口。
+
+TC-C5
+操作描述：篡改 counter 字段
+测试输入：otp 对应 c=4，但传 c=2
+预期结果：拒绝：比较失败
+实际输出与分析：a. 返回值：success=False，错误码：OTP_COUNTER_MISMATCH。b. 服务器状态：counter 不推进。c. 日志字段：user=u01, mode=counter, otp_generated_counter=4, received_counter=2, result=reject, reason=比较失败。
+结果判定：一致。OTP 与 counter 不匹配，服务器重算结果不同。
+
+
+实验D：时间同步型 OTP
+
+TC-D0
+操作描述：生成规则自检
+测试输入：1. 同一 timestamp 生成两次；2. t0 和 t0+30 分别生成
+预期结果：通过
+实际输出与分析：a. 返回值：success=True，错误码：SELF_CHECK_OK。b. 服务器状态：自检不改变已用 slot。c. 日志字段：mode=time, same_timestamp_equal=True, different_slot_equal=False, result=pass。
+结果判定：一致。同一时间戳生成结果相同，不同时间槽生成结果不同。
+
+TC-D1
+操作描述：正常窗口内
+测试输入：客户端 ts=t0，服务器 ts=t0
+预期结果：通过
+实际输出与分析：a. 返回值：success=True，错误码：OK。b. 服务器状态：记录 used_slot[u01]=56666666。c. 日志字段：user=u01, mode=time, received_ts=1700000000, client_slot=56666666, server_slot=56666666, result=pass。
+结果判定：一致。客户端和服务器处于同一时间槽。
+
+TC-D2
+操作描述：重放攻击
+测试输入：重放 TC-D1 的消息
+预期结果：拒绝：复用失败
+实际输出与分析：a. 返回值：success=False，错误码：TIME_SLOT_REUSED。b. 服务器状态：used_slot[u01]=56666666 已存在，不改变。c. 日志字段：user=u01, mode=time, slot=56666666, result=reject, reason=复用失败。
+结果判定：一致。该时间槽已经使用，重放被拒绝。
+
+TC-D3
+操作描述：允许窗口测试，±1 槽
+测试输入：用户 u02，客户端 ts=t0，服务器 ts=t0+30
+预期结果：通过
+实际输出与分析：a. 返回值：success=True，错误码：OK_WITH_TIME_WINDOW。b. 服务器状态：记录 used_slot[u02]=56666666。c. 日志字段：user=u02, mode=time, client_slot=56666666, server_slot=56666667, slot_delta=1, allowed_window=1, result=pass。
+结果判定：一致。时间偏差为 1 个时间槽，在允许窗口内。
+
+TC-D4
+操作描述：窗口外，过期
+测试输入：客户端 ts=t0-60，服务器 ts=t0
+预期结果：拒绝：新鲜性失败
+实际输出与分析：a. 返回值：success=False，错误码：TIME_SLOT_OUT_OF_WINDOW。b. 服务器状态：不记录新的 used_slot。c. 日志字段：user=u01, mode=time, client_slot=56666664, server_slot=56666666, slot_delta=2, allowed_window=1, result=reject, reason=新鲜性失败。
+结果判定：一致。客户端时间槽过期，超出允许窗口。
+
+TC-D5
+操作描述：篡改 timestamp
+测试输入：客户端生成 ts=t0 的 OTP，后将消息中 timestamp 改为 t0+60
+预期结果：拒绝：比较失败
+实际输出与分析：a. 返回值：success=False，错误码：OTP_TIMESTAMP_MISMATCH。b. 服务器状态：不记录新的 used_slot。c. 日志字段：user=u01, mode=time, otp_original_slot=56666666, received_slot=56666668, result=reject, reason=比较失败。
+结果判定：一致。OTP 与被篡改后的 timestamp 不匹配。
+
+
+实验E/F：统一安全性用例与模式比较
+
+（1）统一攻击模型（所有模式必须执行）
+
+TC-S1
+攻击类型：身份篡改
+测试说明：id 错误但 OTP 正确
+口令表：拒绝：比较失败
+计数器：拒绝：比较失败
+时间 OTP：拒绝：比较失败
+原因：错误 id 会导致服务器读取错误用户的密钥或状态，重算 OTP 不一致。
+
+TC-S2
+攻击类型：OTP 篡改
+测试说明：OTP 错误，同步字段正确
+口令表：拒绝：比较失败
+计数器：拒绝：比较失败
+时间 OTP：拒绝：比较失败
+原因：OTP 被修改后，与服务器重算值不一致。
+
+TC-S3
+攻击类型：重放攻击
+测试说明：完整重放已通过消息
+口令表：拒绝：复用失败
+计数器：拒绝：复用失败
+时间 OTP：拒绝：复用失败
+原因：口令表位置、计数器或时间槽已经被使用。
+
+TC-S4
+攻击类型：同步字段篡改
+测试说明：改 counter / ts
+口令表：拒绝：新鲜性失败
+计数器：拒绝：比较失败
+时间 OTP：拒绝：比较失败
+原因：同步字段改变后，OTP 与状态字段不匹配；口令表型表现为当前位置不一致。
+
+TC-S5
+攻击类型：绑定性破坏
+测试说明：OTP 与 counter / ts 不匹配
+口令表：拒绝：比较失败
+计数器：拒绝：比较失败
+时间 OTP：拒绝：比较失败
+原因：OTP 必须与身份、计数器或时间槽绑定，绑定关系破坏后验证失败。
+
+
+（2）模式安全性对比
+
+防重放：
+口令表：通过。成功后 pos 推进，旧口令无法再次使用。
+计数器：通过。成功后 counter 推进，旧 counter 被拒绝。
+时间 OTP：通过。成功后记录已用 slot，同一时间槽不能重复使用。
+
+状态依赖：
+口令表：强。必须保存并维护当前 pos。
+计数器：强。必须保存并维护服务器端 counter。
+时间 OTP：中等。需要时间窗口判断，并建议保存已用 slot。
+
+同步要求：
+口令表：高。客户端和服务器 pos 必须一致。
+计数器：中等。允许通过 look_ahead 处理轻微超前。
+时间 OTP：中等。允许通过 allowed_window 处理轻微时钟偏差。
+
+容错能力：
+口令表：较弱。指针失步后容易失败。
+计数器：较强。窗口内漂移可以通过并重同步。
+时间 OTP：较强。窗口内时间偏差可以通过。
+
+实现复杂度：
+口令表：较低。规则简单，但口令表管理不灵活。
+计数器：中等。需要密钥、计数器、窗口和状态推进。
+时间 OTP：中等偏高。需要时间槽、时钟窗口和已用 slot 记录。

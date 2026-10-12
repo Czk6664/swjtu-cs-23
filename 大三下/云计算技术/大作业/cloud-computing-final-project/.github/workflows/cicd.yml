@@ -1,0 +1,83 @@
+name: Build Push Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  SWR_REGISTRY: swr.cn-south-1.myhuaweicloud.com
+  SWR_ORG: czk-course
+  BACKEND_IMAGE: backend
+  FRONTEND_IMAGE: frontend
+
+jobs:
+  build-push-deploy:
+    name: Build, Push and Deploy to CCE
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Generate image tag
+        id: vars
+        run: echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Login to Huawei Cloud SWR
+        run: |
+          echo "${{ secrets.SWR_PASSWORD }}" | docker login \
+            -u "${{ secrets.SWR_USERNAME }}" \
+            --password-stdin \
+            "${SWR_REGISTRY}"
+
+      - name: Build backend image
+        run: |
+          docker build \
+            -f backend/Dockerfile \
+            -t "${SWR_REGISTRY}/${SWR_ORG}/${BACKEND_IMAGE}:${{ steps.vars.outputs.tag }}" \
+            backend
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            -f frontend/Dockerfile \
+            -t "${SWR_REGISTRY}/${SWR_ORG}/${FRONTEND_IMAGE}:${{ steps.vars.outputs.tag }}" \
+            frontend
+
+      - name: Push backend image to SWR
+        run: docker push "${SWR_REGISTRY}/${SWR_ORG}/${BACKEND_IMAGE}:${{ steps.vars.outputs.tag }}"
+
+      - name: Push frontend image to SWR
+        run: docker push "${SWR_REGISTRY}/${SWR_ORG}/${FRONTEND_IMAGE}:${{ steps.vars.outputs.tag }}"
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: latest
+
+      - name: Configure CCE kubeconfig
+        run: |
+          mkdir -p "$HOME/.kube"
+          echo "${{ secrets.CCE_KUBECONFIG_B64 }}" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+      - name: Update backend Deployment image
+        run: |
+          kubectl set image deployment/backend \
+            backend="${SWR_REGISTRY}/${SWR_ORG}/${BACKEND_IMAGE}:${{ steps.vars.outputs.tag }}" \
+            -n default
+          kubectl rollout status deployment/backend -n default --timeout=180s
+
+      - name: Update frontend Deployment image
+        run: |
+          kubectl set image deployment/frontend \
+            frontend="${SWR_REGISTRY}/${SWR_ORG}/${FRONTEND_IMAGE}:${{ steps.vars.outputs.tag }}" \
+            -n default
+          kubectl rollout status deployment/frontend -n default --timeout=180s
+
+      - name: Verify deployed image tags
+        run: |
+          kubectl get deployment backend frontend -n default \
+            -o custom-columns=NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image

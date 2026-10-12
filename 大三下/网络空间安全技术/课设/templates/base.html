@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}安全登录系统{% endblock %} · 程泽凯 2023112621</title>
+  <style>
+    :root {
+      --apple-black: #000000;
+      --apple-white: #ffffff;
+      --apple-gray: #f5f5f7;
+      --apple-text: #1d1d1f;
+      --apple-blue: #0071e3;
+      --apple-link: #0066cc;
+      --apple-link-dark: #2997ff;
+      --bg: var(--apple-gray);
+      --panel: var(--apple-white);
+      --text-primary: var(--apple-text);
+      --text-secondary: rgba(0, 0, 0, 0.8);
+      --text-tertiary: rgba(0, 0, 0, 0.48);
+      --accent: var(--apple-blue);
+      --ok: #34c759;
+      --bad: #ff3b30;
+      --warn: #ff9500;
+      --font-display: -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+      --font-text: -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-pill: 980px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-text);
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 22px;
+      height: 48px;
+      background: rgba(0, 0, 0, 0.8);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      backdrop-filter: saturate(180%) blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+    }
+    .brand {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--apple-white);
+      letter-spacing: -0.224px;
+    }
+    .topbar nav {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    .topbar nav a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: -0.12px;
+      transition: color 0.2s;
+    }
+    .topbar nav a:hover { color: var(--apple-white); }
+    .topbar .user {
+      color: var(--apple-link-dark);
+      font-size: 12px;
+      font-weight: 400;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 48px 22px;
+    }
+    .card {
+      background: var(--panel);
+      border-radius: var(--radius-md);
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    }
+    .auth-card {
+      max-width: 420px;
+      margin: 80px auto;
+      padding: 40px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+    }
+    h2 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 0.196px;
+      line-height: 1.14;
+      margin-bottom: 20px;
+      color: var(--text-primary);
+    }
+    h3 {
+      font-family: var(--font-display);
+      font-size: 21px;
+      font-weight: 600;
+      letter-spacing: 0.231px;
+      line-height: 1.19;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin: 16px 0 6px;
+      letter-spacing: -0.12px;
+    }
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid #d2d2d7;
+      background: var(--apple-white);
+      color: var(--text-primary);
+      font-size: 17px;
+      font-family: var(--font-text);
+      letter-spacing: -0.374px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+    }
+    input::placeholder { color: var(--text-tertiary); }
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 24px;
+      width: 100%;
+      padding: 12px 24px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: var(--accent);
+      color: var(--apple-white);
+      font-family: var(--font-text);
+      font-size: 17px;
+      font-weight: 400;
+      letter-spacing: -0.374px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    button:hover { background: #0077ed; }
+    button:active { background: #006edb; transform: scale(0.98); }
+    a {
+      color: var(--apple-link);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    a:hover { color: var(--accent); text-decoration: underline; }
+    .hint {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 16px;
+      letter-spacing: -0.224px;
+      line-height: 1.43;
+    }
+    .hint a { color: var(--apple-link); font-weight: 400; }
+    .flashes { margin-bottom: 24px; }
+    .flash {
+      padding: 14px 18px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: -0.224px;
+      line-height: 1.43;
+    }
+    .flash-success { background: #e8f5e9; color: #1b5e20; }
+    .flash-danger { background: #ffebee; color: #b71c1c; }
+    .flash-warning { background: #fff3e0; color: #e65100; }
+    .flash-info { background: #e3f2fd; color: #0d47a1; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat {
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      padding: 24px 20px;
+      text-align: center;
+    }
+    .stat span {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 40px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+    .stat::after {
+      content: attr(data-label);
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      letter-spacing: -0.12px;
+    }
+    .stat.ok span { color: var(--ok); }
+    .stat.bad span { color: var(--bad); }
+    .stat.warn span { color: var(--warn); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .kv {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--apple-gray);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .kv tr { border-bottom: 1px solid #d2d2d7; }
+    .kv tr:last-child { border-bottom: none; }
+    .kv th {
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 14px 16px;
+      width: 160px;
+      background: rgba(0, 0, 0, 0.03);
+      letter-spacing: -0.12px;
+      border-bottom: 1px solid #d2d2d7;
+    }
+    .kv td {
+      font-size: 17px;
+      font-weight: 400;
+      padding: 14px 16px;
+      letter-spacing: -0.374px;
+      color: var(--text-primary);
+      border-bottom: 1px solid #d2d2d7;
+    }
+    .kv tr:last-child th,
+    .kv tr:last-child td { border-bottom: none; }
+    .table-container {
+      background: var(--apple-gray);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .grid {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0;
+    }
+    .grid thead th {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 12px 16px;
+      text-align: left;
+      background: rgba(0, 0, 0, 0.03);
+      border-bottom: 1px solid #d2d2d7;
+      letter-spacing: -0.12px;
+      text-transform: uppercase;
+    }
+    .grid tbody tr {
+      border-bottom: 1px solid #e8e8ed;
+      transition: background 0.15s;
+    }
+    .grid tbody tr:last-child { border-bottom: none; }
+    .grid tbody tr:hover { background: rgba(0, 113, 227, 0.04); }
+    .grid td {
+      font-size: 14px;
+      font-weight: 400;
+      padding: 14px 16px;
+      letter-spacing: -0.224px;
+      color: var(--text-primary);
+      line-height: 1.43;
+    }
+    tr.log-ok td:first-child { position: relative; padding-left: 28px; }
+    tr.log-ok td:first-child::before {
+      content: '';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--ok);
+    }
+    tr.log-bad td:first-child { position: relative; padding-left: 28px; }
+    tr.log-bad td:first-child::before {
+      content: '';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--bad);
+    }
+    tr.alert-row { background: rgba(255, 59, 48, 0.04); }
+    tr.alert-row td { color: var(--bad); }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 59, 48, 0.1);
+      color: var(--bad);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: -0.12px;
+    }
+    .foot {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      padding: 32px 22px;
+      border-top: 1px solid #d2d2d7;
+      margin-top: 48px;
+      letter-spacing: -0.12px;
+      line-height: 1.6;
+    }
+    @media (max-width: 768px) {
+      .topbar {
+        padding: 0 16px;
+        height: auto;
+        min-height: 48px;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+      }
+      .topbar nav { gap: 16px; }
+      .container { padding: 24px 16px; }
+      .card { padding: 24px 20px; }
+      .auth-card { margin: 40px auto; padding: 32px 24px; }
+      h2 { font-size: 24px; letter-spacing: 0.172px; }
+      h3 { font-size: 19px; letter-spacing: -0.247px; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .stat span { font-size: 32px; }
+      .grid td, .grid th { padding: 10px 12px; font-size: 13px; }
+      .kv th { width: 120px; font-size: 11px; }
+      .kv td { font-size: 15px; }
+    }
+    @media (max-width: 480px) {
+      .stats { grid-template-columns: 1fr 1fr; gap: 12px; }
+      .stat { padding: 16px; }
+      .stat span { font-size: 28px; }
+    }
+    ::selection {
+      background: rgba(0, 113, 227, 0.2);
+      color: var(--text-primary);
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Web 登录系统安全加固平台</div>
+    <nav>
+      <a href="{{ url_for('login') }}">登录</a>
+      <a href="{{ url_for('register') }}">注册</a>
+      <a href="{{ url_for('audit_page') }}">安全审计</a>
+      {% if session.username %}
+        <span class="user">{{ session.username }}</span>
+        <a href="{{ url_for('logout') }}">退出</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes">
+          {% for category, msg in messages %}
+            <div class="flash flash-{{ category }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="foot">
+    设计者：程泽凯 · 学号 2023112621 · 《网络空间安全技术》课程设计<br>
+    仅在本地授权环境测试
+  </footer>
+</body>
+</html>

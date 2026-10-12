@@ -1,0 +1,738 @@
+================================================================================
+                        实验五：身份鉴别机制 — 程序设计代码
+================================================================================
+
+
+================================================================================
+一、关键数据结构设计
+================================================================================
+
+# ---------- 用户记录结构 ----------
+# 每个用户在服务端保存一条记录，涵盖所有鉴别机制所需的凭证与状态。
+# 不同机制只使用其中部分字段：口令用 salt+password_hash，挑战-应答/MAC 用 shared_key，
+# OTP 用 otp_secret+counter，数字签名用 pub_key。
+user_record = {
+    "id":             "alice",                              # 用户唯一标识（存储时已标准化为小写）
+    "salt":           b"\x3a\x7f\x02\xc9...\xb1",          # 16 字节随机盐，注册时由 random_nonce(16) 生成
+    "password_hash":  b"\x5e\x88\x48\x98...\xa2",          # 32 字节，PBKDF2-HMAC-SHA256(password, salt, 100000)
+    "shared_key":     b"alice-shared-key-for-hmac-32bytes", # 挑战-应答 / MAC 共享对称密钥（双方预协商）
+    "otp_secret":     b"alice-otp-secret-20b",              # HOTP / TOTP 共享种子（≥20 字节保证强度）
+    "counter":        0,                                    # HOTP 计数器，每次验证成功后自动 +1
+    "pub_key":        "-----BEGIN PUBLIC KEY-----\nMFkwEw..."
+                      "\n-----END PUBLIC KEY-----\n",       # PEM 格式 ECDSA P-256 公钥，验签时加载
+    "status":         "active"                              # "active" 允许认证，"inactive" 拒绝所有请求
+}
+
+# ---------- 认证消息结构 ----------
+# 客户端发送给服务器的认证请求包，不同机制使用不同字段组合：
+#   - password 模式：只用 id + payload（payload 即口令）
+#   - challenge 模式：id + nonce + context + proof
+#   - OTP 模式：id + otp（放在 payload 或 counter 字段）
+#   - MAC 模式：id + ts + nonce + payload + tag
+#   - signature 模式：id + data + meta + signature
+auth_packet = {
+    "id":       "alice",                                    # 发起认证的用户标识
+    "mode":     "challenge",                                # 鉴别机制：password / challenge / otp(hotp) / otp(totp) / mac / signature
+    "nonce":    "R3aH7xK2mN...",                            # Base64URL 编码的随机挑战值（防重放）
+    "ts":       1715234567,                                 # Unix 时间戳（秒），用于新鲜性校验（±60s 窗口）
+    "counter":  0,                                          # HOTP 计数器（仅 OTP(hotp) 模式使用）
+    "payload":  "YW1vdW50PTEwMC...",                        # Base64URL 编码的业务数据（如交易内容）
+    "proof":    "k7Qm2vX9pL..."                             # Base64URL 编码的 HMAC / 签名证据
+}
+
+# ---------- 审计日志结构 ----------
+# 每次认证尝试（无论成功与否）都生成一条日志，用于事后审计与安全分析。
+auth_log = {
+    "id":           "alice",                                # 用户标识
+    "mode":         "challenge",                            # 鉴别机制类型
+    "result":       "accept",                               # "accept" 通过，"reject" 拒绝
+    "reason":       "ok",                                   # 具体原因码（见下表），便于程序化分析
+    "server_time":  1715234567                              # 服务端记录时间戳（不可伪造）
+}
+
+# reason 取值一览:
+#   "ok"                                 — 验证通过
+#   "password_mismatch"                  — 口令摘要不匹配（密码错误）
+#   "proof_mismatch"                     — 挑战-应答 proof 不匹配（密钥错误或被篡改）
+#   "signature_invalid"                  — 数字签名验签失败（私钥不匹配或数据被篡改）
+#   "tag_mismatch"                       — MAC 标签不匹配（密钥错误或报文被篡改）
+#   "nonce_not_issued"                   — nonce 未由服务器签发（伪造 nonce）
+#   "nonce_expired"                      — nonce 已超过 TTL（默认 5 秒）
+#   "nonce_reused"                       — nonce 已被消费（重放攻击检测）
+#   "otp_reused"                         — HOTP 值重复提交（重放攻击检测）
+#   "totp_slot_reused"                   — TOTP 时间槽重复使用（同一 30s 窗口内重放）
+#   "counter_window_miss_or_otp_mismatch"— HOTP 漂移超出前瞻窗口（默认 4 步）或 OTP 错误
+#   "time_window_miss_or_otp_mismatch"   — TOTP 超出 ±1 时间窗（±30 秒）或 OTP 错误
+#   "timestamp_expired"                  — ts 超过 ±60 秒新鲜性窗口
+#   "freshness_fields_missing"           — 缺少 ts / nonce 新鲜性字段
+#   "user_not_found"                     — 用户不存在（身份伪造）
+#   "account_inactive"                   — 账户已停用（管理员冻结）
+#   "unsupported_mode"                   — 不支持的鉴别模式
+
+
+================================================================================
+二、通用模块 common.py
+================================================================================
+
+import base64
+import hmac
+import json
+import secrets
+import time
+from pathlib import Path
+
+
+def normalize_user_id(user_id: str) -> str:
+    """标准化用户标识：去除首尾空白并转为小写，避免 'Alice' 和 'alice' 被当作不同用户。"""
+    return user_id.strip().lower()
+
+
+def random_nonce(length: int = 16) -> bytes:
+    """生成密码学安全的随机挑战值，默认 16 字节（128 位），用于挑战-应答、MAC、签名等场景的防重放。"""
+    return secrets.token_bytes(length)
+
+
+def now_unix_ts() -> int:
+    """返回当前 Unix 时间戳（秒级精度），用于新鲜性校验和 TOTP 时间槽计算。"""
+    return int(time.time())
+
+
+def safe_compare(left: bytes, right: bytes) -> bool:
+    """常量时间比较，防止计时侧信道攻击。
+    普通的 == 比较会在第一个不同字节处提前返回，攻击者可通过测量响应时间逐字节猜出正确值。
+    hmac.compare_digest 内部使用 XOR 累积比较，无论差异出现在哪个位置都消耗相同时间。
+    """
+    return hmac.compare_digest(left, right)
+
+
+def write_auth_log(entry: dict, path: str) -> None:
+    """以 JSON Lines（每行一条 JSON）方式追加写入鉴别审计日志。
+    相比单个大 JSON 文件，JSON Lines 便于流式追加且不会因程序崩溃丢失已写入的记录。
+    """
+    log_path = Path(path)
+    log_path.parent.mkdir(parents=True, exist_ok=True)  # 自动创建日志目录
+    with log_path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+================================================================================
+三、用户存储模块 user_store.py
+================================================================================
+
+from copy import deepcopy
+from common import normalize_user_id
+
+
+def add_user_record(record: dict, db: dict) -> None:
+    """添加用户记录到内存数据库。
+    以标准化后的用户 id 为 key 存入字典，确保后续查找时大小写不敏感。
+    实际生产环境中 db 应替换为持久化存储（如 SQL 数据库）。
+    """
+    db[normalize_user_id(record["id"])] = record
+
+
+def get_user_record(user_id: str, db: dict) -> dict | None:
+    """根据用户标识读取记录，未找到返回 None。
+    调用方需检查返回值，None 表示用户不存在（应返回认证失败）。
+    """
+    return db.get(normalize_user_id(user_id))
+
+
+def update_user_counter(user_id: str, new_counter: int, db: dict) -> None:
+    """更新 OTP 计数器（HOTP 模式专用）。
+    每次 HOTP 验证成功后，服务端需将 counter 推进到已消费值 +1，
+    防止同一 OTP 被重放。计数器只能单调递增，不能回退。
+    """
+    record = get_user_record(user_id, db)
+    if record is not None:
+        record["counter"] = new_counter
+
+
+def mark_nonce_used(user_id: str, nonce: bytes, db: dict) -> None:
+    """标记 challenge 已消费，防止重放攻击。
+    nonce 被使用后加入 used_nonces 集合，后续收到相同 nonce 的请求将被拒绝。
+    注意：生产环境中应设置 nonce 的过期清理策略，避免集合无限增长。
+    """
+    record = get_user_record(user_id, db)
+    if record is not None:
+        record.setdefault("used_nonces", set()).add(nonce)
+
+
+================================================================================
+四、静态口令模块 password_auth.py
+================================================================================
+
+import hashlib
+from common import normalize_user_id, random_nonce, safe_compare
+from user_store import get_user_record
+
+
+def hash_password(password: str, salt: bytes) -> bytes:
+    """构造加盐口令摘要。
+    使用 PBKDF2-HMAC-SHA256 算法，100000 轮迭代，输出 32 字节密钥。
+    - salt（盐）：随机值，确保相同口令在不同用户/不同注册时间下产生不同摘要，抵御彩虹表攻击。
+    - 高迭代次数：增加暴力破解成本，每轮尝试都需执行 100000 次 HMAC 运算。
+    绝对不能存储明文口令，即使数据库泄露也无法直接还原。
+    """
+    return hashlib.pbkdf2_hmac(
+        "sha256",                   # 哈希算法
+        password.encode("utf-8"),   # 口令转为字节串
+        salt,                       # 随机盐
+        100_000,                    # 迭代次数（OWASP 推荐 ≥100000）
+        dklen=32,                   # 派生密钥长度（字节）
+    )
+
+
+def build_password_record(user_id: str, password: str) -> dict:
+    """注册阶段构造用户口令记录。
+    为每个用户生成独立的随机盐，然后计算加盐摘要，连同用户 id 一起返回记录字典。
+    此记录将存入服务端数据库，后续登录验证时取出比对。
+    """
+    salt = random_nonce(16)
+    return {
+        "id": normalize_user_id(user_id),
+        "salt": salt,
+        "password_hash": hash_password(password, salt),
+        "status": "active",
+    }
+
+
+def verify_password(user_id: str, password: str, db: dict) -> bool:
+    """验证静态口令，返回 True/False。
+    验证流程：
+    1. 查找用户记录，不存在则拒绝（防止用户枚举）
+    2. 检查账户状态，inactive 则拒绝
+    3. 用存储的盐对输入口令计算摘要
+    4. 使用 safe_compare（常量时间比较）比对摘要，防止计时侧信道
+    注意：静态口令机制没有新鲜性保护，同一口令可反复使用（无法抵御重放攻击）。
+    """
+    record = get_user_record(user_id, db)
+    if record is None:
+        return False
+    if record.get("status") != "active":
+        return False
+    candidate = hash_password(password, record["salt"])
+    return safe_compare(candidate, record["password_hash"])
+
+
+================================================================================
+五、挑战-应答模块 challenge_auth.py
+================================================================================
+
+import hmac
+from hashlib import sha256
+from common import normalize_user_id, now_unix_ts, random_nonce, safe_compare
+from user_store import get_user_record
+
+
+def issue_challenge(user_id: str, db: dict) -> dict:
+    """服务器为用户生成挑战值（nonce）与过期信息。
+    流程：
+    1. 查找用户，确认存在
+    2. 生成 16 字节随机 nonce
+    3. 在用户记录中注册该 nonce，设置 5 秒过期时间，标记为未消费
+    4. 将 nonce 返回给客户端
+    客户端收到 nonce 后，用共享密钥计算 proof 并提交，服务端再调用 verify_challenge_response 验证。
+    """
+    record = get_user_record(user_id, db)
+    if record is None:
+        raise ValueError(f"unknown user: {user_id}")
+    nonce = random_nonce(16)
+    ts = now_unix_ts()
+    record.setdefault("issued_nonces", {})[nonce] = {
+        "expires_at": ts + 5,   # nonce 有效期 5 秒，过期后自动失效
+        "consumed": False,      # 标记是否已被使用（一次性）
+    }
+    return {"id": normalize_user_id(user_id), "nonce": nonce, "expires_at": ts + 5}
+
+
+def compute_challenge_proof(shared_key: bytes, nonce: bytes, context: bytes) -> bytes:
+    """客户端计算 proof = HMAC-SHA256(shared_key, nonce || context)。
+    - shared_key：客户端与服务端预共享的对称密钥
+    - nonce：服务器签发的挑战值（确保新鲜性）
+    - context：上下文绑定数据（如 "login:alice"，防止跨场景重放）
+    三者拼接后用 HMAC 签名，证明客户端拥有正确的共享密钥。
+    """
+    return hmac.new(shared_key, nonce + context, sha256).digest()
+
+
+def verify_challenge_response(packet: dict, db: dict) -> bool:
+    """服务器验证 challenge 响应。
+    验证流程（按顺序检查，任一失败立即返回 False）：
+    1. 用户存在性检查
+    2. 账户状态检查（active/inactive）
+    3. nonce 存在性检查（是否由本服务器签发）
+    4. nonce 过期检查（expires_at 与当前时间比较）
+    5. nonce 消费状态检查（consumed 为 True 说明是重放）
+    6. proof 正确性检查（用相同输入重新计算 HMAC 并常量时间比对）
+    全部通过后将 nonce 标记为 consumed，防止同一 nonce 被再次使用。
+    """
+    uid = normalize_user_id(packet.get("id", ""))
+    record = get_user_record(uid, db)
+    if record is None:
+        return False
+    if record.get("status") != "active":
+        return False
+
+    nonce = packet.get("nonce")
+    slot = record.get("issued_nonces", {}).get(nonce)
+    if slot is None:
+        return False                                        # nonce 未签发，可能是伪造
+    if slot["expires_at"] < now_unix_ts():
+        return False                                        # nonce 已过期
+    if slot["consumed"]:
+        return False                                        # nonce 已被使用，判定为重放攻击
+
+    # 重新计算期望的 proof 并比对
+    expected = compute_challenge_proof(record["shared_key"], nonce, packet.get("context", b""))
+    proof = packet.get("proof", b"")
+    if not safe_compare(expected, proof):
+        return False                                        # proof 不匹配，密钥错误或数据被篡改
+
+    slot["consumed"] = True                                 # 标记 nonce 已消费，后续重放将被拒绝
+    return True
+
+
+================================================================================
+六、OTP 模块 otp_auth.py
+================================================================================
+
+import hmac
+from hashlib import sha1
+from common import normalize_user_id, now_unix_ts
+from user_store import get_user_record
+
+
+def generate_hotp(secret: bytes, counter: int, digits: int = 6) -> str:
+    """生成 RFC 4226 计数器同步型 OTP（HMAC-Based One-Time Password）。
+    算法步骤：
+    1. 将计数器编码为 8 字节大端序
+    2. 用 HMAC-SHA1(secret, counter_bytes) 计算摘要
+    3. 取摘要最后一字节的低 4 位作为动态截取偏移量
+    4. 从偏移量处取 4 字节，屏蔽最高位（避免符号问题）
+    5. 对 10^digits 取模，左补零得到指定位数的 OTP 字符串
+    HOTP 的安全性依赖于：共享种子 secret 的保密性 + 计数器的同步性。
+    """
+    msg = counter.to_bytes(8, "big")
+    digest = hmac.new(secret, msg, sha1).digest()
+    offset = digest[-1] & 0x0F                              # 动态截取偏移量（0~15）
+    code = int.from_bytes(digest[offset: offset + 4], "big") & 0x7FFFFFFF
+    return str(code % (10 ** digits)).zfill(digits)
+
+
+def generate_totp(secret: bytes, unix_ts: int, step: int = 30) -> str:
+    """生成 RFC 6238 时间同步型 OTP（Time-Based One-Time Password）。
+    TOTP 本质是 HOTP 的特例：将时间戳除以时间步长（默认 30 秒）作为计数器。
+    这样每 30 秒自动更新一次 OTP，无需手动同步计数器。
+    双方只需保证时钟偏差在 ±1 步长内即可正常验证（通过窗口容错实现）。
+    """
+    return generate_hotp(secret, unix_ts // step)
+
+
+def verify_otp(user_id: str, otp_value: str, db: dict, mode: str = "totp") -> bool:
+    """验证 OTP 并处理窗口/状态更新。
+    HOTP 模式验证流程：
+    1. 从当前 counter 开始，向前扫描 4 步（lookahead），找到匹配的 counter 值
+    2. 若找到，将 counter 推进到匹配值 +1，并记录该 OTP 已使用
+    3. 若已使用过的 OTP 被再次提交，拒绝（防重放）
+    TOTP 模式验证流程：
+    1. 计算当前时间槽（unix_ts // 30）
+    2. 在 ±1 时间槽范围内搜索匹配的 OTP
+    3. 若匹配且该时间槽未被使用过，标记为已使用并放行
+    4. 若时间槽已被使用，拒绝（同一 30 秒内不可重放）
+    """
+    record = get_user_record(user_id, db)
+    if record is None:
+        return False
+    if record.get("status") != "active":
+        return False
+
+    if mode == "hotp":
+        current = record.get("counter", 0)
+        used = record.setdefault("used_hotp_values", set())
+        if otp_value in used:
+            return False                                    # 该 OTP 已被使用，拒绝重放
+        for candidate_counter in range(current, current + 4):  # 向前扫描 4 步容错
+            if generate_hotp(record["otp_secret"], candidate_counter) == otp_value:
+                record["counter"] = candidate_counter + 1   # 推进计数器，已消费的 counter 永不再用
+                used.add(otp_value)
+                return True
+        return False                                        # OTP 不在窗口内，可能是漂移过大或错误值
+
+    if mode == "totp":
+        ts = now_unix_ts()
+        step = 30
+        window = 1                                          # ±1 时间槽容错（即 ±30 秒）
+        current_slot = ts // step
+        used_slots = record.setdefault("used_totp_slots", set())
+        for slot in range(current_slot - window, current_slot + window + 1):
+            if generate_hotp(record["otp_secret"], slot) == otp_value:
+                if slot in used_slots:
+                    return False                            # 该时间槽已被消费，拒绝重放
+                used_slots.add(slot)
+                record["last_used_slot"] = slot
+                return True
+        return False                                        # OTP 不在时间窗口内
+
+    return False                                            # 不支持的 mode
+
+
+def resync_counter(user_id: str, observed: int, db: dict) -> None:
+    """处理计数器失步恢复。
+    当客户端 counter 远超服务端（如用户多次离线生成 OTP 但未提交），
+    服务端的前瞻窗口将无法匹配。此函数允许管理员手动将服务端 counter
+    对齐到客户端实际值，恢复正常验证。
+    注意：这会跳过中间所有 counter 值，应谨慎使用。
+    """
+    record = get_user_record(user_id, db)
+    if record is not None:
+        record["counter"] = observed
+
+
+================================================================================
+七、MAC 模块 mac_auth.py
+================================================================================
+
+import copy
+import hmac
+from hashlib import sha256
+from common import normalize_user_id, now_unix_ts, random_nonce, safe_compare
+from user_store import get_user_record
+
+
+def build_mac_packet(user_id: str, payload: bytes, shared_key: bytes,
+                     nonce: bytes, ts: int) -> dict:
+    """构造带 MAC（消息认证码）的认证消息。
+    MAC 覆盖内容：user_id | ts | nonce | payload，用 '|' 分隔。
+    - user_id：绑定发送者身份
+    - ts：时间戳，用于新鲜性校验
+    - nonce：随机值，用于防重放
+    - payload：业务数据（如转账金额、收款方）
+    任何一个字段被篡改，HMAC 标签都会不匹配，从而检测到完整性破坏。
+    """
+    uid = normalize_user_id(user_id)
+    msg = b"|".join([uid.encode("utf-8"), str(ts).encode("ascii"), nonce, payload])
+    tag = hmac.new(shared_key, msg, sha256).digest()        # HMAC-SHA256 生成 32 字节标签
+    return {"id": uid, "ts": ts, "nonce": nonce, "payload": payload, "tag": tag}
+
+
+def verify_mac_packet(packet: dict, db: dict) -> bool:
+    """验证 MAC 并检查新鲜性。
+    验证流程：
+    1. 用户存在性 + 状态检查
+    2. 完整性验证：用共享密钥重新计算 HMAC 并常量时间比对 tag
+    3. 新鲜性验证（三重保护）：
+       a. ts 和 nonce 字段必须存在
+       b. ts 与当前时间偏差 ≤60 秒（防过期重放）
+       c. nonce 未被使用过（防窗口期内重放）
+    全部通过后标记 nonce 为已使用。
+    若 require_freshness=False（对照实验），则跳过新鲜性检查，仅验证完整性。
+    """
+    uid = normalize_user_id(packet.get("id", ""))
+    record = get_user_record(uid, db)
+    if record is None:
+        return False
+    if record.get("status") != "active":
+        return False
+
+    ts = packet.get("ts")
+    nonce = packet.get("nonce")
+    payload = packet.get("payload", b"")
+    tag = packet.get("tag", b"")
+
+    # 重新计算 MAC 并比对
+    msg = b"|".join([uid.encode("utf-8"), str(ts).encode("ascii"), nonce, payload])
+    expected = hmac.new(record["shared_key"], msg, sha256).digest()
+    if not safe_compare(expected, tag):
+        return False                                        # 完整性校验失败：报文被篡改或密钥错误
+
+    # 新鲜性校验
+    if ts is None or nonce is None:
+        return False                                        # 缺少新鲜性字段
+    if abs(now_unix_ts() - int(ts)) > 60:
+        return False                                        # 时间戳超出 ±60 秒窗口
+    used = record.setdefault("used_mac_nonces", set())
+    if nonce in used:
+        return False                                        # nonce 已被消费，判定为重放
+    used.add(nonce)
+    return True
+
+
+def inject_payload_tamper(packet: dict) -> dict:
+    """复制报文并模拟篡改 payload（攻击测试用）。
+    保持 tag 不变，但修改 payload 内容，验证接收方能否检测到篡改。
+    由于 HMAC 覆盖了 payload，任何修改都会导致 tag 不匹配。
+    """
+    tampered = copy.deepcopy(packet)
+    tampered["payload"] = b"amount=9999&to=mallory"         # 模拟攻击者篡改转账金额和收款人
+    return tampered
+
+
+================================================================================
+八、数字签名模块 signature_auth.py
+================================================================================
+
+import copy
+import json
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+from common import normalize_user_id, now_unix_ts, random_nonce
+from user_store import get_user_record
+
+
+def sign_message_digest(private_key, message: bytes) -> bytes:
+    """发送方用自己的私钥对消息签名（ECDSA + SHA256）。
+    数字签名与 MAC 的关键区别：
+    - MAC 使用对称密钥，双方都能生成和验证
+    - 数字签名使用非对称密钥，只有私钥持有者能签名，任何人都能用公钥验证
+    因此数字签名提供不可否认性：签名者事后无法抵赖（只有他有私钥）。
+    """
+    return private_key.sign(message, ec.ECDSA(hashes.SHA256()))
+
+
+def build_signed_packet(user_id: str, payload: bytes, private_key, meta: dict) -> dict:
+    """构造数字签名报文。
+    签名覆盖内容：user_id | payload | canonical(meta)
+    - meta 字典包含 ts（时间戳）和 nonce（随机值），用于新鲜性保护
+    - meta 按 key 排序后序列化为 JSON，确保不同顺序不会导致签名不一致
+    签名后，任何人修改 id、data 或 meta 中的任何内容，验签都会失败。
+    """
+    uid = normalize_user_id(user_id)
+    canonical_meta = json.dumps(meta, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    message = b"|".join([uid.encode("utf-8"), payload, canonical_meta])
+    signature = sign_message_digest(private_key, message)
+    return {"id": uid, "data": payload, "meta": meta, "signature": signature}
+
+
+def verify_signed_packet(packet: dict, db: dict) -> bool:
+    """依据公钥执行验签并检查新鲜性。
+    验证流程：
+    1. 用户存在性 + 状态检查
+    2. 从服务端记录加载用户的 PEM 公钥
+    3. 重建签名覆盖消息（id | data | canonical(meta)）
+    4. 用公钥验证签名，失败则拒绝（密钥不匹配或数据被篡改）
+    5. 新鲜性检查：meta.ts ±60 秒窗口 + meta.nonce 一次性
+    注意：meta 中的 remark 等未签名字段可被篡改而不影响验签，
+    这体现了"签名覆盖范围"的重要性——只保护签名范围内的字段。
+    """
+    uid = normalize_user_id(packet.get("id", ""))
+    record = get_user_record(uid, db)
+    if record is None:
+        return False
+    if record.get("status") != "active":
+        return False
+
+    meta = packet.get("meta", {})
+    nonce = meta.get("nonce")
+    ts = meta.get("ts")
+
+    # 重建签名覆盖的消息
+    canonical_meta = json.dumps(meta, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    message = b"|".join([uid.encode("utf-8"), packet.get("data", b""), canonical_meta])
+
+    try:
+        pub_key = serialization.load_pem_public_key(record["pub_key"])
+        pub_key.verify(packet.get("signature", b""), message, ec.ECDSA(hashes.SHA256()))
+    except InvalidSignature:
+        return False                                        # 验签失败：签名无效或数据被篡改
+
+    # 新鲜性校验（与 MAC 模块逻辑一致）
+    if ts is None or nonce is None:
+        return False
+    if abs(now_unix_ts() - int(ts)) > 60:
+        return False                                        # 时间戳过期
+    used = record.setdefault("used_sig_nonces", set())
+    if nonce in used:
+        return False                                        # nonce 重放
+    used.add(nonce)
+    return True
+
+
+================================================================================
+九、综合调度模块 integrated_auth.py / main.py
+================================================================================
+
+import copy
+from password_auth import verify_password
+from challenge_auth import verify_challenge_response
+from otp_auth import verify_otp
+from mac_auth import verify_mac_packet
+from signature_auth import verify_signed_packet
+
+
+def run_auth_trial(mode: str, packet: dict, db: dict) -> dict:
+    """统一入口：根据 mode 分派到对应鉴别模块执行一次认证。
+    返回 {"result": "accept"} 或 {"result": "reject"}。
+    这种分派设计使得上层调用者无需关心具体鉴别机制的实现细节，
+    只需指定 mode 和 packet 即可完成认证。
+    """
+    if mode == "password":
+        ok = verify_password(packet["id"], packet["password"], db)
+    elif mode == "challenge":
+        ok = verify_challenge_response(packet, db)
+    elif mode == "otp(hotp)":
+        ok = verify_otp(packet["id"], packet["otp"], db, mode="hotp")
+    elif mode == "otp(totp)":
+        ok = verify_otp(packet["id"], packet["otp"], db, mode="totp")
+    elif mode == "mac":
+        ok = verify_mac_packet(packet, db)
+    elif mode == "signature":
+        ok = verify_signed_packet(packet, db)
+    else:
+        ok = False
+    return {"result": "accept" if ok else "reject"}
+
+
+def replay_packet(packet: dict) -> dict:
+    """构造重放测试输入（深拷贝一份完全相同的报文）。
+    用于验证各机制的防重放能力：将已通过认证的报文原样再提交一次。
+    理想情况下，有新鲜性保护的机制（challenge/OTP/MAC/signature）应拒绝重放，
+    而无新鲜性保护的静态口令机制会接受重放。
+    """
+    return copy.deepcopy(packet)
+
+
+def make_test_suite() -> list[dict]:
+    """生成正常、篡改、重放、漂移测试集。
+    按鉴别机制分组执行测试：
+    - PW 系列：静态口令（正确/错误/不存在/停用/重放）
+    - CH 系列：挑战-应答（正常/错误密钥/篡改nonce/过期/重放/伪造nonce）
+    - HO 系列：HOTP（正常/重放/漂移/错误OTP）
+    - TO 系列：TOTP（正常/窗口容错/过期/重放）
+    - MC 系列：MAC（正常/篡改payload/重放/篡改id/篡改ts/过期/nonce重放/无新鲜性对照）
+    - SG 系列：数字签名（正常/错误公钥/篡改data/篡改ts/过期/伪造签名/未签名字段篡改）
+    """
+    records = []
+
+    # ==================== 口令测试 ====================
+    from password_auth import build_password_record
+    from user_store import add_user_record, get_user_record
+
+    db = {}
+    add_user_record(build_password_record("alice", "SecureP@ss123"), db)
+    # PW-01：正确口令，应通过
+    records.append({"id": "PW-01", "mode": "password", "result": run_auth_trial("password", {"id": "alice", "password": "SecureP@ss123"}, db)})
+    # PW-02：错误口令，应拒绝（口令摘要不匹配）
+    records.append({"id": "PW-02", "mode": "password", "result": run_auth_trial("password", {"id": "alice", "password": "WrongPass"}, db)})
+    # PW-03：不存在的用户，应拒绝（用户未找到）
+    records.append({"id": "PW-03", "mode": "password", "result": run_auth_trial("password", {"id": "eve", "password": "x"}, db)})
+    # PW-04：重放攻击——将 PW-01 的报文原样再提交，静态口令无新鲜性保护，仍应通过
+    pw_packet = {"id": "alice", "password": "SecureP@ss123"}
+    records.append({"id": "PW-04", "mode": "password", "result": run_auth_trial("password", replay_packet(pw_packet), db)})
+
+    # ==================== 挑战-应答测试 ====================
+    from challenge_auth import issue_challenge, compute_challenge_proof
+    from common import random_nonce
+
+    db2 = {}
+    add_user_record(build_password_record("alice", "x"), db2)
+    shared_key = b"shared-key-32-bytes-padding-ok!!"
+    get_user_record("alice", db2)["shared_key"] = shared_key
+    ch = issue_challenge("alice", db2)                      # 服务器签发 nonce
+    ctx = b"login:alice"                                    # 上下文绑定
+    proof = compute_challenge_proof(shared_key, ch["nonce"], ctx)  # 客户端计算 proof
+    # CH-01：正确 proof，应通过
+    records.append({"id": "CH-01", "mode": "challenge", "result": run_auth_trial("challenge", {"id": "alice", "nonce": ch["nonce"], "context": ctx, "proof": proof}, db2)})
+    # CH-02：使用错误密钥计算的 proof，应拒绝（proof 不匹配）
+    records.append({"id": "CH-02", "mode": "challenge", "result": run_auth_trial("challenge", {"id": "alice", "nonce": ch["nonce"], "context": ctx, "proof": compute_challenge_proof(b"wrong-key!", ch["nonce"], ctx)}, db2)})
+    # CH-03：篡改 nonce（用随机值替换），应拒绝（nonce 未签发）
+    records.append({"id": "CH-03", "mode": "challenge", "result": run_auth_trial("challenge", {"id": "alice", "nonce": random_nonce(16), "context": ctx, "proof": proof}, db2)})
+    # CH-04：正常认证一次（为 CH-05 重放做准备）
+    ch2 = issue_challenge("alice", db2)
+    first = run_auth_trial("challenge", {"id": "alice", "nonce": ch2["nonce"], "context": ctx, "proof": compute_challenge_proof(shared_key, ch2["nonce"], ctx)}, db2)
+    records.append({"id": "CH-04", "mode": "challenge", "result": first})
+    # CH-05：重放攻击——将 CH-04 的报文原样再提交，nonce 已消费，应拒绝
+    records.append({"id": "CH-05", "mode": "challenge", "result": run_auth_trial("challenge", {"id": "alice", "nonce": ch2["nonce"], "context": ctx, "proof": compute_challenge_proof(shared_key, ch2["nonce"], ctx)}, db2)})
+
+    # ==================== OTP 测试 ====================
+    from otp_auth import generate_hotp, generate_totp
+    from common import now_unix_ts
+
+    # --- HOTP 测试 ---
+    db3 = {}
+    add_user_record(build_password_record("alice", "x"), db3)
+    otp_secret = b"otp-secret-20-bytes!"
+    get_user_record("alice", db3)["otp_secret"] = otp_secret
+    hotp0 = generate_hotp(otp_secret, 0)                   # counter=0 对应的 HOTP
+    # HO-01：当前 counter 正常验证，应通过，counter 推进到 1
+    records.append({"id": "HO-01", "mode": "otp(hotp)", "result": run_auth_trial("otp(hotp)", {"id": "alice", "otp": hotp0}, db3)})
+    # HO-02：重放攻击——重复提交相同 OTP，已被使用，应拒绝
+    records.append({"id": "HO-02", "mode": "otp(hotp)", "result": run_auth_trial("otp(hotp)", {"id": "alice", "otp": hotp0}, db3)})
+    # HO-03：错误 OTP（随机值），应拒绝
+    records.append({"id": "HO-03", "mode": "otp(hotp)", "result": run_auth_trial("otp(hotp)", {"id": "alice", "otp": "000000"}, db3)})
+
+    # --- TOTP 测试 ---
+    db4 = {}
+    add_user_record(build_password_record("alice", "x"), db4)
+    get_user_record("alice", db4)["otp_secret"] = otp_secret
+    fixed_ts = (now_unix_ts() // 30) * 30 + 5               # 取当前时间槽中间时刻，避免边界问题
+    totp_now = generate_totp(otp_secret, fixed_ts)           # 当前时间片的 TOTP
+    # TO-01：当前时间片正常验证，应通过
+    records.append({"id": "TO-01", "mode": "otp(totp)", "result": run_auth_trial("otp(totp)", {"id": "alice", "otp": totp_now}, db4)})
+    # TO-02：重放攻击——同一时间片内重复提交，时间槽已消费，应拒绝
+    records.append({"id": "TO-02", "mode": "otp(totp)", "result": run_auth_trial("otp(totp)", {"id": "alice", "otp": totp_now}, db4)})
+
+    # ==================== MAC 测试 ====================
+    from mac_auth import build_mac_packet, inject_payload_tamper
+
+    db5 = {}
+    add_user_record(build_password_record("alice", "x"), db5)
+    mac_key = b"mac-shared-key-32-bytes-padding!!"
+    get_user_record("alice", db5)["shared_key"] = mac_key
+    mac_nonce = random_nonce(16)
+    ts = now_unix_ts()
+    pkt = build_mac_packet("alice", b"amount=100&to=bob", mac_key, mac_nonce, ts)
+    # MC-01：正常报文，tag 正确且新鲜，应通过
+    records.append({"id": "MC-01", "mode": "mac", "result": run_auth_trial("mac", pkt, db5)})
+    # MC-02：篡改 payload（修改金额和收款人），tag 不变，应拒绝（完整性失败）
+    records.append({"id": "MC-02", "mode": "mac", "result": run_auth_trial("mac", inject_payload_tamper(pkt), db5)})
+    # MC-03：重放攻击——原样重提交，nonce 已消费，应拒绝（重放检测）
+    records.append({"id": "MC-03", "mode": "mac", "result": run_auth_trial("mac", replay_packet(pkt), db5)})
+
+    # ==================== 数字签名测试 ====================
+    from signature_auth import build_signed_packet, generate_ec_key_pair
+
+    db6 = {}
+    add_user_record(build_password_record("alice", "x"), db6)
+    sk, _ = generate_ec_key_pair()                          # 生成 ECDSA P-256 密钥对
+    from cryptography.hazmat.primitives import serialization as ser
+    # 将公钥 PEM 存入用户记录（实际场景中公钥由 CA 签发证书或预注册）
+    get_user_record("alice", db6)["pub_key"] = sk.public_key().public_bytes(
+        ser.Encoding.PEM, ser.PublicFormat.SubjectPublicKeyInfo
+    )
+    meta = {"ts": ts, "nonce": "sig-nonce-001"}             # 签名报文的新鲜性元数据
+    spkt = build_signed_packet("alice", b"amount=100&to=bob", sk, meta)
+    # SG-01：正常签名报文，应通过
+    records.append({"id": "SG-01", "mode": "signature", "result": run_auth_trial("signature", spkt, db6)})
+    # SG-02：篡改 data（修改金额），签名不变，应拒绝（验签失败）
+    tampered = replay_packet(spkt)
+    tampered["data"] = b"amount=9999&to=mallory"
+    records.append({"id": "SG-02", "mode": "signature", "result": run_auth_trial("signature", tampered, db6)})
+    # SG-03：重放攻击——原样重提交，nonce 已消费，应拒绝
+    records.append({"id": "SG-03", "mode": "signature", "result": run_auth_trial("signature", replay_packet(spkt), db6)})
+
+    return records
+
+
+def summarize_results(records: list[dict]) -> dict:
+    """统计各鉴别机制的通过率与拒绝原因。
+    返回结构示例：
+    {
+        "password": {"total": 5, "accept": 2, "reject": 3},
+        "challenge": {"total": 5, "accept": 1, "reject": 4},
+        ...
+    }
+    可用于生成实验报告中的统计表格和通过率对比图。
+    """
+    summary = {}
+    for row in records:
+        mode = row["mode"]
+        bucket = summary.setdefault(mode, {"total": 0, "accept": 0, "reject": 0})
+        bucket["total"] += 1
+        result = row["result"]["result"]
+        bucket[result] += 1
+    return summary
+
+
+================================================================================

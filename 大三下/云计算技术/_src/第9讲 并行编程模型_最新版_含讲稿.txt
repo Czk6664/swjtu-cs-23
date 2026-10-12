@@ -1,0 +1,1148 @@
+--- Page 1 ---
+第9讲并行编程模型
+2026年3月
+课程代码：SCAI004712
+授课教师：戴朋林
+云计算技术
+1
+2026/5/18
+竢实扬华·自强不息
+--- Page 2 ---
+1. 并行计算基础
+2. MapReduce编程模型
+3. MapReduce执行流程
+4. MapReduce编程模式
+5. Hadoop MapReduce实践
+6. MapReduce的局限与演进
+7. 应用案例与演示代码
+2
+本讲内容大纲
+00
+2026/5/18
+竢
+实
+扬
+华
+·        自
+强
+不
+息
+2
+--- Page 3 ---
+1
+并行计算基础
+--- Page 4 ---
+4
+为什么需要并行计算？
+01
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+2000 → 2010 → 2025：6.2EB → 2ZB → 180ZB
+单机硬盘 100MB/s × 1TB = 2.8 小时」
+--- Page 5 ---
+5
+为什么需要并行计算？
+02
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+1TB ÷ 100 台 = 每台 10GB，数小时 → 10 分钟
+--- Page 6 ---
+征不同数据子集
+征相同操作逻辑
+代表技术
+数据特征相同/不同数据
+操作特征不同操作逻辑
+代表技术
+数据特征源源不断的流式数据
+操作特征多阶段串联处理
+代表技术
+6
+并行计算的三大流派
+03
+2026/5/18
+竢
+实
+扬
+华
+·        自
+强
+不
+息
+数据并行
+流水线
+任务并行
+6
+--- Page 7 ---
+7
+Amdahl定律
+04
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+加速比S(N) = 1 / (f + (1-f)/N)
+*(其中f=串行部分比例，N=处
+理器数量)
+即便 N→∞，加速比上限 = 1/f
+--- Page 8 ---
+8
+Gustafson定律
+05
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+Amdahl定律的局限性
+Amdahl假设：问题规模是固定的。
+现实大数据场景：机器多了，我
+们要处理更多的数据（如
+100TB）！
+Gustafson定律的核心主张
+假设执行时间固定，随着处理器
+增多，系统可以处理更大规模的
+问题，加速比呈现近线性增长。
+加速比S(N) = N - f × (N - 1)
+--- Page 9 ---
+9
+Gustafson定律
+06
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+场景对比
+Amdahl适用：实时/低延迟。
+Gustafson 适用：大数据批
+处理
+--- Page 10 ---
+2
+MapReduce编程模型
+--- Page 11 ---
+11
+MapReduce的诞生与设计哲学
+01
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+历史坐标
+2004年，Google在OSDI大会发表《MapReduce: Simplified Data Processing on Large Clusters》。它将复杂的
+分布式痛点（网络通信、容错、调度）全部封装到底层。
+计算向数据移动（Moving Computation to Data）：不移动庞大的数据，
+而是把轻量的程序代码发送到数据所在的节点执行。省下巨大的网络
+带宽。
+--- Page 12 ---
+共享内存
+（multiprocessing / OpenMP）
+消息传递（MPI / mpi4py）
+GPU 并行（CUDA）
+12
+并行编程模型分类
+02
+2026/5/18
+竢实扬华·自强不息
+--- Page 13 ---
+13
+Map与Reduce：数据变形
+03
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+Map函数：数据打散与重塑
+输入：键值对<K1, V1>
+输出：零个或多个中间键值对
+list(<K2, V2>)
+动作：过滤、提取、转换。
+Reduce函数：数据聚合
+输入：中间键和它的值集合<K2, 
+list(V2)>
+输出：最终结果list(<K3, V3>)
+动作：求和、求最值、拼接。
+键值对（Key-Value）是实现分组
+（Group By）的通用语言。同一种
+Key必然被送到同一个Reduce节点。
+--- Page 14 ---
+14
+Shuffle
+04
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+什么是Shuffle？
+介于Map和Reduce之间的过程。它的唯一目的是：保证所有Key相同的中间数
+据，都能被送到同一个Reduce任务中去。
+Map端溢写（Spill）→ 网络拉取（Fetch）→  归并排序（Merge）
+--- Page 15 ---
+15
+Combiner
+05
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+为什么要引入Combiner？
+既然网络传输是Shuffle的瓶颈，我们能否在数据离开Map节点前，“就地”先合
+并一次？
+Combiner的作用
+运行在Map端的“迷你Reduce”。
+优化前Map输出：("hello",1), ("hello",1), ("hello",1) -> 
+传3条记录
+Combiner优化后：("hello",3) -> 只传1条记录！
+致命陷阱：滥用的代价
+Combiner绝不能改变最终结果。它只适用于满足
+交换律和结合律的操作。
+适用：Sum（求和）、Max（最大值）
+不适用：Average（平均值），因为Avg(Avg(1,3), 
+5) ≠ Avg(1,3,5)
+--- Page 16 ---
+3
+MapReduce执行流程
+--- Page 17 ---
+17
+MapReduce整体执行生命周期
+01
+核心角色与分工
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+1. Client：用户提交作业的起点。
+2. Master（JobTracker/AppMaster）：大管
+家，负责拆分任务、调度和监控。
+3. Worker（TaskTracker/NodeManager）：
+打工人，真正执行Map和Reduce代码的物理
+机。
+数据的五步走
+InputSplit：1TB文件按128MB切块（分片）。
+Map阶段：每个分片启动一个Map Task执行。
+Shuffle阶段：数据按规则在集群中大迁徙。
+Reduce阶段：接收合并后的数据执行聚合。
+Output阶段：最终结果写入HDFS文件系统。
+--- Page 18 ---
+18
+容错机制（Fault Tolerance）
+02
+大规模集群中，硬件故障不是意外，而是常态。
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+为什么MR容错做得这么好？
+无状态计算（Shared-
+Nothing）：Map和Reduce互
+不干扰，失败了重跑就行。
+中间结果落盘：Map的结果写
+入本地磁盘，而不是直接流向
+Reduce。
+--- Page 19 ---
+19
+推测执行（Speculative Execution）
+03
+拖后腿的“长尾效应”
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+100个任务中，99个都只花了1分钟，偏偏最后1个任务因为所在机器硬盘老化，跑了10分钟。整个作业的时
+间就被这1个人拖累成了10分钟！
+应对方案：找个替补
+当Master发现某个Task进度远低于平
+均水平时：
+1. 不去停掉这个慢任务。
+2. 在其他空闲机器上，同时启动一个
+一模一样的“替补任务”。
+3. 哪个先跑完，就用哪个的结果，并
+立刻杀掉另一个。
+--- Page 20 ---
+20
+推测执行（Speculative Execution）
+04
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+思考：任何任务都可以开启推测执行吗？（提示：如果任务涉及到写数据库呢？）
+A、可以
+B、不能
+--- Page 21 ---
+4
+MapReduce编程模式
+--- Page 22 ---
+22
+计数与汇总（以Word Count为例）
+01
+业务场景
+网页PV统计、日志错误类型统计、词频分析。
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+核心逻辑解析
+Map端：拆分并打标签。将一条包含多个单词的句子，拆解为多个独立的单词，
+并为每个单词附上数字`1`。
+Reduce端：累加求和。接收同一个单词的所有`1`，进行加法运算。
+--- Page 23 ---
+23
+计数与汇总（以Word Count为例）
+02
+核心代码片段展示
+# 核心Map 逻辑
+def map_function(document):
+for word in document.split():
+emit(word, 1)  # 输出格式：(Key, Value)
+# 核心Reduce 逻辑
+def reduce_function(word, counts_list):
+total = sum(counts_list)  # [1, 1, 1...] 求和
+emit(word, total)
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+(注：框架会自动将Map输出的`1`聚合
+为`counts_list`)
+--- Page 24 ---
+24
+倒排索引（Inverted Index）
+03
+业务场景
+搜索引擎的底层基石。将“文档包含哪些词”的正向结构，反转为“这个词出现在哪些文档”。
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+核心逻辑解析
+Map端：读取文档内容，以“单词”为Key，
+以“文档ID”为Value进行输出。
+Reduce端：将属于同一个单词的所有文
+档ID收集起来，去重并排序，形成“拉链”
+（Posting List）。
+--- Page 25 ---
+25
+倒排索引（Inverted Index）
+04
+核心代码片段展示
+# 核心Map 逻辑：正向切分
+def map_function(doc_id, text_content):
+words = unique(text_content.split()) # 去重避免单文档多次记录
+for word in words:
+emit(word, doc_id)  # 反转：Word变成Key
+# 核心Reduce 逻辑：拼接拉链
+def reduce_function(word, doc_ids_list):
+sorted_docs = sort(unique(doc_ids_list))
+emit(word, sorted_docs)
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+--- Page 26 ---
+26
+排序与Top N
+05
+业务场景
+热门商品排行榜、高频搜索词Top 10。在海量数据中找出最大/最小的N条。
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+核心思想：局部最优-> 全局最优
+如果所有数据全丢给一个Reduce去排序，会撑爆内存！
+解决之道：
+1. Map端发力
+2. 数据骤降
+3. Reduce收尾
+核心逻辑说明
+不拼全量数据，只拼局部精英。大
+幅度削减了网络洗牌（Shuffle）的
+压力。
+--- Page 27 ---
+27
+排序与Top N
+06
+核心代码片段展示
+# ──Map：每个节点只保留局部TopN，大幅减少Shuffle 传输量──
+def topn_map(shard, N):
+heap = []
+for item, score in shard:
+heapq.heappush(heap, (score, item))
+if len(heap) > N:
+heapq.heappop(heap)   # 弹出最小值，堆中始终保留最大的N 个
+return heap
+# ──Reduce：汇总所有局部冠军，选出全局TopN ──
+def topn_reduce(candidates, N):
+return heapq.nlargest(N, candidates)  # 从所有局部TopN 中选全局TopN
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+--- Page 28 ---
+28
+排序与Top N
+07
+核心代码片段展示
+# ──执行──
+N = 3
+shards = [
+[("耳机", 1200), ("数据线", 300), ("手机壳", 500)],   # Map 分片0
+[("手表", 2500), ("充电宝", 800), ("支架",   150)],   # Map 分片1
+[("TWS", 4000),  ("键盘",   950), ("鼠标垫", 600)],   # Map 分片2
+]
+local_tops = [topn_map(s, N) for s in shards]            # 各分片并行取局部TopN
+all_candidates = [item for top in local_tops for item in top]  # Shuffle 汇聚
+result = topn_reduce(all_candidates, N)
+for rank, (score, name) in enumerate(result, 1):
+print(f"第{rank}名: {name}  浏览量={score}")
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+# 预期输出
+第1名: TWS  浏览量=4000
+第2名: 手表浏览量=2500
+第3名: 耳机浏览量=1200
+--- Page 29 ---
+29
+表关联（Join操作）
+08
+大数据中最头疼的问题：如何将分散在两个大文件（如用户表、订单表）的数
+据对应起来？
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+Reduce-Side Join（通用但笨重）
+思路：利用Shuffle的按Key分组机制。
+Map端：分别为两个表的数据打上标签
+（如Tag="User"和Tag="Order"），统一
+以关联键（User_ID）作为Key输出。
+Reduce端：相同User_ID的数据相聚，再
+根据标签拆分拼接。
+缺点：所有数据都要经过Shuffle，极其消
+耗性能。
+--- Page 30 ---
+30
+表关联（Join操作）
+09
+users  = [(1,"Alice"), (2,"Bob"), (3,"Charlie")]
+orders = [(1,"手机"),  (1,"图书"), (2,"运动鞋"), (3,"笔记本")]
+# ══Reduce-Side Join：两表都以user_id 为Key，Shuffle 自动聚合══
+# Map：打tag 标明来源，以user_id 为Key
+def join_map(tag, uid, info):
+return (uid, (tag, info))   # Key=user_id，Value=(表名, 内容)
+# Shuffle：按user_id 分组（框架自动完成）
+grouped = defaultdict(list)
+for uid, name    in users:  grouped[uid].append(join_map("user",  uid, name))
+for uid, product in orders: grouped[uid].append(join_map("order", uid, product))
+# Reduce：按tag 分拣，拼接用户与订单
+for uid, records in grouped.items():
+user = next(info for _, (tag, info) in records if tag == "user")
+items = [info for _, (tag, info) in records if tag == "order"]
+print(f"用户{uid} {user} 购买了{items}")
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+核心代码片段展示
+--- Page 31 ---
+31
+表关联（Join操作）
+10
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+Map-Side Join（轻巧但挑剔）
+思路：当存在“一大一小”两张表时使用。
+机制：将“小表”通过分布式缓存（Distributed Cache）广播到所有Map节点的内存中。
+执行：Map在处理“大表”的每一行时，直接查本地内存中的“小表”进行合并。完全跳过Shuffle
+和Reduce阶段！
+--- Page 32 ---
+32
+表关联（Join操作）
+11
+# ══Map-Side Join：小表广播到内存，完全跳过Shuffle ══
+user_dict = dict(users)   # 用户表（小表）加载到每个Map 节点内存
+for uid, product in orders:
+print(f"{user_dict[uid]} 购买了{product}")
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+核心代码片段展示
+# 预期输出
+用户1 Alice 购买了['手机', '图书']
+用户2 Bob 购买了['运动鞋']
+用户3 Charlie 购买了['笔记本']
+Alice 购买了手机
+Alice 购买了图书
+Bob 购买了运动鞋
+Charlie 购买了笔记本
+--- Page 33 ---
+5
+Hadoop MapReduce实践
+--- Page 34 ---
+34
+Hadoop生态
+01
+Hadoop不仅是一个软件，更是一个包含存储、计算、调度的庞大生态圈。
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+三驾马车
+1. HDFS（分布式文件系统）2. MapReduce（分布式计算）3. YARN（分布式资源调度）
+繁荣的上层建筑
+Hive，HBase，Zookeeper
+--- Page 35 ---
+35
+资源大管家：YARN
+02
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+YARN核心架构
+ResourceManager (RM)：集群的全局资源
+CEO，掌握所有节点的CPU和内存情况。
+NodeManager (NM)：每台机器上的工头，
+负责本机的资源汇报与容器管理。
+ApplicationMaster (AM)：每个作业专属的
+项目经理，负责向RM申请资源，并督促NM
+执行任务。
+Container（容器）：资源的最小抽象单位
+（例如：2核CPU+4GB内存）。
+--- Page 36 ---
+36
+YARN的资源调度策略
+03
+集群资源有限，多个部门抢资源怎么办？
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+1. FIFO Scheduler（先进先出）
+机制：谁先提交，谁占用全部资源，排队执行。
+缺点：大作业会“饿死”排在后面的紧急小作业。
+2. Capacity Scheduler（容量调度器）
+机制：多租户共享。预先划分队列（如：生产组60%，测试组40%）
+亮点：资源借用机制。如果测试组暂时没任务，生产组可以借用这40%的资源；一旦测试组
+来任务了，生产组必须归还。
+3. Fair Scheduler（公平调度器）
+机制：动态平分资源。1个人跑占100%，2个人跑各占50%。保障每个人都能得到一定资源。
+--- Page 37 ---
+6
+MapReduce的局限与演进
+--- Page 38 ---
+38
+为什么我们觉得MapReduce变慢了？
+01
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+致命伤：对磁盘的高度依赖
+MapReduce的每一次作业，输出结果必须落地到HDFS磁盘。
+痛点场景：机器学习迭代计算
+假设训练一个K-Means聚类
+模型，需要迭代100次。
+--- Page 39 ---
+39
+Apache Spark的降维打击
+02
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+维度
+MapReduce
+Apache Spark
+中间数据
+写入磁盘 (慢)
+保留内存 (极快)
+编程范式
+仅Map/Reduce
+map, filter, groupBy, join...
+执行速度
+基础基准
+逻辑回归等迭代场景快 100倍+
+应用场景
+离线批处理
+批处理、SQL、流计算、图计算
+--- Page 40 ---
+40
+Apache Spark的降维打击
+03
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+MapReduce真的淘汰了吗？
+并没有。对于超大规模（PB级别）且对时间不敏感的离线清洗任务，
+MapReduce凭借无敌的稳定性和容错性，依然在众多大厂底层默默服役。
+--- Page 41 ---
+7
+应用案例与演示代码
+--- Page 42 ---
+42
+Demo ①蒙特卡洛求 π 原理
+01
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+--- Page 43 ---
+43
+Demo ①MPI 通信原语
+02
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+--- Page 44 ---
+44
+Demo ①完整代码
+03
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+# pi_mpi.py —— 运行：mpiexec -n 4 python pi_mpi.py
+from mpi4py import MPI
+import random
+comm = MPI.COMM_WORLD
+rank, size = comm.Get_rank(), comm.Get_size()
+N_TOTAL = 10_000_000
+N_LOCAL = N_TOTAL // size
+random.seed(rank * 42)
+hits = sum(1 for _ in range(N_LOCAL)
+if random.random()**2 + random.random()**2 <= 1.0)
+total_hits = comm.reduce(hits, op=MPI.SUM, root=0)
+if rank == 0:
+pi_est = 4.0 * total_hits / N_TOTAL
+print(f"π ≈ {pi_est:.6f}")
+--- Page 45 ---
+45
+Demo ①实测加速比
+04
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+--- Page 46 ---
+46
+Demo ②WordCount 三阶段
+05
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+--- Page 47 ---
+47
+Demo Ύ 㸤侮➿瀦
+06
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+# wordcount_mr.py —— 纯 Python 模拟 MapReduce
+from collections import defaultdict
+def split_input(documents, num_shards=3):
+return [documents[i::num_shards] for i in range(num_shards)]
+def map_phase(shard):
+out = []
+for doc in shard:
+for word in doc.lower().split():
+out.append((word, 1))
+return out
+def shuffle_phase(map_outputs):
+grouped = defaultdict(list)
+for partial in map_outputs:
+for k, v in partial:
+grouped[k].append(v)
+return dict(grouped)
+def reduce_phase(grouped):
+return {k: sum(vs) for k, vs in grouped.items()}
+docs   = ["Hello World", "Hello Cloud", "Cloud Computing is 
+great"]
+shards  = split_input(docs)
+map_out = [map_phase(s) for s in shards]
+grouped = shuffle_phase(map_out)
+final   = reduce_phase(grouped)
+print(final)
+# {'hello':2, 'world':1, 'cloud':2, 'computing':1, 'is':1, 'great':1}
+--- Page 48 ---
+48
+Demo Ύ 侨䰘⧫俷䮋䧶
+07
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+--- Page 49 ---
+49
+Demo ③共享内存 vs 消息传递
+08
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+--- Page 50 ---
+50
+Demo ③完整代码
+09
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+# speedup_mp.py —— multiprocessing 加速比对比
+from multiprocessing import Pool
+import time, math
+def heavy(chunk):
+return [math.sqrt(x*x + math.sin(x)) for x in chunk]
+def benchmark(n, chunks):
+t0 = time.time()
+if n == 1:
+[heavy(c) for c in chunks]
+else:
+with Pool(n) as pool:
+pool.map(heavy, chunks)
+return time.time() - t0
+N = 10_000_000
+data = list(range(N))
+chunks = [data[i:i+N//8] for i in range(0, N, N//8)]
+t1 = benchmark(1, chunks)
+print(f"{'workers':<8}{'time(s)':<10}{'speedup':<10}")
+for w in [1, 2, 4, 8]:
+t = benchmark(w, chunks)
+print(f"{w:<8}{t:<10.2f}{t1/t:<10.2f}")
+--- Page 51 ---
+51
+Demo ③实测 + Amdahl 拟合
+10
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+--- Page 52 ---
+52
+Amdahl 代码推演
+11
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+# 串行比例 f, 处理器数量 n
+def amdahl_speedup(f, n):
+return 1.0 / (f + (1 - f) / n)
+# 假设代码中存在10%的不可并行部分 (f=0.1)
+print(amdahl_speedup(0.1, n=4))   # 4核加速比: 
+3.08倍
+print(amdahl_speedup(0.1, n=16))  # 16核加速
+比: 6.40倍
+print(amdahl_speedup(0.1, n=256)) # 256核加速
+比: 9.66倍
+print(amdahl_speedup(0.1, n=无穷大)) # 理论极
+限: 10倍
+--- Page 53 ---
+53
+Demo ♲倰呩埇ぢ㼆嫱
+12
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+维度
+单机串行
+multiprocessing
+mpi4py
+通信
+—
+共享内存
+显式 Send/Recv
+部署成本
+0
+0（标准库）
+需装 MPI
+跨机器
+❌
+❌
+✅
+适合场景
+调试
+单机多核
+集群
+--- Page 54 ---
+54
+靃㛔✽⸓♸䙼罌곿
+13
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+随堂头脑风暴
+1. Amdahl计算：一个程序串行部分占20%，使用8个处理器时加速比是多少？
+如果要达到5倍加速，至少需要多少个处理器？串行部分最多能占多少？
+2. Combiner诊断：为什么计算中位数（Median）不能直接使用Combiner？
+3. 数据倾斜痛点：在Word Count中，如果某个词（如英语中的"the"）出现频率
+远超其他词，会导致某个Reduce任务疯狂加班，而其他Reduce早早休息。这
+种情况该如何优化？
+4. 框架抉择：如果你是一家创业公司的CTO，要做实时的用户推荐系统，你会
+选择MapReduce还是Spark？为什么？
+--- Page 55 ---
+55
+劥雷濼霋銳挿䚪㢕⛴
+14
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+核心模块
+必须掌握的关键点
+并行计算理念
+分而治之，移动计算而非移动数据
+理论极限
+Amdahl定律（限制上限），
+Gustafson定律（规模扩展）
+MapReduce核心
+Map(散列) -> Shuffle(归组/排序) -> 
+Reduce(聚合)
+网络优化
+Combiner（前提：满足交换律与结合
+律）
+容错调度
+Task重试、推测执行解决长尾问题
+生态演进
+YARN分离调度，Spark以内存计算打
+破MR的磁盘I/O魔咒
+--- Page 56 ---
+56
+䎇遤綘玐垷㘗Ⰼ㽷濼霋㕃靶
+15
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+--- Page 57 ---
+57
+♴妃靃곫デ& 靃た⡲⚌
+16
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+知识点1：RDD
+Spark弹性分布式数据集
+（RDD）
+课后作业2：
+不写代码，只用自然语言描述——如
+何用MapReduce统计一份社交网络
+好友关系表（A是B的好友），找出
+所有用户的共同好友？（提示：思考
+Map的Key应该输出什么组合？）
+课后作业1：
+假设某算法串行部分占比15%，
+请分别计算并绘制在8核、16核、
+32核下的Amdahl与Gustafson加
+速比折线图
+知识点3：DAG
+内存计算背后的DAG原
+理
+知识点2：算子
+Transformation与Action
+算子的延迟计算机制
+--- Page 58 ---
+58
+Q & A
+17
+谢谢！欢迎提问与讨论
+2026/5/18
+竢
+实
+扬
+华
+·
+自
+强
+不
+息

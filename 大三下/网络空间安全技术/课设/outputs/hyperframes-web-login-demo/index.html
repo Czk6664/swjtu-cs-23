@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web 登录系统安全加固与审计日志设计 - HTML 演示</title>
+    <style>
+      :root {
+        --bg: #08111f;
+        --panel: #111c2f;
+        --panel-2: #17243a;
+        --cyan: #28d7ff;
+        --green: #2bd48f;
+        --amber: #ffb84d;
+        --red: #ff5d6c;
+        --text: #f5f7fb;
+        --muted: #a9b4c7;
+        --line: #263652;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        min-height: 100%;
+        overflow: hidden;
+        background: #020711;
+        color: var(--text);
+        font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+      }
+
+      #root {
+        position: relative;
+        width: min(100vw, 177.77vh);
+        height: min(56.25vw, 100vh);
+        background:
+          radial-gradient(circle at 80% 20%, rgba(40, 215, 255, 0.12), transparent 30%),
+          linear-gradient(135deg, #08111f 0%, #0b1220 55%, #091522 100%);
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: none;
+        padding: 48px 56px 64px;
+      }
+
+      .slide.active {
+        display: block;
+      }
+
+      .slide::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: var(--cyan);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 36px;
+        line-height: 1.18;
+        letter-spacing: -0.02em;
+      }
+
+      h2 {
+        margin: 0 0 10px;
+        font-size: 30px;
+        line-height: 1.2;
+      }
+
+      .subtitle {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 18px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .cols-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .cols-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .cols-4 {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .card {
+        background: rgba(17, 28, 47, 0.92);
+        border: 1px solid var(--line);
+        border-left: 5px solid var(--cyan);
+        padding: 18px 20px;
+        min-height: 98px;
+      }
+
+      .card.green {
+        border-left-color: var(--green);
+      }
+
+      .card.amber {
+        border-left-color: var(--amber);
+      }
+
+      .card.red {
+        border-left-color: var(--red);
+      }
+
+      .card b {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 20px;
+      }
+
+      .card span,
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .stat {
+        background: rgba(23, 36, 58, 0.94);
+        border: 1px solid var(--line);
+        padding: 18px 16px;
+      }
+
+      .stat strong {
+        display: block;
+        color: var(--green);
+        font-size: 34px;
+        line-height: 1;
+      }
+
+      .stat span {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .hero-title {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        align-items: center;
+        height: 100%;
+        gap: 42px;
+      }
+
+      .logo {
+        width: 360px;
+        max-height: 88px;
+        object-fit: contain;
+        object-position: left center;
+        margin-bottom: 54px;
+      }
+
+      .title-main {
+        font-size: 46px;
+        line-height: 1.18;
+        margin-bottom: 22px;
+      }
+
+      .identity {
+        width: 420px;
+        margin-top: 42px;
+        padding: 22px 26px;
+        background: rgba(17, 28, 47, 0.9);
+        border: 1px solid var(--line);
+        font-size: 20px;
+        line-height: 1.35;
+      }
+
+      .footer {
+        position: absolute;
+        left: 40px;
+        bottom: 22px;
+        right: 40px;
+        border-top: 1px solid #22324b;
+        padding-top: 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .proof {
+        background: #fff;
+        border: 6px solid #fff;
+        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      .proof img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      .proof.cover img {
+        object-fit: cover;
+      }
+
+      .caption {
+        margin-top: 8px;
+        color: var(--muted);
+        text-align: center;
+        font-size: 13px;
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        align-items: center;
+        gap: 14px;
+        margin-top: 74px;
+      }
+
+      .flow-node {
+        min-height: 72px;
+        display: grid;
+        place-items: center;
+        background: var(--panel-2);
+        border: 1px solid #38506f;
+        padding: 10px;
+        text-align: center;
+        font-size: 17px;
+        line-height: 1.3;
+      }
+
+      .arrow-row {
+        color: var(--cyan);
+        font-size: 30px;
+        text-align: center;
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: rgba(17, 28, 47, 0.86);
+        border: 1px solid var(--line);
+        font-size: 15px;
+      }
+
+      .table th,
+      .table td {
+        padding: 13px 16px;
+        border-bottom: 1px solid #1d2b42;
+        text-align: left;
+      }
+
+      .table th {
+        color: var(--cyan);
+        font-size: 16px;
+      }
+
+      .ok {
+        color: var(--green);
+        font-weight: 700;
+      }
+
+      .note {
+        margin-top: 28px;
+        color: var(--amber);
+        font-size: 18px;
+      }
+
+      .two-images {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 26px;
+        align-items: start;
+        margin-top: 32px;
+      }
+
+      .control {
+        position: absolute;
+        right: 36px;
+        bottom: 18px;
+        z-index: 50;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .btn {
+        border: 1px solid #2a3b58;
+        background: rgba(17, 28, 47, 0.82);
+        color: var(--text);
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .progress {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 4px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .bar {
+        height: 100%;
+        width: 0;
+        background: var(--cyan);
+        transition: width 0.25s ease;
+      }
+
+      .speaker-note {
+        position: absolute;
+        left: 56px;
+        bottom: 88px;
+        right: 56px;
+        display: none;
+        padding: 14px 18px;
+        background: rgba(0, 0, 0, 0.72);
+        color: #e7eefb;
+        border: 1px solid #3d536e;
+        border-radius: 12px;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .show-notes .speaker-note {
+        display: block;
+      }
+
+      @media print {
+        body {
+          display: block;
+          overflow: visible;
+          background: #fff;
+        }
+        #root {
+          width: 100vw;
+          height: auto;
+          box-shadow: none;
+        }
+        .slide {
+          position: relative;
+          display: block;
+          width: 100vw;
+          height: 56.25vw;
+          page-break-after: always;
+        }
+        .control,
+        .progress,
+        .speaker-note {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main
+      id="root"
+      data-composition-id="web-login-security-demo"
+      data-start="0"
+      data-duration="91"
+      data-width="1280"
+      data-height="720"
+    >
+      <section class="slide active" data-title="封面">
+        <div class="hero-title">
+          <div>
+            <img class="logo" src="assets/swjtu.png" alt="西南交通大学" />
+            <h1 class="title-main">Web 登录系统安全加固<br />与审计日志设计</h1>
+            <div class="subtitle">网络空间安全技术课程设计 · 单人完成</div>
+            <div class="identity">程泽凯 | 2023112621<br />计算机类 2023 级<br />本地授权环境实验</div>
+          </div>
+          <div class="grid cols-2">
+            <div class="stat"><strong>7</strong><span>必做功能全部实现</span></div>
+            <div class="stat"><strong>4</strong><span>异常类型规则覆盖</span></div>
+            <div class="stat"><strong>18/18</strong><span>自动化断言通过</span></div>
+            <div class="stat"><strong>0</strong><span>第三方系统影响</span></div>
+          </div>
+        </div>
+        <div class="footer">答辩主线：登录入口 → 安全加固 → 审计留痕 → 异常告警 → 测试闭环</div>
+        <aside class="speaker-note">开场说明题目、本人身份和主线，强调单人完成、实验仅在本机授权环境。</aside>
+      </section>
+
+      <section class="slide" data-title="项目背景">
+        <h2>项目背景：登录入口是 Web 安全的第一道关口</h2>
+        <p class="subtitle">本设计不是网络安全综述，而是围绕可运行登录系统做安全加固。</p>
+        <div class="grid cols-4" style="margin-top: 54px">
+          <div class="card red"><b>口令泄露</b><span>明文或弱哈希存储会在数据库泄露后直接暴露账号口令。</span></div>
+          <div class="card amber"><b>暴力破解</b><span>攻击者可通过脚本连续尝试口令，消耗认证入口并撞出弱口令。</span></div>
+          <div class="card"><b>异常无感知</b><span>异地、夜间、高频登录如果不记录，事后很难解释和追踪。</span></div>
+          <div class="card"><b>缺少审计</b><span>没有日志就没有证据，安全事件发生后无法定位原因。</span></div>
+        </div>
+        <div class="card green" style="margin: 72px auto 0; width: 82%">
+          <b>课程设计目标</b>
+          <p>在注册/登录流程中加入口令哈希、失败限制、账号锁定、日志记录、异常审计和告警输出，并用本人构造的数据与脚本验证效果。</p>
+        </div>
+        <div class="footer">网络空间安全技术课程设计</div>
+        <aside class="speaker-note">从四类风险引出项目目标，说明要做的是一个小型安全技术应用项目。</aside>
+      </section>
+
+      <section class="slide" data-title="实验环境">
+        <h2>实验环境与合规边界：所有数据均为本人本地模拟</h2>
+        <p class="subtitle">环境轻量、可复现，便于答辩现场修改参数后重新运行。</p>
+        <div class="grid cols-2" style="margin-top: 38px; align-items: center">
+          <div>
+            <div class="proof" style="height: 320px"><img src="assets/2026-06-02_16-57-31.png" alt="实验环境截图" /></div>
+            <div class="caption">Python 与 Flask 环境截图</div>
+          </div>
+          <div class="grid" style="gap: 20px">
+            <div class="card"><b>运行环境</b><span>Windows 11 + Python 3.13.5 + Flask 3.1.0 + SQLite</span></div>
+            <div class="card"><b>实验位置</b><span>本地浏览器 127.0.0.1:5000，数据库位于本机 data 目录。</span></div>
+            <div class="card green"><b>合规声明</b><span>未扫描公网、校园网服务器或他人设备；账号、日志、IP 与告警均为本人自行构造的模拟数据。</span></div>
+          </div>
+        </div>
+        <div class="footer">网络空间安全技术课程设计</div>
+        <aside class="speaker-note">展示真实实验环境截图，明确合规边界。</aside>
+      </section>
+
+      <section class="slide" data-title="需求覆盖">
+        <h2>需求覆盖：7 项必做功能均落到具体代码模块</h2>
+        <p class="subtitle">把任务书要求映射到 app.py、security.py、db.py 与 audit.py。</p>
+        <table class="table">
+          <thead><tr><th>功能要求</th><th>实现位置</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr><td>用户注册</td><td>app.py / security.register_user</td><td class="ok">已实现</td></tr>
+            <tr><td>用户登录</td><td>app.py / security.authenticate</td><td class="ok">已实现</td></tr>
+            <tr><td>密码哈希存储</td><td>security.hash_password</td><td class="ok">已实现</td></tr>
+            <tr><td>失败计数</td><td>security.count_recent_failures</td><td class="ok">已实现</td></tr>
+            <tr><td>账号临时锁定</td><td>locked_until 字段</td><td class="ok">已实现</td></tr>
+            <tr><td>登录日志记录</td><td>db.add_login_log / login_logs</td><td class="ok">已实现</td></tr>
+            <tr><td>异常登录提醒</td><td>audit.detect_realtime</td><td class="ok">已实现</td></tr>
+          </tbody>
+        </table>
+        <p class="note">答辩时可以按这一页解释：每个判断分支对应哪段代码、哪张表、哪条测试。</p>
+        <div class="footer">网络空间安全技术课程设计</div>
+        <aside class="speaker-note">强调不是泛泛而谈，所有需求都能定位到代码模块。</aside>
+      </section>
+
+      <section class="slide" data-title="技术方案">
+        <h2>技术方案：Flask + SQLite 的五层安全闭环</h2>
+        <p class="subtitle">配置层集中阈值，认证与审计分离，日志贯穿全流程。</p>
+        <div class="flow">
+          <div class="flow-node">配置层<br />config.py</div>
+          <div class="flow-node">数据访问层<br />db.py</div>
+          <div class="flow-node" style="background:#12374a">安全认证层<br />security.py</div>
+          <div class="flow-node">异常审计层<br />audit.py</div>
+          <div class="flow-node">Web 表现层<br />app.py / templates</div>
+        </div>
+        <div class="grid cols-3" style="margin-top: 70px">
+          <div class="card"><b>核心数据表</b><span>users / login_logs / audit_alerts，日志表为失败限制与异常审计提供证据。</span></div>
+          <div class="card green"><b>核心安全规则</b><span>PBKDF2 哈希、5 分钟失败窗口、10 分钟锁定、夜间/多 IP/高频识别。</span></div>
+          <div class="card amber"><b>可现场演示</b><span>修改 config.py 阈值或模拟 IP，重新运行后观察锁定与告警结果。</span></div>
+        </div>
+        <div class="footer">网络空间安全技术课程设计</div>
+        <aside class="speaker-note">解释系统分层和日志如何贯穿认证与审计。</aside>
+      </section>
+
+      <section class="slide" data-title="认证流程">
+        <h2>用户登录认证流程：每个分支都有日志证据</h2>
+        <p class="subtitle">查询用户、判断锁定、校验哈希、记录成功或失败，并触发实时异常检测。</p>
+        <div class="flow" style="grid-template-columns: repeat(6, 1fr)">
+          <div class="flow-node">输入<br />用户名/口令</div>
+          <div class="flow-node">查询<br />users 表</div>
+          <div class="flow-node" style="background:#3a2b1b">判断<br />是否锁定</div>
+          <div class="flow-node">校验<br />密码哈希</div>
+          <div class="flow-node" style="background:#123a2a">登录成功<br />进入首页</div>
+          <div class="flow-node" style="background:#12374a">异常<br />检测</div>
+        </div>
+        <div class="grid cols-3" style="margin-top: 72px">
+          <div class="card red"><b>异常路径 A</b><span>账号不存在或密码错误：统一返回错误提示，记录 user_not_found / wrong_password。</span></div>
+          <div class="card amber"><b>异常路径 B</b><span>账号已锁定：直接拒绝登录，记录 locked，防止继续试探。</span></div>
+          <div class="card green"><b>成功路径</b><span>重置失败计数，写入 ok 日志，交给 audit.py 判断是否异常。</span></div>
+        </div>
+        <div class="footer">网络空间安全技术课程设计</div>
+        <aside class="speaker-note">沿着登录流程讲三条路径，特别强调失败也会留痕。</aside>
+      </section>
+
+      <section class="slide" data-title="密码哈希">
+        <h2>密码哈希存储：数据库中不保存任何明文口令</h2>
+        <p class="subtitle">PBKDF2-SHA256 + 26 万次迭代 + 随机盐，降低数据库泄露后的口令风险。</p>
+        <div class="grid cols-2" style="margin-top: 32px; align-items: center">
+          <div class="grid" style="gap: 16px">
+            <div class="card"><b>加盐</b><span>每个用户独立随机盐，相同口令不会产生相同哈希。</span></div>
+            <div class="card green"><b>慢哈希</b><span>26 万次迭代抬高离线爆破成本。</span></div>
+            <div class="card amber"><b>恒定时间比较</b><span>校验时使用 Werkzeug 的安全比较函数。</span></div>
+          </div>
+          <div>
+            <div class="proof" style="height: 330px"><img src="assets/2026-06-02_17-03-56.png" alt="密码哈希截图" /></div>
+            <div class="caption">SQLite 中 password_hash 字段截图</div>
+          </div>
+        </div>
+        <p class="note">证据点：截图中只出现 pbkdf2:sha256 前缀和长哈希值，没有任何明文口令。</p>
+        <div class="footer">网络空间安全技术课程设计</div>
+        <aside class="speaker-note">说明密码安全方案，并指向数据库截图作为证据。</aside>
+      </section>
+
+      <section class="slide" data-title="失败限制">
+        <h2>失败限制与账号锁定：暴力尝试会被自动降速</h2>
+        <p class="subtitle">本人阈值：5 分钟内失败 ≥ 5 次，锁定账号 10 分钟。</p>
+        <div class="flow">
+          <div class="flow-node">登录失败<br />次数 +1</div>
+          <div class="flow-node" style="background:#3a2b1b">5 分钟窗口<br />失败 ≥ 5？</div>
+          <div class="flow-node">写入<br />locked_until</div>
+          <div class="flow-node">记录日志<br />locked</div>
+          <div class="flow-node" style="background:#3a2228">页面提示<br />临时锁定</div>
+        </div>
+        <div class="proof cover" style="width: 72%; height: 230px; margin: 62px auto 0">
+          <img src="assets/2026-06-02_17-29-55.png" alt="账号锁定截图" />
+        </div>
+        <div class="caption">连续输错口令后触发临时锁定</div>
+        <div class="footer">网络空间安全技术课程设计</div>
+        <aside class="speaker-note">讲锁定阈值，解释锁定不是只在页面提示，而是写入数据库字段。</aside>
+      </section>
+
+      <section class="slide" data-title="异常审计">
+        <h2>异常审计规则：从登录日志中识别四类异常行为</h2>
+        <p class="subtitle">规则由本人设计并集中配置，答辩时可修改阈值重新验证。</p>
+        <div class="grid cols-2" style="margin-top: 42px">
+          <div class="card red"><b>暴力尝试</b><span>5 分钟内失败次数 ≥ 5，生成 brute_force 告警，并触发账号锁定。</span></div>
+          <div class="card"><b>异地登录模拟</b><span>10 分钟内同一账号出现 ≥ 2 个不同 IP，生成 multi_ip 告警。</span></div>
+          <div class="card amber"><b>非工作时间登录</b><span>23:00--06:00 成功登录，生成 off_hours 告警。</span></div>
+          <div class="card green"><b>高频登录</b><span>60 秒内请求次数 ≥ 10，生成 high_frequency 告警。</span></div>
+        </div>
+        <p class="note" style="text-align:center; margin-top: 68px">审计流程：读取 login_logs → 按时间窗口聚合 → 匹配规则 → 写入 audit_alerts → 页面输出告警</p>
+        <div class="footer">网络空间安全技术课程设计</div>
+        <aside class="speaker-note">介绍四类异常，强调规则可以现场修改。</aside>
+      </section>
+
+      <section class="slide" data-title="页面演示">
+        <h2>Web 页面演示：注册、登录与实时异常提醒</h2>
+        <p class="subtitle">页面不是摆设，登录成功后仍会显示审计模块返回的安全提醒。</p>
+        <div class="two-images">
+          <div>
+            <div class="proof" style="height: 184px"><img src="assets/2026-06-02_16-59-08.png" alt="注册页" /></div>
+            <div class="caption">用户注册页面</div>
+          </div>
+          <div>
+            <div class="proof" style="height: 184px"><img src="assets/2026-06-02_17-00-09.png" alt="登录页" /></div>
+            <div class="caption">用户登录页面</div>
+          </div>
+        </div>
+        <div class="grid cols-2" style="margin-top: 26px; align-items: center">
+          <div class="proof cover" style="height: 165px"><img src="assets/2026-06-02_17-02-40.png" alt="异地登录提醒" /></div>
+          <div class="card"><b>演示亮点</b><span>登录页提供模拟来源 IP 输入，仅用于本地实验中构造异地登录记录，不涉及真实网络扫描。</span></div>
+        </div>
+        <div class="footer">网络空间安全技术课程设计</div>
+        <aside class="speaker-note">展示前端页面，强调模拟 IP 的实验用途。</aside>
+      </section>
+
+      <section class="slide" data-title="审计输出">
+        <h2>实验数据与审计输出：告警和日志均来自本机运行结果</h2>
+        <p class="subtitle">模拟数据覆盖暴力尝试、异地登录、非工作时间和高频登录。</p>
+        <div class="two-images">
+          <div>
+            <div class="proof" style="height: 330px"><img src="assets/2026-06-02_17-30-35.png" alt="告警明细" /></div>
+            <div class="caption">安全审计页面：告警明细</div>
+          </div>
+          <div>
+            <div class="proof" style="height: 330px"><img src="assets/2026-06-02_17-30-48.png" alt="最近日志" /></div>
+            <div class="caption">安全审计页面：最近登录日志</div>
+          </div>
+        </div>
+        <div class="grid cols-3" style="margin: 34px auto 0; width: 58%">
+          <div class="stat"><strong>23</strong><span>模拟登录日志</span></div>
+          <div class="stat"><strong>8</strong><span>审计告警</span></div>
+          <div class="stat"><strong>4</strong><span>异常类型覆盖</span></div>
+        </div>
+        <div class="footer">网络空间安全技术课程设计</div>
+        <aside class="speaker-note">用两张审计页截图证明日志与告警不是凭空写在报告里的。</aside>
+      </section>
+
+      <section class="slide" data-title="测试结果">
+        <h2>测试结果：8 个用例，18 项断言全部通过</h2>
+        <p class="subtitle">自动化测试每个用例前重建独立测试库，避免污染演示数据库。</p>
+        <div class="grid cols-4" style="margin-top: 52px">
+          <div class="stat"><strong>8</strong><span>测试用例</span></div>
+          <div class="stat"><strong>18/18</strong><span>断言通过</span></div>
+          <div class="stat"><strong>23</strong><span>生成日志</span></div>
+          <div class="stat"><strong>8</strong><span>识别告警</span></div>
+        </div>
+        <div class="card" style="margin-top: 54px; width: 88%">
+          <b>覆盖范围</b>
+          <p>注册 + 哈希存储、正确登录、连续失败锁定、锁定期拒绝登录、异地登录检测、非工作时间登录检测、高频登录检测、全量审计汇总。</p>
+        </div>
+        <p class="note" style="color: var(--green)">结论：系统不是只跑通登录，而是完成了认证、限制、留痕、审计、处置的安全闭环。</p>
+        <div class="footer">网络空间安全技术课程设计</div>
+        <aside class="speaker-note">讲测试覆盖和最终结果，突出 18/18 通过。</aside>
+      </section>
+
+      <section class="slide" data-title="总结">
+        <h2>总结：本人完成了一个可演示、可审计、可修改规则的小型安全项目</h2>
+        <p class="subtitle">重点价值在于把登录认证和安全审计做成了闭环。</p>
+        <div class="grid cols-3" style="margin-top: 54px">
+          <div class="card green"><b>已完成</b><span>注册登录、哈希存储、失败限制、账号锁定、日志记录、异常提醒、全量审计。</span></div>
+          <div class="card"><b>答辩可验证</b><span>现场修改失败阈值、锁定时间、模拟 IP 或端口，重新运行观察结果。</span></div>
+          <div class="card amber"><b>后续改进</b><span>加入验证码/TOTP、IP 风险评分、日志导出、Docker 部署和更细粒度权限控制。</span></div>
+        </div>
+        <div class="card" style="margin: 86px auto 0; width: 86%; border-left-color: var(--cyan)">
+          <b>一句话总结</b>
+          <p style="font-size: 22px; color: var(--text)">我实现的不是一个普通登录页面，而是一个能记录证据、识别异常并输出审计结果的 Web 登录安全加固系统。</p>
+        </div>
+        <div class="footer">网络空间安全技术课程设计</div>
+        <aside class="speaker-note">收束，强调个人完成、可运行、可审计和可现场验证。</aside>
+      </section>
+
+      <div class="control">
+        <button class="btn" id="prev">上一页</button>
+        <button class="btn" id="notes">讲稿</button>
+        <button class="btn" id="full">全屏</button>
+        <button class="btn" id="next">下一页</button>
+      </div>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+    </main>
+
+    <script>
+      const root = document.getElementById("root");
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const bar = document.getElementById("bar");
+      let current = 0;
+
+      function render() {
+        slides.forEach((slide, index) => {
+          slide.classList.toggle("active", index === current);
+        });
+        bar.style.width = `${((current + 1) / slides.length) * 100}%`;
+        location.hash = `slide-${current + 1}`;
+      }
+
+      function go(delta) {
+        current = Math.max(0, Math.min(slides.length - 1, current + delta));
+        render();
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      document.getElementById("notes").addEventListener("click", () => root.classList.toggle("show-notes"));
+      document.getElementById("full").addEventListener("click", () => {
+        if (!document.fullscreenElement) root.requestFullscreen();
+        else document.exitFullscreen();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") go(1);
+        if (event.key === "ArrowLeft" || event.key === "PageUp") go(-1);
+        if (event.key.toLowerCase() === "n") root.classList.toggle("show-notes");
+        if (event.key.toLowerCase() === "f") document.getElementById("full").click();
+      });
+
+      const fromHash = Number((location.hash.match(/slide-(\d+)/) || [])[1]);
+      if (Number.isFinite(fromHash) && fromHash >= 1 && fromHash <= slides.length) current = fromHash - 1;
+      render();
+
+      window.__timelines = window.__timelines || {};
+    </script>
+  </body>
+</html>

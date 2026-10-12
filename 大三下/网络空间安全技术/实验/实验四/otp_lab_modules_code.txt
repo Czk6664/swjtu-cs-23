@@ -1,0 +1,445 @@
+各模块说明与部分代码参考
+
+一、公共模块 common.py
+
+公共模块负责处理用户标识规范化、OTP 派生、结果截断、恒定时间比较、复用标记检查与日志记录。为了避免普通字符串比较产生计时侧信道，OTP 比较使用 hmac.compare_digest；日志采用 JSON Lines 格式，便于后续统计失败原因。
+
+参考代码：
+
+```python
+import hashlib
+import hmac
+import json
+import time
+from pathlib import Path
+
+
+def normalize_user_id(user_id: str) -> str:
+    """统一用户标识格式，避免大小写或空格导致匹配异常。"""
+    return str(user_id).strip().lower()
+
+
+def derive_value(secret: bytes, moving_factor: str) -> str:
+    """使用 HMAC-SHA256 从共享密钥和动态因子中派生原始值。"""
+    if isinstance(secret, str):
+        secret = secret.encode("utf-8")
+    message = str(moving_factor).encode("utf-8")
+    return hmac.new(secret, message, hashlib.sha256).hexdigest()
+
+
+def truncate_otp(raw_value: str, digits: int = 6) -> str:
+    """将 HMAC 原始值截断成指定长度的数字 OTP。"""
+    if digits <= 0:
+        raise ValueError("digits must be positive")
+    number = int(raw_value, 16)
+    return f"{number % (10 ** digits):0{digits}d}"
+
+
+def constant_time_equal(a: str, b: str) -> bool:
+    """恒定时间比较，降低计时侧信道风险。"""
+    return hmac.compare_digest(str(a), str(b))
+
+
+def is_reused(user_id: str, marker: str, used_state: dict) -> bool:
+    """检查某个用户的 OTP 标记是否已经使用过。"""
+    uid = normalize_user_id(user_id)
+    return marker in used_state.get(uid, set())
+
+
+def mark_used(user_id: str, marker: str, used_state: dict) -> None:
+    """把已成功认证的 OTP 标记写入 used_state。"""
+    uid = normalize_user_id(user_id)
+    used_state.setdefault(uid, set()).add(marker)
+
+
+def record_event(log_path: str, event: dict) -> None:
+    """追加写入认证事件日志。"""
+    path = Path(log_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    event = {
+        "log_time": int(time.time()),
+        **event,
+    }
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(event, ensure_ascii=False) + "\n")
+```
+
+
+二、口令表型模块 otp_list_mode.py
+
+口令表型模块负责维护当前位置指针 pos。客户端和服务器预置相同口令表，服务器只接受当前位置的 OTP；验证成功后服务器推进 pos，并记录已用位置，防止旧口令重放。
+
+参考代码：
+
+```python
+from common import (
+    normalize_user_id,
+    constant_time_equal,
+    is_reused,
+    mark_used,
+)
+
+
+def init_shared_list(user_id: str, otp_list: list[str]) -> dict:
+    return {
+        "user_id": normalize_user_id(user_id),
+        "otp_list": [str(x) for x in otp_list],
+        "pos": 0,
+        "used": {},
+    }
+
+
+def get_current_list_otp(state: dict) -> str:
+    pos = state["pos"]
+    if pos < 0 or pos >= len(state["otp_list"]):
+        raise IndexError("OTP list exhausted")
+    return state["otp_list"][pos]
+
+
+def generate_list_message(user_id: str, state: dict) -> dict:
+    return {
+        "mode": "list",
+        "id": normalize_user_id(user_id),
+        "otp": get_current_list_otp(state),
+        "pos": state["pos"],
+    }
+
+
+def verify_list_message(message: dict, server_state: dict) -> dict:
+    user_id = normalize_user_id(message.get("id", ""))
+    msg_pos = int(message.get("pos", -1))
+    received_otp = str(message.get("otp", ""))
+    server_pos = server_state["pos"]
+    expected_user = server_state["user_id"]
+    expected_otp = server_state["otp_list"][server_pos]
+    marker = f"list:{msg_pos}:{received_otp}"
+
+    if user_id != expected_user:
+        return {
+            "success": False,
+            "code": "ID_MISMATCH",
+            "reason": "比较失败",
+            "server_pos": server_pos,
+        }
+
+    if is_reused(user_id, marker, server_state["used"]) or msg_pos < server_pos:
+        return {
+            "success": False,
+            "code": "OTP_REUSED_OR_EXPIRED",
+            "reason": "复用失败",
+            "server_pos": server_pos,
+        }
+
+    if msg_pos != server_pos:
+        return {
+            "success": False,
+            "code": "POSITION_OUT_OF_SYNC",
+            "reason": "新鲜性失败",
+            "client_pos": msg_pos,
+            "server_pos": server_pos,
+        }
+
+    if not constant_time_equal(received_otp, expected_otp):
+        return {
+            "success": False,
+            "code": "OTP_MISMATCH",
+            "reason": "比较失败",
+            "expected_otp": expected_otp,
+            "received_otp": received_otp,
+            "server_pos": server_pos,
+        }
+
+    mark_used(user_id, marker, server_state["used"])
+    advance_list_state(server_state)
+    return {
+        "success": True,
+        "code": "OK",
+        "reason": "none",
+        "old_pos": server_pos,
+        "new_pos": server_state["pos"],
+    }
+
+
+def advance_list_state(state: dict) -> None:
+    state["pos"] += 1
+```
+
+
+三、计数器型模块 otp_counter_mode.py
+
+计数器型模块使用 counter 作为 moving factor 生成 OTP。客户端每次生成后推进 counter；服务器验证成功后推进到 received_counter + 1。为了处理客户端轻微超前，服务器允许 look_ahead 滑动窗口；超出窗口则拒绝并要求重同步或重新注册。
+
+参考代码：
+
+```python
+from common import (
+    normalize_user_id,
+    derive_value,
+    truncate_otp,
+    constant_time_equal,
+    is_reused,
+    mark_used,
+)
+
+
+def init_counter_state(user_id: str, secret: bytes, counter: int = 0) -> dict:
+    return {
+        "user_id": normalize_user_id(user_id),
+        "secret": secret,
+        "counter": int(counter),
+        "used": {},
+    }
+
+
+def generate_counter_otp(secret: bytes, counter: int, digits: int = 6) -> str:
+    raw_value = derive_value(secret, f"counter:{int(counter)}")
+    return truncate_otp(raw_value, digits)
+
+
+def build_counter_message(user_id: str, otp: str, counter: int) -> dict:
+    return {
+        "mode": "counter",
+        "id": normalize_user_id(user_id),
+        "otp": str(otp),
+        "counter": int(counter),
+    }
+
+
+def verify_counter_message(message: dict, server_state: dict, look_ahead: int = 3) -> dict:
+    user_id = normalize_user_id(message.get("id", ""))
+    received_counter = int(message.get("counter", -1))
+    received_otp = str(message.get("otp", ""))
+    server_counter = int(server_state["counter"])
+    marker = f"counter:{received_counter}"
+
+    if user_id != server_state["user_id"]:
+        return {
+            "success": False,
+            "code": "ID_MISMATCH",
+            "reason": "比较失败",
+        }
+
+    if is_reused(user_id, marker, server_state["used"]) or received_counter < server_counter:
+        return {
+            "success": False,
+            "code": "COUNTER_REUSED",
+            "reason": "复用失败",
+            "server_counter": server_counter,
+            "received_counter": received_counter,
+        }
+
+    allowed_max = server_counter + look_ahead
+    if received_counter > allowed_max:
+        return {
+            "success": False,
+            "code": "COUNTER_OUT_OF_WINDOW",
+            "reason": "新鲜性失败",
+            "server_counter": server_counter,
+            "received_counter": received_counter,
+            "allowed_range": f"{server_counter}-{allowed_max}",
+        }
+
+    expected_otp = generate_counter_otp(server_state["secret"], received_counter)
+    if not constant_time_equal(received_otp, expected_otp):
+        return {
+            "success": False,
+            "code": "OTP_COUNTER_MISMATCH",
+            "reason": "比较失败",
+            "server_counter": server_counter,
+            "received_counter": received_counter,
+        }
+
+    mark_used(user_id, marker, server_state["used"])
+    server_state["counter"] = received_counter + 1
+    code = "OK_WITH_RESYNC" if received_counter != server_counter else "OK"
+    return {
+        "success": True,
+        "code": code,
+        "reason": "none",
+        "old_counter": server_counter,
+        "new_counter": server_state["counter"],
+    }
+
+
+def resync_counter(server_state: dict, observed_counter: int) -> None:
+    """严重失步时，在人工确认后把服务器 counter 调整到观察到的 counter。"""
+    observed_counter = int(observed_counter)
+    if observed_counter > server_state["counter"]:
+        server_state["counter"] = observed_counter
+```
+
+
+四、时间同步型模块 otp_time_mode.py
+
+时间同步型模块负责时间槽计算、窗口容忍和已用时间槽记录。客户端按 timestamp 所属时间槽生成 OTP；服务器允许 allowed_window 范围内的时钟偏差，但同一用户同一时间槽只能使用一次。
+
+参考代码：
+
+```python
+import time
+
+from common import (
+    normalize_user_id,
+    derive_value,
+    truncate_otp,
+    constant_time_equal,
+    is_reused,
+    mark_used,
+)
+
+
+def get_time_slot(timestamp: int, step: int = 30) -> int:
+    return int(timestamp) // int(step)
+
+
+def generate_time_otp(secret: bytes, timestamp: int, step: int = 30, digits: int = 6) -> str:
+    slot = get_time_slot(timestamp, step)
+    raw_value = derive_value(secret, f"time:{slot}")
+    return truncate_otp(raw_value, digits)
+
+
+def build_time_message(user_id: str, otp: str, timestamp: int) -> dict:
+    return {
+        "mode": "time",
+        "id": normalize_user_id(user_id),
+        "otp": str(otp),
+        "timestamp": int(timestamp),
+    }
+
+
+def verify_time_message(
+    message: dict,
+    server_state: dict,
+    step: int = 30,
+    allowed_window: int = 1,
+) -> dict:
+    user_id = normalize_user_id(message.get("id", ""))
+    received_ts = int(message.get("timestamp", 0))
+    received_otp = str(message.get("otp", ""))
+    server_now = int(server_state.get("now", int(time.time())))
+
+    client_slot = get_time_slot(received_ts, step)
+    server_slot = get_time_slot(server_now, step)
+    slot_delta = abs(client_slot - server_slot)
+    marker = f"time:{client_slot}"
+
+    if user_id != server_state["user_id"]:
+        return {
+            "success": False,
+            "code": "ID_MISMATCH",
+            "reason": "比较失败",
+        }
+
+    if is_reused(user_id, marker, server_state["used"]):
+        return {
+            "success": False,
+            "code": "TIME_SLOT_REUSED",
+            "reason": "复用失败",
+            "slot": client_slot,
+        }
+
+    if slot_delta > allowed_window:
+        return {
+            "success": False,
+            "code": "TIME_SLOT_OUT_OF_WINDOW",
+            "reason": "新鲜性失败",
+            "client_slot": client_slot,
+            "server_slot": server_slot,
+            "slot_delta": slot_delta,
+        }
+
+    expected_otp = generate_time_otp(server_state["secret"], received_ts, step)
+    if not constant_time_equal(received_otp, expected_otp):
+        return {
+            "success": False,
+            "code": "OTP_TIMESTAMP_MISMATCH",
+            "reason": "比较失败",
+            "client_slot": client_slot,
+            "server_slot": server_slot,
+        }
+
+    mark_time_slot_used(user_id, client_slot, server_state["used"])
+    server_state["last_slot"] = client_slot
+    code = "OK_WITH_TIME_WINDOW" if client_slot != server_slot else "OK"
+    return {
+        "success": True,
+        "code": code,
+        "reason": "none",
+        "used_slot": client_slot,
+    }
+
+
+def mark_time_slot_used(user_id: str, slot: int, used_state: dict) -> None:
+    mark_used(user_id, f"time:{int(slot)}", used_state)
+```
+
+
+五、攻击模拟模块 attack_simulation.py
+
+攻击模块用于重放、字段篡改、计数器漂移、时钟漂移和失败原因统计。该模块不参与正常 OTP 生成规则，只负责构造异常输入并调用对应验证函数。
+
+参考代码：
+
+```python
+from copy import deepcopy
+
+from otp_list_mode import verify_list_message
+from otp_counter_mode import verify_counter_message
+from otp_time_mode import verify_time_message
+
+
+def replay_attack(captured_message: dict, verifier_state: dict) -> dict:
+    """完整重放已截获消息，不修改任何字段。"""
+    message = deepcopy(captured_message)
+    mode = verifier_state.get("mode", message.get("mode"))
+    state = verifier_state["state"]
+    params = verifier_state.get("params", {})
+
+    if mode == "list":
+        return verify_list_message(message, state)
+
+    if mode == "counter":
+        return verify_counter_message(
+            message,
+            state,
+            look_ahead=params.get("look_ahead", 3),
+        )
+
+    if mode == "time":
+        return verify_time_message(
+            message,
+            state,
+            step=params.get("step", 30),
+            allowed_window=params.get("allowed_window", 1),
+        )
+
+    raise ValueError(f"unsupported mode: {mode}")
+
+
+def tamper_field(message: dict, field_name: str, new_value) -> dict:
+    """复制消息并篡改指定字段。"""
+    tampered = deepcopy(message)
+    tampered[field_name] = new_value
+    return tampered
+
+
+def simulate_counter_drift(client_state: dict, delta: int) -> None:
+    """人为制造客户端 counter 漂移。"""
+    client_state["counter"] = int(client_state.get("counter", 0)) + int(delta)
+
+
+def simulate_clock_drift(base_timestamp: int, delta_seconds: int) -> int:
+    """返回漂移后的客户端时间戳。"""
+    return int(base_timestamp) + int(delta_seconds)
+
+
+def summarize_fail_reason(results: list[dict]) -> dict:
+    """统计失败原因，便于写实验分析。"""
+    summary = {}
+    for result in results:
+        if result.get("success"):
+            continue
+        reason = result.get("reason", "未知失败")
+        summary[reason] = summary.get(reason, 0) + 1
+    return summary
+```

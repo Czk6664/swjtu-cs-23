@@ -1,0 +1,38 @@
+# Large offline packages and container images
+云计算课程设计_离线资源包_SparkOperator+MPI+Monitoring.zip
+云计算课程设计_离线资源包_SparkOperator+MPI+Monitoring/
+*.tar
+*.tar.gz
+*.tgz
+
+# Local tooling bundles
+tools/
+.git.local-backup/
+**/.git.local-backup/
+
+# Planning/internal workflow artifacts
+openspec/
+
+# Course template copy, kept locally
+课程设计模版_视觉计算2026年/
+
+# Python/cache/build artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# LaTeX build intermediates
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

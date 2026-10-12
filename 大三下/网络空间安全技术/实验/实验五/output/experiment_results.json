@@ -1,0 +1,875 @@
+{
+  "records": [
+    {
+      "test_id": "PW-01",
+      "mode": "password",
+      "scene": "正确口令正常登录",
+      "input": "id=\"alice\", password=\"SecureP@ss123\"",
+      "expected": "通过",
+      "actual_category": "通过",
+      "actual": {
+        "result": "accept",
+        "reason": "ok",
+        "state_before": "password_hash: stored; nonce/counter: none",
+        "state_after": "password_hash: stored; nonce/counter: none",
+        "log": {
+          "id": "alice",
+          "mode": "password",
+          "result": "accept",
+          "reason": "ok",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "PW-02",
+      "mode": "password",
+      "scene": "错误口令登录",
+      "input": "id=\"alice\", password=\"WrongPass\"",
+      "expected": "拒绝（比较失败）",
+      "actual_category": "拒绝（比较失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "password_mismatch",
+        "state_before": "password_hash: stored; nonce/counter: none",
+        "state_after": "password_hash: stored; nonce/counter: none",
+        "log": {
+          "id": "alice",
+          "mode": "password",
+          "result": "reject",
+          "reason": "password_mismatch",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "PW-03",
+      "mode": "password",
+      "scene": "不存在的用户登录",
+      "input": "id=\"eve\", password=\"anything\"",
+      "expected": "拒绝（身份失败）",
+      "actual_category": "拒绝（身份失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "user_not_found",
+        "state_before": "record: none",
+        "state_after": "record: none",
+        "log": {
+          "id": "eve",
+          "mode": "password",
+          "result": "reject",
+          "reason": "user_not_found",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "PW-04",
+      "mode": "password",
+      "scene": "停用账户登录",
+      "input": "id=\"bob\", password=\"BobP@ss456\"",
+      "expected": "拒绝（身份失败）",
+      "actual_category": "拒绝（身份失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "account_inactive",
+        "state_before": "password_hash: stored; nonce/counter: none",
+        "state_after": "password_hash: stored; nonce/counter: none",
+        "log": {
+          "id": "bob",
+          "mode": "password",
+          "result": "reject",
+          "reason": "account_inactive",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "PW-05",
+      "mode": "password",
+      "scene": "重放攻击（重复提交旧请求）",
+      "input": "将 PW-01 的请求报文原样再发送一次",
+      "expected": "通过",
+      "actual_category": "通过",
+      "actual": {
+        "result": "accept",
+        "reason": "ok",
+        "state_before": "password_hash: stored; nonce/counter: none",
+        "state_after": "password_hash: stored; nonce/counter: none",
+        "log": {
+          "id": "alice",
+          "mode": "password",
+          "result": "accept",
+          "reason": "ok",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "静态口令没有 nonce/counter，新旧同一口令请求均可通过，体现其不能天然抵御重放。"
+    },
+    {
+      "test_id": "CH-01",
+      "mode": "challenge",
+      "scene": "正常挑战-应答",
+      "input": "使用正确共享密钥 K 和服务器签发 nonce 计算 proof",
+      "expected": "通过",
+      "actual_category": "通过",
+      "actual": {
+        "result": "accept",
+        "reason": "ok",
+        "state_before": "nonce \"hFONBg-5UlD58SgsZSkzaA\": issued(consumed=False)",
+        "state_after": "nonce \"hFONBg-5UlD58SgsZSkzaA\": issued -> consumed; nonce_used includes \"hFONBg-5UlD58SgsZSkzaA\"",
+        "log": {
+          "id": "alice",
+          "mode": "challenge",
+          "result": "accept",
+          "reason": "ok",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "CH-02",
+      "mode": "challenge",
+      "scene": "错误的共享密钥",
+      "input": "使用错误密钥 K' 计算 proof",
+      "expected": "拒绝（比较失败）",
+      "actual_category": "拒绝（比较失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "proof_mismatch",
+        "state_before": "nonce \"P02t5qcagzsd11CnQtVWOA\": issued(consumed=False)",
+        "state_after": "nonce \"P02t5qcagzsd11CnQtVWOA\": issued(consumed=False)",
+        "log": {
+          "id": "alice",
+          "mode": "challenge",
+          "result": "reject",
+          "reason": "proof_mismatch",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "CH-03",
+      "mode": "challenge",
+      "scene": "篡改 nonce",
+      "input": "将服务器签发 nonce 修改为不同值后提交",
+      "expected": "拒绝（新鲜性失败）",
+      "actual_category": "拒绝（新鲜性失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "nonce_not_issued",
+        "state_before": "nonce \"J14V6grxRf1OP5uxFpLMrg\": not issued",
+        "state_after": "nonce \"J14V6grxRf1OP5uxFpLMrg\": not issued",
+        "log": {
+          "id": "alice",
+          "mode": "challenge",
+          "result": "reject",
+          "reason": "nonce_not_issued",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "CH-04",
+      "mode": "challenge",
+      "scene": "使用过期 nonce",
+      "input": "获取 nonce 后模拟超过 5 秒有效期再提交",
+      "expected": "拒绝（新鲜性失败）",
+      "actual_category": "拒绝（新鲜性失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "nonce_expired",
+        "state_before": "nonce \"H7nUvMDO4ujpkrrjv0wtNA\": issued(consumed=False)",
+        "state_after": "nonce \"H7nUvMDO4ujpkrrjv0wtNA\": issued(consumed=False)",
+        "log": {
+          "id": "alice",
+          "mode": "challenge",
+          "result": "reject",
+          "reason": "nonce_expired",
+          "server_time": 1778036366
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "CH-05",
+      "mode": "challenge",
+      "scene": "重放攻击（复用已消费 nonce）",
+      "input": "将已通过的 CH-01 报文原样再次提交",
+      "expected": "拒绝（复用失败）",
+      "actual_category": "拒绝（复用失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "nonce_reused",
+        "state_before": "nonce \"MoYY13l2VuiMH6JzS81Zmg\": issued(consumed=True)",
+        "state_after": "nonce \"MoYY13l2VuiMH6JzS81Zmg\": issued(consumed=True)",
+        "log": {
+          "id": "alice",
+          "mode": "challenge",
+          "result": "reject",
+          "reason": "nonce_reused",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "已消费 nonce 被再次提交，服务端命中 nonce_reused。"
+    },
+    {
+      "test_id": "CH-06",
+      "mode": "challenge",
+      "scene": "伪造 nonce（客户端自行生成）",
+      "input": "不向服务器获取 nonce，客户端自行生成随机数作为 nonce",
+      "expected": "拒绝（新鲜性失败）",
+      "actual_category": "拒绝（新鲜性失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "nonce_not_issued",
+        "state_before": "nonce \"pYS86wPcRyCxHHGAMlfW4A\": not issued",
+        "state_after": "nonce \"pYS86wPcRyCxHHGAMlfW4A\": not issued",
+        "log": {
+          "id": "alice",
+          "mode": "challenge",
+          "result": "reject",
+          "reason": "nonce_not_issued",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "HO-01",
+      "mode": "otp(hotp)",
+      "scene": "当前 counter 正常验证",
+      "input": "客户端 counter=0，服务端 counter=0",
+      "expected": "通过",
+      "actual_category": "通过",
+      "actual": {
+        "result": "accept",
+        "reason": "ok",
+        "state_before": "counter: 0; used_hotp_values: 0",
+        "state_after": "counter: 0 -> 1; accepted counter=0",
+        "log": {
+          "id": "alice",
+          "mode": "otp(hotp)",
+          "result": "accept",
+          "reason": "ok",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "HO-02",
+      "mode": "otp(hotp)",
+      "scene": "重放攻击（重复提交相同 OTP）",
+      "input": "将 HO-01 使用的 OTP 再次提交",
+      "expected": "拒绝（复用失败）",
+      "actual_category": "拒绝（复用失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "otp_reused",
+        "state_before": "counter: 1; used_hotp_values: 1",
+        "state_after": "counter: 1; used_hotp_values: 1",
+        "log": {
+          "id": "alice",
+          "mode": "otp(hotp)",
+          "result": "reject",
+          "reason": "otp_reused",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "HO-03",
+      "mode": "otp(hotp)",
+      "scene": "客户端 counter 超前（漂移）",
+      "input": "客户端 counter=5，服务端 counter=1",
+      "expected": "拒绝（新鲜性失败）",
+      "actual_category": "拒绝（新鲜性失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "counter_window_miss_or_otp_mismatch",
+        "state_before": "counter: 1; used_hotp_values: 1",
+        "state_after": "counter: 1; used_hotp_values: 1",
+        "log": {
+          "id": "alice",
+          "mode": "otp(hotp)",
+          "result": "reject",
+          "reason": "counter_window_miss_or_otp_mismatch",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "HO-04",
+      "mode": "otp(hotp)",
+      "scene": "错误的 OTP",
+      "input": "随机输入 6 位数字 OTP",
+      "expected": "拒绝（比较失败）",
+      "actual_category": "拒绝（比较失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "counter_window_miss_or_otp_mismatch",
+        "state_before": "counter: 1; used_hotp_values: 1",
+        "state_after": "counter: 1; used_hotp_values: 1",
+        "log": {
+          "id": "alice",
+          "mode": "otp(hotp)",
+          "result": "reject",
+          "reason": "counter_window_miss_or_otp_mismatch",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "TO-01",
+      "mode": "otp(totp)",
+      "scene": "当前时间片正常验证",
+      "input": "系统时间同步，使用当前 TOTP",
+      "expected": "通过",
+      "actual_category": "通过",
+      "actual": {
+        "result": "accept",
+        "reason": "ok",
+        "state_before": "last_used_slot: none; used_slots: []",
+        "state_after": "last_used_slot: last_used_slot: none; used_slots: [] -> 59267878; used_slots includes 59267878",
+        "log": {
+          "id": "alice",
+          "mode": "otp(totp)",
+          "result": "accept",
+          "reason": "ok",
+          "server_time": 1778036345
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "TO-02",
+      "mode": "otp(totp)",
+      "scene": "前一个时间片验证（窗口容错）",
+      "input": "使用 30 秒前生成的 TOTP 提交",
+      "expected": "通过",
+      "actual_category": "通过",
+      "actual": {
+        "result": "accept",
+        "reason": "ok",
+        "state_before": "last_used_slot: 59267878; used_slots: [59267878]",
+        "state_after": "last_used_slot: last_used_slot: 59267878; used_slots: [59267878] -> 59267877; used_slots includes 59267877",
+        "log": {
+          "id": "alice",
+          "mode": "otp(totp)",
+          "result": "accept",
+          "reason": "ok",
+          "server_time": 1778036345
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "TO-03",
+      "mode": "otp(totp)",
+      "scene": "时间窗口外的过期 OTP",
+      "input": "使用 2 分钟前生成的 TOTP 提交",
+      "expected": "拒绝（新鲜性失败）",
+      "actual_category": "拒绝（新鲜性失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "time_window_miss_or_otp_mismatch",
+        "state_before": "last_used_slot: 59267877; used_slots: [59267877, 59267878]",
+        "state_after": "last_used_slot: 59267877; used_slots: [59267877, 59267878]",
+        "log": {
+          "id": "alice",
+          "mode": "otp(totp)",
+          "result": "reject",
+          "reason": "time_window_miss_or_otp_mismatch",
+          "server_time": 1778036345
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "TO-04",
+      "mode": "otp(totp)",
+      "scene": "同一时间片内重复提交",
+      "input": "将 TO-01 的 TOTP 再次提交",
+      "expected": "拒绝（复用失败）",
+      "actual_category": "拒绝（复用失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "totp_slot_reused",
+        "state_before": "last_used_slot: 59267877; used_slots: [59267877, 59267878]",
+        "state_after": "last_used_slot: 59267877; used_slots: [59267877, 59267878]",
+        "log": {
+          "id": "alice",
+          "mode": "otp(totp)",
+          "result": "reject",
+          "reason": "totp_slot_reused",
+          "server_time": 1778036345
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "MC-01",
+      "mode": "mac",
+      "scene": "正常报文验证",
+      "input": "当前 ts、新 nonce、正确 tag",
+      "expected": "通过",
+      "actual_category": "通过",
+      "actual": {
+        "result": "accept",
+        "reason": "ok",
+        "state_before": "nonce: hJZqQmu4ZROm4RtPa3OGlA; used_mac_nonces: []",
+        "state_after": "ts: 1778036356 within ±60s; nonce hJZqQmu4ZROm4RtPa3OGlA: fresh -> consumed",
+        "log": {
+          "id": "alice",
+          "mode": "mac",
+          "result": "accept",
+          "reason": "ok",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "MC-02",
+      "mode": "mac",
+      "scene": "篡改 payload",
+      "input": "复制 MC-01 报文，修改 payload，保持 tag 不变",
+      "expected": "拒绝（完整性失败）",
+      "actual_category": "拒绝（完整性失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "tag_mismatch",
+        "state_before": "nonce: hJZqQmu4ZROm4RtPa3OGlA; used_mac_nonces: []",
+        "state_after": "nonce: hJZqQmu4ZROm4RtPa3OGlA; used_mac_nonces: []",
+        "log": {
+          "id": "alice",
+          "mode": "mac",
+          "result": "reject",
+          "reason": "tag_mismatch",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "payload 被修改后 tag 覆盖内容变化，HMAC 比较失败。"
+    },
+    {
+      "test_id": "MC-03",
+      "mode": "mac",
+      "scene": "篡改 id 字段",
+      "input": "复制 MC-01 报文，将 id 改为 \"bob\"，保持 tag 不变",
+      "expected": "拒绝（完整性失败）",
+      "actual_category": "拒绝（完整性失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "tag_mismatch",
+        "state_before": "nonce: hJZqQmu4ZROm4RtPa3OGlA; used_mac_nonces: []",
+        "state_after": "nonce: hJZqQmu4ZROm4RtPa3OGlA; used_mac_nonces: []",
+        "log": {
+          "id": "bob",
+          "mode": "mac",
+          "result": "reject",
+          "reason": "tag_mismatch",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "MC-04",
+      "mode": "mac",
+      "scene": "篡改 ts 字段",
+      "input": "复制 MC-01 报文，修改 ts，保持 tag 不变",
+      "expected": "拒绝（完整性失败）",
+      "actual_category": "拒绝（完整性失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "tag_mismatch",
+        "state_before": "nonce: hJZqQmu4ZROm4RtPa3OGlA; used_mac_nonces: []",
+        "state_after": "nonce: hJZqQmu4ZROm4RtPa3OGlA; used_mac_nonces: []",
+        "log": {
+          "id": "alice",
+          "mode": "mac",
+          "result": "reject",
+          "reason": "tag_mismatch",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "MC-05",
+      "mode": "mac",
+      "scene": "重放攻击（过期 ts）",
+      "input": "保存 MC-01 报文，模拟 2 分钟后再提交",
+      "expected": "拒绝（新鲜性失败）",
+      "actual_category": "拒绝（新鲜性失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "timestamp_expired",
+        "state_before": "nonce: hJZqQmu4ZROm4RtPa3OGlA; used_mac_nonces: []",
+        "state_after": "nonce: hJZqQmu4ZROm4RtPa3OGlA; used_mac_nonces: []",
+        "log": {
+          "id": "alice",
+          "mode": "mac",
+          "result": "reject",
+          "reason": "timestamp_expired",
+          "server_time": 1778036476
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "MC-06",
+      "mode": "mac",
+      "scene": "重放攻击（复用 nonce）",
+      "input": "在 ts 仍有效的短时间内再次提交 MC-01",
+      "expected": "拒绝（复用失败）",
+      "actual_category": "拒绝（复用失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "nonce_reused",
+        "state_before": "nonce: hJZqQmu4ZROm4RtPa3OGlA; used_mac_nonces: ['hJZqQmu4ZROm4RtPa3OGlA']",
+        "state_after": "nonce: hJZqQmu4ZROm4RtPa3OGlA; used_mac_nonces: ['hJZqQmu4ZROm4RtPa3OGlA']",
+        "log": {
+          "id": "alice",
+          "mode": "mac",
+          "result": "reject",
+          "reason": "nonce_reused",
+          "server_time": 1778036357
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "MC-07",
+      "mode": "mac(no_freshness)",
+      "scene": "无新鲜性字段的 MAC（对照）",
+      "input": "仅含 id、payload、tag，正确后原样重放一次",
+      "expected": "通过",
+      "actual_category": "通过",
+      "actual": {
+        "result": "accept",
+        "reason": "ok_no_freshness",
+        "state_before": "nonce: None; used_mac_nonces: []",
+        "state_after": "no freshness fields checked; replay remains acceptable",
+        "log": {
+          "id": "alice",
+          "mode": "mac(no_freshness)",
+          "result": "accept",
+          "reason": "ok_no_freshness",
+          "server_time": 1778036357
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "SG-01",
+      "mode": "signature",
+      "scene": "正常签名验证",
+      "input": "alice 用 sk_A 签名，服务端用 pk_A 验签",
+      "expected": "通过",
+      "actual_category": "通过",
+      "actual": {
+        "result": "accept",
+        "reason": "ok",
+        "state_before": "nonce: 4VsZ-68DcmqesYkCqCKRaQ; used_sig_nonces: []",
+        "state_after": "ts: 1778036356 within ±60s; nonce 4VsZ-68DcmqesYkCqCKRaQ: fresh -> consumed",
+        "log": {
+          "id": "alice",
+          "mode": "signature",
+          "result": "accept",
+          "reason": "ok",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "SG-02",
+      "mode": "signature",
+      "scene": "使用错误的公钥验证",
+      "input": "用 bob 的公钥 pk_B 去验证 alice 的签名",
+      "expected": "拒绝（比较失败）",
+      "actual_category": "拒绝（比较失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "signature_invalid",
+        "state_before": "nonce: 4VsZ-68DcmqesYkCqCKRaQ; used_sig_nonces: []",
+        "state_after": "nonce: 4VsZ-68DcmqesYkCqCKRaQ; used_sig_nonces: []",
+        "log": {
+          "id": "alice",
+          "mode": "signature",
+          "result": "reject",
+          "reason": "signature_invalid",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "SG-03",
+      "mode": "signature",
+      "scene": "篡改 data 字段",
+      "input": "复制 SG-01 报文，修改 data，保持 signature 不变",
+      "expected": "拒绝（比较失败）",
+      "actual_category": "拒绝（比较失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "signature_invalid",
+        "state_before": "nonce: 4VsZ-68DcmqesYkCqCKRaQ; used_sig_nonces: []",
+        "state_after": "nonce: 4VsZ-68DcmqesYkCqCKRaQ; used_sig_nonces: []",
+        "log": {
+          "id": "alice",
+          "mode": "signature",
+          "result": "reject",
+          "reason": "signature_invalid",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "data 被修改后签名覆盖内容变化，验签失败。"
+    },
+    {
+      "test_id": "SG-04",
+      "mode": "signature",
+      "scene": "篡改 meta 中的 ts",
+      "input": "复制 SG-01 报文，修改 meta.ts，保持 signature 不变",
+      "expected": "拒绝（比较失败）",
+      "actual_category": "拒绝（比较失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "signature_invalid",
+        "state_before": "nonce: 4VsZ-68DcmqesYkCqCKRaQ; used_sig_nonces: []",
+        "state_after": "nonce: 4VsZ-68DcmqesYkCqCKRaQ; used_sig_nonces: []",
+        "log": {
+          "id": "alice",
+          "mode": "signature",
+          "result": "reject",
+          "reason": "signature_invalid",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "SG-05",
+      "mode": "signature",
+      "scene": "重放攻击（过期 ts）",
+      "input": "保存 SG-01 报文，模拟 2 分钟后再提交",
+      "expected": "拒绝（新鲜性失败）",
+      "actual_category": "拒绝（新鲜性失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "timestamp_expired",
+        "state_before": "nonce: 4VsZ-68DcmqesYkCqCKRaQ; used_sig_nonces: []",
+        "state_after": "nonce: 4VsZ-68DcmqesYkCqCKRaQ; used_sig_nonces: []",
+        "log": {
+          "id": "alice",
+          "mode": "signature",
+          "result": "reject",
+          "reason": "timestamp_expired",
+          "server_time": 1778036476
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "SG-06",
+      "mode": "signature",
+      "scene": "签名伪造尝试",
+      "input": "eve 用自己的私钥签名，但 id 字段填 \"alice\"",
+      "expected": "拒绝（比较失败）",
+      "actual_category": "拒绝（比较失败）",
+      "actual": {
+        "result": "reject",
+        "reason": "signature_invalid",
+        "state_before": "nonce: Uu48x2eNHvjMDe2akc9dcQ; used_sig_nonces: []",
+        "state_after": "nonce: Uu48x2eNHvjMDe2akc9dcQ; used_sig_nonces: []",
+        "log": {
+          "id": "alice",
+          "mode": "signature",
+          "result": "reject",
+          "reason": "signature_invalid",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    },
+    {
+      "test_id": "SG-07",
+      "mode": "signature",
+      "scene": "未签名字段被篡改（选做）",
+      "input": "篡改 remark 字段，该字段不在签名覆盖范围内",
+      "expected": "通过",
+      "actual_category": "通过",
+      "actual": {
+        "result": "accept",
+        "reason": "ok",
+        "state_before": "nonce: 4VsZ-68DcmqesYkCqCKRaQ; used_sig_nonces: []",
+        "state_after": "ts: 1778036356 within ±60s; nonce 4VsZ-68DcmqesYkCqCKRaQ: fresh -> consumed",
+        "log": {
+          "id": "alice",
+          "mode": "signature",
+          "result": "accept",
+          "reason": "ok",
+          "server_time": 1778036356
+        }
+      },
+      "passed": "是",
+      "analysis": "实际结果与期望一致，验证逻辑按安全策略触发。"
+    }
+  ],
+  "cross": [
+    {
+      "test_id": "X-01",
+      "attack": "重放相同报文",
+      "password": "通过：静态口令无新鲜性字段，旧请求仍可通过",
+      "challenge": "拒绝（复用失败）：nonce 已消费",
+      "otp(hotp)": "拒绝（复用失败）：同一 OTP 已使用",
+      "mac": "拒绝（复用失败）：nonce 已消费",
+      "signature": "拒绝（复用失败）：签名报文 nonce 已消费"
+    },
+    {
+      "test_id": "X-02",
+      "attack": "篡改 payload",
+      "password": "不适用/弱：未保护业务消息 payload",
+      "challenge": "拒绝（比较失败）：context 被覆盖时 proof 不匹配",
+      "otp(hotp)": "不适用/弱：OTP 只证明登录，不绑定 payload",
+      "mac": "拒绝（完整性失败）：tag 不匹配",
+      "signature": "拒绝（比较失败）：验签失败"
+    },
+    {
+      "test_id": "X-03",
+      "attack": "伪造身份（未知 id）",
+      "password": "拒绝（身份失败）：用户不存在",
+      "challenge": "拒绝（身份失败）：用户不存在/无已签发 nonce",
+      "otp(hotp)": "拒绝（身份失败）：用户不存在",
+      "mac": "拒绝（身份失败）：用户不存在",
+      "signature": "拒绝（身份失败）：用户不存在"
+    },
+    {
+      "test_id": "X-04",
+      "attack": "使用错误凭证",
+      "password": "拒绝（比较失败）：口令摘要不匹配",
+      "challenge": "拒绝（比较失败）：proof 不匹配",
+      "otp(hotp)": "拒绝（比较失败）：OTP 不匹配",
+      "mac": "拒绝（完整性失败）：tag 不匹配",
+      "signature": "拒绝（比较失败）：验签失败"
+    }
+  ],
+  "summary": {
+    "password": {
+      "total": 5,
+      "accept": 2,
+      "reject": 3,
+      "reasons": {
+        "ok": 2,
+        "password_mismatch": 1,
+        "user_not_found": 1,
+        "account_inactive": 1
+      }
+    },
+    "challenge": {
+      "total": 6,
+      "accept": 1,
+      "reject": 5,
+      "reasons": {
+        "ok": 1,
+        "proof_mismatch": 1,
+        "nonce_not_issued": 2,
+        "nonce_expired": 1,
+        "nonce_reused": 1
+      }
+    },
+    "otp(hotp)": {
+      "total": 4,
+      "accept": 1,
+      "reject": 3,
+      "reasons": {
+        "ok": 1,
+        "otp_reused": 1,
+        "counter_window_miss_or_otp_mismatch": 2
+      }
+    },
+    "otp(totp)": {
+      "total": 4,
+      "accept": 2,
+      "reject": 2,
+      "reasons": {
+        "ok": 2,
+        "time_window_miss_or_otp_mismatch": 1,
+        "totp_slot_reused": 1
+      }
+    },
+    "mac": {
+      "total": 6,
+      "accept": 1,
+      "reject": 5,
+      "reasons": {
+        "ok": 1,
+        "tag_mismatch": 3,
+        "timestamp_expired": 1,
+        "nonce_reused": 1
+      }
+    },
+    "mac(no_freshness)": {
+      "total": 1,
+      "accept": 1,
+      "reject": 0,
+      "reasons": {
+        "ok_no_freshness": 1
+      }
+    },
+    "signature": {
+      "total": 7,
+      "accept": 2,
+      "reject": 5,
+      "reasons": {
+        "ok": 2,
+        "signature_invalid": 4,
+        "timestamp_expired": 1
+      }
+    }
+  }
+}

@@ -1,0 +1,274 @@
+\documentclass[12pt]{article}
+\usepackage[UTF8]{ctex}
+% 参考 des_report_section6_algorithms.tex：保留 algorithm2e 的边框、竖线和行号样式。
+\usepackage[top=0.15cm, bottom=0.15cm, left=0.15cm, right=0.15cm, paperwidth=16.5cm, paperheight=28cm]{geometry}
+\setlength{\textfloatsep}{0pt}
+\setlength{\intextsep}{0pt}
+\setlength{\floatsep}{0pt}
+\usepackage[ruled, linesnumbered, vlined, resetcount]{algorithm2e}
+\usepackage[active,tightpage]{preview}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\PreviewEnvironment{algorithm}
+\setlength{\PreviewBorder}{0pt}
+
+\SetAlFnt{\small}
+\SetAlCapFnt{\normalsize\bfseries}
+\SetAlCapNameFnt{\normalsize\bfseries}
+\SetCommentSty{textnormal}
+\SetKwInput{FuncDesc}{函数作用}
+\SetAlCapSkip{0.25em}
+\SetAlgoInsideSkip{0.2em}
+\SetArgSty{textnormal}
+\SetDataSty{textnormal}
+\SetFuncSty{\texttt}
+\setlength{\algomargin}{0.4em}
+
+\begin{document}
+\pagecolor{white}
+\pagestyle{empty}
+\DontPrintSemicolon
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\abovedisplayskip}{0pt}
+\setlength{\belowdisplayskip}{0pt}
+
+\iffalse
+\begin{center}
+{\Large \textbf{数字签名综合实验函数介绍}}\\[-0.2em]
+{\normalsize 根据 \texttt{程序设计说明.txt} 中精简后的核心函数整理}
+\end{center}
+\vspace{0.5em}
+\newpage
+\fi
+
+\begin{algorithm}[H]
+\caption{\texttt{sign\_basic(private\_key, message, algorithm)}}
+\FuncDesc{使用私钥对消息进行基础数字签名，是实验一中“私钥签名”步骤的核心函数。}
+\KwIn{\texttt{private\_key}（RSA 私钥）；\texttt{message}（待签名字节串）；\texttt{algorithm}（签名算法，默认 RSA-PSS）}
+\KwOut{签名字节串}
+\setcounter{AlgoLine}{0}
+\eIf{\texttt{algorithm} 不是 \texttt{RSA-PSS}}{
+    抛出不支持算法异常\;
+}{
+    使用 \texttt{RSA-PSS + SHA256} 对 \texttt{message} 进行签名\;
+    \Return 签名字节串\;
+}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{verify\_basic(public\_key, message, signature, algorithm)}}
+\FuncDesc{使用公钥验证基础签名，判断消息和签名是否来自匹配的私钥。}
+\KwIn{\texttt{public\_key}（RSA 公钥）；\texttt{message}（待验证消息）；\texttt{signature}（签名值）；\texttt{algorithm}（签名算法）}
+\KwOut{验证通过返回 \texttt{True}，验证失败返回 \texttt{False}}
+\setcounter{AlgoLine}{0}
+\eIf{\texttt{algorithm} 不是 \texttt{RSA-PSS}}{
+    抛出不支持算法异常\;
+}{
+    使用与签名阶段一致的 \texttt{RSA-PSS + SHA256} 参数验签\;
+    \eIf{验签过程未抛出异常}{
+        \Return \texttt{True}\;
+    }{
+        捕获 \texttt{InvalidSignature} 等异常\;
+        \Return \texttt{False}\;
+    }
+}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{sign\_with\_digest(private\_key, message, hash\_alg, sign\_alg)}}
+\FuncDesc{先计算消息摘要，再对摘要值生成数字签名，用于实验二的完整性检测。}
+\KwIn{\texttt{private\_key}（RSA 私钥）；\texttt{message}（消息字节串）；\texttt{hash\_alg}（摘要算法）；\texttt{sign\_alg}（签名算法）}
+\KwOut{包含摘要、摘要展示值、签名值和算法标识的字典}
+\setcounter{AlgoLine}{0}
+\eIf{\texttt{sign\_alg} 不是 \texttt{RSA-PSS}}{
+    抛出不支持算法异常\;
+}{
+    $\mathrm{digest} \leftarrow$ 计算 \texttt{message} 的 \texttt{hash\_alg} 摘要\;
+    使用 \texttt{Prehashed(hash\_alg)} 和 \texttt{RSA-PSS} 对摘要签名\;
+    \Return 包含 \texttt{digest\_hex}、\texttt{signature} 和展示片段的字典\;
+}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{verify\_with\_digest(public\_key, message, signature, hash\_alg, sign\_alg)}}
+\FuncDesc{接收方重新计算消息摘要，并使用公钥验证摘要签名是否有效。}
+\KwIn{\texttt{public\_key}（RSA 公钥）；\texttt{message}（收到的消息）；\texttt{signature}（摘要签名）；\texttt{hash\_alg}；\texttt{sign\_alg}}
+\KwOut{摘要签名验证结果}
+\setcounter{AlgoLine}{0}
+$\mathrm{digest} \leftarrow$ 重新计算 \texttt{message} 的摘要\;
+\eIf{使用 \texttt{RSA-PSS + Prehashed(hash\_alg)} 验签成功}{
+    \Return \texttt{True}\;
+}{
+    \Return \texttt{False}\;
+}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{sign\_file(private\_key, file\_path, sign\_path)}}
+\FuncDesc{对文件生成分离式数字签名，并将签名元信息写入独立签名文件。}
+\KwIn{\texttt{private\_key}（RSA 私钥）；\texttt{file\_path}（原文件路径）；\texttt{sign\_path}（签名文件路径）}
+\KwOut{无直接返回值；在 \texttt{sign\_path} 写入 JSON 签名文件}
+\setcounter{AlgoLine}{0}
+$\mathrm{digest} \leftarrow$ 分块读取 \texttt{file\_path} 并计算 SHA256 摘要\;
+$\mathrm{signature} \leftarrow$ 使用 \texttt{RSA-PSS + Prehashed(SHA256)} 对摘要签名\;
+构造包含格式标识、哈希算法、签名算法、时间戳和 \texttt{signature\_b64} 的 JSON 包\;
+将 JSON 包写入 \texttt{sign\_path}\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{verify\_file\_signature(public\_key, file\_path, sign\_path)}}
+\FuncDesc{读取原文件和分离式签名文件，验证当前文件内容是否与签名匹配。}
+\KwIn{\texttt{public\_key}（RSA 公钥）；\texttt{file\_path}（待验证文件）；\texttt{sign\_path}（签名文件）}
+\KwOut{文件签名验证结果}
+\setcounter{AlgoLine}{0}
+读取 \texttt{sign\_path} 中的算法字段和 \texttt{signature\_b64}\;
+$\mathrm{digest} \leftarrow$ 重新计算当前 \texttt{file\_path} 的摘要\;
+\eIf{公钥对文件摘要验签成功}{
+    \Return \texttt{True}\;
+}{
+    捕获签名异常、文件异常或 JSON 解析异常\;
+    \Return \texttt{False}\;
+}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{sign\_with\_metadata(private\_key, message, metadata)}}
+\FuncDesc{将消息内容和元数据整体绑定到签名中，生成带上下文保护的签名数据包。}
+\KwIn{\texttt{private\_key}（RSA 私钥）；\texttt{message}（消息字节串）；\texttt{metadata}（发送者、接收者、算法、时间戳和随机数等字段）}
+\KwOut{包含消息、元数据、算法标识和签名值的签名包}
+\setcounter{AlgoLine}{0}
+将 \texttt{message} 转为 Base64，并与 \texttt{metadata} 组成待签名对象\;
+使用 canonical JSON 对待签名对象进行确定性序列化\;
+$\mathrm{signature} \leftarrow$ 使用 \texttt{RSA-PSS + SHA256} 对序列化结果签名\;
+\Return 包含 \texttt{message\_b64}、\texttt{metadata} 和 \texttt{signature\_b64} 的字典\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{verify\_metadata\_signature(public\_key, package)}}
+\FuncDesc{解析带元数据的签名包，检查元数据格式并重新序列化后验签。}
+\KwIn{\texttt{public\_key}（RSA 公钥）；\texttt{package}（带元数据签名包）}
+\KwOut{元数据签名验证结果}
+\setcounter{AlgoLine}{0}
+读取 \texttt{package} 中的 \texttt{metadata}、\texttt{message\_b64} 和 \texttt{signature\_b64}\;
+\eIf{元数据字段缺失或时间戳、随机数格式错误}{
+    \Return \texttt{False}\;
+}{
+    按签名阶段相同规则重新序列化消息和元数据\;
+    使用公钥验证 \texttt{signature\_b64}\;
+    \Return 验签结果\;
+}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{sign\_then\_encrypt(sender\_private\_key, receiver\_public\_key, plaintext, metadata)}}
+\FuncDesc{先对明文和元数据签名，再把明文、签名和元数据整体加密给接收方。}
+\KwIn{\texttt{sender\_private\_key}（发送方私钥）；\texttt{receiver\_public\_key}（接收方公钥）；\texttt{plaintext}；\texttt{metadata}}
+\KwOut{外层安全消息包}
+\setcounter{AlgoLine}{0}
+构造包含明文和元数据的待签名对象\;
+$\mathrm{signature} \leftarrow$ 使用发送方私钥签名该对象\;
+构造内部明文包：明文、元数据、签名和算法标识\;
+随机生成 AES 会话密钥，并用 \texttt{AES-256-GCM} 加密内部包\;
+使用接收方公钥通过 \texttt{RSA-OAEP} 加密会话密钥\;
+\Return 包含 \texttt{encrypted\_key\_b64}、\texttt{nonce\_b64}、\texttt{ciphertext\_b64} 和 \texttt{tag\_b64} 的安全包\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{decrypt\_then\_verify(receiver\_private\_key, sender\_public\_key, secure\_package)}}
+\FuncDesc{先解密“先签名后加密”消息包，再对内部签名进行验证。}
+\KwIn{\texttt{receiver\_private\_key}（接收方私钥）；\texttt{sender\_public\_key}（发送方公钥）；\texttt{secure\_package}（安全消息包）}
+\KwOut{包含解密状态、验签状态、明文和错误原因的字典}
+\setcounter{AlgoLine}{0}
+使用接收方私钥解密 \texttt{encrypted\_key\_b64} 得到会话密钥\;
+使用会话密钥和 \texttt{AES-GCM} 解密内部明文包，并校验 \texttt{tag}\;
+解析内部包中的明文、元数据和签名\;
+使用发送方公钥验证内部签名\;
+\Return \texttt{decrypt\_success}、\texttt{verify\_success}、\texttt{plaintext} 和 \texttt{error}\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{encrypt\_then\_sign(sender\_private\_key, receiver\_public\_key, plaintext, metadata)}}
+\FuncDesc{先加密明文，再对密文包及关键元数据生成外层数字签名。}
+\KwIn{\texttt{sender\_private\_key}（发送方私钥）；\texttt{receiver\_public\_key}（接收方公钥）；\texttt{plaintext}；\texttt{metadata}}
+\KwOut{带外层签名的密文包}
+\setcounter{AlgoLine}{0}
+随机生成 AES 会话密钥，并使用 \texttt{AES-GCM} 加密 \texttt{plaintext}\;
+使用接收方公钥加密 AES 会话密钥\;
+构造包含算法套件、加密会话密钥、随机数、密文、标签和元数据的外层包\;
+使用发送方私钥对外层关键字段执行 \texttt{RSA-PSS} 签名\;
+\Return 带 \texttt{signature\_b64} 的密文包\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{verify\_then\_decrypt(receiver\_private\_key, sender\_public\_key, signed\_cipher\_package)}}
+\FuncDesc{先验证外层签名，确认密文包来源与完整性，再尝试解密密文。}
+\KwIn{\texttt{receiver\_private\_key}（接收方私钥）；\texttt{sender\_public\_key}（发送方公钥）；\texttt{signed\_cipher\_package}（带签名密文包）}
+\KwOut{包含验签状态、解密状态、明文和错误原因的字典}
+\setcounter{AlgoLine}{0}
+提取外层关键字段并使用发送方公钥验证 \texttt{signature\_b64}\;
+\eIf{外层验签失败}{
+    \Return 验签失败且不执行解密\;
+}{
+    使用接收方私钥解密会话密钥\;
+    使用会话密钥解密密文并校验 \texttt{tag}\;
+    \Return 验签和解密结果\;
+}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{build\_secure\_envelope(sender\_private\_key, receiver\_public\_key, plaintext, sender\_id, receiver\_id)}}
+\FuncDesc{构造“数字信封 + 数字签名”综合安全包，同时提供保密性、完整性和身份认证。}
+\KwIn{\texttt{sender\_private\_key}；\texttt{receiver\_public\_key}；\texttt{plaintext}；\texttt{sender\_id}；\texttt{receiver\_id}}
+\KwOut{包含加密会话密钥、密文、完整性标签、身份字段和外层签名的安全信封}
+\setcounter{AlgoLine}{0}
+使用 \texttt{AES-GCM} 加密明文，得到 \texttt{ciphertext}、\texttt{nonce} 和 \texttt{tag}\;
+使用接收方公钥通过 \texttt{RSA-OAEP} 加密 AES 会话密钥\;
+构造包含格式标识、算法套件、发送者、接收者、时间戳和密文字段的安全信封\;
+使用发送方私钥对安全信封关键字段签名\;
+\Return 带 \texttt{signature\_b64} 的安全信封字典\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{open\_secure\_envelope(receiver\_private\_key, sender\_public\_key, secure\_envelope)}}
+\FuncDesc{打开数字信封：先验证外层签名，再解密会话密钥和密文，并校验完整性标签。}
+\KwIn{\texttt{receiver\_private\_key}（接收方私钥）；\texttt{sender\_public\_key}（发送方公钥）；\texttt{secure\_envelope}（安全信封）}
+\KwOut{签名验证结果、解密结果、完整性结果、明文和错误原因}
+\setcounter{AlgoLine}{0}
+验证安全信封外层签名及算法套件是否符合预期\;
+\eIf{签名验证失败}{
+    \Return \texttt{signature\_valid=False} 且不继续解密\;
+}{
+    使用接收方私钥解密会话密钥\;
+    使用 AES 会话密钥解密密文，并由 \texttt{AES-GCM} 校验 \texttt{tag}\;
+    \Return \texttt{signature\_valid}、\texttt{decrypt\_success}、\texttt{integrity\_valid} 和明文\;
+}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{run\_all\_experiments()}}
+\FuncDesc{主程序实验入口，统一生成密钥、准备消息、执行七个实验并汇总结果。}
+\KwIn{无显式参数；函数内部准备实验消息、文件和密钥}
+\KwOut{包含参与方信息、消息信息和七个实验结果的总结果字典}
+\setcounter{AlgoLine}{0}
+生成 Alice、Bob 以及错误测试用 RSA 密钥对\;
+准备原始消息、篡改消息和二进制消息\;
+依次执行基础签名、摘要签名、文件签名、元数据签名、先签名后加密、先加密后签名和数字信封实验\;
+记录正常流程、篡改测试和错误密钥测试结果\;
+写入生成时间并返回 \texttt{results} 字典\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{print\_result\_summary(results)}}
+\FuncDesc{按实验编号输出结果摘要，用于终端展示和实验报告填写。}
+\KwIn{\texttt{results}（\texttt{run\_all\_experiments()} 返回的总结果字典）}
+\KwOut{终端摘要输出；不返回新数据}
+\setcounter{AlgoLine}{0}
+打印参与方、公钥指纹和实验消息摘要\;
+按实验一到实验七的顺序读取关键结果字段\;
+将布尔结果转换为“通过/失败”或“成功/失败”文本\;
+打印签名、摘要、密文和标签的必要展示片段\;
+避免输出私钥和完整敏感数据\;
+\end{algorithm}
+
+\end{document}

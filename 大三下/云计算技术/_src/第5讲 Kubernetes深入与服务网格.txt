@@ -1,0 +1,841 @@
+--- Page 1 ---
+第5讲Kubernetes深入与服务网格
+2026年3月
+授课教师：戴朋林
+课程代码：SCAI004712
+云计算技术
+--- Page 2 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+2
+本讲内容大纲
+00
+p  资源配置与调度
+ü 资源请求与限制(Requests & Limits)
+ü 调度器原理（预选与优选）
+ü 节点亲和性与Pod亲和性
+ü 污点与容忍（Taints & Tolerations）
+ü ResourceQuota与LimitRange
+p StatefulSet有状态应用管理
+p ConfigMap与Secret配置管理与代码解耦
+p 持久化存储体系（PV / PVC / StorageClass）
+p Service Mesh与Istio服务网格架构
+ü Service Mesh定义与背景
+ü Istio架构（控制面/数据面）
+ü Sidecar代理（Envoy）
+ü 流量管理、安全mTLS、金丝雀发布
+p 应用案例与演示代码
+--- Page 3 ---
+• 资源请求与限制(Requests & Limits)
+• 调度器原理（预选与优选）
+• 节点亲和性与Pod亲和性
+• 污点与容忍（Taints & Tolerations）
+• ResourceQuota与LimitRange
+1
+资源配置与调度
+--- Page 4 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+4
+资源请求与限制(Requests & Limits)
+01
+p  为什么需要设置资源？
+n Requests (请求)：调度器以此为依据选择节点（保底资源）。
+n Limits (限制)：容器运行时的最大上限（熔断资源）。
+p 核心配置
+--- Page 5 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+5
+调度器原理：预选与优选
+01
+p  kube-scheduler 调度流程
+n 调度（Scheduling）是指将未绑定节点的Pod分配到合适Worker节点的过程。
+kube-scheduler通过两阶段筛选完成调度决策。
+p 两阶段调度
+p 预选常见规则
+阶段
+名称
+说明
+阶段1
+预选（Filtering / Predicates）排除不满足条件的节点，得到候选节点列表
+阶段2
+优选（Scoring / Priorities）
+对候选节点评分（0-100），选择得分最高的节点
+规则
+说明
+PodFitsResources
+节点剩余资源≥Pod的Request
+PodFitsHostPorts
+节点端口无冲突
+MatchNodeSelector
+节点标签匹配Pod的nodeSelector
+NoTaintUnlessTolerated
+节点Taint需被Pod Toleration匹配
+CheckNodeMemoryPressure 节点无内存压力
+p 优选常见规则
+规则
+说明
+LeastRequestedPriority
+优先选择剩余资源最多的节点
+（分散调度）
+BalancedResourceAllocation
+CPU和内存使用率更均衡的节点
+得分更高
+NodeAffinityPriority
+匹配亲和性规则的节点得分更
+高
+InterPodAffinityPriority
+满足Pod亲和性的节点得分更高
+--- Page 6 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+6
+节点亲和性（Node Affinity）
+01
+p 节点亲和性（Node Affinity）是一种调度约束，允许Pod声明对特定节点的偏好，
+基于节点标签进行匹配。它是nodeSelector的增强版，支持更复杂的表达式。
+p 两种模式
+p 配置示例
+模式
+说明
+效果
+requiredDuringSchedulingIgnoredDuringExecution 硬约束——必须满足不满足则Pod无法调度
+preferredDuringSchedulingIgnoredDuringExecutio
+n
+软约束——优先满足不满足仍可调度到其他节点
+--- Page 7 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+7
+节点亲和性（Node Affinity）
+01
+p Pod亲和性（Pod Affinity）
+n Pod亲和性允许Pod声明希望与具有特定标签的其他Pod调度到同一节点/区域，提
+升通信效率。
+n 示例
+n 场景：Web 与Redis 部署在一起
+--- Page 8 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+8
+节点亲和性（Node Affinity）
+01
+p Pod反亲和性（Pod Anti-Affinity）
+n Pod反亲和性允许Pod声明不希望与特定Pod在同一节点/区域，容灾（单点故障
+不影响整体）。
+n 示例
+n 场景：高可用分散部署
+--- Page 9 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+9
+污点与容忍（Taints & Tolerations）
+01
+p 污点（Taint）是节点的属性，表示该节点拒绝接受特定Pod的调度。容忍（Toleration）是Pod的
+属性，表示该Pod可以容忍某个节点的污点。
+n 亲和性= Pod主动选择节点（"我想去哪"）
+n 污点/容忍= 节点排斥Pod（"谁不能来"），Pod可声明豁免
+p Taint效果类型
+p 操作命令
+Effect
+说明
+NoSchedule
+不调度新Pod到该节点（已运行的Pod不受影响）
+PreferNoSchedule
+尽量不调度，但不保证
+NoExecute
+不调度新Pod，且驱逐已运行的不匹配Pod
+p 典型场景
+n GPU节点：Taint为`gpu=true:NoSchedule`，只
+有需要GPU的Pod才容忍该Taint
+n Master节点：默认Taint `node-
+role.kubernetes.io/master:NoSchedule`，避免业
+务Pod调度到Master
+--- Page 10 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+10
+ResourceQuota与LimitRange
+01
+p ResourceQuota——命名空间级资源配额
+n ResourceQuota限制一个命名空间中可使用的总资源量。
+p LimitRange——Pod/容器级默认资源约束
+n LimitRange为命名空间中的Pod/容器设置默认值和范围约束。
+对比
+ResourceQuota
+LimitRange
+作用范围
+命名空间总量
+单个Pod/容器
+功能
+限制总资源、对象数量设置默认值、范围
+--- Page 11 ---
+2
+StatefulSet
+有状态应用管理
+--- Page 12 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+12
+StatefulSet有状态应用管理
+02
+p StatefulSet是Kubernetes中管理有状态应用的工作负载控制器。与Deployment不同，
+StatefulSet为每个Pod提供稳定的网络标识和持久化存储，确保Pod的身份在重建后保持不变。
+p StatefulSet vs Deployment
+特性
+Deployment
+StatefulSet
+Pod名称
+随机后缀（web-7d9f8c-xk2l3）有序固定（web-0, web-1, web-2）
+网络标识
+无稳定标识
+稳定的DNS名称（web-0.web-svc）
+存储
+Pod重建后存储丢失
+每个Pod绑定独立的PVC，重建后保留
+启动/停止顺序并行
+有序（0→1→2启动，2→1→0停止）
+适用场景
+无状态应用（Web API）
+有状态应用（数据库、消息队列）
+--- Page 13 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+13
+核心组件：Headless Service
+02
+p 为什么需要Headless Service?
+n 普通Service 有ClusterIP，做负载均衡。
+n Headless Service(`clusterIP: None`)不分配IP，直接返回后端Pod 的IP 列表。
+n 它配合StatefulSet 生成稳定的DNS 记录：`pod-name.service-name`。
+--- Page 14 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+14
+核心特性：VolumeClaimTemplates
+02
+p 自动化存储绑定
+n Deployment 所有Pod 共享一个PVC（通常用于只读）。
+n StatefulSet 需要每个Pod 有自己独立的PVC。
+--- Page 15 ---
+3
+ConfigMap与Secret
+配置与代码解耦
+--- Page 16 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+16
+ConfigMap：非敏感配置
+03
+p ConfigMap是Kubernetes中用于存储非敏感配置数据的API对象，以键值对形式存储，实
+现配置与应用代码解耦。
+p 使用场景
+n 环境变量：`DB_HOST`, `LOG_LEVEL`
+n 配置文件：`nginx.conf`, `redis.conf` (挂载为Volume)
+p 使用方式
+方式
+说明
+环境变量注入
+envFrom 或单个 valueFrom
+卷挂载为文件
+将ConfigMap挂载为目录中的文件
+命令行参数
+通过环境变量传递给命令
+--- Page 17 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+17
+ConfigMap：非敏感配置
+03
+p ConfigMap使用示例
+p 热更新
+•
+环境变量方式：修改ConfigMap后，需要重启Pod才能生效
+•
+卷挂载方式：kubelet周期性同步（约1分钟），自动更新文件内容，无需重启
+•
+应用需要自行实现配置热加载逻辑（如watch文件变化）
+方式1：作为环境变量
+方式2：挂载为文件
+--- Page 18 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+18
+Secret：敏感信息管理
+03
+p Secret是Kubernetes中用于存储敏感信息（密码、Token、证书等）的API对象。数据以
+Base64编码存储（注意：非加密，需配合etcd加密使用）。
+p 创建方式
+p Secret vs ConfigMap
+n 存储内容：密码、Token、TLS 证书vs 普通配置。
+n 编码方式：Base64 编码（注意：Base64 不是加密，只是编码）。
+n 使用方式：挂载为tmpfs (内存卷)，不会写入节点磁盘。
+类型
+用途
+Opaque
+通用密钥（默认类型）
+kubernetes.io/tls
+TLS证书（tls.crt + tls.key）
+kubernetes.io/dockerconfigjson
+Docker Registry认证信息
+kubernetes.io/service-account-
+token
+ServiceAccount Token
+--- Page 19 ---
+4
+持久化存储体系
+PV / PVC / StorageClass
+--- Page 20 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+20
+K8s 存储架构概览
+04
+p 问题：容器存储的临时性
+n 容器文件系统是临时的——容器重启或删除后数据丢失
+n 有状态应用（数据库、文件服务）需要持久化存储
+p Kubernetes存储三层架构
+n Pod →PVC（存储请求）→PV（存储资源）→底层存储（云盘/NFS/Ceph）
+n 访问模式
+n 回收策略
+概念
+全称
+说明
+PV
+PersistentVolume
+集群级别的存储资源，由管理员预先创建或动态供给
+PVC
+PersistentVolumeClaim
+Pod对存储的请求声明（大小、访问模式）
+StorageClass
+-
+定义存储的类型和供给策略，支持动态创建PV
+模式
+缩写
+说明
+ReadWriteOnce RWO
+单节点读写（最常用）
+ReadOnlyMany ROX
+多节点只读
+ReadWriteMany RWX
+多节点读写（需NFS/CephFS等共享存储）
+策略
+说明
+Retain
+PVC删除后PV保留（手动回收）
+Delete
+PVC删除后PV和底层存储一并删除
+Recycle
+已弃用（清空数据后重新使用）
+--- Page 21 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+21
+静态供给(Static Provisioning)
+04
+p 传统流程
+n 管理员手动创建10 个PV（预先分配）。
+n 开发人员创建PVC。
+n
+K8s 寻找匹配的PV 进行绑定。
+--- Page 22 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+22
+动态供给(Dynamic Provisioning)
+04
+p 静态供给的问题
+n 管理员需要提前创建大量PV
+n PV大小和PVC请求不一定匹配（浪费资源）
+n 无法自动化
+p 动态供给（Dynamic Provisioning），StorageClass定义存储的类型和供给者（Provisioner），
+当PVC请求匹配某个StorageClass时，自动创建对应的PV。
+--- Page 23 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+23
+动态供给(Dynamic Provisioning)
+04
+p StorageClass与动态供给
+n PVC使用StorageClass
+n 动态供给流程
+PVC请求（storageClassName: fast-ssd, 100Gi）
+→StorageClass（provisioner: aws-ebs）
+→自动创建100Gi EBS卷
+→创建PV并绑定PVC
+→Pod使用PVC
+--- Page 24 ---
+• Service Mesh的定义与背景
+• Istio架构
+• Sidecar代理（Envoy）
+• 流量管理
+• 安全mTLS
+• 金丝雀发布
+5
+Service Mesh与Istio
+服务网格架构
+--- Page 25 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+25
+定义与背景
+05
+p 问题：微服务通信的复杂性，随着微服务数量增长，服务间通信面临诸多挑战：
+n 流量管理（负载均衡、重试、超时）
+n 安全（加密通信、身份认证）
+n 可观测性（链路追踪、指标、日志）
+传统方式：在每个服务中嵌入SDK（如Spring Cloud、Hystrix）——语言绑定，侵入性强
+p Service Mesh定义
+n 服务网格（Service Mesh）是一个专门用于处理服务间通信的基础设施层。它通过在每
+个服务旁部署一个轻量级网络代理（Sidecar），以透明的方式处理服务发现、负载均
+衡、故障恢复、指标采集和安全通信。——William Morgan, Buoyant CEO, 2017
+n 核心价值
+传统SDK方式
+Service Mesh
+业务代码中嵌入通信逻辑
+通信逻辑下沉到基础设施
+语言绑定（Java SDK无法用于Go服务）语言无关（Sidecar代理）
+升级SDK需要修改并重新部署所有服务升级代理不影响业务代码
+每个服务单独实现熔断/限流
+统一的策略管理
+--- Page 26 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+26
+Istio架构
+05
+p Istio是由Google、IBM和Lyft共同开发的开源服务网格平台，是目前最流行的Service Mesh
+实现。
+组件
+功能
+istiod
+统一的控制面（合并了Pilot/Citadel/Galley）
+Pilot
+服务发现、流量管理规则下发
+Citadel
+证书管理、mTLS加密
+Galley
+配置验证和分发
+Envoy
+数据面代理（Sidecar），所有流量经过Envoy
+--- Page 27 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+27
+Sidecar代理（Envoy）
+05
+p 什么是Sidecar模式？
+n 在Kubernetes中，Istio通过自动注入（Injection）的方式，为每个Pod添加一个Envoy代
+理容器（Sidecar）。所有进出Pod的网络流量都会被Envoy拦截和处理。
+p Envoy简介
+n Envoy是由Lyft开发的高性能L4/L7代理，是CNCF毕业项目。它是Istio数据面的核心。
+能力
+说明
+L7路由
+基于HTTP头、路径、权重的智能路由
+负载均衡
+Round Robin、Least Connection、一致性哈希等
+熔断
+连接数限制、请求数限制
+重试
+自动重试失败请求
+超时
+请求级别超时控制
+TLS
+自动mTLS加密通信
+可观测性
+自动生成请求指标（Prometheus）、分布式追踪（Jaeger）
+--- Page 28 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+28
+流量管理
+05
+p 路由规则定义
+n 决定请求到达Service 后，去哪个版本的Pod。
+p 定义子集与策略
+n Subsets：将一个Service 的Pod 划分为v1, v2。
+n TrafficPolicy：负载均衡策略、连接池、熔断。
+--- Page 29 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+29
+Istio安全：mTLS
+05
+p mTLS（Mutual TLS）是双向TLS认证。传统TLS只有客户端验证服务端证书，mTLS要求
+双方互相验证对方身份。
+p Istio mTLS工作流程
+n Istio Citadel为每个服务自动签发X.509证书
+n Envoy自动使用证书建立mTLS连接
+n 应用代码无需任何修改——加密对应用透明
+Service A (Envoy) ←─mTLS加密通道─→Service B (Envoy)
+↑
+↑
+Citadel签发的
+Citadel签发的
+客户端证书
+服务端证书
+--- Page 30 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+30
+金丝雀发布（Canary Release）与流量灰度
+05
+p 金丝雀发布是一种渐进式发布策略，先将少量流量导向新版本，观察无异常后逐步扩大新
+版本的流量比例，直到全量切换。
+p Istio实现金丝雀发布
+n 阶段1: v1=100%, v2=0%    →部署v2，不导入流量
+n 阶段2: v1=90%,  v2=10%   →10%流量到v2，观察指标
+n 阶段3: v1=50%,  v2=50%   →扩大到50%
+n 阶段4: v1=0%,   v2=100%  →全量切换到v2
+p 对比其他发布策略
+策略
+原理
+风险
+回滚速度
+滚动更新
+逐步替换旧Pod
+中等
+慢（需回滚Deployment）
+蓝绿部署
+两套完整环境切换
+低
+快（切换路由）
+金丝雀发布
+按比例分流
+最低
+最快（调整权重）
+A/B测试
+按条件（用户/地区）分流
+低
+快
+--- Page 31 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+31
+金丝雀发布（Canary Release）与流量灰度
+05
+p Istio的优势
+n 流量权重精确控制：可以精确到1%的流量比例
+n 基于请求内容路由：根据Header、Cookie、URL等条件分流
+n 实时切换：修改VirtualService即刻生效
+n 回滚零成本：调整权重回到100% v1即可
+--- Page 32 ---
+6
+应用案例Python Client 
+与配置生成
+--- Page 33 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+33
+演示1：Python 操作Kubernetes
+06
+p 环境准备与连接
+--- Page 34 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+34
+演示2：创建ConfigMap 与Pod
+06
+p 动态创建资源
+--- Page 35 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+35
+演示3：生成Istio 灰度配置
+06
+p 自动化运维脚本
+--- Page 36 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+36
+课堂思考与作业
+07
+p 思考题
+n 如果一个Pod 需要10G 内存，但集群里最大的节点只有8G，调度器会怎么做？
+(Pending)
+n StatefulSet 删除后，对应的PVC 会自动删除吗？(默认不会，Retain)
+n 在没有Service Mesh 之前，你们是如何做灰度发布的？(Nginx 权重？)
+p 作业
+n 编写一个StatefulSet YAML，部署3 副本的Redis。
+n 使用Python 脚本读取该StatefulSet 的状态。
+--- Page 37 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+37
+本讲知识回顾
+08
+核心模块
+关键知识点
+调度
+Request/Limit, Affinity, Taint/Toleration
+有状态
+StatefulSet, Headless Service, PVC Templates
+存储
+PV (资源), PVC (请求), StorageClass (自动创建)
+Istio
+Sidecar, VirtualService (路由), mTLS (安全)
+--- Page 38 ---
+2026/3/30
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+38
+下次课预告&Q&A
+09
+p 下次课：第6讲消息队列与事件驱动架构
+n 消息队列基础概念（点对点/ 发布订阅）
+n Apache Kafka架构与实践
+n RabbitMQ核心概念
+n 事件驱动架构（EDA）
+n Redis Pub/Sub与Stream
+p 预习建议：
+n 了解消息队列的基本概念和应用场景
+n 安装Docker，准备运行Kafka/RabbitMQ容器

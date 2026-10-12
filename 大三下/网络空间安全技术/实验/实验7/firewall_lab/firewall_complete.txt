@@ -1,0 +1,714 @@
+==============================================================================
+防火墙实验 - 完整代码实现
+==============================================================================
+
+==============================================================================
+7.2 通用数据结构 common.py
+==============================================================================
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from time import time
+from typing import Any, Optional
+
+
+@dataclass(frozen=True)
+class Packet:
+    """描述一个待检查的数据包或连接请求。"""
+
+    src_ip: str
+    dst_ip: str
+    protocol: str
+    src_port: Optional[int]
+    dst_port: Optional[int]
+    direction: str
+    flags: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class Rule:
+    """描述防火墙规则。"""
+
+    rule_id: str
+    priority: int
+    src: str
+    dst: str
+    protocol: str
+    src_port: str
+    dst_port: str
+    direction: str
+    action: str
+    log: bool
+    description: str = ""
+
+
+@dataclass(frozen=True)
+class Decision:
+    """保存一次访问控制决策结果。"""
+
+    action: str
+    matched_rule: Optional[str]
+    reason: str
+    should_log: bool
+
+
+@dataclass
+class StateEntry:
+    """状态表条目，记录一个已允许的连接流。"""
+
+    flow_key: tuple
+    created_at: float = field(default_factory=time)
+    last_seen: float = field(default_factory=time)
+    timeout: int = 60
+    meta: dict[str, Any] = field(default_factory=dict)
+
+
+def packet_to_dict(packet: Packet) -> dict[str, Any]:
+    """将 Packet 转为字典，便于日志记录。"""
+    return {
+        "src_ip": packet.src_ip,
+        "dst_ip": packet.dst_ip,
+        "protocol": packet.protocol,
+        "src_port": packet.src_port,
+        "dst_port": packet.dst_port,
+        "direction": packet.direction,
+        "flags": packet.flags,
+    }
+
+
+==============================================================================
+7.3 规则匹配模块 rule_engine.py
+==============================================================================
+
+from __future__ import annotations
+
+from dataclasses import replace
+from ipaddress import ip_address, ip_network
+from typing import Optional
+
+from common import Decision, Packet, Rule
+
+
+def normalize_packet(packet: Packet) -> Packet:
+    """统一协议名、方向、端口类型等格式。"""
+    protocol = packet.protocol.upper()
+    direction = packet.direction.lower()
+    flags = packet.flags.upper() if packet.flags else None
+    return replace(
+        packet,
+        protocol=protocol,
+        direction=direction,
+        src_port=_normalize_optional_port(packet.src_port),
+        dst_port=_normalize_optional_port(packet.dst_port),
+        flags=flags,
+    )
+
+
+def match_ip(pattern: str, ip: str) -> bool:
+    """判断 IP 是否命中规则中的地址模式。
+    支持精确地址、CIDR 网段、逗号分隔列表、通配符。
+    """
+    pattern = (pattern or "*").strip()
+    if pattern in {"*", "any", "ANY"}:
+        return True
+
+    if "," in pattern:
+        return any(match_ip(part.strip(), ip) for part in pattern.split(","))
+
+    try:
+        if "/" in pattern:
+            return ip_address(ip) in ip_network(pattern, strict=False)
+        return ip_address(ip) == ip_address(pattern)
+    except ValueError:
+        return pattern == ip
+
+
+def match_port(pattern: str, port: Optional[int]) -> bool:
+    """判断端口是否命中规则中的端口模式。
+    支持单端口、端口范围(如1000-2000)、逗号列表、通配符。
+    """
+    pattern = str(pattern or "*").strip().lower()
+    if pattern in {"*", "any"}:
+        return True
+    if port is None:
+        return pattern in {"none", "null", "-"}
+    if "," in pattern:
+        return any(match_port(part.strip(), port) for part in pattern.split(","))
+    if "-" in pattern:
+        start, end = pattern.split("-", 1)
+        return int(start) <= port <= int(end)
+    return int(pattern) == port
+
+
+def match_rule(packet: Packet, rule: Rule) -> bool:
+    """判断数据包是否匹配单条规则。
+    检查点：源IP、目的IP、协议、源端口、目的端口、方向。
+    """
+    packet = normalize_packet(packet)
+    return (
+        match_ip(rule.src, packet.src_ip)
+        and match_ip(rule.dst, packet.dst_ip)
+        and _match_text(rule.protocol, packet.protocol)
+        and match_port(rule.src_port, packet.src_port)
+        and match_port(rule.dst_port, packet.dst_port)
+        and _match_text(rule.direction, packet.direction)
+    )
+
+
+def evaluate_rules(packet: Packet, rules: list[Rule], default_action: str) -> Decision:
+    """按优先级或规则顺序执行匹配。
+    返回：包含动作、命中规则和原因的 Decision。
+    """
+    ordered = sorted(enumerate(rules), key=lambda item: (item[1].priority, item[0]))
+    for _, rule in ordered:
+        if match_rule(packet, rule):
+            return Decision(
+                action=rule.action.lower(),
+                matched_rule=rule.rule_id,
+                reason=f"matched {rule.rule_id}: {rule.description or 'no description'}",
+                should_log=rule.log,
+            )
+
+    action = default_action.lower()
+    return Decision(
+        action=action,
+        matched_rule=None,
+        reason=f"default policy: {action}",
+        should_log=True,
+    )
+
+
+def _match_text(pattern: str, value: str) -> bool:
+    """文本字段匹配，支持通配符 * 和 any。"""
+    pattern = str(pattern or "*").strip().lower()
+    return pattern in {"*", "any"} or pattern == value.lower()
+
+
+def _normalize_optional_port(port: Optional[int]) -> Optional[int]:
+    """标准化端口值，验证范围 0-65535。"""
+    if port is None:
+        return None
+    port = int(port)
+    if not 0 <= port <= 65535:
+        raise ValueError(f"invalid port: {port}")
+    return port
+
+
+==============================================================================
+7.4 状态检测模块 stateful_firewall.py
+==============================================================================
+
+from __future__ import annotations
+
+from time import time
+from typing import Any
+
+from common import Decision, Packet, StateEntry
+from rule_engine import normalize_packet
+
+
+def build_flow_key(packet: Packet) -> tuple:
+    """根据五元组构造连接标识。
+    考虑正向连接与返回流量的对应关系，使用排序端点对实现双向匹配。
+    """
+    packet = normalize_packet(packet)
+    endpoint_a = (packet.src_ip, packet.src_port)
+    endpoint_b = (packet.dst_ip, packet.dst_port)
+    first, second = sorted([endpoint_a, endpoint_b])
+    return (first, second, packet.protocol)
+
+
+def is_established(packet: Packet, state_table: dict[tuple, Any]) -> bool:
+    """判断数据包是否属于已建立连接。"""
+    key = build_flow_key(packet)
+    entry = state_table.get(key)
+    if entry is None:
+        return False
+
+    now = time()
+    last_seen = getattr(entry, "last_seen", now)
+    timeout = getattr(entry, "timeout", 60)
+    if now - last_seen > timeout:
+        state_table.pop(key, None)
+        return False
+
+    entry.last_seen = now
+    return True
+
+
+def update_state_table(
+    packet: Packet,
+    decision: Decision,
+    state_table: dict[tuple, Any],
+    timeout: int = 60,
+) -> None:
+    """当连接被允许时更新状态表。
+    只对 TCP/UDP 协议的 allow 决策创建状态条目。
+    """
+    packet = normalize_packet(packet)
+    if decision.action != "allow" or packet.protocol not in {"TCP", "UDP"}:
+        return
+
+    key = build_flow_key(packet)
+    now = time()
+    if key in state_table:
+        state_table[key].last_seen = now
+        return
+
+    state_table[key] = StateEntry(
+        flow_key=key,
+        created_at=now,
+        last_seen=now,
+        timeout=timeout,
+        meta={"direction": packet.direction, "rule": decision.matched_rule},
+    )
+
+
+def expire_state_entries(state_table: dict[tuple, Any], now: float) -> None:
+    """清理超时状态项。"""
+    expired = []
+    for key, entry in state_table.items():
+        last_seen = getattr(entry, "last_seen", now)
+        timeout = getattr(entry, "timeout", 60)
+        if now - last_seen > timeout:
+            expired.append(key)
+
+    for key in expired:
+        state_table.pop(key, None)
+
+
+==============================================================================
+7.5 NAT 模块 nat_module.py
+==============================================================================
+
+from __future__ import annotations
+
+from dataclasses import replace
+
+from common import Packet
+from rule_engine import match_ip, match_port, normalize_packet
+
+
+def apply_snat(packet: Packet, snat_rules: list) -> Packet:
+    """根据 SNAT 规则转换源地址或源端口。
+    输入：原始 Packet 与 SNAT 规则列表
+    输出：转换后的 Packet
+    """
+    packet = normalize_packet(packet)
+    for rule in snat_rules:
+        if _nat_rule_matches(packet, rule, "src"):
+            return replace(
+                packet,
+                src_ip=rule.get("to_ip", packet.src_ip),
+                src_port=rule.get("to_port", packet.src_port),
+            )
+    return packet
+
+
+def apply_dnat(packet: Packet, dnat_rules: list) -> Packet:
+    """根据 DNAT 或端口映射规则转换目的地址或目的端口。"""
+    packet = normalize_packet(packet)
+    for rule in dnat_rules:
+        if _nat_rule_matches(packet, rule, "dst"):
+            return replace(
+                packet,
+                dst_ip=rule.get("to_ip", packet.dst_ip),
+                dst_port=rule.get("to_port", packet.dst_port),
+            )
+    return packet
+
+
+def record_nat_mapping(
+    original_packet: Packet,
+    translated_packet: Packet,
+    nat_table: dict,
+) -> None:
+    """记录 NAT 映射关系，便于返回流量处理与日志审计。"""
+    original = (
+        original_packet.src_ip,
+        original_packet.src_port,
+        original_packet.dst_ip,
+        original_packet.dst_port,
+        original_packet.protocol.upper(),
+    )
+    translated = (
+        translated_packet.src_ip,
+        translated_packet.src_port,
+        translated_packet.dst_ip,
+        translated_packet.dst_port,
+        translated_packet.protocol.upper(),
+    )
+    nat_table[translated] = {"original": original, "translated": translated}
+
+
+def _nat_rule_matches(packet: Packet, rule: dict, side: str) -> bool:
+    """内部辅助：判断 NAT 规则是否匹配数据包。"""
+    src_pattern = rule.get("src", "*")
+    dst_pattern = rule.get("dst", "*")
+    direction = str(rule.get("direction", "*")).lower()
+    protocol = str(rule.get("protocol", "*")).upper()
+    port_pattern = str(rule.get(f"{side}_port", "*"))
+    port_value = packet.src_port if side == "src" else packet.dst_port
+
+    return (
+        match_ip(src_pattern, packet.src_ip)
+        and match_ip(dst_pattern, packet.dst_ip)
+        and match_port(port_pattern, port_value)
+        and (direction in {"*", "any"} or direction == packet.direction)
+        and (protocol in {"*", "ANY"} or protocol == packet.protocol)
+    )
+
+
+==============================================================================
+7.6 审计与策略检查模块 policy_audit.py
+==============================================================================
+
+from __future__ import annotations
+
+from collections import Counter
+from datetime import datetime
+from typing import Any
+
+from common import Decision, Packet, Rule
+from rule_engine import match_ip, match_port
+
+
+def log_decision(packet: Packet, decision: Decision, log_store: list) -> None:
+    """记录一次防火墙决策。
+    字段：时间、源、目的、协议、端口、动作、规则编号、原因。
+    """
+    if not decision.should_log:
+        return
+
+    log_store.append(
+        {
+            "time": datetime.now().isoformat(timespec="seconds"),
+            "src": packet.src_ip,
+            "dst": packet.dst_ip,
+            "protocol": packet.protocol.upper(),
+            "src_port": packet.src_port,
+            "dst_port": packet.dst_port,
+            "direction": packet.direction.lower(),
+            "action": decision.action,
+            "rule": decision.matched_rule or "DEFAULT",
+            "reason": decision.reason,
+        }
+    )
+
+
+def detect_shadowed_rules(rules: list[Rule]) -> list:
+    """检测可能被前置规则遮蔽的规则。
+    输出：可疑规则编号列表。
+    """
+    shadowed = []
+    ordered = sorted(enumerate(rules), key=lambda item: (item[1].priority, item[0]))
+    for index, (_, rule) in enumerate(ordered):
+        previous_rules = [item[1] for item in ordered[:index]]
+        if any(_covers(prev, rule) for prev in previous_rules):
+            shadowed.append(rule.rule_id)
+    return shadowed
+
+
+def detect_conflicting_rules(rules: list[Rule]) -> list:
+    """检测条件重叠但动作相反的规则。"""
+    conflicts = []
+    for i, left in enumerate(rules):
+        for right in rules[i + 1 :]:
+            if left.action.lower() == right.action.lower():
+                continue
+            if _overlaps(left, right):
+                conflicts.append((left.rule_id, right.rule_id))
+    return conflicts
+
+
+def summarize_logs(log_store: list) -> dict:
+    """统计允许、拒绝、默认策略命中、规则命中次数等信息。"""
+    action_counts = Counter(item["action"] for item in log_store)
+    rule_counts = Counter(item["rule"] for item in log_store)
+    return {
+        "total": len(log_store),
+        "allow": action_counts.get("allow", 0),
+        "deny": action_counts.get("deny", 0),
+        "default": rule_counts.get("DEFAULT", 0),
+        "rule_hits": dict(rule_counts),
+    }
+
+
+def _covers(left: Rule, right: Rule) -> bool:
+    """判断 left 规则是否完全覆盖 right 规则。"""
+    return (
+        _field_covers(left.src, right.src, "ip")
+        and _field_covers(left.dst, right.dst, "ip")
+        and _field_covers(left.protocol, right.protocol, "text")
+        and _field_covers(left.src_port, right.src_port, "port")
+        and _field_covers(left.dst_port, right.dst_port, "port")
+        and _field_covers(left.direction, right.direction, "text")
+    )
+
+
+def _overlaps(left: Rule, right: Rule) -> bool:
+    """判断两条规则是否存在条件重叠。"""
+    return (
+        _field_overlaps(left.src, right.src, "ip")
+        and _field_overlaps(left.dst, right.dst, "ip")
+        and _field_overlaps(left.protocol, right.protocol, "text")
+        and _field_overlaps(left.src_port, right.src_port, "port")
+        and _field_overlaps(left.dst_port, right.dst_port, "port")
+        and _field_overlaps(left.direction, right.direction, "text")
+    )
+
+
+def _field_covers(left: str, right: str, kind: str) -> bool:
+    """判断单个字段是否被覆盖。"""
+    left = str(left).lower()
+    right = str(right).lower()
+    if left in {"*", "any"}:
+        return True
+    if kind == "text":
+        return left == right
+    if kind == "port":
+        sample = _port_sample(right)
+        return sample is not None and match_port(left, sample)
+    if kind == "ip":
+        sample = _ip_sample(right)
+        return sample is not None and match_ip(left, sample)
+    return False
+
+
+def _field_overlaps(left: str, right: str, kind: str) -> bool:
+    """判断单个字段是否存在重叠。"""
+    return _field_covers(left, right, kind) or _field_covers(right, left, kind)
+
+
+def _port_sample(pattern: str) -> int | None:
+    """从端口模式中提取一个示例端口值。"""
+    pattern = str(pattern).lower()
+    if pattern in {"*", "any"}:
+        return 0
+    if "," in pattern:
+        return _port_sample(pattern.split(",", 1)[0])
+    if "-" in pattern:
+        return int(pattern.split("-", 1)[0])
+    try:
+        return int(pattern)
+    except ValueError:
+        return None
+
+
+def _ip_sample(pattern: str) -> str | None:
+    """从 IP 模式中提取一个示例地址。"""
+    pattern = str(pattern).lower()
+    if pattern in {"*", "any"}:
+        return "0.0.0.0"
+    if "," in pattern:
+        return _ip_sample(pattern.split(",", 1)[0])
+    if "/" in pattern:
+        return pattern.split("/", 1)[0]
+    return pattern
+
+
+==============================================================================
+7.7 测试用例模块 test_cases.py
+==============================================================================
+
+from __future__ import annotations
+
+from common import Packet, Rule
+from policy_audit import log_decision, summarize_logs
+from rule_engine import evaluate_rules, normalize_packet
+from stateful_firewall import is_established, update_state_table
+
+
+DEFAULT_ACTION = "deny"
+
+
+def build_packet_case(case_id: str, description: str = "") -> Packet:
+    """根据测试编号构造一个待验证流量。"""
+
+    cases = {
+        "TC-01": Packet("10.0.1.10", "198.51.100.20", "tcp", 53000, 80, "outbound", "SYN"),
+        "TC-02": Packet("198.51.100.20", "10.0.1.10", "tcp", 80, 53000, "inbound", "ACK"),
+        "TC-03": Packet("203.0.113.8", "10.0.1.10", "tcp", 44000, 22, "inbound", "SYN"),
+        "TC-04": Packet("203.0.113.8", "203.0.113.10", "tcp", 44000, 443, "inbound", "SYN"),
+        "TC-05": Packet("10.0.1.10", "203.0.113.10", "tcp", 53001, 443, "outbound", "SYN"),
+        "TC-06": Packet("10.0.1.10", "198.51.100.53", "udp", 53002, 53, "outbound"),
+        "TC-07": Packet("10.0.1.10", "198.51.100.20", "icmp", None, None, "outbound"),
+        "TC-08": Packet("203.0.113.8", "10.0.2.30", "tcp", 44000, 3306, "inbound", "SYN"),
+    }
+    try:
+        return normalize_packet(cases[case_id])
+    except KeyError as exc:
+        raise ValueError(f"unknown case id: {case_id} {description}".strip()) from exc
+
+
+def run_test_case(packet: Packet, rules: list[Rule], state_table: dict) -> dict:
+    """执行单个测试用例，返回实际动作、命中规则和日志信息。"""
+
+    logs = []
+    if is_established(packet, state_table):
+        from common import Decision
+
+        decision = Decision("allow", "STATE", "matched established state", True)
+    else:
+        decision = evaluate_rules(packet, rules, DEFAULT_ACTION)
+        update_state_table(packet, decision, state_table)
+
+    log_decision(packet, decision, logs)
+    return {
+        "packet": packet,
+        "action": decision.action,
+        "matched_rule": decision.matched_rule or "DEFAULT",
+        "reason": decision.reason,
+        "logged": bool(logs),
+        "logs": logs,
+    }
+
+
+def run_test_suite(cases: list, rules: list[Rule]) -> list:
+    """批量执行测试用例，用于形成实验记录表。"""
+
+    state_table = {}
+    results = []
+    for case in cases:
+        packet = case if isinstance(case, Packet) else build_packet_case(str(case))
+        result = run_test_case(packet, rules, state_table)
+        result["state_size"] = len(state_table)
+        results.append(result)
+    return results
+
+
+def collect_logs(results: list[dict]) -> list[dict]:
+    """从测试结果中收集所有日志。"""
+    logs = []
+    for result in results:
+        logs.extend(result.get("logs", []))
+    return logs
+
+
+def summarize_results(results: list[dict]) -> dict:
+    """汇总测试结果统计。"""
+    return summarize_logs(collect_logs(results))
+
+
+==============================================================================
+7.8 主控模块 main.py
+==============================================================================
+
+from __future__ import annotations
+
+import csv
+from pathlib import Path
+
+from common import Rule
+from policy_audit import detect_conflicting_rules, detect_shadowed_rules, summarize_logs
+from test_cases import collect_logs, run_test_suite
+
+
+def load_policy(policy_path: str) -> list[Rule]:
+    """读取策略文件并转换为 Rule 列表。"""
+
+    path = Path(policy_path)
+    if not path.exists():
+        return build_default_policy()
+
+    with path.open("r", encoding="utf-8-sig", newline="") as file:
+        rows = csv.DictReader(file)
+        return [
+            Rule(
+                rule_id=row["rule_id"],
+                priority=int(row.get("priority", "100")),
+                src=row.get("src", "*"),
+                dst=row.get("dst", "*"),
+                protocol=row.get("protocol", "*"),
+                src_port=row.get("src_port", "*"),
+                dst_port=row.get("dst_port", "*"),
+                direction=row.get("direction", "*"),
+                action=row.get("action", "deny").lower(),
+                log=row.get("log", "true").lower() in {"1", "true", "yes", "y"},
+                description=row.get("description", ""),
+            )
+            for row in rows
+        ]
+
+
+def build_default_policy() -> list[Rule]:
+    """默认实验策略（当无 CSV 文件时使用）。"""
+
+    return [
+        Rule("R-01", 10, "10.0.1.0/24", "*", "tcp", "*", "80,443", "outbound", "allow", True,
+             "internal users may browse web services"),
+        Rule("R-02", 20, "10.0.1.0/24", "*", "udp", "*", "53", "outbound", "allow", True,
+             "internal DNS queries are allowed"),
+        Rule("R-03", 30, "*", "203.0.113.10", "tcp", "*", "443", "inbound", "allow", True,
+             "publish DMZ HTTPS service"),
+        Rule("R-04", 40, "*", "10.0.1.0/24", "tcp", "*", "22", "inbound", "deny", True,
+             "block external SSH to internal hosts"),
+        Rule("R-05", 50, "*", "10.0.2.0/24", "*", "*", "*", "inbound", "deny", True,
+             "block direct access to database subnet"),
+    ]
+
+
+def run_firewall_experiment() -> list[dict]:
+    """实验主入口。
+    步骤：加载策略 -> 生成测试流量 -> 执行规则判断 -> 记录结果 -> 输出报告。
+    """
+
+    rules = load_policy("policy.csv")
+    cases = [f"TC-{index:02d}" for index in range(1, 9)]
+    results = run_test_suite(cases, rules)
+    logs = collect_logs(results)
+    audit_summary = summarize_logs(logs)
+    audit_summary["shadowed_rules"] = detect_shadowed_rules(rules)
+    audit_summary["conflicting_rules"] = detect_conflicting_rules(rules)
+    print_experiment_summary(results, audit_summary)
+    return results
+
+
+def print_experiment_summary(results: list, audit_summary: dict) -> None:
+    """输出实验汇总信息。"""
+
+    print("=== Firewall Lab Result ===")
+    print("case   src -> dst                 proto sport dport dir       action rule")
+    for index, result in enumerate(results, start=1):
+        packet = result["packet"]
+        print(
+            f"TC-{index:02d}  "
+            f"{packet.src_ip}:{packet.src_port or '-'} -> {packet.dst_ip}:{packet.dst_port or '-'}  "
+            f"{packet.protocol:<5} {packet.direction:<8} "
+            f"{result['action']:<5} {result['matched_rule']}"
+        )
+
+    print("\n=== Audit Summary ===")
+    print(f"total logs: {audit_summary['total']}")
+    print(f"allow: {audit_summary['allow']} deny: {audit_summary['deny']} default: {audit_summary['default']}")
+    print(f"rule hits: {audit_summary['rule_hits']}")
+    print(f"shadowed rules: {audit_summary['shadowed_rules'] or 'none'}")
+    print(f"conflicting rules: {audit_summary['conflicting_rules'] or 'none'}")
+
+
+if __name__ == "__main__":
+    run_firewall_experiment()
+
+
+==============================================================================
+7.9 运行结果（实验输出示例）
+==============================================================================
+
+=== Firewall Lab Result ===
+case   src -> dst                 proto sport dport dir       action rule
+TC-01  10.0.1.10:53000 -> 198.51.100.20:80  TCP   outbound allow R-01
+TC-02  198.51.100.20:80 -> 10.0.1.10:53000  TCP   inbound  allow STATE
+TC-03  203.0.113.8:44000 -> 10.0.1.10:22  TCP   inbound  deny  R-04
+TC-04  203.0.113.8:44000 -> 203.0.113.10:443  TCP   inbound  allow R-03
+TC-05  10.0.1.10:53001 -> 203.0.113.10:443  TCP   outbound allow R-01
+TC-06  10.0.1.10:53002 -> 198.51.100.53:53  UDP   outbound allow R-02
+TC-07  10.0.1.10:- -> 198.51.100.20:-  ICMP  outbound deny  DEFAULT
+TC-08  203.0.113.8:44000 -> 10.0.2.30:3306  TCP   inbound  deny  R-05
+
+=== Audit Summary ===
+total logs: 8
+allow: 5 deny: 3 default: 1
+rule hits: {'R-01': 2, 'STATE': 1, 'R-04': 1, 'R-03': 1, 'R-02': 1, 'DEFAULT': 1, 'R-05': 1}
+shadowed rules: none
+conflicting rules: none

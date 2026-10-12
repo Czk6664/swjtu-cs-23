@@ -1,0 +1,779 @@
+6.2 数据模型模块 models.py
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional, Set
+
+PERMIT = "Permit"
+DENY = "Deny"
+
+@dataclass
+class Subject:
+    """
+    功能：表示访问主体
+    字段建议：
+        subject_id - 主体唯一标识
+        groups     - 所属用户组
+        roles      - 可分配角色
+        attrs      - 主体属性，例如部门、岗位、等级
+    """
+    subject_id: str
+    groups: Set[str] = field(default_factory=set)
+    roles: Set[str] = field(default_factory=set)
+    attrs: Dict[str, Any] = field(default_factory=dict)
+
+@dataclass
+class Resource:
+    """
+    功能：表示被访问客体
+    字段建议：
+        resource_id - 客体唯一标识
+        owner       - 资源所有者
+        resource_type - 资源类型
+        label       - 安全标签或完整性标签
+        attrs       - 客体属性
+    """
+    resource_id: str
+    owner: str
+    resource_type: str
+    label: Optional[str] = None
+    attrs: Dict[str, Any] = field(default_factory=dict)
+
+@dataclass
+class AccessRequest:
+    """
+    功能：封装一次访问请求
+    """
+    subject_id: str
+    resource_id: str
+    action: str
+    context: Dict[str, Any] = field(default_factory=dict)
+
+@dataclass
+class AccessDecision:
+    """
+    功能：表示授权判断结果
+    字段建议：
+        effect - Permit 或 Deny
+        reason - 判定原因
+        matched_policy - 命中的策略标识
+    """
+    effect: str
+    reason: str
+    matched_policy: Optional[str] = None
+
+6.3 策略存储模块 policy_store.py
+import json
+from pathlib import Path
+
+from models import Resource, Subject
+
+def _read_json(path: str):
+    with Path(path).open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+def load_subjects(path: str) -> dict:
+    """
+    功能：加载主体数据
+    输入：主体配置文件路径
+    输出：subject_id -> Subject 的映射
+    """
+    data = _read_json(path)
+    return {
+        item["subject_id"]: Subject(
+            subject_id=item["subject_id"],
+            groups=set(item.get("groups", [])),
+            roles=set(item.get("roles", [])),
+            attrs=item.get("attrs", {}),
+        )
+        for item in data
+    }
+
+def load_resources(path: str) -> dict:
+    """
+    功能：加载资源数据
+    输出：resource_id -> Resource 的映射
+    """
+    data = _read_json(path)
+    return {
+        item["resource_id"]: Resource(
+            resource_id=item["resource_id"],
+            owner=item["owner"],
+            resource_type=item["resource_type"],
+            label=item.get("label"),
+            attrs=item.get("attrs", {}),
+        )
+        for item in data
+    }
+
+def load_acl_policies(path: str) -> dict:
+    """
+    功能：加载 ACL 策略
+    输出：resource_id -> ACL 条目列表
+    """
+    return _read_json(path)
+
+def load_rbac_policies(path: str) -> dict:
+    """
+    功能：加载 RBAC 策略
+    包括用户-角色、角色-权限、角色继承、互斥角色等
+    """
+    return _read_json(path)
+
+def load_mac_policies(path: str) -> dict:
+    """
+    功能：加载 MAC 标签规则
+    """
+    return _read_json(path)
+
+def load_abac_policies(path: str) -> list:
+    """
+    功能：加载 ABAC 条件策略
+    """
+    return _read_json(path)
+
+6.4 访问矩阵模块 matrix_model.py
+from models import AccessDecision, DENY, PERMIT
+
+def build_access_matrix(subjects: dict, resources: dict, permissions: list) -> dict:
+    """
+    功能：构造访问矩阵
+    输出结构示例：
+        matrix[subject_id][resource_id] = set(actions)
+    """
+    matrix = {
+        subject_id: {resource_id: set() for resource_id in resources}
+        for subject_id in subjects
+    }
+    for item in permissions:
+        subject_id = item["subject_id"]
+        resource_id = item["resource_id"]
+        actions = set(item.get("actions", []))
+        matrix.setdefault(subject_id, {}).setdefault(resource_id, set()).update(actions)
+    return matrix
+
+def check_matrix_access(request, matrix: dict):
+    """
+    功能：基于访问矩阵判断请求是否允许
+    输出：AccessDecision
+    """
+    if request.subject_id not in matrix:
+        return AccessDecision(DENY, "UNKNOWN_SUBJECT", "matrix-default-deny")
+    known_resources = {resource_id for row in matrix.values() for resource_id in row}
+    if request.resource_id not in known_resources:
+        return AccessDecision(DENY, "UNKNOWN_RESOURCE", "matrix-default-deny")
+    allowed_actions = matrix.get(request.subject_id, {}).get(request.resource_id, set())
+    if request.action in allowed_actions:
+        return AccessDecision(PERMIT, "MATRIX_ACTION_ALLOWED", "matrix-cell")
+    return AccessDecision(DENY, "MATRIX_ACTION_NOT_GRANTED", "matrix-default-deny")
+
+def update_matrix_permission(matrix: dict, subject_id: str, resource_id: str, action: str, effect: str):
+    """
+    功能：修改访问矩阵中的权限
+    说明：effect 可用于表示授予或撤销
+    """
+    actions = matrix.setdefault(subject_id, {}).setdefault(resource_id, set())
+    if effect.lower() in {"grant", "permit", "allow"}:
+        actions.add(action)
+    elif effect.lower() in {"revoke", "deny", "remove"}:
+        actions.discard(action)
+    else:
+        raise ValueError(f"unsupported matrix update effect: {effect}")
+    return matrix
+
+6.5 ACL / DAC 模块 acl_model.py
+from models import AccessDecision, DENY, PERMIT
+
+def match_acl_entry(request, subject, acl_entry: dict) -> bool:
+    """
+    功能：判断某条 ACL 条目是否匹配当前请求
+    检查点：
+        1. 主体是否匹配用户或用户组
+        2. 操作是否包含在条目中
+        3. 条目是否适用于目标资源
+    """
+    if request.action not in set(acl_entry.get("actions", [])):
+        return False
+    principal_type = acl_entry.get("type", "user")
+    grantee = acl_entry.get("grantee")
+    if principal_type == "user":
+        return request.subject_id == grantee
+    if principal_type == "group":
+        return grantee in subject.groups
+    return False
+
+def check_acl_access(request, subjects: dict, resources: dict, acl_policies: dict):
+    """
+    功能：基于 ACL 进行访问控制判断
+    注意：未命中任何允许规则时，应采用默认拒绝
+    输出：AccessDecision
+    """
+    if request.subject_id not in subjects:
+        return AccessDecision(DENY, "UNKNOWN_SUBJECT", "acl-default-deny")
+    if request.resource_id not in resources:
+        return AccessDecision(DENY, "UNKNOWN_RESOURCE", "acl-default-deny")
+
+    subject = subjects[request.subject_id]
+    entries = acl_policies.get(request.resource_id, [])
+    for entry in entries:
+        if match_acl_entry(request, subject, entry):
+            effect = entry.get("effect", PERMIT)
+            policy_id = entry.get("id", f"acl:{request.resource_id}:{entry.get('grantee')}")
+            if effect == DENY:
+                return AccessDecision(DENY, "ACL_EXPLICIT_DENY", policy_id)
+            return AccessDecision(PERMIT, "ACL_ENTRY_ALLOWED", policy_id)
+    return AccessDecision(DENY, "ACL_NO_MATCH_DEFAULT_DENY", "acl-default-deny")
+
+def grant_acl_permission(acl_policies: dict, resource_id: str, grantee: str, actions: set):
+    """
+    功能：在模拟策略表中授予权限
+    说明：用于 DAC 实验，不修改真实系统权限
+    """
+    entries = acl_policies.setdefault(resource_id, [])
+    entry = {
+        "id": f"dac-grant-{resource_id}-{grantee}",
+        "type": "user",
+        "grantee": grantee,
+        "actions": sorted(actions),
+        "effect": PERMIT,
+    }
+    entries.append(entry)
+    return entry
+
+def revoke_acl_permission(acl_policies: dict, resource_id: str, grantee: str, actions: set):
+    """
+    功能：撤销 ACL 权限
+    """
+    target = set(actions)
+    for entry in acl_policies.get(resource_id, []):
+        if entry.get("grantee") == grantee:
+            remaining = set(entry.get("actions", [])) - target
+            entry["actions"] = sorted(remaining)
+    return acl_policies
+
+6.6 RBAC 模块 rbac_model.py
+from models import AccessDecision, DENY, PERMIT
+
+def get_user_roles(subject, rbac_policy: dict) -> set:
+    """
+    功能：获取用户可用角色集合
+    """
+    assigned = set(rbac_policy.get("user_roles", {}).get(subject.subject_id, []))
+    return assigned | set(subject.roles)
+
+def expand_role_hierarchy(roles: set, rbac_policy: dict) -> set:
+    """
+    功能：处理角色继承关系，得到完整有效角色集合
+    """
+    expanded = set(roles)
+    hierarchy = rbac_policy.get("role_hierarchy", {})
+    changed = True
+    while changed:
+        changed = False
+        for role in list(expanded):
+            for inherited in hierarchy.get(role, []):
+                if inherited not in expanded:
+                    expanded.add(inherited)
+                    changed = True
+    return expanded
+
+def check_separation_of_duty(active_roles: set, rbac_policy: dict) -> bool:
+    """
+    功能：检查互斥角色或职责分离约束
+    返回：是否满足约束
+    """
+    for rule in rbac_policy.get("mutually_exclusive_roles", []):
+        if set(rule).issubset(active_roles):
+            return False
+    return True
+
+def collect_permissions(active_roles: set, rbac_policy: dict) -> set:
+    """
+    功能：汇总角色对应的权限集合
+    """
+    permissions = set()
+    for role in active_roles:
+        for item in rbac_policy.get("role_permissions", {}).get(role, []):
+            permissions.add((item["resource_id"], item["action"]))
+    return permissions
+
+def check_rbac_access(request, subjects: dict, resources: dict, rbac_policy: dict, active_roles: set):
+    """
+    功能：基于 RBAC 判断访问请求
+    输出：AccessDecision
+    """
+    if request.subject_id not in subjects:
+        return AccessDecision(DENY, "UNKNOWN_SUBJECT", "rbac-default-deny")
+    if request.resource_id not in resources:
+        return AccessDecision(DENY, "UNKNOWN_RESOURCE", "rbac-default-deny")
+
+    allowed_roles = get_user_roles(subjects[request.subject_id], rbac_policy)
+    if not active_roles.issubset(allowed_roles):
+        return AccessDecision(DENY, "RBAC_ROLE_NOT_ASSIGNED", "rbac-role-check")
+
+    effective_roles = expand_role_hierarchy(active_roles, rbac_policy)
+    if not check_separation_of_duty(effective_roles, rbac_policy):
+        return AccessDecision(DENY, "RBAC_MUTUALLY_EXCLUSIVE_ROLES", "rbac-sod")
+
+    permissions = collect_permissions(effective_roles, rbac_policy)
+    if (request.resource_id, request.action) in permissions:
+        return AccessDecision(PERMIT, "RBAC_PERMISSION_ALLOWED", "rbac-role-permission")
+    return AccessDecision(DENY, "RBAC_PERMISSION_NOT_GRANTED", "rbac-default-deny")
+
+6.7 MAC 标签控制模块 mac_model.py
+from models import AccessDecision, DENY, PERMIT
+
+def compare_security_label(subject_label: str, object_label: str, label_order: list) -> int:
+    """
+    功能：比较主体标签和客体标签的等级关系
+    输出：
+        正数 / 0 / 负数可分别表示高于、等于、低于
+    """
+    if subject_label not in label_order or object_label not in label_order:
+        raise ValueError("unknown security label")
+    return label_order.index(subject_label) - label_order.index(object_label)
+
+def check_confidentiality_rule(action: str, subject_label: str, object_label: str, mac_policy: dict) -> bool:
+    """
+    功能：检查保密性方向的标签访问规则
+    注意：具体规则由实验要求指定，不在说明书中给固定答案
+    """
+    diff = compare_security_label(subject_label, object_label, mac_policy["label_order"])
+    if action == "read":
+        return diff >= 0
+    if action == "write":
+        return diff <= 0
+    return True
+
+def check_integrity_rule(action: str, subject_label: str, object_label: str, mac_policy: dict) -> bool:
+    """
+    功能：检查完整性方向的标签访问规则
+    """
+    if not mac_policy.get("enforce_integrity", False):
+        return True
+    diff = compare_security_label(subject_label, object_label, mac_policy["label_order"])
+    if action == "read":
+        return diff <= 0
+    if action == "write":
+        return diff >= 0
+    return True
+
+def check_mac_access(request, subjects: dict, resources: dict, mac_policy: dict):
+    """
+    功能：基于 MAC 标签规则判断访问请求
+    输出：AccessDecision
+    """
+    if request.subject_id not in subjects:
+        return AccessDecision(DENY, "UNKNOWN_SUBJECT", "mac-default-deny")
+    if request.resource_id not in resources:
+        return AccessDecision(DENY, "UNKNOWN_RESOURCE", "mac-default-deny")
+
+    subject_label = subjects[request.subject_id].attrs.get("clearance", "public")
+    object_label = resources[request.resource_id].label or "public"
+    try:
+        confidentiality_ok = check_confidentiality_rule(
+            request.action, subject_label, object_label, mac_policy
+        )
+        integrity_ok = check_integrity_rule(request.action, subject_label, object_label, mac_policy)
+    except ValueError:
+        return AccessDecision(DENY, "MAC_UNKNOWN_LABEL", "mac-label-order")
+
+    if not confidentiality_ok:
+        if request.action == "read":
+            return AccessDecision(DENY, "MAC_NO_READ_UP", "mac-confidentiality")
+        if request.action == "write":
+            return AccessDecision(DENY, "MAC_NO_WRITE_DOWN", "mac-confidentiality")
+        return AccessDecision(DENY, "MAC_CONFIDENTIALITY_DENY", "mac-confidentiality")
+    if not integrity_ok:
+        return AccessDecision(DENY, "MAC_INTEGRITY_DENY", "mac-integrity")
+    return AccessDecision(PERMIT, "MAC_LABEL_RULE_ALLOWED", "mac-label-rule")
+
+6.8 ABAC 模块 abac_model.py
+from datetime import time
+
+from models import AccessDecision, DENY, PERMIT
+
+def build_attribute_context(request, subject, resource) -> dict:
+    """
+    功能：合并主体属性、客体属性、操作和环境属性
+    输出：用于策略判断的上下文字典
+    """
+    return {
+        "subject": {"id": subject.subject_id, **subject.attrs},
+        "resource": {
+            "id": resource.resource_id,
+            "owner": resource.owner,
+            "type": resource.resource_type,
+            "label": resource.label,
+            **resource.attrs,
+        },
+        "action": request.action,
+        "environment": dict(request.context),
+    }
+
+def _get_path(data: dict, path: str):
+    current = data
+    for part in path.split("."):
+        if not isinstance(current, dict) or part not in current:
+            return None
+        current = current[part]
+    return current
+
+def _to_time(value):
+    if isinstance(value, time):
+        return value
+    if isinstance(value, str):
+        hour, minute = value.split(":")[:2]
+        return time(int(hour), int(minute))
+    return value
+
+def evaluate_condition(condition: dict, attr_context: dict) -> bool:
+    """
+    功能：判断单条属性条件是否成立
+    说明：可支持等于、包含、范围比较、时间窗口等基本条件
+    """
+    left = _get_path(attr_context, condition["attr"])
+    op = condition.get("op", "eq")
+    right = condition.get("value")
+    if isinstance(right, str) and right.startswith("$"):
+        right = _get_path(attr_context, right[1:])
+
+    if op == "eq":
+        return left == right
+    if op == "ne":
+        return left != right
+    if op == "in":
+        return left in right
+    if op == "contains":
+        return right in left if left is not None else False
+    if op == "lte":
+        return left <= right
+    if op == "gte":
+        return left >= right
+    if op == "between":
+        low, high = right
+        return low <= left <= high
+    if op == "time_between":
+        current = _to_time(left)
+        start = _to_time(right[0])
+        end = _to_time(right[1])
+        return start <= current <= end
+    raise ValueError(f"unsupported condition operator: {op}")
+
+def match_abac_policy(policy: dict, attr_context: dict) -> bool:
+    """
+    功能：判断一条 ABAC 策略是否匹配当前请求
+    """
+    target = policy.get("target", {})
+    for key, expected in target.items():
+        actual = _get_path(attr_context, key)
+        if isinstance(expected, list):
+            if actual not in expected:
+                return False
+        elif actual != expected:
+            return False
+    return all(evaluate_condition(item, attr_context) for item in policy.get("conditions", []))
+
+def _combine(matches: list, combining_alg: str):
+    if not matches:
+        return AccessDecision(DENY, "ABAC_NO_POLICY_MATCH_DEFAULT_DENY", "abac-default-deny")
+    if combining_alg == "deny_overrides":
+        for policy in matches:
+            if policy["effect"] == DENY:
+                return AccessDecision(DENY, "ABAC_DENY_OVERRIDES", policy["id"])
+        return AccessDecision(PERMIT, "ABAC_POLICY_ALLOWED", matches[0]["id"])
+    if combining_alg == "permit_overrides":
+        for policy in matches:
+            if policy["effect"] == PERMIT:
+                return AccessDecision(PERMIT, "ABAC_PERMIT_OVERRIDES", policy["id"])
+        return AccessDecision(DENY, "ABAC_POLICY_DENIED", matches[0]["id"])
+    if combining_alg == "first_applicable":
+        first = matches[0]
+        reason = "ABAC_FIRST_APPLICABLE_PERMIT" if first["effect"] == PERMIT else "ABAC_FIRST_APPLICABLE_DENY"
+        return AccessDecision(first["effect"], reason, first["id"])
+    raise ValueError(f"unsupported combining algorithm: {combining_alg}")
+
+def check_abac_access(request, subjects: dict, resources: dict, abac_policies: list, combining_alg: str):
+    """
+    功能：基于 ABAC 策略集合进行授权判断
+    combining_alg 可取：deny_overrides、permit_overrides、first_applicable 等
+    输出：AccessDecision
+    """
+    if request.subject_id not in subjects:
+        return AccessDecision(DENY, "UNKNOWN_SUBJECT", "abac-default-deny")
+    if request.resource_id not in resources:
+        return AccessDecision(DENY, "UNKNOWN_RESOURCE", "abac-default-deny")
+
+    attr_context = build_attribute_context(request, subjects[request.subject_id], resources[request.resource_id])
+    matches = [policy for policy in abac_policies if match_abac_policy(policy, attr_context)]
+    return _combine(matches, combining_alg)
+
+6.9 统一决策引擎 decision_engine.py
+from models import AccessDecision, DENY, PERMIT
+
+from abac_model import check_abac_access
+from acl_model import check_acl_access
+from mac_model import check_mac_access
+from matrix_model import check_matrix_access
+from rbac_model import check_rbac_access
+
+def authorize(request, model_name: str, subjects: dict, resources: dict, policies: dict, **kwargs):
+    """
+    功能：统一访问控制入口
+    输入：
+        request    - AccessRequest
+        model_name - matrix / acl / rbac / mac / abac
+        subjects   - 主体集合
+        resources  - 资源集合
+        policies   - 策略集合
+    输出：AccessDecision
+    """
+    if model_name == "matrix":
+        return check_matrix_access(request, policies["matrix"])
+    if model_name == "acl":
+        return check_acl_access(request, subjects, resources, policies["acl"])
+    if model_name == "rbac":
+        return check_rbac_access(
+            request,
+            subjects,
+            resources,
+            policies["rbac"],
+            active_roles=set(kwargs.get("active_roles", set())),
+        )
+    if model_name == "mac":
+        return check_mac_access(request, subjects, resources, policies["mac"])
+    if model_name == "abac":
+        return check_abac_access(
+            request,
+            subjects,
+            resources,
+            policies["abac"],
+            kwargs.get("combining_alg", "deny_overrides"),
+        )
+    raise ValueError(f"unsupported model_name: {model_name}")
+
+def combine_decisions(decisions: list, algorithm: str):
+    """
+    功能：组合多个模型或多条策略的判断结果
+    用于策略冲突实验
+    """
+    if not decisions:
+        return AccessDecision(DENY, "NO_DECISION_DEFAULT_DENY", "combiner")
+    if algorithm == "deny_overrides":
+        for decision in decisions:
+            if decision.effect == DENY:
+                return AccessDecision(DENY, "COMBINE_DENY_OVERRIDES", decision.matched_policy)
+        return AccessDecision(PERMIT, "COMBINE_ALL_PERMIT", decisions[0].matched_policy)
+    if algorithm == "permit_overrides":
+        for decision in decisions:
+            if decision.effect == PERMIT:
+                return AccessDecision(PERMIT, "COMBINE_PERMIT_OVERRIDES", decision.matched_policy)
+        return AccessDecision(DENY, "COMBINE_ALL_DENY", decisions[0].matched_policy)
+    if algorithm == "first_applicable":
+        first = decisions[0]
+        return AccessDecision(first.effect, "COMBINE_FIRST_APPLICABLE", first.matched_policy)
+    raise ValueError(f"unsupported combination algorithm: {algorithm}")
+
+def explain_decision(request, decision) -> str:
+    """
+    功能：生成授权结果解释文本
+    """
+    return (
+        f"{request.subject_id} -> {request.resource_id} {request.action}: "
+        f"{decision.effect}, reason={decision.reason}, policy={decision.matched_policy}"
+    )
+
+6.10 审计日志模块 audit_logger.py
+import json
+import uuid
+from collections import Counter
+from datetime import datetime, timezone
+from pathlib import Path
+
+def create_audit_record(request, decision, model_name: str, extra: dict = None) -> dict:
+    """
+    功能：构造审计日志记录
+    字段建议：
+        time、request_id、subject、resource、action、model、decision、reason
+    """
+    record = {
+        "time": datetime.now(timezone.utc).isoformat(),
+        "request_id": str(uuid.uuid4()),
+        "subject": request.subject_id,
+        "resource": request.resource_id,
+        "action": request.action,
+        "model": model_name,
+        "decision": decision.effect,
+        "reason": decision.reason,
+        "matched_policy": decision.matched_policy,
+    }
+    if extra:
+        record["extra"] = extra
+    return record
+
+def write_audit_log(record: dict, path: str):
+    """
+    功能：写入审计日志
+    """
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+def summarize_audit_log(path: str) -> dict:
+    """
+    功能：统计访问结果、拒绝原因、敏感资源访问次数等
+    """
+    records = []
+    target = Path(path)
+    if not target.exists():
+        return {}
+    with target.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            if line:
+                records.append(json.loads(line))
+
+    decisions = Counter(item["decision"] for item in records)
+    deny_reasons = Counter(item["reason"] for item in records if item["decision"] == "Deny")
+    sensitive_ids = {"payroll", "strategy_doc"}
+    sensitive_count = sum(1 for item in records if item["resource"] in sensitive_ids)
+    failures = Counter(item["subject"] for item in records if item["decision"] == "Deny")
+    repeat_failures = {subject: count for subject, count in failures.items() if count >= 2}
+
+    return {
+        "total_requests": len(records),
+        "permit_requests": decisions.get("Permit", 0),
+        "deny_requests": decisions.get("Deny", 0),
+        "most_common_deny_reason": deny_reasons.most_common(1)[0][0] if deny_reasons else "",
+        "sensitive_resource_access_count": sensitive_count,
+        "repeat_failed_subjects": repeat_failures,
+        "deny_reason_counts": dict(deny_reasons),
+    }
+
+6.11 主程序 main.py
+import json
+from pathlib import Path
+
+from abac_model import check_abac_access
+from acl_model import check_acl_access, grant_acl_permission
+from audit_logger import create_audit_record, summarize_audit_log, write_audit_log
+from mac_model import check_mac_access
+from matrix_model import build_access_matrix, check_matrix_access, update_matrix_permission
+from rbac_model import check_rbac_access
+from test_cases import base_data, build_matrix_permissions, clone_policies, experiment_rows
+
+BASE_DIR = Path(__file__).resolve().parent
+AUDIT_LOG = BASE_DIR / "audit_log.jsonl"
+RESULTS_JSON = BASE_DIR / "experiment_results.json"
+
+def _reset_audit_log():
+    AUDIT_LOG.write_text("", encoding="utf-8")
+
+def _record(records: list, test_id: str, scene: str, request, expected: str, actual, model_name: str, extra=None):
+    consistent = "是" if expected == actual.effect else "否"
+    row = {
+        "测试编号": test_id,
+        "测试场景": scene,
+        "输入条件": f"subject={request.subject_id}, resource={request.resource_id}, action={request.action}, context={request.context}",
+        "期望结果": expected,
+        "实际结果": f"{actual.effect} ({actual.reason})",
+        "是否一致": consistent,
+        "结果分析": actual.reason,
+    }
+    records.append(row)
+    audit_record = create_audit_record(request, actual, model_name, extra=extra)
+    audit_record["test_id"] = test_id
+    write_audit_log(audit_record, str(AUDIT_LOG))
+    return row
+
+def run_matrix_experiment():
+    """执行访问矩阵实验"""
+    subjects, resources, _ = base_data()
+    matrix = build_access_matrix(subjects, resources, build_matrix_permissions())
+    records = []
+    for test_id, scene, request, expected in experiment_rows()["matrix"]:
+        if test_id == "MX-05":
+            update_matrix_permission(matrix, request.subject_id, request.resource_id, request.action, "grant")
+        decision = check_matrix_access(request, matrix)
+        _record(records, test_id, scene, request, expected, decision, "matrix")
+    return records
+
+def run_acl_experiment():
+    """执行 ACL / DAC 实验"""
+    subjects, resources, policies = base_data()
+    acl_policies = clone_policies(policies)["acl"]
+    records = []
+    for test_id, scene, request, expected in experiment_rows()["acl"]:
+        if test_id == "AC-04":
+            grant_acl_permission(acl_policies, request.resource_id, request.subject_id, {request.action})
+        decision = check_acl_access(request, subjects, resources, acl_policies)
+        _record(records, test_id, scene, request, expected, decision, "acl")
+    return records
+
+def run_rbac_experiment():
+    """执行 RBAC 实验"""
+    subjects, resources, policies = base_data()
+    records = []
+    for test_id, scene, request, expected, active_roles in experiment_rows()["rbac"]:
+        decision = check_rbac_access(request, subjects, resources, policies["rbac"], active_roles)
+        _record(records, test_id, scene, request, expected, decision, "rbac", {"active_roles": sorted(active_roles)})
+    return records
+
+def run_mac_experiment():
+    """执行 MAC 标签控制实验"""
+    subjects, resources, policies = base_data()
+    records = []
+    for test_id, scene, request, expected in experiment_rows()["mac"]:
+        decision = check_mac_access(request, subjects, resources, policies["mac"])
+        _record(records, test_id, scene, request, expected, decision, "mac")
+    return records
+
+def run_abac_experiment():
+    """执行 ABAC 条件策略实验"""
+    subjects, resources, policies = base_data()
+    records = []
+    for test_id, scene, request, expected in experiment_rows()["abac"]:
+        decision = check_abac_access(request, subjects, resources, policies["abac"], "deny_overrides")
+        _record(records, test_id, scene, request, expected, decision, "abac", {"combining_alg": "deny_overrides"})
+    return records
+
+def run_conflict_experiment():
+    """执行策略冲突与组合实验"""
+    subjects, resources, policies = base_data()
+    records = []
+    for test_id, scene, request, expected, algorithm in experiment_rows()["conflict"]:
+        decision = check_abac_access(request, subjects, resources, policies["abac"], algorithm)
+        _record(records, test_id, scene, request, expected, decision, "abac-conflict", {"combining_alg": algorithm})
+    return records
+
+def run_audit_analysis():
+    """执行审计日志分析"""
+    return summarize_audit_log(str(AUDIT_LOG))
+
+def main():
+    """
+    实验入口：
+        1. 初始化主体、客体与策略
+        2. 构造测试请求
+        3. 分别调用各访问控制模型
+        4. 输出授权结果与审计日志
+        5. 生成实验分析数据
+    """
+    _reset_audit_log()
+    results = {
+        "访问矩阵实验": run_matrix_experiment(),
+        "ACL / DAC 实验": run_acl_experiment(),
+        "RBAC 实验": run_rbac_experiment(),
+        "MAC 标签控制实验": run_mac_experiment(),
+        "ABAC 条件策略实验": run_abac_experiment(),
+        "策略冲突与组合实验": run_conflict_experiment(),
+    }
+    summary = run_audit_analysis()
+    RESULTS_JSON.write_text(
+        json.dumps({"results": results, "audit": summary}, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    print("Access control experiments completed.")
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
+
+if __name__ == "__main__":
+    main()

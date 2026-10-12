@@ -1,0 +1,133 @@
+global:
+  imagePullSecrets:
+    - name: swr-secret
+
+defaultRules:
+  create: false
+
+alertmanager:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: false
+
+kube-state-metrics:
+  enabled: false
+
+grafana:
+  enabled: true
+  adminPassword: "admin123456"
+  service:
+    type: ClusterIP
+  image:
+    registry: swr.cn-south-1.myhuaweicloud.com
+    repository: czk-course/grafana
+    tag: "12.4.3"
+    pullPolicy: IfNotPresent
+  sidecar:
+    dashboards:
+      enabled: false
+    datasources:
+      enabled: false
+  additionalDataSources:
+    - name: Prometheus
+      type: prometheus
+      uid: prometheus
+      access: proxy
+      url: http://monitoring-kube-prometheus-prometheus.monitoring-course:9090
+      isDefault: true
+      editable: true
+  resources:
+    requests:
+      cpu: 1m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
+prometheus:
+  enabled: true
+  service:
+    type: ClusterIP
+  prometheusSpec:
+    retention: 2d
+    replicas: 1
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+    image:
+      registry: swr.cn-south-1.myhuaweicloud.com
+      repository: czk-course/prometheus
+      tag: "v3.11.2"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 1m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    storageSpec: {}
+  thanosService:
+    enabled: false
+  thanosServiceExternal:
+    enabled: false
+
+prometheusOperator:
+  enabled: true
+  image:
+    registry: swr.cn-south-1.myhuaweicloud.com
+    repository: czk-course/prometheus-operator
+    tag: "v0.90.1"
+    pullPolicy: IfNotPresent
+  prometheusDefaultBaseImageRegistry: swr.cn-south-1.myhuaweicloud.com
+  prometheusDefaultBaseImage: czk-course/prometheus
+  prometheusConfigReloader:
+    image:
+      registry: swr.cn-south-1.myhuaweicloud.com
+      repository: czk-course/prometheus-config-reloader
+      tag: "v0.90.1"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 1m
+        memory: 16Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+  admissionWebhooks:
+    patch:
+      image:
+        registry: swr.cn-south-1.myhuaweicloud.com
+        repository: czk-course/kube-webhook-certgen
+        tag: "1.8.1"
+        pullPolicy: IfNotPresent
+      resources:
+        requests:
+          cpu: 1m
+          memory: 16Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+  resources:
+    requests:
+      cpu: 1m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
+prometheus-node-exporter:
+  hostNetwork: false
+  hostPID: false
+  image:
+    registry: swr.cn-south-1.myhuaweicloud.com
+    repository: czk-course/node-exporter
+    tag: "v1.11.1"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 1m
+      memory: 16Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi

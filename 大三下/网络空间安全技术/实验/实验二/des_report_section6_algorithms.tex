@@ -1,0 +1,243 @@
+﻿\documentclass[12pt]{article}
+\usepackage[UTF8]{ctex}
+% 参考 algorithms.tex：保留 algorithm2e 的边框、竖线和行号样式。
+\usepackage[top=0.15cm, bottom=0.15cm, left=0.15cm, right=0.15cm, paperwidth=16.5cm, paperheight=28cm]{geometry}
+\setlength{\textfloatsep}{0pt}
+\setlength{\intextsep}{0pt}
+\setlength{\floatsep}{0pt}
+\usepackage[ruled, linesnumbered, vlined, resetcount]{algorithm2e}
+\usepackage[active,tightpage]{preview}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\PreviewEnvironment{algorithm}
+\setlength{\PreviewBorder}{0pt}
+
+\SetAlFnt{\small}
+\SetAlCapFnt{\normalsize\bfseries}
+\SetAlCapNameFnt{\normalsize\bfseries}
+\SetCommentSty{textnormal}
+\SetKwInput{FuncDesc}{函数作用}
+\SetAlCapSkip{0.25em}
+\SetAlgoInsideSkip{0.2em}
+\SetArgSty{textnormal}
+\SetDataSty{textnormal}
+\SetFuncSty{\texttt}
+\setlength{\algomargin}{0.4em}
+
+\begin{document}
+\pagecolor{white}
+\pagestyle{empty}
+\DontPrintSemicolon
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\abovedisplayskip}{0pt}
+\setlength{\belowdisplayskip}{0pt}
+
+\iffalse
+\begin{center}
+{\Large \textbf{DES 分组密码实验第六部分代码实现}}\\[-0.2em]
+{\normalsize 将 \texttt{des\_report\_section6.txt} 中的代码按算法块形式整理}
+\end{center}
+
+\vspace{0.5em}
+\newpage
+\fi
+
+\begin{algorithm}[H]
+\caption{\texttt{hex\_to\_bits(hex\_str, width)}}
+\FuncDesc{完成十六进制与二进制位串之间的相互转换。前者把输入的 16 进制分组或密钥转为固定长度二进制串，便于后续按位处理。}
+\KwIn{\text{hex\_str}（十六进制字符串）；\text{width}（目标位宽）}
+\KwOut{指定长度的二进制串}
+\setcounter{AlgoLine}{0}
+\tcp{先将十六进制字符串转成整数}
+$\mathrm{value} \leftarrow \texttt{int(hex\_str, 16)}$\;
+\tcp{利用格式化字符串补齐到指定位宽}
+\Return \texttt{f"\{value:0\{width\}b\}"}\;
+\end{algorithm}
+\newpage
+
+\begin{algorithm}[H]
+\caption{\texttt{bits\_to\_hex(bits, width)}}
+\FuncDesc{完成二进制位串到十六进制字符串的转换。该函数用于把程序内部处理完的位串恢复为十六进制形式，便于输出与比对。}
+\KwIn{\text{bits}（二进制字符串）；\text{width}（目标十六进制宽度）}
+\KwOut{指定长度的十六进制串}
+\setcounter{AlgoLine}{0}
+$\mathrm{value} \leftarrow \texttt{int(bits, 2)}$\;
+\tcp{将二进制结果按十六进制格式输出}
+\Return \texttt{f"\{value:0\{width\}X\}"}\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{permute(bits, table)}}
+\FuncDesc{提供 DES 中按表置换的基础操作。该函数用于 IP、IP$^{-1}$、E、P、PC-1、PC-2 等所有表驱动步骤。}
+\KwIn{\text{bits}（位串）；\text{table}（置换表）}
+\KwOut{重排后的位串}
+\setcounter{AlgoLine}{0}
+\tcp{置换函数}
+\Return \text{"".join(bits[i - 1] for i in table)}\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{xor\_bits(a, b)}}
+\FuncDesc{提供 DES 中按位异或的基础操作。该函数用于子密钥与扩展结果的混合。}
+\KwIn{\text{a, b}（等长位串）}
+\KwOut{异或结果位串}
+\setcounter{AlgoLine}{0}
+\tcp{异或函数}
+\Return \text{"".join('1' if x != y else '0' for x, y in zip(a, b))}\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{split\_bits(bits, n)}}
+\FuncDesc{完成位串拆分。该函数用于把 56 bit 的密钥半部或 64 bit 的分组拆成左右两段，便于后续密钥调度或 Feistel 结构处理。}
+\KwIn{\text{bits}（位串）；\text{n}（拆分位置）}
+\KwOut{拆分后的两个子串}
+\setcounter{AlgoLine}{0}
+\tcp{左半部分保留前 n 位，右半部分保留剩余位}
+$\mathrm{left} \leftarrow \texttt{bits[:n]}$\;
+$\mathrm{right} \leftarrow \texttt{bits[n:]}$\;
+\Return $(\mathrm{left}, \mathrm{right})$\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{left\_shift(bits, n)}}
+\FuncDesc{完成循环左移。该函数按照给定移位量对密钥半部进行循环左移，是 DES 密钥调度中的基础步骤。}
+\KwIn{\text{bits}（位串）；\text{n}（左移位数）}
+\KwOut{左移后的位串}
+\setcounter{AlgoLine}{0}
+\tcp{先对左移位数取模，避免超过位串长度}
+\tcp{循环左移前先把位移量约束到合法范围}
+$\mathrm{n} \leftarrow n \bmod |\texttt{bits}|$\;
+\Return \text{bits[n:] + bits[:n]}\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{generate\_subkeys(key\_hex)}}
+\FuncDesc{实现 DES 密钥调度。输入 64 bit 原始密钥后，先执行 PC-1 去掉校验位，再拆成左右两个 28 bit 半部，然后按照移位表循环左移，最后经过 PC-2 生成 16 个 48 bit 子密钥。}
+\KwIn{\text{key\_hex}（16 位十六进制密钥）}
+\KwOut{16 个子密钥组成的列表}
+\setcounter{AlgoLine}{0}
+$\mathrm{key\_bits} \leftarrow \texttt{hex\_to\_bits(key\_hex, 64)}$\;
+$\mathrm{permuted} \leftarrow \texttt{permute(key\_bits, PC1)}$\;
+\tcp{PC-1 之后拆成左右两个 28 bit 半部}
+\tcp{得到左右两个 28 bit 半部后，按轮次生成子密钥}
+$(\mathrm{c}, \mathrm{d}) \leftarrow \texttt{split\_bits(permuted, 28)}$\;
+$\mathrm{subkeys} \leftarrow [\,]$\;
+\ForEach{$\mathrm{shift} \in \texttt{SHIFT\_SCHEDULE}$}{
+    $\mathrm{c} \leftarrow \texttt{left\_shift(c, shift)}$\;
+    $\mathrm{d} \leftarrow \texttt{left\_shift(d, shift)}$\;
+    $\mathrm{subkey} \leftarrow \texttt{permute(c + d, PC2)}$\;
+    将 $subkey$ 追加到 $subkeys$\;
+}
+\Return $\mathrm{subkeys}$\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{s\_box\_lookup(chunk6, sbox)}}
+\FuncDesc{完成单个 S 盒查表。每个 6 bit 子块的首尾两位组成行号，中间四位组成列号，查出对应 S 盒中的 4 bit 输出。}
+\KwIn{\text{chunk6}（6 bit 子块）；\text{sbox}（单个 S 盒）}
+\KwOut{4 bit 输出}
+\setcounter{AlgoLine}{0}
+$\mathrm{row} \leftarrow \texttt{int(chunk6[0] + chunk6[5], 2)}$\;
+$\mathrm{col} \leftarrow \texttt{int(chunk6[1:5], 2)}$\;
+$\mathrm{value} \leftarrow \texttt{sbox[row][col]}$\;
+\Return \texttt{f"\{value:04b\}"}\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{s\_box\_substitution(mixed)}}
+\FuncDesc{完成 8 个 S 盒的顺序代换。输入为 48 bit 混合结果，按 6 bit 切分后逐组查表，再拼接成 32 bit 输出。}
+\KwIn{\text{mixed}（48 bit 输入）}
+\KwOut{32 bit 拼接结果}
+\setcounter{AlgoLine}{0}
+\tcp{把 48 bit 输入切分为 8 个 6 bit 子块}
+$\mathrm{chunks} \leftarrow \mathrm{mixed}$ 按 6 bit 切分为 8 组\;
+$\mathrm{substituted} \leftarrow [\,]$\;
+\ForEach{$\mathrm{chunk} \in \mathrm{chunks}$}{
+    $\mathrm{output} \leftarrow \texttt{s\_box\_lookup(chunk, 对应S盒)}$\;
+    将 $\mathrm{output}$ 追加到 $\mathrm{substituted}$\;
+}
+\Return \texttt{"".join(substituted)}\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{round\_function(r32, subkey48)}}
+\FuncDesc{实现 DES 轮函数 F。整体流程严格按照“E 扩展 → 异或 → S 盒代换 → P 置换”的顺序执行，输出 32 bit 轮函数结果。}
+\KwIn{\text{r32}（32 bit 右半部分）；\text{subkey48}（48 bit 子密钥）}
+\KwOut{32 bit 轮函数输出}
+\setcounter{AlgoLine}{0}
+\tcp{轮函数依次执行扩展、异或、S 盒替代和 P 置换}
+$\mathrm{expanded} \leftarrow \texttt{permute(r32, E)}$\;
+$\mathrm{mixed} \leftarrow \texttt{xor\_bits(expanded, subkey48)}$\;
+$\mathrm{substituted} \leftarrow \texttt{s\_box\_substitution(mixed)}$\;
+\Return $\texttt{permute(substituted, P)}$\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{des\_encrypt\_block(plaintext\_hex, key\_hex)}}
+\FuncDesc{完成单个 64 bit 数据分组的 DES 加密。流程依次为：输入转换、初始置换 IP、16 轮 Feistel 迭代、左右交换、逆初始置换 IP$^{-1}$，最终输出密文。}
+\KwIn{\text{plaintext\_hex}（明文分组）；\text{key\_hex}（主密钥）}
+\KwOut{密文十六进制串；可选返回每轮调试信息}
+\setcounter{AlgoLine}{0}
+$\mathrm{block} \leftarrow \texttt{hex\_to\_bits(plaintext\_hex, 64)}$\;
+$\mathrm{subkeys} \leftarrow \texttt{generate\_subkeys(key\_hex)}$\;
+\tcp{先做初始置换，再拆成左右两半}
+$\mathrm{state} \leftarrow \texttt{permute(block, IP)}$\;
+$(\mathrm{l}, \mathrm{r}) \leftarrow \texttt{split\_bits(state, 32)}$\;
+$\mathrm{rounds} \leftarrow [\,]$\;
+\ForEach{$\mathrm{subkey} \in \mathrm{subkeys}$}{
+    $\mathrm{new\_l} \leftarrow \mathrm{r}$\;
+    $\mathrm{new\_r} \leftarrow \texttt{xor\_bits(l, round\_function(r, subkey))}$\;
+    $\mathrm{l}, \mathrm{r} \leftarrow \mathrm{new\_l}, \mathrm{new\_r}$\;
+    将 $(\mathrm{l}, \mathrm{r})$ 记录到 $\mathrm{rounds}$\;
+}
+\tcp{左右交换后再做逆初始置换}
+\tcp{16 轮结束后交换左右半部，再做逆初始置换}
+$\mathrm{preoutput} \leftarrow \mathrm{r} + \mathrm{l}$\;
+$\mathrm{ciphertext} \leftarrow \texttt{bits\_to\_hex(permute(preoutput, IP\_INV), 16)}$\;
+\Return $(\mathrm{ciphertext}, \mathrm{rounds})$\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{des\_decrypt\_block(ciphertext\_hex, key\_hex)}}
+\FuncDesc{完成单个 64 bit 数据分组的 DES 解密。解密流程与加密流程一致，只是把子密钥顺序反转后再送入同样的 Feistel 迭代框架。}
+\KwIn{\text{ciphertext\_hex}（密文分组）；\text{key\_hex}（主密钥）}
+\KwOut{明文十六进制串；可选返回每轮调试信息}
+\setcounter{AlgoLine}{0}
+$\mathrm{block} \leftarrow \texttt{hex\_to\_bits(ciphertext\_hex, 64)}$\;
+$\mathrm{subkeys} \leftarrow \texttt{reverse(generate\_subkeys(key\_hex))}$\;
+\tcp{解密流程与加密一致，只是子密钥顺序反转}
+$\mathrm{state} \leftarrow \texttt{permute(block, IP)}$\;
+$(\mathrm{l}, \mathrm{r}) \leftarrow \texttt{split\_bits(state, 32)}$\;
+$\mathrm{rounds} \leftarrow [\,]$\;
+\ForEach{$\mathrm{subkey} \in \mathrm{subkeys}$}{
+    $\mathrm{new\_l} \leftarrow \mathrm{r}$\;
+    $\mathrm{new\_r} \leftarrow \texttt{xor\_bits(l, round\_function(r, subkey))}$\;
+    $\mathrm{l}, \mathrm{r} \leftarrow \mathrm{new\_l}, \mathrm{new\_r}$\;
+    将 $(\mathrm{l}, \mathrm{r})$ 记录到 $\mathrm{rounds}$\;
+}
+\tcp{解密与加密结构相同，只是子密钥顺序相反}
+$\mathrm{preoutput} \leftarrow \mathrm{r} + \mathrm{l}$\;
+$\mathrm{plaintext} \leftarrow \texttt{bits\_to\_hex(permute(preoutput, IP\_INV), 16)}$\;
+\Return $(\mathrm{plaintext}, \mathrm{rounds})$\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\texttt{main.py} 的调用与输出流程}
+\FuncDesc{主控文件不直接参与 DES 计算，而是负责解析命令行参数、调用加密或解密函数、打印结果并记录运行时间。默认情况下会运行演示模式，自动验证预置测试向量。}
+\KwIn{用户输入的密钥、明文或密文，以及运行模式参数}
+\KwOut{终端输出或 txt 实验报告内容}
+\setcounter{AlgoLine}{0}
+\tcp{读取输入参数并判断运行模式}
+解析命令行参数\;
+\eIf{未指定任何攻击或测试模式}{
+    进入演示模式，依次运行预置测试用例\;
+}{
+    根据用户输入调用加密或解密流程\;
+}
+\tcp{输出密文、明文、调试状态和时间信息}
+打印结果并写入实验报告文本\;
+\end{algorithm}
+
+\end{document}
+

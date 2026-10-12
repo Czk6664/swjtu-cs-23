@@ -1,0 +1,107 @@
+meta:
+  theme: tech-blue
+  layout: vertical
+  canvas: auto
+  title: 防火墙实验主程序执行流程
+  description: 主控模块实验执行流程图
+  routing: orthogonal
+nodes:
+  - id: start
+    label: 开始
+    type: terminal
+    size: medium
+  - id: read
+    label: 读取实验拓扑与策略需求
+    type: process
+    size: large
+  - id: init
+    label: 初始化规则表、状态表、NAT 表与日志存储
+    type: process
+    size: xl
+  - id: baseline
+    label: 执行基线连通性测试
+    type: process
+    size: large
+  - id: gentraffic
+    label: 按实验项目逐组生成测试流量
+    type: process
+    size: xl
+  - id: decision
+    label: 防火墙决策流程
+    type: decision
+    size: large
+  - id: state_hit
+    label: 状态表命中：按状态检测逻辑处理
+    type: process
+    size: xl
+  - id: state_miss
+    label: 状态表未命中：按规则表自上而下匹配
+    type: process
+    size: xl
+  - id: no_rule
+    label: 无规则命中：执行默认策略
+    type: process
+    size: xl
+  - id: record
+    label: 记录命中规则、动作、时间与原因
+    type: process
+    size: xl
+  - id: compare
+    label: 对比预期结果与实际结果
+    type: process
+    size: large
+  - id: output
+    label: 输出实验记录表与分析结论
+    type: process
+    size: xl
+  - id: end
+    label: 结束
+    type: terminal
+    size: medium
+edges:
+  - from: start
+    to: read
+    type: primary
+  - from: read
+    to: init
+    type: primary
+  - from: init
+    to: baseline
+    type: primary
+  - from: baseline
+    to: gentraffic
+    type: primary
+  - from: gentraffic
+    to: decision
+    type: primary
+  - from: decision
+    to: state_hit
+    type: primary
+    label: 命中
+  - from: decision
+    to: state_miss
+    type: primary
+    label: 未命中
+  - from: decision
+    to: no_rule
+    type: primary
+    label: 无规则
+  - from: state_hit
+    to: record
+    type: primary
+  - from: state_miss
+    to: record
+    type: primary
+  - from: no_rule
+    to: record
+    type: primary
+  - from: record
+    to: compare
+    type: primary
+  - from: compare
+    to: output
+    type: primary
+  - from: output
+    to: end
+    type: primary
+modules: []

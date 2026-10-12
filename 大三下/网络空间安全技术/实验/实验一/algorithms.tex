@@ -1,0 +1,498 @@
+\documentclass[12pt]{article}
+\usepackage[UTF8]{ctex}
+% 标准 A4 纸宽度 21cm，Word默认左右页边距各约为 2.5cm，实际可用文本宽度约 16cm。
+% 此处将 PDF 纸张宽度强行设为 16.5cm（只留左右 0.25cm 用于截屏防贴边边界），
+% 保证生成的算法块图的真实宽度严格等于 16cm，可以直接无损 1:1 粘贴进你的 Word 报告。
+\usepackage[top=0.5cm, bottom=0.5cm, left=0.25cm, right=0.25cm, paperwidth=16.5cm, paperheight=32cm]{geometry}
+\usepackage[ruled, linesnumbered, vlined]{algorithm2e}
+\usepackage{xcolor}
+\usepackage{amsmath}
+
+\SetAlFnt{\small}
+\SetAlCapFnt{\normalsize\bfseries}
+\SetAlCapNameFnt{\normalsize\bfseries}
+
+% 强制注释使用正体而不是斜体
+\SetCommentSty{textnormal}
+
+% 改进：抛弃会引发越界与宏包冲突的 parbox，改用原生的 KwInput 语法。
+% 这将自动接管“函数作用”这四个字的加粗、不需要行号以及最完美的右侧缩进换行，
+% 彻底消灭 Overfull \hbox 弹窗错位报错！
+\SetKwInput{FuncDesc}{函数作用}
+
+\begin{document}
+% 强行将页面底色注入为纯白，这样截屏软件或深色系 PDF 阅读器就不会将透明背景染成灰黑色了
+\pagecolor{white}
+\pagestyle{empty}
+\DontPrintSemicolon
+
+% =====================================================================
+% 1. normalize_text
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{normalize\_text(text, keep\_spaces)}}
+\FuncDesc{文本预处理函数，将输入字符串统一转为大写，并根据 \text{keep\_spaces} 参数决定是否保留空格。为后续评分函数提供规范化的输入格式，确保字母大小写差异和非字母字符不干扰统计分析。\text{keep\_spaces=True} 时保留空格以支持按词分割；\text{keep\_spaces=False} 时仅保留纯字母序列以支持频率统计。}
+\KwIn{\text{text}（字符串）；\text{keep\_spaces}（布尔，默认 \text{True}）}
+\KwOut{统一大写、去除非字母字符后的字符串}
+\setcounter{AlgoLine}{0}
+\tcp{第一步：将所有字符统一转换为大写形式}
+$\text{text} \leftarrow \text{text.upper()}$\;
+\eIf{\text{keep\_spaces} $=$ \text{True}}{
+    \tcp{如果需要保留空格（比如为了分析单词），先替换非字母非空格字符}
+    将 \text{text} 中所有非字母、且非空格的字符替换成空格\;
+    \tcp{接着将多个连续空格压缩为单一空格，并去掉首尾冗余空白}
+    压缩连续空格并去除首尾空白\;
+    \Return 处理后的 \text{text}\;
+}{
+    \tcp{如果不需要保留空格（比如频率分析），则只留下纯字母以供后续完整统计}
+    去除 \text{text} 中所有非字母字符\;
+    \Return 纯字母序列\;
+}
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 2. frequency_score
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{frequency\_score(text)}}
+\FuncDesc{基于卡方检验计算文本字母频率与标准英文字母频率的吻合程度。对 26 个字母分别统计实际出现次数（\text{observed}）与英文期望次数（\text{expected}），计算卡方偏差之和。函数返回负卡方值，使得最接近英文分布的得分最高。}
+\KwIn{\text{text}（候选明文字符串）}
+\KwOut{字母频率得分（负卡方值，越高越像英文）}
+\setcounter{AlgoLine}{0}
+\tcp{提取纯字母序列并判断文本有效性}
+$\text{cleaned} \leftarrow \text{letters\_only(text)}$\;
+\If{\text{cleaned} 为空}{\Return $-\infty$\;}
+\tcp{获取文本总长度，使用字典统计工具收集每个字母实际出现次数}
+$\text{total} \leftarrow |\text{cleaned}|$\;
+$\text{counts} \leftarrow \text{Counter(cleaned)}$\;
+$\chi^2 \leftarrow 0.0$\;
+\tcp{遍历全字母表逐个比较，做卡方值累加}
+\For{\text{letter} $\in$ \text{ALPHABET}}{
+    $\text{observed} \leftarrow \text{counts.get(letter, 0)}$\;
+    \tcp{根据固定对照表计算期望出现数量}
+    $\text{expected} \leftarrow \text{total} \times \text{ENGLISH\_FREQ[letter]} \;/\; 100$\;
+    \If{\text{expected} $> 0$}{
+        \tcp{累加（观察值-期望）的平方除以期望的差值}
+        $\chi^2 \leftarrow \chi^2 + (\text{observed} - \text{expected})^2 \;/\; \text{expected}$\;
+    }
+}
+\tcp{取卡方结果倒推作为高信度凭据}
+\Return $-\chi^2$\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 3. word_score
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{word\_score(text)}}
+\FuncDesc{通过检测候选明文中是否包含常见英文单词来评估其合理性。本函数作为补充信号，对完整命中词典的单词给予大量奖励，命中的单词越长加分越多；对合法字母词与词缀也给予一定基础分数以增加容错广度。}
+\KwIn{\text{text}（候选明文字符串）}
+\KwOut{常用单词命中得分（浮点数，越大说明越像合法英文段落）}
+\setcounter{AlgoLine}{0}
+\tcp{先通过保护空格机制的大写工具完成切词准备}
+$\text{words} \leftarrow \text{normalize\_text(text, keep\_spaces=True).split()}$\;
+\If{\text{words} 为空}{\Return $0.0$\;}
+$\text{score} \leftarrow 0.0$\;
+\tcp{逐个遍历单词去词典库验身}
+\For{\text{word} $\in$ \text{words}}{
+    \uIf{\text{word} $\in$ \text{COMMON\_WORDS}}{
+        \tcp{完整命中词典库：获得高额固定基础分及随字母长度增长的额外奖励提权}
+        $\text{score} \leftarrow \text{score} + 6.0 + |\text{word}| \times 0.3$\;
+    }
+    \uElseIf{$|\text{word}| = 1$ \textbf{and} \text{word} $\in \{$\text{``A'', ``I''}$\}$}{
+        \tcp{单字母合理情况处理：例如主语的 I 及量词 A ，分别适度加分}
+        $\text{score} \leftarrow \text{score} + 2.0$\;
+    }
+    \uElseIf{$|\text{word}| \geq 3$ \textbf{and} \text{word} 包含 \text{``THE''、``ING''} 或 \text{``ION''}}{
+        \tcp{探测典型词缀后缀片段（虽然不算全命中也反映出了正确的英文生态结构）}
+        $\text{score} \leftarrow \text{score} + 1.5$\;
+    }
+    \tcp{没触发这几层逻辑的单词视为杂乱组合，不予加分鼓励}
+}
+\Return \text{score}\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 4. ngram_score
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{ngram\_score(text)}}
+\FuncDesc{统计候选明文中常见英文双字母（\text{bigrams}）和三字母（\text{trigrams}）组合的命中数量。常见的 \text{TH}、\text{HE}、\text{IN} 等特征组合在真实英文里大量出现，在乱码里极低。按一定权重计算总和作为文本结构连贯性的额外评价指标。}
+\KwIn{\text{text}（候选明文字符串）}
+\KwOut{\text{n-gram} 统计命中加权得分}
+\setcounter{AlgoLine}{0}
+\tcp{去掉干扰以便形成严密的连续字母链串}
+$\text{cleaned} \leftarrow \text{letters\_only(text)}$\;
+$\text{bigrams} \leftarrow 0$\;
+\tcp{通过滑动窗口搜罗所有相邻步长为 2 的片段命中率}
+\For{$i \leftarrow 0$ \KwTo $|\text{cleaned}| - 2$}{
+    \If{$\text{cleaned}[i:i{+}2] \in \text{COMMON\_BIGRAMS}$}{
+        $\text{bigrams} \leftarrow \text{bigrams} + 1$\;
+    }
+}
+$\text{trigrams} \leftarrow 0$\;
+\tcp{再次做步长为 3 的滑动窗口判断，以此侦破隐蔽的三字母词根}
+\For{$i \leftarrow 0$ \KwTo $|\text{cleaned}| - 3$}{
+    \If{$\text{cleaned}[i:i{+}3] \in \text{COMMON\_TRIGRAMS}$}{
+        $\text{trigrams} \leftarrow \text{trigrams} + 1$\;
+    }
+}
+\tcp{在三字母特征上予以极高倚重（2.0系数），最后混合组装}
+\Return $\text{bigrams} \times 1.2 + \text{trigrams} \times 2.0$\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 5. vowel_ratio_score
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{vowel\_ratio\_score(text)}}
+\FuncDesc{计算候选明文中元音字母（\text{A, E, I, O, U}）占总字母数的比例，以偏离英文典型元音比例（38\%）的程度作为扣分依据。纯辅音或全元音序列极不自然，偏离越远说明解密结果越不可信并扣发惩罚。}
+\KwIn{\text{text}（候选明文字符串）}
+\KwOut{元音比例项目扣分结果（负分结余）}
+\setcounter{AlgoLine}{0}
+$\text{cleaned} \leftarrow \text{letters\_only(text)}$\;
+\If{\text{cleaned} 为空}{\Return $0.0$\;}
+\tcp{扫描所有可用字符判定是否有元音基因}
+$\text{vowel\_count} \leftarrow \text{cleaned}$ 中属于 $\{\text{A, E, I, O, U}\}$ 的字符数\;
+\tcp{将命中频率值除总宽做平均率分配}
+$\text{ratio} \leftarrow \text{vowel\_count} \;/\; |\text{cleaned}|$\;
+\tcp{取固定平衡点 0.38 作轴，做绝对值乘调节常数实施精准打击}
+\Return $-\,|\text{ratio} - 0.38| \times 20$\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 6. score_plaintext
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{score\_plaintext(text)}}
+\FuncDesc{将字母频率、单词命中、复合字母块统计、元音分布等四个互相解耦维度的评分系统联合，汇成一把大算力标尺。单词权重最高（1.8），多维融合使得其远比普通单一手段稳定鲁棒。}
+\KwIn{\text{text}（候选明文字符串）}
+\KwOut{加权后的多模态最终裁判综合评分}
+\setcounter{AlgoLine}{0}
+\tcp{在四个特征频道中并行抽取当前测试串属性点数}
+$s_1 \leftarrow \text{frequency\_score(text)}$\;
+$s_2 \leftarrow \text{word\_score(text)}$\;
+$s_3 \leftarrow \text{ngram\_score(text)}$\;
+$s_4 \leftarrow \text{vowel\_ratio\_score(text)}$\;
+\tcp{通过一套久经校验的常量公式按混合大盘打分法送出裁决成绩}
+\Return $0.45 \times s_1 + 1.8 \times s_2 + 1.5 \times s_3 + 0.6 \times s_4$\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 7. top_results  &  format_results
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{top\_results(results, top\_n)}}
+\FuncDesc{工具层函数：从众多结果清单中，通过分数的维度对这批结果清单进行粗暴提纯排队。留住最优几份以免泛滥。}
+\KwIn{\text{results}（候选字典数据列）；\text{top\_n}（保留榜单的容量尺寸，默认 5）}
+\KwOut{削减尾巴后的高能榜单成绩块}
+\setcounter{AlgoLine}{0}
+\tcp{指示内部机器使用 score 字段实施快排指令并取反降序}
+按 \text{result[``score'']} 对 \text{results} 降序排序\;
+\tcp{进行边界切割直接切出用户所需的顶尖批次}
+\Return $\text{results}[0 : \text{top\_n}]$\;
+\end{algorithm}
+
+\vspace{2em}
+
+\begin{algorithm}[H]
+\caption{\text{format\_results(results)}}
+\FuncDesc{也是工具函数。将之前那些繁乱散乱的多维度列表节点重新封装、梳理，包装为人类肉眼极容易捕捉到的条理日志报文。}
+\KwIn{\text{results}（已被初步精简过的结果集）}
+\KwOut{格式化输出面板上用的干净字串区段}
+\setcounter{AlgoLine}{0}
+$\text{lines} \leftarrow [\,]$\;
+\tcp{按 1 始标号拆包并取用项集元素}
+\For{\text{index, item} $\in$ \text{enumerate(results, start=1)}}{
+    \tcp{将散点按索引套用至排版规整的字符串模板格式中}
+    将 \text{``index. key=\ldots\ | score=\ldots\ | text=\ldots''} 追加到 \text{lines}\;
+}
+\tcp{附以跳行处理并完成文本段拼接回送}
+\Return \text{lines} 以换行符拼接的字符串\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 8. decrypt_caesar
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{decrypt\_caesar(ciphertext, shift)}}
+\FuncDesc{使用给定的偏移规则直接推断凯撒加密段背后的秘密。对每个遇到的大写英文通过字母表算术递推回归源头，用余数抵挡跨界失效等漏洞问题。}
+\KwIn{\text{ciphertext}（整条密文）；\text{shift}（逆推力位数，$0 \leq \text{shift} \leq 25$）}
+\KwOut{回退等同距离还原得来的明体字符集}
+\setcounter{AlgoLine}{0}
+$\text{output} \leftarrow [\,]$\;
+\tcp{做一下稳健兜底保护，并依次解剖串流}
+\For{\text{ch} $\in$ \text{ciphertext.upper()}}{
+    \eIf{\text{ch} $\in$ \text{ALPHABET}}{
+        \tcp{字母位除旧布新：利用现有下角标拔掉偏移差后进入求余闭合生态圈转换}
+        $\text{index} \leftarrow (\text{ALPHABET.index(ch)} - \text{shift}) \bmod 26$\;
+        将 \text{ALPHABET[index]} 追加到 \text{output}\;
+    }{
+        \tcp{保护不相关的空格或下划线不受伤害}
+        将 \text{ch} 原样追加到 \text{output}\;
+    }
+}
+\Return \text{output} 拼接为字符串\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 9. brute_force_caesar
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{brute\_force\_caesar(ciphertext, top\_n)}}
+\FuncDesc{针对只靠单一数字隐藏线索的弱点体系打出的爆破策略。不靠外力辅助只让计算机从零数到尾全部执行，丢入打分模型鉴定决选即可稳抓靶心真谛，线性 $O(N)$ 时延微小无感。}
+\KwIn{\text{ciphertext}（代破加密文）；\text{top\_n}（默认列出的顶层备选项数）}
+\KwOut{综合全自动甄别完成的最佳尝试大满贯候选列表}
+\setcounter{AlgoLine}{0}
+$\text{results} \leftarrow [\,]$\;
+\tcp{完全没有花巧，老鹰扑食一样的纯数数方式扫遍 26 个区间站}
+\For{\text{shift} $\leftarrow 0$ \KwTo $25$}{
+    $\text{plaintext} \leftarrow \text{decrypt\_caesar(ciphertext, shift)}$\;
+    \tcp{给当前盲测路线跑个分看看像不像真实世界的人话}
+    $\text{score} \leftarrow \text{score\_plaintext(plaintext)}$\;
+    \tcp{绑定所有身家数据塞往仓室}
+    将 $\{\text{key: shift, plaintext: plaintext, score: score}\}$ 追加到 \text{results}\;
+}
+\tcp{将 26 条死活结果统统打包去筛检}
+\Return \text{top\_results(results, top\_n)}\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 10. apply_substitution_mapping
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{apply\_substitution\_mapping(ciphertext, mapping)}}
+\FuncDesc{这是一个执行功能组件。给到特定的替换大图谱就忠实的去翻译手上的情报文章。找不到映射词或者非合法解的时候以残缺补全方式使用通配符填充留痕，避免后续数据评点模块误触引发混乱。}
+\KwIn{\text{ciphertext}（密文总字串集）；\text{mapping}（暗转明替换契约）}
+\KwOut{转录推翻成的可见白文字组串}
+\setcounter{AlgoLine}{0}
+$\text{output} \leftarrow [\,]$\;
+\For{\text{ch} $\in$ \text{ciphertext.upper()}}{
+    \eIf{$\text{``A''} \leq \text{ch} \leq \text{``Z''}$}{
+        \tcp{拿契约去字典反查，万一失败直接烙上一个下划线空白章印留底备查}
+        将 \text{mapping.get(ch, ``\_'')} 追加到 \text{output}\;
+    }{
+        \tcp{逗号句号不在契约体系，不用翻字典直接穿透过去}
+        将 \text{ch} 原样追加到 \text{output}\;
+    }
+}
+\tcp{融合粘合成段落归库}
+\Return \text{output} 拼接为字符串\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 11. brute_force_reduced_alphabet
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{brute\_force\_reduced\_alphabet}(\text{ciphertext}, \text{cipher\_letters}, \text{plain\_letters}, \text{top\_n})}
+\FuncDesc{完整 26 字符单表空间超 $10^{26}$，所以采用压缩攻击策略。通过人工限制特定集（如仅限破解几个目标字母）大幅减少组合空间，从而利用简单枚举暴力打穿密码。}
+\KwIn{\text{ciphertext}；双端压缩子字母集 \text{cipher\_letters} 和 \text{plain\_letters}}
+\KwOut{从该瘦身后的试验田里挑拣拿出的得高分战果}
+\setcounter{AlgoLine}{0}
+\If{$|\text{cipher\_letters}| \neq |\text{plain\_letters}|$}{
+    \tcp{检测双层数量匹配是否成立。非满射体系无权玩耍}
+    抛出 \text{ValueError}\;
+}
+$\text{results} \leftarrow [\,]$\;
+\tcp{只用排列包处理这些精简池内的可疑因子生成全排列地图}
+\For{\text{perm} $\in$ \text{permutations(plain\_letters)}}{
+    \tcp{合二为一创造出一个本轮用字典规则}
+    $\text{mapping} \leftarrow \text{dict(zip(cipher\_letters, perm))}$\;
+    $\text{plaintext} \leftarrow \text{apply\_substitution\_mapping(ciphertext, mapping)}$\;
+    \tcp{去评级局进行评分上报}
+    $\text{score} \leftarrow \text{score\_plaintext(plaintext)}$\;
+    将 $\{\text{key: mapping, plaintext, score}\}$ 追加到 \text{results}\;
+}
+\tcp{提纯放榜}
+\Return \text{top\_results(results, top\_n)}\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 12. word_pattern  &  extend_mapping
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{word\_pattern(word)}}
+\FuncDesc{模式解析核心组件。将字符串的复沓节奏完全抽离提存，构建单词长相相似度的基因模型。同基因即代表着相互等价的密码翻译潜规则可能存在。这不仅极大滤掉了乱猜成本，也给后面的束搜索建立起了超高效的桶定位基础。}
+\KwIn{\text{word}（需要归类的样本单词对象）}
+\KwOut{打散成为表示特征节拍的等阶整型数列阵}
+\setcounter{AlgoLine}{0}
+$\text{indices} \leftarrow \{\}$；$\text{pattern} \leftarrow [\,]$；$\text{next\_idx} \leftarrow 0$\;
+\For{\text{ch} $\in$ \text{word}}{
+    \tcp{扫描新来客，只要没见过就发派一个从小往大递增的唯一整数标识号}
+    \If{\text{ch} $\notin$ \text{indices}}{
+        $\text{indices[ch]} \leftarrow \text{next\_idx}$；$\text{next\_idx} \leftarrow \text{next\_idx} + 1$\;
+    }
+    \tcp{记入这个长相节拍存至指纹列中}
+    将 \text{indices[ch]} 追加到 \text{pattern}\;
+}
+\Return \text{tuple(pattern)}\;
+\end{algorithm}
+
+\vspace{1.5em}
+
+\begin{algorithm}[H]
+\caption{\text{extend\_mapping}(\text{current\_map}, \text{reverse\_map}, \text{cipher\_word}, \text{plain\_word})}
+\FuncDesc{极其重要的防火墙校验点。将试图合并的双向字典词库放在校验仪里，前后两头互相做背书鉴定，不管是在密转明路线中出现歧义，还是明回密线路上发生叠压，都在这里被一刀流切断拒收，确保每次向下挖掘的探针本身都是内部没有自相矛盾的好探针。}
+\KwIn{双向老字典映射库块，连带此次冲阵试图贴合进去的暗表比明表内容测试字块}
+\KwOut{能和谐兼容则更新传出全新版本图谱库，只要遇矛盾就直接抛下 \text{None} 丢弃}
+\setcounter{AlgoLine}{0}
+\If{$|\text{cipher\_word}| \neq |\text{plain\_word}|$}{\Return \text{None}\;}
+\tcp{为了防止分支相互影响拷贝原始字典层后再测试加内容}
+$\text{next\_map} \leftarrow \text{copy(current\_map)}$；
+$\text{next\_reverse} \leftarrow \text{copy(reverse\_map)}$\;
+\For{$(\text{cipher\_char}, \text{plain\_char}) \in \text{zip(cipher\_word, plain\_word)}$}{
+    \If{\text{next\_map.get(cipher\_char)} $\neq$ \text{None} \textbf{and} $\neq$ \text{plain\_char}}{
+        \tcp{出事了，同一个密码字母之前已经被别的词定性过了。互相打脸判定驳回}
+        \Return \text{None}\;
+    }
+    \If{\text{next\_reverse.get(plain\_char)} $\neq$ \text{None} \textbf{and} $\neq$ \text{cipher\_char}}{
+        \tcp{逆行排雷碰响。这个真实词根以前被人冒领用过。身份重合不可取判定驳回}
+        \Return \text{None}\;
+    }
+    \tcp{校验绿色放行通过，安心盖章录系统里面保存}
+    $\text{next\_map[cipher\_char]} \leftarrow \text{plain\_char}$\;
+    $\text{next\_reverse[plain\_char]} \leftarrow \text{cipher\_char}$\;
+}
+\Return \text{(next\_map, next\_reverse)}\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 13. backtracking_with_dictionary
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{backtracking\_with\_dictionary}(\text{ciphertext}, \text{candidate\_words}, \text{top\_n}, \text{beam\_width})}
+\FuncDesc{重火力的搜索突破口——利用常备真实大字典的特征分桶对长乱码做模式比对降维。这种技术结合了宽度限定和广度裁撤技巧。以极高效率越过了无穷阶乘深渊，每次都沿着字典中找出来的合理片段往下接续，错误的路直接不走了，能一直活到底的映射本毫无悬念就暴露了密码创建者设计的完整世界观。}
+\KwIn{\text{ciphertext}；词条本 \text{candidate\_words}；限定宽度 \text{beam\_width}避免爆炸溢出}
+\KwOut{高精准率脱壳文稿与配套解码秘钥本}
+\setcounter{AlgoLine}{0}
+$\text{words} \leftarrow \text{ciphertext}$ 按空格分割后的单词列表\;
+\tcp{对词典重塑！按照“文字数量、指纹长相”双参数切成大量碎片盒子分列好提速查找}
+按 $(\text{长度}, \text{word\_pattern})$ 将词典中所有单词分桶至 \text{candidate\_buckets}\;
+\If{\text{beam\_width} 未指定}{$\text{beam\_width} \leftarrow \max(\text{top\_n} \times 10,\; 100)$\;}
+$\text{beam} \leftarrow [\{\text{key}:\{\},\; \text{reverse\_key}:\{\},\; \text{plain\_words}:[\,],\; \text{score}:0\}]$\;
+\tcp{像毛毛虫爬格子一样，一个词一个词朝深处探}
+\For{\text{cipher\_word} $\in$ \text{words}}{
+    $\text{candidates} \leftarrow \text{candidate\_buckets.get}\bigl((|\text{cipher\_word}|,\; \text{word\_pattern}(\text{cipher\_word}))\bigr)$\;
+    \If{\text{candidates} 为空}{\Return $[\,]$\;}
+    $\text{expanded} \leftarrow \{\}$\;
+    \tcp{双层大循环嵌套，用所有的种子去和待检测库进行排列测谎}
+    \For{\text{state} $\in$ \text{beam}}{
+        \For{\text{plain\_word} $\in$ \text{candidates}}{
+            $\text{extended} \leftarrow \text{extend\_mapping}(\text{state[``key'']}, \allowbreak \text{state[``reverse\_key'']}, \allowbreak \text{cipher\_word}, \allowbreak \text{plain\_word})$\;
+            \If{\text{extended} $=$ \text{None}}{\tcp{被防火墙识破为废棋支路，不往废棋下填坑}\textbf{continue}\;}
+            $\text{next\_plain\_words} \leftarrow \text{state[``plain\_words'']} + [\text{plain\_word}]$\;
+            $\text{score} \leftarrow \text{frequency\_score(next\_plain\_words 拼接)}$\;
+            \tcp{留下同一种规律但评分比较厉害的分支防止自己同室操戈}
+            以映射签名去重并更新 \text{expanded}\;
+        }
+    }
+    \If{\text{expanded} 为空}{\Return $[\,]$\;}
+    \tcp{每吃完一口进行裁员。不要的分位点全砍掉。严格锁死搜索宽度维持计算稳定}
+    $\text{beam} \leftarrow \text{expanded}$ 按 \text{score} 降序取前 \text{beam\_width} 个\;
+}
+$\text{results} \leftarrow [\,]$\;
+\tcp{搜索触底反弹收集结果阶段}
+\For{\text{state} $\in$ \text{beam}}{
+    $\text{plaintext} \leftarrow \text{apply\_substitution\_mapping}(\text{ciphertext}, \allowbreak \text{state[``key'']})$\;
+    \tcp{要求完美的出卷人！带哪怕一个残缺无解问号位（\_）的答卷都给丢进垃圾桶}
+    \If{\text{plaintext} 不含 \text{``\_''}}{
+        将 $\{\text{key, plaintext, score}\}$ 追加到 \text{results}\;
+    }
+}
+\Return \text{top\_results(results, top\_n)}\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 14. encrypt_vigenere  &  decrypt_vigenere
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{encrypt\_vigenere(plaintext, key)}}
+\FuncDesc{引入轮换步点动态加密概念的防爆利器加解引擎展示。秘钥不再是死轴点而成了有生机的多轨交错密码带。由于它本身加解过程极其一致且平滑，不仅能加密也是检测解密是否出圈的完美试金石。非英文字符不记节拍保证原序列不因为插入标点而破坏偏移链条完整性也是该功能非常隐蔽的细致要点。}
+\KwIn{\text{plaintext}（准备设防保护文书）；\text{key}（主轴关键密码词）}
+\KwOut{维吉尼亚重组过后的隐秘散列串}
+\setcounter{AlgoLine}{0}
+$\text{key} \leftarrow \text{key}$ 中所有字母提取后转大写\;
+\If{\text{key} 为空}{抛出 \text{ValueError}\;}
+$\text{output} \leftarrow [\,]$；$\text{key\_index} \leftarrow 0$\;
+\For{\text{ch} $\in$ \text{plaintext.upper()}}{
+    \tcp{遇字查表遇标点绕过：只有针对明文才会触发密钥位置向后迭代，不然就会因为标点打乱周期阵脚}
+    \eIf{\text{ch} $\in$ \text{ALPHABET}}{
+        \tcp{抓取多层表里那个用于本次小凯撒移动的定位尺数}
+        $\text{shift} \leftarrow \text{ALPHABET.index}\bigl(\text{key}[\text{key\_index} \bmod |\text{key}|]\bigr)$\;
+        $\text{cipher\_index} \leftarrow (\text{ALPHABET.index(ch)} + \text{shift}) \bmod 26$\;
+        将 \text{ALPHABET[cipher\_index]} 追加至 \text{output}；$\text{key\_index} \leftarrow \text{key\_index} + 1$\;
+    }{
+        讲 \text{ch} 原样追加至 \text{output}\;
+    }
+}
+\Return \text{output} 拼接为字符串\;
+\end{algorithm}
+
+\vspace{1.5em}
+
+\begin{algorithm}[H]
+\caption{\text{decrypt\_vigenere(ciphertext, key)}}
+\FuncDesc{维吉尼亚密码反向求解操作机。在偏移上做了退位改制（利用加法切换回抵扣减法）。这在整个体系里经常要被攻击系统频繁循环几十万遍重复召唤，速度和循环指代的精准性就是最高纲领。}
+\KwIn{\text{ciphertext}（带逆向拆除的外壳）；\text{key}（猜测解用的秘钥匙条）}
+\KwOut{逆剥脱出本原的字符串结果}
+\setcounter{AlgoLine}{0}
+$\text{key} \leftarrow \text{key}$ 中所有字母提取后转大写\;
+\If{\text{key} 为空}{抛出 \text{ValueError}\;}
+$\text{output} \leftarrow [\,]$；$\text{key\_index} \leftarrow 0$\;
+\For{\text{ch} $\in$ \text{ciphertext.upper()}}{
+    \eIf{\text{ch} $\in$ \text{ALPHABET}}{
+        \tcp{此处取对应解的减法，这是它和加密逻辑唯一的背影区别}
+        $\text{shift} \leftarrow \text{ALPHABET.index}\bigl(\text{key}[\text{key\_index} \bmod |\text{key}|]\bigr)$\;
+        $\text{plain\_index} \leftarrow (\text{ALPHABET.index(ch)} - \text{shift}) \bmod 26$\;
+        将 \text{ALPHABET[plain\_index]} 追加至 \text{output}；$\text{key\_index} \leftarrow \text{key\_index} + 1$\;
+    }{
+        将 \text{ch} 原样追加至 \text{output}\;
+    }
+}
+\Return \text{output} 拼接为字符串\;
+\end{algorithm}
+
+\clearpage
+% =====================================================================
+% 15. brute_force_vigenere
+% =====================================================================
+\begin{algorithm}[H]
+\caption{\text{brute\_force\_vigenere(ciphertext, max\_key\_len, top\_n)}}
+\FuncDesc{模拟攻击防爆盾时的穷尽拆弹工作。维吉尼亚以强大的乘阶基石保证不被秒突，然而通过限制最大密钥挖掘纵深，我们在教学环境可以用逐层拔高的长尾递归打通浅层防御带。展示由简到难指数暴走过程时最为有教学意义的展示段落。}
+\KwIn{\text{ciphertext}；最大挖局锁链深底数值 \text{max\_key\_len}；\text{top\_n}}
+\KwOut{综合战绩大赏（包括发掘用的那根动态密匙本体一并在内供参观参阅）}
+\setcounter{AlgoLine}{0}
+\If{\text{max\_key\_len} $< 1$}{抛出 \text{ValueError}\;}
+\If{\text{max\_key\_len} $> 3$}{
+    \tcp{人工紧急阻尼设置。因为到了 4 每走一次就是几十万尝试运算级别，避免死循环必须控制上水线}
+    抛出 \text{ValueError}\;
+}
+$\text{results} \leftarrow [\,]$\;
+\tcp{开始阶梯探索游戏：层级逐渐由一拉到上限层，进行组合大泛游}
+\For{\text{key\_len} $\leftarrow 1$ \KwTo \text{max\_key\_len}}{
+    \tcp{调动外部的交叉乘积乘法矩阵批量供卵，每一个孵化出来的密码都要验一次血型}
+    \For{\text{key\_tuple} $\in$ \text{product(ALPHABET, repeat=key\_len)}}{
+        $\text{key} \leftarrow \text{key\_tuple}$ 拼接为字符串\;
+        $\text{plaintext} \leftarrow \text{decrypt\_vigenere(ciphertext, key)}$\;
+        $\text{score} \leftarrow \text{score\_plaintext(plaintext)}$\;
+        \tcp{收纳合格证供后续上送总监处理决议}
+        将 $\{\text{key, plaintext, score}\}$ 追加到 \text{results}\;
+    }
+}
+\Return \text{top\_results(results, top\_n)}\;
+\end{algorithm}
+
+\end{document}

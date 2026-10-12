@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}用户登录{% endblock %}
+{% block content %}
+<div class="card auth-card">
+  <h2>用户登录</h2>
+  <form method="post" action="{{ url_for('login') }}">
+    <label>用户名</label>
+    <input type="text" name="username" required autofocus placeholder="请输入用户名">
+    
+    <label>密码</label>
+    <input type="password" name="password" required placeholder="请输入密码">
+
+    <label>二次验证模拟码（实验固定为 12345）</label>
+    <input type="text" name="otp_code" required placeholder="请输入 12345">
+    
+    <label>模拟来源 IP（实验用，可留空）</label>
+    <input type="text" name="sim_ip" placeholder="如 10.0.0.5，用于演示异地登录">
+    
+    <button type="submit">登录</button>
+  </form>
+  <p class="hint">还没有账号？<a href="{{ url_for('register') }}">去注册</a></p>
+</div>
+{% endblock %}

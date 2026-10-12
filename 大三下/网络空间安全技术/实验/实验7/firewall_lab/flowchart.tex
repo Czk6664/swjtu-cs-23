@@ -1,0 +1,132 @@
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage[UTF8]{ctex}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
+
+\definecolor{fwBlue}{RGB}{39, 99, 171}
+\definecolor{fwGreen}{RGB}{38, 137, 86}
+\definecolor{fwGold}{RGB}{214, 154, 45}
+\definecolor{fwRed}{RGB}{197, 82, 66}
+\definecolor{fwGray}{RGB}{245, 247, 250}
+\definecolor{fwLine}{RGB}{70, 85, 105}
+
+\begin{document}
+\begin{tikzpicture}[
+    font=\sffamily,
+    >=Stealth,
+    node distance=8mm,
+    startstop/.style={
+        rectangle,
+        rounded corners=7pt,
+        minimum width=30mm,
+        minimum height=9mm,
+        align=center,
+        draw=fwGreen,
+        line width=1.1pt,
+        fill=fwGreen!12,
+        font=\sffamily\bfseries
+    },
+    process/.style={
+        rectangle,
+        rounded corners=5pt,
+        text width=46mm,
+        minimum height=10mm,
+        align=center,
+        draw=fwBlue,
+        line width=0.9pt,
+        fill=fwBlue!8,
+        font=\sffamily\small
+    },
+    decision/.style={
+        diamond,
+        aspect=2.25,
+        text width=34mm,
+        inner sep=1mm,
+        align=center,
+        draw=fwGold,
+        line width=1pt,
+        fill=fwGold!15,
+        font=\sffamily\small\bfseries
+    },
+    branch/.style={
+        rectangle,
+        rounded corners=5pt,
+        text width=42mm,
+        minimum height=11mm,
+        align=center,
+        draw=fwRed,
+        line width=0.8pt,
+        fill=fwRed!8,
+        font=\sffamily\footnotesize
+    },
+    note/.style={
+        rectangle,
+        rounded corners=4pt,
+        text width=40mm,
+        align=left,
+        draw=fwLine!45,
+        dashed,
+        fill=fwGray,
+        inner sep=4pt,
+        font=\sffamily\scriptsize
+    },
+    mainarrow/.style={->, line width=1pt, draw=fwLine},
+    brancharrow/.style={->, line width=0.85pt, draw=fwRed!80!black},
+    branchline/.style={line width=0.85pt, draw=fwRed!80!black},
+    labeltext/.style={font=\sffamily\scriptsize, fill=white, inner sep=1pt}
+]
+
+% Main workflow
+\node[startstop] (start) {开始};
+\node[process, below=of start] (read) {读取实验拓扑\\与策略需求};
+\node[process, below=of read] (init) {初始化规则表、状态表、\\NAT 表与日志存储};
+\node[process, below=of init] (baseline) {执行基线连通性测试};
+\node[process, below=of baseline] (traffic) {按实验项目生成\\测试流量};
+\node[decision, below=12mm of traffic] (judge) {进入防火墙\\决策流程};
+\node[process, below=18mm of judge] (record) {记录命中规则、动作、\\时间与原因};
+\node[process, below=of record] (compare) {对比预期结果\\与实际结果};
+\node[process, below=of compare] (report) {输出实验记录表\\与分析结论};
+\node[startstop, below=of report] (end) {结束};
+
+% Decision branches
+\node[branch, right=28mm of judge] (statehit) {状态表命中\\按状态检测逻辑处理};
+\node[branch, below=8mm of statehit] (rulehit) {状态表未命中\\按规则表自上而下匹配};
+\node[branch, below=8mm of rulehit] (default) {无规则命中\\执行默认策略};
+\node[note, right=12mm of rulehit] (note) {判定顺序：\\1. 优先检查已建立连接；\\2. 再检查静态过滤规则；\\3. 最后执行默认拒绝或允许。};
+
+% Main arrows
+\draw[mainarrow] (start) -- (read);
+\draw[mainarrow] (read) -- (init);
+\draw[mainarrow] (init) -- (baseline);
+\draw[mainarrow] (baseline) -- (traffic);
+\draw[mainarrow] (traffic) -- (judge);
+\draw[mainarrow] (record) -- (compare);
+\draw[mainarrow] (compare) -- (report);
+\draw[mainarrow] (report) -- (end);
+
+% Branch arrows
+\draw[brancharrow] (judge.east) -- node[labeltext, above] {已建立连接} (statehit.west);
+\draw[brancharrow] (statehit.south) -- node[labeltext, right] {否则} (rulehit.north);
+\draw[brancharrow] (rulehit.south) -- node[labeltext, right] {仍未命中} (default.north);
+
+% Merge branches back to record.  The bus is routed below the last branch
+% so that the return line does not cross branch-node text.
+\coordinate (bus) at ($(default.south)+(0,-7mm)$);
+\coordinate (merge) at ($(record.east)+(11mm,0)$);
+\draw[branchline] (statehit.east) -- ++(8mm,0) |- (bus);
+\draw[branchline] (rulehit.east) -- ++(8mm,0) |- (bus);
+\draw[branchline] (default.east) -- ++(8mm,0) |- (bus);
+\draw[brancharrow] (bus) -| (merge) -- (record.east);
+
+% Group branch area
+\node[
+    draw=fwRed!55,
+    dashed,
+    rounded corners=6pt,
+    line width=0.7pt,
+    inner sep=7pt,
+    fit=(statehit)(rulehit)(default)(note),
+    label={[font=\sffamily\small\bfseries,color=fwRed!80!black]above:三类访问控制路径}
+] {};
+
+\end{tikzpicture}
+\end{document}

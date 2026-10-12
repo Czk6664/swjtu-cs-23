@@ -1,0 +1,53 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.kubeconfig
+*kubeconfig*
+config
+credentials
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+.mypy_cache/
+
+# Docker and runtime output
+*.log
+logs/
+tmp/
+dist/
+build/
+.docker/
+
+# Reports generated locally
+report/*.pdf
+report/*.docx
+report/*.html
+report/screenshots/*
+!report/screenshots/.gitkeep
+report/charts/*
+!report/charts/.gitkeep
+
+# IDE and OS
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
+
+# Generated monitoring chart extraction
+monitoring/chart-extract/
+
+
+# Offline Helm packages
+*.tgz
+

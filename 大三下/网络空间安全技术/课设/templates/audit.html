@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}安全审计{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>安全审计结果</h2>
+  <div class="stats">
+    <div class="stat"><span>{{ report.total_logs }}</span></div>
+    <div class="stat ok"><span>{{ report.success_logs }}</span></div>
+    <div class="stat bad"><span>{{ report.failed_logs }}</span></div>
+    <div class="stat warn"><span>{{ report.alerts|length }}</span></div>
+  </div>
+
+  <h3>异常类型统计</h3>
+  <div class="table-container">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>异常类型</th>
+          <th>命中次数</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for key, name in type_names.items() %}
+        <tr>
+          <td>{{ name }}</td>
+          <td>{{ report.summary[key] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h3>告警明细</h3>
+  {% if report.alerts %}
+  <div class="table-container">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>时间</th>
+          <th>账号</th>
+          <th>异常类型</th>
+          <th>详情</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in report.alerts %}
+        <tr class="alert-row">
+          <td>{{ a.time }}</td>
+          <td>{{ a.username }}</td>
+          <td><span class="tag">{{ a.type_name }}</span></td>
+          <td>{{ a.detail }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="hint">未检测到异常登录行为。</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>最近登录日志</h3>
+  <p class="hint" style="margin-top: 0; margin-bottom: 16px;">最多显示 50 条记录</p>
+  <div class="table-container">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>时间</th>
+          <th>账号</th>
+          <th>IP</th>
+          <th>结果</th>
+          <th>原因</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr class="{{ 'log-ok' if log['success'] else 'log-bad' }}">
+          <td>{{ log["created_at"] }}</td>
+          <td>{{ log["username"] }}</td>
+          <td>{{ log["ip"] }}</td>
+          <td>{{ "成功" if log["success"] else "失败" }}</td>
+          <td>{{ log["reason"] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

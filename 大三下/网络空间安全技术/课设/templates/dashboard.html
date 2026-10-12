@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}个人中心{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>欢迎，{{ user["username"] }}</h2>
+  <table class="kv">
+    <tr>
+      <th>账号创建时间</th>
+      <td>{{ user["created_at"] }}</td>
+    </tr>
+    <tr>
+      <th>最近登录时间</th>
+      <td>{{ user["last_login_at"] }}</td>
+    </tr>
+    <tr>
+      <th>当前失败计数</th>
+      <td>{{ user["failed_count"] }}</td>
+    </tr>
+    <tr>
+      <th>锁定状态</th>
+      <td>{{ user["locked_until"] if user["locked_until"] else "正常（未锁定）" }}</td>
+    </tr>
+  </table>
+</div>
+
+<div class="card">
+  <h3>我的最近登录记录</h3>
+  <div class="table-container">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>时间</th>
+          <th>IP</th>
+          <th>结果</th>
+          <th>原因</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr class="{{ 'log-ok' if log['success'] else 'log-bad' }}">
+          <td>{{ log["created_at"] }}</td>
+          <td>{{ log["ip"] }}</td>
+          <td>{{ "成功" if log["success"] else "失败" }}</td>
+          <td>{{ log["reason"] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

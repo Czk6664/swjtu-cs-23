@@ -1,0 +1,155 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>云计算技术结束大作业</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2937;
+      --muted: #5b6472;
+      --line: #d6dbe3;
+      --accent: #1677ff;
+      --ok: #12805c;
+      --paper: #ffffff;
+      --bg: #eef3f8;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    main {
+      width: min(1040px, calc(100% - 32px));
+      margin: 32px auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 12px 28px rgba(31, 41, 55, 0.08);
+    }
+    header {
+      padding: 28px 32px;
+      border-bottom: 1px solid var(--line);
+      background: #f8fafc;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      padding: 24px 32px 8px;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: #fff;
+    }
+    .label {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .value {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    section {
+      padding: 18px 32px 32px;
+    }
+    code {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #eef6ff;
+      color: #0b5cad;
+      font-family: Consolas, "Courier New", monospace;
+    }
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 6px;
+      padding: 10px 14px;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    #api-result {
+      min-height: 44px;
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfdff;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .ok {
+      color: var(--ok);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>云计算技术结束大作业</h1>
+      <p class="subtitle">Flask 后端 API + Redis 数据库 + Nginx 前端，本页用于本地和 CCE 验收识别。</p>
+    </header>
+
+    <div class="grid" aria-label="学生信息">
+      <div class="panel">
+        <p class="label">姓名</p>
+        <p class="value">程泽凯，王晨羽</p>
+      </div>
+      <div class="panel">
+        <p class="label">学号</p>
+        <p class="value">2023112621,2023114337</p>
+      </div>
+      <div class="panel">
+        <p class="label">班级</p>
+        <p class="value">2023-04班</p>
+      </div>
+    </div>
+
+    <section>
+      <p>接口验收：访问 <code>/api/ping</code> 应返回 <span class="ok">{"status":"ok"}</span>。</p>
+      <button type="button" id="check-api">检查后端 API</button>
+      <pre id="api-result">等待检查...</pre>
+    </section>
+  </main>
+
+  <script>
+    const result = document.querySelector("#api-result");
+    document.querySelector("#check-api").addEventListener("click", async () => {
+      result.textContent = "请求中...";
+      try {
+        const response = await fetch("/api/ping");
+        const data = await response.json();
+        result.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        result.textContent = `请求失败：${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html>

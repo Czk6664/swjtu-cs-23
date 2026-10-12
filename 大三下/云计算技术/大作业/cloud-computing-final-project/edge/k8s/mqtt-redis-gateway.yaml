@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mqtt-redis-gateway
+  namespace: default
+  labels:
+    app: mqtt-redis-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mqtt-redis-gateway
+  template:
+    metadata:
+      labels:
+        app: mqtt-redis-gateway
+    spec:
+      imagePullSecrets:
+        - name: swr-secret
+      containers:
+        - name: gateway
+          image: swr.cn-south-1.myhuaweicloud.com/czk-course/mqtt-redis-gateway:v1
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "64Mi"
+            limits:
+              cpu: "300m"
+              memory: "256Mi"
+          env:
+            - name: MQTT_HOST
+              value: mqtt-broker
+            - name: MQTT_PORT
+              value: "1883"
+            - name: MQTT_TOPIC
+              value: edge/sensors/#
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: REDIS_PORT
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: password
+            - name: REDIS_STREAM
+              value: edge:sensor:stream

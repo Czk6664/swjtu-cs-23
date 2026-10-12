@@ -1,0 +1,841 @@
+实验一：基础数字签名重点步骤   basic_signature.py
+（1）生成一组签名密钥对，保存私钥对象和公钥对象。
+（2）准备一段实验消息，将其统一转换为 bytes。
+（3）调用签名函数，使用私钥对消息生成签名值。
+（4）调用验签函数，使用公钥验证消息和签名是否匹配。
+（5）修改消息中的一个字符或字节，再次验签，观察验证结果变化。
+（6）使用错误公钥验签，观察验证结果变化。
+
+def sign_basic(private_key, message: bytes, algorithm: str = "RSA-PSS") -> bytes:
+    """
+    功能：使用私钥对消息进行基础签名。
+    输入：私钥、消息、签名算法名称。
+    输出：签名值。
+    """
+    if algorithm != "RSA-PSS":
+        raise ValueError(f"Unsupported signature algorithm: {algorithm}")
+    return private_key.sign(message, rsa_pss_padding("SHA256"), get_hash_algorithm("SHA256"))
+
+
+def verify_basic(public_key, message: bytes, signature: bytes,
+                 algorithm: str = "RSA-PSS") -> bool:
+    """
+    功能：使用公钥验证签名。
+    输出：True表示验证通过，False表示验证失败。
+    """
+    if algorithm != "RSA-PSS":
+        raise ValueError(f"Unsupported signature algorithm: {algorithm}")
+    try:
+        public_key.verify(
+            signature,
+            message,
+            rsa_pss_padding("SHA256"),
+            get_hash_algorithm("SHA256"),
+        )
+        return True
+    except (InvalidSignature, ValueError, TypeError):
+        return False
+
+
+def run_basic_signature_case(message: bytes) -> dict:
+    """
+    功能：组织基础签名实验流程。
+    返回：密钥信息摘要、签名展示片段、验签结果、异常情况记录。
+    """
+    private_key, public_key = generate_rsa_key_pair()
+    wrong_private_key, wrong_public_key = generate_rsa_key_pair()
+    signature = sign_basic(private_key, message)
+    tampered = bytearray(message)
+    tampered[-1] ^= 0x01
+
+    return {
+        "key_info": {
+            "algorithm": "RSA-PSS + SHA256",
+            "key_size": private_key.key_size,
+            "public_key_fingerprint": public_key_fingerprint(public_key),
+            "wrong_public_key_fingerprint": public_key_fingerprint(wrong_public_key),
+            "wrong_private_key_size": wrong_private_key.key_size,
+        },
+        "signature_preview": preview_bytes(signature),
+        "signature_length": len(signature),
+        "verify_original": verify_basic(public_key, message, signature),
+        "verify_tampered": verify_basic(public_key, bytes(tampered), signature),
+        "verify_wrong_public_key": verify_basic(wrong_public_key, message, signature),
+        "exceptions": [],
+    }
+
+
+
+实验二：摘要后签名与完整性检测重点步骤   digest_signature.py
+（1）选择摘要算法，计算原始消息的摘要。
+（2）使用私钥对摘要或由签名算法内部处理的摘要对象进行签名。
+（3）接收方重新计算消息摘要并验证签名。
+（4）对消息进行微小改动，再重新计算摘要并验证签名。
+（5）比较原摘要和篡改后摘要的差异，记录验签结果。
+
+def sign_with_digest(private_key, message: bytes,
+                     hash_alg: str = "SHA256",
+                     sign_alg: str = "RSA-PSS") -> dict:
+    """
+    功能：计算消息摘要并生成数字签名。
+    返回：摘要展示值、签名值、算法标识等。
+    """
+    if sign_alg != "RSA-PSS":
+        raise ValueError(f"Unsupported signature algorithm: {sign_alg}")
+    digest = hash_bytes(message, hash_alg)
+    signature = private_key.sign(
+        digest,
+        rsa_pss_padding(hash_alg),
+        utils.Prehashed(get_hash_algorithm(hash_alg)),
+    )
+    return {
+        "hash_alg": hash_alg,
+        "sign_alg": sign_alg,
+        "digest": digest,
+        "digest_hex": digest.hex(),
+        "digest_preview": preview_bytes(digest),
+        "signature": signature,
+        "signature_preview": preview_bytes(signature),
+    }
+
+
+def verify_with_digest(public_key, message: bytes, signature: bytes,
+                       hash_alg: str = "SHA256",
+                       sign_alg: str = "RSA-PSS") -> bool:
+    """
+    功能：重新计算摘要并验证签名。
+    """
+    if sign_alg != "RSA-PSS":
+        raise ValueError(f"Unsupported signature algorithm: {sign_alg}")
+    digest = hash_bytes(message, hash_alg)
+    try:
+        public_key.verify(
+            signature,
+            digest,
+            rsa_pss_padding(hash_alg),
+            utils.Prehashed(get_hash_algorithm(hash_alg)),
+        )
+        return True
+    except (InvalidSignature, ValueError, TypeError):
+        return False
+
+
+def tamper_message(message: bytes, mode: str = "flip_one_byte") -> bytes:
+    """
+    功能：构造被篡改的消息，用于完整性检测实验。
+    """
+    if not message:
+        return b"x"
+    data = bytearray(message)
+    if mode == "flip_one_byte":
+        data[-1] ^= 0x01
+    elif mode == "replace_student_id":
+        data = bytearray(message.replace(b"20260001", b"20260002"))
+    else:
+        raise ValueError(f"Unsupported tamper mode: {mode}")
+    return bytes(data)
+
+
+def compare_digest_before_after(original: bytes, tampered: bytes,
+                                hash_alg: str = "SHA256") -> dict:
+    """
+    功能：比较篡改前后摘要，用于实验分析。
+    """
+    original_digest = hash_bytes(original, hash_alg)
+    tampered_digest = hash_bytes(tampered, hash_alg)
+    return {
+        "hash_alg": hash_alg,
+        "original_digest_hex": original_digest.hex(),
+        "tampered_digest_hex": tampered_digest.hex(),
+        "original_digest_preview": preview_bytes(original_digest),
+        "tampered_digest_preview": preview_bytes(tampered_digest),
+        "same": original_digest == tampered_digest,
+    }
+
+
+
+实验三：文件分离式数字签名重点步骤  file_signature.py
+（1）准备一个文本文件或二进制文件作为待签名对象。
+（2）分块读取文件并计算摘要，避免大文件占用过多内存。
+（3）对文件摘要或文件内容生成签名，保存为独立签名文件。
+（4）使用公钥、原文件和签名文件进行验证。
+（5）复制原文件并修改部分内容，验证签名是否失效。
+（6）记录文件大小、摘要展示片段、签名文件大小和验证结果。
+
+def digest_file(file_path: str, hash_alg: str = "SHA256") -> bytes:
+    """
+    功能：分块读取文件并计算文件摘要。
+    """
+    digest = hashes.Hash(get_hash_algorithm(hash_alg))
+    with open(file_path, "rb") as file_obj:
+        for chunk in iter(lambda: file_obj.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.finalize()
+
+
+def sign_file(private_key, file_path: str, sign_path: str) -> None:
+    """
+    功能：对文件生成分离式签名，并写入签名文件。
+    """
+    hash_alg = "SHA256"
+    digest = digest_file(file_path, hash_alg)
+    signature = private_key.sign(
+        digest,
+        rsa_pss_padding(hash_alg),
+        utils.Prehashed(get_hash_algorithm(hash_alg)),
+    )
+    package = {
+        "format": "detached-file-signature-v1",
+        "sign_alg": "RSA-PSS",
+        "hash_alg": hash_alg,
+        "created_at": utc_timestamp(),
+        "file_digest_hex": digest.hex(),
+        "signature_b64": b64encode(signature),
+    }
+    Path(sign_path).write_text(json.dumps(package, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def verify_file_signature(public_key, file_path: str, sign_path: str) -> bool:
+    """
+    功能：读取原文件和签名文件，验证签名是否有效。
+    """
+    try:
+        package = json.loads(Path(sign_path).read_text(encoding="utf-8"))
+        hash_alg = package.get("hash_alg", "SHA256")
+        digest = digest_file(file_path, hash_alg)
+        signature = b64decode(package["signature_b64"])
+        public_key.verify(
+            signature,
+            digest,
+            rsa_pss_padding(hash_alg),
+            utils.Prehashed(get_hash_algorithm(hash_alg)),
+        )
+        return True
+    except (InvalidSignature, OSError, KeyError, ValueError, TypeError, json.JSONDecodeError):
+        return False
+
+
+def build_file_signature_report(file_path: str, sign_path: str,
+                                verify_result: bool) -> dict:
+    """
+    功能：整理文件签名实验结果，供实验报告引用。
+    """
+    digest = digest_file(file_path)
+    file_stat = Path(file_path).stat()
+    sign_stat = Path(sign_path).stat()
+    return {
+        "file_path": str(file_path),
+        "sign_path": str(sign_path),
+        "file_size": file_stat.st_size,
+        "sign_file_size": sign_stat.st_size,
+        "digest_hex": digest.hex(),
+        "digest_preview": preview_bytes(digest),
+        "verify_result": verify_result,
+    }
+
+
+
+实验四：带元数据的数字签名重要步骤  metadata_signature.py
+（1）构造待签名消息，并生成元数据字段。
+（2）将消息和元数据按固定格式序列化。
+（3）对序列化后的数据生成签名。
+（4）接收方解析数据包，检查算法标识、时间戳和随机数格式。
+（5）对序列化数据进行验签。
+（6）修改元数据中的时间或随机数，再次验签，观察结果。
+
+def build_metadata(sender_id: str, algorithm: str) -> dict:
+    """
+    功能：构造签名元数据，包括时间戳、随机数、算法标识等。
+    """
+    return {
+        "sender_id": sender_id,
+        "receiver_id": "Bob",
+        "algorithm_suite": algorithm,
+        "timestamp": utc_timestamp(),
+        "nonce": random_nonce_hex(16),
+    }
+
+
+def serialize_signed_content(message: bytes, metadata: dict) -> bytes:
+    """
+    功能：按固定规范序列化消息和元数据。
+    注意：验签时必须使用完全相同的序列化规则。
+    """
+    return canonical_json_bytes(
+        {
+            "message_b64": b64encode(message),
+            "metadata": metadata,
+        }
+    )
+
+
+def sign_with_metadata(private_key, message: bytes, metadata: dict) -> dict:
+    """
+    功能：对消息和元数据整体生成签名数据包。
+    """
+    serialized = serialize_signed_content(message, metadata)
+    signature = private_key.sign(
+        serialized,
+        rsa_pss_padding("SHA256"),
+        get_hash_algorithm("SHA256"),
+    )
+    return {
+        "format": "metadata-signature-v1",
+        "message_b64": b64encode(message),
+        "metadata": metadata,
+        "sign_alg": "RSA-PSS",
+        "hash_alg": "SHA256",
+        "signature_b64": b64encode(signature),
+    }
+
+
+def verify_metadata_signature(public_key, package: dict) -> bool:
+    """
+    功能：解析签名数据包，重新序列化并验证签名。
+    """
+    try:
+        metadata = package["metadata"]
+        if not _metadata_format_ok(metadata):
+            return False
+        message = b64decode(package["message_b64"])
+        signature = b64decode(package["signature_b64"])
+        public_key.verify(
+            signature,
+            serialize_signed_content(message, metadata),
+            rsa_pss_padding(package.get("hash_alg", "SHA256")),
+            get_hash_algorithm(package.get("hash_alg", "SHA256")),
+        )
+        return True
+    except (InvalidSignature, KeyError, ValueError, TypeError):
+        return False
+
+
+
+实验五：先签名后加密重要步骤  secure_signature.py
+（1）发送方计算明文摘要并生成签名。
+（2）构造内部明文包：消息、签名、元数据。
+（3）生成会话密钥，使用对称加密算法加密内部明文包。
+（4）使用接收方公钥加密会话密钥，形成外部安全包。
+（5）接收方使用私钥恢复会话密钥，并解密内部明文包。
+（6）接收方使用发送方公钥验证签名。
+（7）对密文、签名或元数据做篡改测试，记录解密和验签结果。
+
+def sign_then_encrypt(sender_private_key, receiver_public_key,
+                      plaintext: bytes, metadata: dict) -> dict:
+    """
+    功能：先签名，再对消息、签名和元数据整体加密。
+    输出：安全消息包，不输出固定密文答案。
+    """
+    signed_data = _sign_then_encrypt_signed_data(plaintext, metadata)
+    signature = sign_canonical_dict(sender_private_key, signed_data)
+    inner_package = {
+        "format": "sign-then-encrypt-inner-v1",
+        "plaintext_b64": b64encode(plaintext),
+        "metadata": metadata,
+        "sign_alg": "RSA-PSS",
+        "hash_alg": "SHA256",
+        "signature_b64": b64encode(signature),
+    }
+    encrypted = aes_gcm_encrypt(canonical_json_bytes(inner_package))
+    encrypted_key = rsa_encrypt(receiver_public_key, encrypted["key"])
+    return {
+        "format": "sign-then-encrypt-v1",
+        "algorithm_suite": ENCRYPTION_SUITE,
+        "encrypted_key_b64": b64encode(encrypted_key),
+        "nonce_b64": b64encode(encrypted["nonce"]),
+        "ciphertext_b64": b64encode(encrypted["ciphertext"]),
+        "tag_b64": b64encode(encrypted["tag"]),
+    }
+
+
+def decrypt_then_verify(receiver_private_key, sender_public_key,
+                        secure_package: dict) -> dict:
+    """
+    功能：先解密安全消息包，再验证数字签名。
+    返回：明文、解密结果、验签结果、错误原因等。
+    """
+    try:
+        session_key = rsa_decrypt(receiver_private_key, b64decode(secure_package["encrypted_key_b64"]))
+        inner_bytes = aes_gcm_decrypt(
+            session_key,
+            b64decode(secure_package["nonce_b64"]),
+            b64decode(secure_package["ciphertext_b64"]),
+            b64decode(secure_package["tag_b64"]),
+        )
+        inner_package = json.loads(inner_bytes.decode("utf-8"))
+        plaintext = b64decode(inner_package["plaintext_b64"])
+        signed_data = _sign_then_encrypt_signed_data(plaintext, inner_package["metadata"])
+        verify_ok = verify_canonical_dict(
+            sender_public_key,
+            signed_data,
+            b64decode(inner_package["signature_b64"]),
+        )
+        return {
+            "decrypt_success": True,
+            "verify_success": verify_ok,
+            "plaintext": plaintext,
+            "metadata": inner_package["metadata"],
+            "error": None if verify_ok else "signature verification failed",
+        }
+    except Exception as exc:
+        return {
+            "decrypt_success": False,
+            "verify_success": False,
+            "plaintext": None,
+            "metadata": None,
+            "error": type(exc).__name__,
+        }
+
+
+
+实验六：先加密后签名重要步骤  secure_signature.py
+（1）发送方生成会话密钥并加密明文，得到密文和完整性标签。
+（2）使用接收方公钥加密会话密钥。
+（3）构造外层待签名数据：密文、加密会话密钥、随机数、算法标识等。
+（4）发送方使用私钥对外层待签名数据签名。
+（5）接收方先使用发送方公钥验证外层签名。
+（6）验签通过后，再使用接收方私钥恢复会话密钥并解密密文。
+（7）记录签名篡改、密文篡改、错误公钥、错误私钥等情况下的结果。
+
+def encrypt_then_sign(sender_private_key, receiver_public_key,
+                      plaintext: bytes, metadata: dict) -> dict:
+    """
+    功能：先加密明文，再对密文包进行数字签名。
+    """
+    encrypted = aes_gcm_encrypt(plaintext)
+    encrypted_key = rsa_encrypt(receiver_public_key, encrypted["key"])
+    package = {
+        "format": "encrypt-then-sign-v1",
+        "algorithm_suite": ENCRYPTION_SUITE,
+        "encrypted_key_b64": b64encode(encrypted_key),
+        "nonce_b64": b64encode(encrypted["nonce"]),
+        "ciphertext_b64": b64encode(encrypted["ciphertext"]),
+        "tag_b64": b64encode(encrypted["tag"]),
+        "metadata": metadata,
+        "sign_alg": "RSA-PSS",
+        "hash_alg": "SHA256",
+    }
+    package["signature_b64"] = b64encode(
+        sign_canonical_dict(sender_private_key, _encrypt_then_sign_fields(package))
+    )
+    return package
+
+
+def verify_then_decrypt(receiver_private_key, sender_public_key,
+                        signed_cipher_package: dict) -> dict:
+    """
+    功能：先验证外层签名，再解密密文。
+    """
+    try:
+        verify_ok = verify_canonical_dict(
+            sender_public_key,
+            _encrypt_then_sign_fields(signed_cipher_package),
+            b64decode(signed_cipher_package["signature_b64"]),
+        )
+        if not verify_ok:
+            return {
+                "verify_success": False,
+                "decrypt_success": False,
+                "plaintext": None,
+                "error": "signature verification failed",
+            }
+        session_key = rsa_decrypt(
+            receiver_private_key,
+            b64decode(signed_cipher_package["encrypted_key_b64"]),
+        )
+        plaintext = aes_gcm_decrypt(
+            session_key,
+            b64decode(signed_cipher_package["nonce_b64"]),
+            b64decode(signed_cipher_package["ciphertext_b64"]),
+            b64decode(signed_cipher_package["tag_b64"]),
+        )
+        return {
+            "verify_success": True,
+            "decrypt_success": True,
+            "plaintext": plaintext,
+            "error": None,
+        }
+    except Exception as exc:
+        return {
+            "verify_success": True,
+            "decrypt_success": False,
+            "plaintext": None,
+            "error": type(exc).__name__,
+        }
+
+
+
+实验七：数字信封 + 数字签名综合实验重要步骤  secure_signature.py
+（1）发送方生成随机会话密钥和随机数。
+（2）使用会话密钥对明文执行认证加密，得到密文和完整性标签。
+（3）使用接收方公钥加密会话密钥。
+（4）构造待签名字段集合，确保密文、加密会话密钥、算法标识和接收方标识都被绑定。
+（5）发送方使用私钥对待签名字段生成签名。
+（6）接收方先检查数据包格式和算法标识。
+（7）接收方验证发送方签名。
+（8）接收方用私钥解密会话密钥，再用会话密钥解密密文并验证完整性标签。
+（9）进行篡改测试，分别修改密文、标签、算法标识、接收方标识和签名，记录失败位置。
+
+def build_secure_envelope(sender_private_key, receiver_public_key,
+                          plaintext: bytes, sender_id: str,
+                          receiver_id: str) -> dict:
+    """
+    功能：构造数字信封 + 数字签名安全包。
+    输出：包含加密会话密钥、密文、完整性标签、签名和元数据的数据包。
+    """
+    encrypted = aes_gcm_encrypt(plaintext)
+    encrypted_key = rsa_encrypt(receiver_public_key, encrypted["key"])
+    secure_envelope = {
+        "format": "secure-envelope-v1",
+        "algorithm_suite": ENCRYPTION_SUITE,
+        "sender_id": sender_id,
+        "receiver_id": receiver_id,
+        "created_at": utc_timestamp(),
+        "nonce_b64": b64encode(encrypted["nonce"]),
+        "encrypted_key_b64": b64encode(encrypted_key),
+        "ciphertext_b64": b64encode(encrypted["ciphertext"]),
+        "tag_b64": b64encode(encrypted["tag"]),
+        "sign_alg": "RSA-PSS",
+        "hash_alg": "SHA256",
+    }
+    secure_envelope["signature_b64"] = b64encode(
+        sign_canonical_dict(sender_private_key, _envelope_signed_fields(secure_envelope))
+    )
+    return secure_envelope
+
+
+def verify_secure_envelope_signature(sender_public_key,
+                                     secure_envelope: dict) -> bool:
+    """
+    功能：验证安全包中外层签名是否有效。
+    """
+    try:
+        if secure_envelope.get("algorithm_suite") != ENCRYPTION_SUITE:
+            return False
+        return verify_canonical_dict(
+            sender_public_key,
+            _envelope_signed_fields(secure_envelope),
+            b64decode(secure_envelope["signature_b64"]),
+        )
+    except (KeyError, ValueError, TypeError):
+        return False
+
+
+def open_secure_envelope(receiver_private_key, sender_public_key,
+                         secure_envelope: dict) -> dict:
+    """
+    功能：验证签名，解密会话密钥，解密密文并检测完整性。
+    返回：明文、签名验证结果、完整性检测结果、错误原因。
+    """
+    signature_ok = verify_secure_envelope_signature(sender_public_key, secure_envelope)
+    if not signature_ok:
+        return {
+            "signature_valid": False,
+            "decrypt_success": False,
+            "integrity_valid": False,
+            "plaintext": None,
+            "error": "signature verification failed",
+        }
+    try:
+        session_key = rsa_decrypt(receiver_private_key, b64decode(secure_envelope["encrypted_key_b64"]))
+        plaintext = aes_gcm_decrypt(
+            session_key,
+            b64decode(secure_envelope["nonce_b64"]),
+            b64decode(secure_envelope["ciphertext_b64"]),
+            b64decode(secure_envelope["tag_b64"]),
+        )
+        return {
+            "signature_valid": True,
+            "decrypt_success": True,
+            "integrity_valid": True,
+            "plaintext": plaintext,
+            "error": None,
+        }
+    except InvalidTag:
+        return {
+            "signature_valid": True,
+            "decrypt_success": False,
+            "integrity_valid": False,
+            "plaintext": None,
+            "error": "InvalidTag",
+        }
+    except Exception as exc:
+        return {
+            "signature_valid": True,
+            "decrypt_success": False,
+            "integrity_valid": False,
+            "plaintext": None,
+            "error": type(exc).__name__,
+        }
+
+
+def tamper_secure_envelope(secure_envelope: dict, field_name: str) -> dict:
+    """
+    功能：对指定字段做篡改，用于测试完整性检测和签名绑定效果。
+    """
+    if field_name in {"ciphertext_b64", "tag_b64", "encrypted_key_b64", "nonce_b64", "signature_b64"}:
+        return flip_b64_field(secure_envelope, field_name)
+    tampered = copy_package(secure_envelope)
+    if field_name == "algorithm_suite":
+        tampered[field_name] = "TAMPERED-" + tampered[field_name]
+    elif field_name == "receiver_id":
+        tampered[field_name] = tampered[field_name] + "-Mallory"
+    elif field_name == "sender_id":
+        tampered[field_name] = tampered[field_name] + "-Mallory"
+    else:
+        raise ValueError(f"Unsupported tamper field: {field_name}")
+    return tampered
+
+
+
+主程序应统一组织密钥生成、消息准备、各类签名实验、篡改测试和结果汇总。  main.py
+
+def run_all_experiments():
+    """
+    实验入口：
+    1. 读取或生成实验消息与文件
+    2. 生成发送方和接收方密钥对
+    3. 执行基础签名实验
+    4. 执行摘要签名与篡改检测实验
+    5. 执行文件分离式签名实验
+    6. 执行带元数据签名实验
+    7. 执行先签名后加密实验
+    8. 执行先加密后签名实验
+    9. 执行数字信封 + 签名综合实验
+    10. 汇总结果并输出报告数据
+    """
+    alice_private, alice_public = generate_rsa_key_pair()
+    bob_private, bob_public = generate_rsa_key_pair()
+    wrong_private, wrong_public = generate_rsa_key_pair()
+
+    results = {
+        "participants": {
+            "sender": "Alice",
+            "receiver": "Bob",
+            "alice_public_key_fingerprint": public_key_fingerprint(alice_public),
+            "bob_public_key_fingerprint": public_key_fingerprint(bob_public),
+            "wrong_public_key_fingerprint": public_key_fingerprint(wrong_public),
+        },
+        "messages": {
+            "M1": MESSAGE_M1.decode("utf-8"),
+            "M1_tampered": MESSAGE_M1_TAMPERED.decode("utf-8"),
+            "Mbin_length": len(MESSAGE_MBIN),
+            "Mbin_tail_hex": MESSAGE_MBIN[-4:].hex(),
+        },
+    }
+
+    basic_signature = sign_basic(alice_private, MESSAGE_M1)
+    results["experiment_1"] = {
+        "signature_preview": preview_bytes(basic_signature),
+        "signature_length": len(basic_signature),
+        "A1_correct_signature": verify_basic(alice_public, MESSAGE_M1, basic_signature),
+        "A2_tampered_message": verify_basic(alice_public, MESSAGE_M1_TAMPERED, basic_signature),
+        "A3_wrong_public_key": verify_basic(wrong_public, MESSAGE_M1, basic_signature),
+        "Mbin_signature_valid": verify_basic(
+            alice_public,
+            MESSAGE_MBIN,
+            sign_basic(alice_private, MESSAGE_MBIN),
+        ),
+    }
+
+    digest_package = sign_with_digest(alice_private, MESSAGE_M1)
+    digest_compare = compare_digest_before_after(MESSAGE_M1, MESSAGE_M1_TAMPERED)
+    results["experiment_2"] = {
+        "Hash(M1)": digest_compare["original_digest_hex"],
+        "Hash(M1')": digest_compare["tampered_digest_hex"],
+        "digest_same": digest_compare["same"],
+        "signature_preview": digest_package["signature_preview"],
+        "B1_original_message": verify_with_digest(alice_public, MESSAGE_M1, digest_package["signature"]),
+        "B2_tampered_message": verify_with_digest(alice_public, MESSAGE_M1_TAMPERED, digest_package["signature"]),
+        "B3_digest_compare": not digest_compare["same"],
+    }
+
+    file_path, tampered_file_path, sign_path, tampered_sign_path = _prepare_file_case()
+    sign_file(alice_private, str(file_path), str(sign_path))
+    _tamper_signature_file(sign_path, tampered_sign_path)
+    file_verify_result = verify_file_signature(alice_public, str(file_path), str(sign_path))
+    results["experiment_3"] = {
+        "report": build_file_signature_report(str(file_path), str(sign_path), file_verify_result),
+        "C1_signature_file_generated": sign_path.exists(),
+        "C2_original_file_verify": file_verify_result,
+        "C3_tampered_file_verify": verify_file_signature(alice_public, str(tampered_file_path), str(sign_path)),
+        "C4_tampered_signature_verify": verify_file_signature(alice_public, str(file_path), str(tampered_sign_path)),
+    }
+
+    metadata = _make_metadata()
+    metadata_package = sign_with_metadata(alice_private, MESSAGE_M1, metadata)
+    timestamp_tampered = copy_package(metadata_package)
+    timestamp_tampered["metadata"]["timestamp"] = "2026-04-21T00:00:00+00:00"
+    algorithm_tampered = copy_package(metadata_package)
+    algorithm_tampered["metadata"]["algorithm_suite"] = "RSA-PKCS1v15+SHA256"
+    receiver_tampered = copy_package(metadata_package)
+    receiver_tampered["metadata"]["receiver_id"] = "Mallory"
+    results["experiment_4"] = {
+        "D1_normal": verify_metadata_signature(alice_public, metadata_package),
+        "D2_modify_timestamp": verify_metadata_signature(alice_public, timestamp_tampered),
+        "D3_modify_algorithm_suite": verify_metadata_signature(alice_public, algorithm_tampered),
+        "D4_modify_receiver_id": verify_metadata_signature(alice_public, receiver_tampered),
+        "metadata": metadata,
+    }
+
+    ste_package = sign_then_encrypt(alice_private, bob_public, MESSAGE_M1, _make_metadata())
+    ste_signature_tampered_package = tamper_sign_then_encrypt_inner_signature(
+        bob_private,
+        bob_public,
+        ste_package,
+    )
+    results["experiment_5"] = {
+        "E1_normal": decrypt_then_verify(bob_private, alice_public, ste_package),
+        "E2_tamper_ciphertext": decrypt_then_verify(
+            bob_private,
+            alice_public,
+            tamper_package_b64_field(ste_package, "ciphertext_b64"),
+        ),
+        "E2_tamper_tag": decrypt_then_verify(
+            bob_private,
+            alice_public,
+            tamper_package_b64_field(ste_package, "tag_b64"),
+        ),
+        "E3_tamper_inner_signature": decrypt_then_verify(
+            bob_private,
+            alice_public,
+            ste_signature_tampered_package,
+        ),
+        "E4_wrong_private_key": decrypt_then_verify(wrong_private, alice_public, ste_package),
+        "ciphertext_preview": preview_bytes(b64decode(ste_package["ciphertext_b64"])),
+        "tag_preview": preview_bytes(b64decode(ste_package["tag_b64"])),
+    }
+
+    ets_package = encrypt_then_sign(alice_private, bob_public, MESSAGE_M1, _make_metadata())
+    results["experiment_6"] = {
+        "F1_normal": verify_then_decrypt(bob_private, alice_public, ets_package),
+        "F2_tamper_ciphertext": verify_then_decrypt(
+            bob_private,
+            alice_public,
+            tamper_package_b64_field(ets_package, "ciphertext_b64"),
+        ),
+        "F3_wrong_sender_public_key": verify_then_decrypt(bob_private, wrong_public, ets_package),
+        "F4_wrong_receiver_private_key": verify_then_decrypt(wrong_private, alice_public, ets_package),
+        "ciphertext_preview": preview_bytes(b64decode(ets_package["ciphertext_b64"])),
+        "tag_preview": preview_bytes(b64decode(ets_package["tag_b64"])),
+    }
+
+    envelope = build_secure_envelope(alice_private, bob_public, MESSAGE_M1, "Alice", "Bob")
+    results["experiment_7"] = {
+        "G1_normal": open_secure_envelope(bob_private, alice_public, envelope),
+        "G2_tamper_ciphertext": open_secure_envelope(
+            bob_private,
+            alice_public,
+            tamper_secure_envelope(envelope, "ciphertext_b64"),
+        ),
+        "G3_tamper_tag": open_secure_envelope(
+            bob_private,
+            alice_public,
+            tamper_secure_envelope(envelope, "tag_b64"),
+        ),
+        "G4_modify_algorithm_suite": open_secure_envelope(
+            bob_private,
+            alice_public,
+            tamper_secure_envelope(envelope, "algorithm_suite"),
+        ),
+        "G5_modify_receiver_id": open_secure_envelope(
+            bob_private,
+            alice_public,
+            tamper_secure_envelope(envelope, "receiver_id"),
+        ),
+        "G6_wrong_public_key": open_secure_envelope(bob_private, wrong_public, envelope),
+        "envelope_preview": {
+            "encrypted_key": preview_bytes(b64decode(envelope["encrypted_key_b64"])),
+            "ciphertext": preview_bytes(b64decode(envelope["ciphertext_b64"])),
+            "tag": preview_bytes(b64decode(envelope["tag_b64"])),
+            "message_digest": hash_bytes(MESSAGE_M1).hex(),
+            "created_at": envelope["created_at"],
+        },
+    }
+
+    results["generated_at"] = utc_timestamp()
+    return results
+
+
+def print_result_summary(results: dict):
+    """
+    功能：按实验编号输出结果摘要。
+    注意：只展示必要片段，不泄露私钥。
+    """
+    print("数字签名综合实验结果摘要")
+    print("=" * 56)
+    print("参与方：发送方 Alice（SK_A/PK_A），接收方 Bob（SK_B/PK_B）")
+    print(f"PK_A 指纹：{results['participants']['alice_public_key_fingerprint']}")
+    print(f"PK_B 指纹：{results['participants']['bob_public_key_fingerprint']}")
+    print(f"M1：{results['messages']['M1']}")
+    print(f"M1'：{results['messages']['M1_tampered']}")
+    print(f"Mbin：长度={results['messages']['Mbin_length']}，末尾hex={results['messages']['Mbin_tail_hex']}")
+
+    exp1 = results["experiment_1"]
+    print("\n实验一：基础数字签名")
+    print(f"Verify(PK_A, M1, Sig)  = {_yes_no(exp1['A1_correct_signature'])}")
+    print(f"Verify(PK_A, M1', Sig) = {_yes_no(exp1['A2_tampered_message'])}")
+    print(f"Verify(PK_B, M1, Sig)  = {_yes_no(exp1['A3_wrong_public_key'])}")
+    print(f"Mbin bytes验签          = {_yes_no(exp1['Mbin_signature_valid'])}")
+    print(f"签名片段：{exp1['signature_preview']}...，长度={exp1['signature_length']} bytes")
+
+    exp2 = results["experiment_2"]
+    tampered_hash = exp2["Hash(M1')"]
+    print("\n实验二：摘要后签名与完整性检测")
+    print(f"Hash(M1)  = {exp2['Hash(M1)']}")
+    print(f"Hash(M1') = {tampered_hash}")
+    print(f"摘要是否相同：{exp2['digest_same']}")
+    print(f"B1 原始消息验签：{_yes_no(exp2['B1_original_message'])}")
+    print(f"B2 篡改消息验签：{_yes_no(exp2['B2_tampered_message'])}")
+    print(f"B3 摘要对比不同：{_yes_no(exp2['B3_digest_compare'])}")
+
+    exp3 = results["experiment_3"]
+    report = exp3["report"]
+    print("\n实验三：文件分离式数字签名")
+    print(f"文件：{report['file_path']}，大小={report['file_size']} bytes")
+    print(f"签名文件：{report['sign_path']}，大小={report['sign_file_size']} bytes")
+    print(f"文件摘要片段：{report['digest_preview']}...")
+    print(f"C1 签名文件生成：{_ok_fail(exp3['C1_signature_file_generated'])}")
+    print(f"C2 原文件+签名验证：{_yes_no(exp3['C2_original_file_verify'])}")
+    print(f"C3 文件内容篡改：{_yes_no(exp3['C3_tampered_file_verify'])}")
+    print(f"C4 签名文件篡改：{_yes_no(exp3['C4_tampered_signature_verify'])}")
+
+    exp4 = results["experiment_4"]
+    print("\n实验四：带元数据的数字签名")
+    print(f"D1 正常签名：{_yes_no(exp4['D1_normal'])}")
+    print(f"D2 修改时间戳：{_yes_no(exp4['D2_modify_timestamp'])}")
+    print(f"D3 修改算法标识：{_yes_no(exp4['D3_modify_algorithm_suite'])}")
+    print(f"D4 修改接收方ID：{_yes_no(exp4['D4_modify_receiver_id'])}")
+
+    exp5 = results["experiment_5"]
+    print("\n实验五：先签名后加密")
+    print(f"E1 正常流程：解密={_ok_fail(exp5['E1_normal']['decrypt_success'])}，验签={_yes_no(exp5['E1_normal']['verify_success'])}")
+    print(f"E2 篡改密文：解密={_ok_fail(exp5['E2_tamper_ciphertext']['decrypt_success'])}，验签={_yes_no(exp5['E2_tamper_ciphertext']['verify_success'])}")
+    print(f"E2 篡改Tag：解密={_ok_fail(exp5['E2_tamper_tag']['decrypt_success'])}，验签={_yes_no(exp5['E2_tamper_tag']['verify_success'])}")
+    print(f"E3 篡改内部签名：解密={_ok_fail(exp5['E3_tamper_inner_signature']['decrypt_success'])}，验签={_yes_no(exp5['E3_tamper_inner_signature']['verify_success'])}")
+    print(f"E4 错误私钥解密：解密={_ok_fail(exp5['E4_wrong_private_key']['decrypt_success'])}，验签={_yes_no(exp5['E4_wrong_private_key']['verify_success'])}")
+
+    exp6 = results["experiment_6"]
+    print("\n实验六：先加密后签名")
+    print(f"F1 正常流程：验签={_yes_no(exp6['F1_normal']['verify_success'])}，解密={_ok_fail(exp6['F1_normal']['decrypt_success'])}")
+    print(f"F2 篡改密文：验签={_yes_no(exp6['F2_tamper_ciphertext']['verify_success'])}，解密={_ok_fail(exp6['F2_tamper_ciphertext']['decrypt_success'])}")
+    print(f"F3 错误公钥：验签={_yes_no(exp6['F3_wrong_sender_public_key']['verify_success'])}，解密={_ok_fail(exp6['F3_wrong_sender_public_key']['decrypt_success'])}")
+    print(f"F4 错误私钥解密：验签={_yes_no(exp6['F4_wrong_receiver_private_key']['verify_success'])}，解密={_ok_fail(exp6['F4_wrong_receiver_private_key']['decrypt_success'])}")
+
+    exp7 = results["experiment_7"]
+    print("\n实验七：数字信封 + 数字签名综合")
+    for label, key in [
+        ("G1 正常包", "G1_normal"),
+        ("G2 篡改密文", "G2_tamper_ciphertext"),
+        ("G3 篡改Tag", "G3_tamper_tag"),
+        ("G4 修改算法标识", "G4_modify_algorithm_suite"),
+        ("G5 修改接收方ID", "G5_modify_receiver_id"),
+        ("G6 错误公钥", "G6_wrong_public_key"),
+    ]:
+        item = exp7[key]
+        print(
+            f"{label}：验签={_yes_no(item['signature_valid'])}，"
+            f"解密={_ok_fail(item['decrypt_success'])}，完整性={_yes_no(item['integrity_valid'])}"
+        )
+    print(f"信封密文片段：{exp7['envelope_preview']['ciphertext']}...")
+    print("=" * 56)

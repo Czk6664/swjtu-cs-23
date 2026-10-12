@@ -1,0 +1,80 @@
+经典密码实验使用指南
+
+1. 环境说明
+在当前文件夹中使用 Python 运行：
+python "main.py"
+
+2. 直接运行内置示例
+python "main.py"
+
+3. 凯撒密码破解
+python "main.py" --ciphertext "KHOOR ZRUOG" --run-caesar --top-k 5
+
+4. 单表替换破解（缩小字母集穷举）
+python "main.py" --ciphertext "I LOVE YOU" --run-substitution-reduced --cipher-letters ILOVEYU --plain-letters ILOVEYU --top-k 10
+
+5. 单表替换破解（纯频率驱动 Beam Search / 束搜索）
+命令格式：
+python "main.py" --ciphertext "密文" --run-substitution-dictionary --words 候选词1 候选词2 候选词3 --top-k 5 --beam-width 20
+
+不写候选词时：
+python "main.py" --ciphertext "密文" --run-substitution-dictionary --top-k 5 --beam-width 20
+
+参数说明：
+--ciphertext    要破解的密文
+--run-substitution-dictionary    启用字典约束束搜索
+--words         可选候选词列表，空格分隔；不写时自动使用程序内置词典
+--top-k         输出前 k 个结果
+--beam-width    束宽，值越大搜索越宽，耗时也可能更高
+
+6. 你给出的三个束搜索示例
+
+示例 1：
+python "main.py" --ciphertext "KHOOR ZRUOG" --run-substitution-dictionary --words HELLO WORLD --top-k 5 --beam-width 20
+
+示例 2：
+python "main.py" --ciphertext "ZSSZBJ ZS CZVM" --run-substitution-dictionary --words ATTACK AT DAWN --top-k 5 --beam-width 20
+
+示例 3：
+python "main.py" --ciphertext "Ny nx f xjhwjy" --run-substitution-dictionary --words IT IS A SECRET --top-k 5 --beam-width 20
+
+不提供候选词的写法：
+
+示例 1：
+python "main.py" --ciphertext "KHOOR ZRUOG" --run-substitution-dictionary --top-k 5 --beam-width 20
+
+示例 2：
+python "main.py" --ciphertext "ZSSZBJ ZS CZVM" --run-substitution-dictionary --top-k 5 --beam-width 50
+
+示例 3：
+python "main.py" --ciphertext "Ny nx f xjhwjy" --run-substitution-dictionary --top-k 5 --beam-width 50
+
+7. 维吉尼亚密码破解
+python "main.py" --ciphertext "S EK K WREHCXX" --run-vigenere --max-key-len 3 --top-k 10
+
+8. 说明
+1. 束搜索版本当前使用纯字母频率 frequency_score 进行排序和剪枝。
+2. 如果候选词太少，可能搜不到结果；可以适当增加 --words 中的词。
+3. 对于纯凯撒密文，优先使用 --run-caesar，通常更直接。
+4. 不写 --words 时，程序会自动使用内置词典 COMMON_WORDS。
+
+9. 束搜索说明
+束搜索（Beam Search）是一种带剪枝的启发式搜索方法。
+
+本实验中的做法：
+1. 按密文中的单词顺序，逐步尝试候选词映射。
+2. 每扩展一层，就用 frequency_score 对当前部分明文进行打分。
+3. 只保留分数最高的前 beam_width 条路径，其余路径直接剪掉。
+4. 最后一层得到完整映射后，再输出前 top-k 个结果。
+5. 如果没有提供 --words，则候选词来自程序内置词典。
+
+特点：
+1. 比完整回溯更快，搜索空间更小。
+2. 不是全局穷举，因此 beam_width 太小时，可能错过正确答案。
+3. beam_width 越大，结果通常越稳定，但运行时间也会增加。
+
+参数建议：
+1. 小规模测试可用 --beam-width 20。
+2. 候选词较多时，可尝试 --beam-width 50 或 100。
+3. 如果结果不理想，优先增加候选词，再适当增大 beam_width。
+4. 如果不写 --words，建议适当增大 beam_width，例如 50 或 100。

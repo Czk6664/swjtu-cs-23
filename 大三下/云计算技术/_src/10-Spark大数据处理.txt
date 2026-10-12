@@ -1,0 +1,995 @@
+--- Page 1 ---
+第10讲Spark大数据处理
+2026年5月
+云计算技术
+授课教师：戴朋林
+课程代码：SCAI004712
+--- Page 2 ---
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+2
+本讲内容大纲
+00
+01
+Spark 简介
+为什么Spark 取代大量MapReduce 工作
+02
+Spark 架构
+Driver / Executor / Cluster Manager / SparkSession
+03
+RDD
+分区、依赖、惰性执行、血缘、缓存
+04
+DataFrame 与Spark SQL
+结构化处理、Catalyst、Tungsten
+05
+Spark Streaming
+微批、Structured Streaming、Checkpoint
+--- Page 3 ---
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+3
+本讲内容大纲
+00
+01
+Spark 简介
+为什么Spark 取代大量MapReduce 工作
+02
+Spark 架构
+Driver / Executor / Cluster Manager / SparkSession
+03
+RDD
+分区、依赖、惰性执行、血缘、缓存
+04
+DataFrame 与Spark SQL
+结构化处理、Catalyst、Tungsten
+05
+Spark Streaming
+微批、Structured Streaming、Checkpoint
+--- Page 4 ---
+Spark的设计动机：MapReduce到Spark
+4
+Hadoop MapReduce 推动了离线大数据处理，但它的执行模型偏“批处理+磁盘中转”
+• 对日志清洗这类单次扫描任务，MapReduce 够用
+• 对机器学习、交互式查询、图计算等迭代优化任务，中间结果反复落盘会非常慢
+ Spark 核心思想
+• 尽量把中间结果保留在内存，减少磁盘I/O
+• DAG执行引擎
+• 统一批处理与流处理
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+4
+--- Page 5 ---
+Spark内存计算vs MapReduce 磁盘计算
+5
+维度
+MapReduce
+Spark
+中间结果
+通常落到本地磁盘/HDFS
+尽量保留在内存，必要时再落盘
+执行模型
+固定Map→Shuffle→Reduce
+DAG + 多算子流水
+迭代算法
+每轮都重复读写磁盘
+可复用缓存数据，迭代效率高
+交互式查询
+延迟较高
+响应更快
+典型任务
+大规模离线批处理
+批处理、SQL、机器学习、流处理
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+5
+--- Page 6 ---
+Spark：DAG 执行引擎
+6
+p Spark 把一连串Transformation 看成一个有向无环图（DAG）
+p 节点是数据集/计算结果
+p 边表示依赖关系
+p 执行流程：
+1. 先有逻辑DAG
+2. 再拆成物理执行Stage
+p 依据Shuffle 边界，把DAG 切成多个Stage
+p Stage 内部尽量流水执行
+p 好处：系统可以观察全局依赖，不只盯着单个Map 或Reduce
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+6
+--- Page 7 ---
+Spark：DAG 执行引擎
+6
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+7
+--- Page 8 ---
+统一批处理与流处理的架构优势
+7
+p 原因：
+p 离线 ETL、交互式 SQL、机器学习、实时统计通常共享同
+一批数据
+p 如果每类任务都用不同框架，会增加学习成本与运维成本
+p 优势：
+p 资源复用
+p 接口统一
+p 降低系统复杂度
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+8
+--- Page 9 ---
+Spark 适用场景
+9
+场景
+是否适合Spark
+原因
+海量离线ETL
+适合
+并⾏处理强，⽣态成熟
+交互式SQL 分析
+适合
+DataFrame + Catalyst 性能较好
+迭代机器学习
+适合
+缓存与迭代计算优势明显
+毫秒级事务处理
+不适合
+Spark 不是OLTP 数据库
+超低延迟实时控制
+通常不适合
+微批模型不⼀定满⾜毫秒级要求
+超⼩规模数据脚本
+未必需要
+本地Python / Pandas 可能更轻量
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+9
+--- Page 10 ---
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+10
+本讲内容大纲
+00
+01
+Spark 简介
+为什么Spark 取代大量MapReduce 工作
+02
+Spark 架构
+Driver / Executor / Cluster Manager / SparkSession
+03
+RDD
+分区、依赖、惰性执行、血缘、缓存
+04
+DataFrame 与Spark SQL
+结构化处理、Catalyst、Tungsten
+06
+Spark Streaming
+微批、Structured Streaming、Checkpoint
+--- Page 11 ---
+Spark 运行架构
+8
+p Spark 运行架构包括：
+p 集群资源管理器(Cluster Manager)
+p 运行作业任务的工作节点(Worker Node)
+p 每个应用的任务控制节点(Driver)
+p 每个工作节点上负责具体任务的执行进程(Executor)
+p 与Hadoop MapReduce 相比，Spark 所采用的Executor 有两个优点：
+p 利用多线程来执行具体的任务，减少任务的启动开销。
+p Executor 中有一个BlockManager 存储模块，会将内存和磁盘共同作为存储设备，有效减少IO 开销。
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+11
+--- Page 12 ---
+Driver Program
+11
+p Driver 是应用的控制中心
+p 运行main 函数
+p 创建SparkSession
+p 解析用户写的Transformation / Action
+p 当Action 出现时，Driver 会把逻辑转换成Job / Stage / Task，并向集群申请资源
+p Driver还会维护元信息：例如哪些RDD 被缓存、哪些Executor 还活着、任务失败如何重试
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+12
+--- Page 13 ---
+Executor的工作模式：长期驻留
+12
+pExecutor 是运行在工作节点上的进程
+p负责接收Driver 下发的Task 并实际执行
+p管理本地 Cache 与 Shuffle 数据。
+p长期驻留的优势：
+p如果每个小任务都创建/销毁一次进程，分布式调度开销会很大
+p长期驻留Executor，而不是每个任务临时起进程，可以减少频繁启动进程的开销。
+11
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+13
+--- Page 14 ---
+Executor的工作模式：作业执行层级
+12
+11
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+14
+分层抽象能把用户程序一步步映射到机器执行单元
+--- Page 15 ---
+12
+11
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+15
+Executor的工作模式：作业执行层级
+--- Page 16 ---
+Cluster Manager
+14
+p 为什么需要Cluster manager：
+p Spark 本身专注于计算逻辑
+p 集群资源管理与节点生命周期
+p 好处：
+p 可以运行在多种环境：Standalone、
+Hadoop YARN、Mesos、Kubernetes
+p 资源管理层与计算引擎解耦后，Spark 
+的部署灵活性更强
+12
+11
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+16
+--- Page 17 ---
+Cluster Manager类型
+14
+12
+11
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+17
+类型
+特点
+适用场景
+Standalone
+Spark 自带，部署简单
+教学、小型集群、快速实验
+YARN
+与Hadoop 生态集成紧密
+已有HDFS/Hadoop 基础设施的企业
+Mesos
+通用资源调度平台
+多框架共享集群
+Kubernetes
+容器化、弹性伸缩、云原生
+现代云环境与容器平台
+p 同样的Spark 程序，可能跑在学校实验集群、企业Hadoop 集群或云上K8s
+p 抽象多种资源后端是为了适配不同基础设施
+--- Page 18 ---
+SparkSession作为统一入口：API统一化
+14
+12
+11
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+18
+p 问题：
+p 早期Spark 有SparkContext、SQLContext、HiveContext 等多个入口
+p 当功能模块越来越多时，如果入口过于分裂，使用门槛会明显上升
+p 解决方法：
+p SparkSession 统一了RDD、DataFrame、SQL 等能力。
+p 通过SparkSession.builder 配置appName、master 与运行参数
+p 统一入口让API 更一致，也程序结构更清晰
+--- Page 19 ---
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+19
+本讲内容大纲
+00
+01
+Spark 简介
+为什么Spark 取代大量MapReduce 工作
+02
+Spark 架构
+Driver / Executor / Cluster Manager / SparkSession
+03
+RDD
+分区、依赖、惰性执行、血缘、缓存
+04
+DataFrame 与Spark SQL
+结构化处理、Catalyst、Tungsten
+05
+Spark Streaming
+微批、Structured Streaming、Checkpoint
+--- Page 20 ---
+RDD（Resilient Distributed Dataset）
+14
+12
+11
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+20
+p RDD 是Spark 最基础的数据抽象
+p 用户不必担心底层数据的分布式特性，只需将应用逻辑表达为一系列转换处理
+p 不同RDD 之间的转换操作形成依赖关系，可以实现管道化，避免中间数据存储
+p RDD的五大特性：分区、依赖、计算函数、分区器、首选位置
+特性
+含义
+作用
+Partitions
+分区集合
+决定并行度与任务划分
+Dependencies
+与父 RDD 的依赖
+决定 Stage 与容错恢复
+Compute Function
+每个分区如何计算
+定义转换逻辑
+Partitioner
+键值数据如何分区
+优化聚合与连接
+Preferred Locations
+首选位置
+提高数据本地性
+--- Page 21 ---
+Partition
+Partition：
+pRDD 会被切成多个分区，每个分区通常对应一个Task
+p分区数越少，并行度可能不足；分区数过多，调度开销又会上升
+p合理分区有助于均衡负载、提高资源利用率
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+21
+--- Page 22 ---
+Dependency
+Dependency：
+pRDD 之间通过 Dependency 连接
+p两种依赖：
+p窄依赖： 子分区只依赖少量父分区，适合流水执行，如 map、filter
+p宽依赖：父RDD 的一个分区对应一个子RDD 的多个分区。可能产生 Shuffle，
+如 reduceByKey、join、groupByKey
+pSpark 根据依赖关系切分 Stage 并进行容错恢复
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+22
+--- Page 23 ---
+Dependency
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+23
+--- Page 24 ---
+Compute Function
+Compute Function
+p每个RDD分区如何计算
+p每个 RDD 记录如何从父 RDD 的分区计算得到当前分区
+pRDD 不可变：每次 Transformation 都返回新 RDD，让血缘链更清晰，降低
+修改复杂性
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+24
+--- Page 25 ---
+Partitioner 
+键值数据怎么分配？
+pPartitioner 决定某个 Key 落到哪个分区
+pPair RDD 可以使用 HashPartitioner 或 RangePartitioner 
+p相同分区器可以减少某些 join / aggregate 的 Shuffle
+p本质上是针对键值聚合与连接的性能优化
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+25
+--- Page 26 ---
+Preferred Locations
+为什么靠近数据？
+p如果分区原本在某个节点，Task 最好调度到附近执行。
+p数据本地性可以减少跨网络传输
+pSpark 会在本地性和资源等待之间做平衡
+p大数据环境中，搬计算通常比搬数据更便宜
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+26
+--- Page 27 ---
+Transformation 与 Action
+计算功能和触发功能分离
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+27
+类别
+代表操作
+特点
+Transformation
+map、filter、flatMap、reduceByKey
+返回新 RDD，通常惰性执行
+Action
+collect、count、take、saveAsTextFile
+触发真正计算
+--- Page 28 ---
+常见Transformation
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+28
+操作
+作用
+课堂说明
+map
+一对一映射
+元素级转换
+filter
+条件过滤
+保留满足条件元素
+flatMap
+一对多展开
+常用于分词
+distinct
+去重
+通常涉及 Shuffle
+groupByKey
+按 Key 分组
+可能代价较高
+reduceByKey
+按 Key 聚合
+先局部聚合再全局聚合
+--- Page 29 ---
+常见Action
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+29
+操作
+作用
+课堂说明
+collect
+拉回全部结果到 Driver
+小数据可用，大数据慎用
+count
+统计记录数
+返回值小，常用于验证规模
+take(n)
+取前 n 条
+调试常用
+first
+取第一条
+快速检查数据
+saveAsTextFile
+输出到文件系统
+离线结果落盘
+--- Page 30 ---
+PySpark RDD 示例：WordCount
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+30
+1  from pyspark.sql import SparkSession
+ 2  
+ 3  spark = SparkSession.builder \
+ 4  
+.appName("RDDWordCount") \
+ 5  
+.master("local[*]") \
+ 6  
+.getOrCreate()
+ 7  
+ 8  sc = spark.sparkContext
+ 9  lines = sc.textFile("data/words.txt")
+10  words = lines.flatMap(lambda line: line.split())
+11  pairs = words.map(lambda w: (w.lower(), 1))
+12  counts = pairs.reduceByKey(lambda a, b: a + b)
+13  
+14  print(counts.collect())
+15  spark.stop()
+·
+textFile 读取文本形成 RDD。
+·
+flatMap 把一行拆成多个单词。
+·
+map 构造 (word, 1) 键值对。
+·
+reduceByKey 完成分布式聚合。
+--- Page 31 ---
+PySpark RDD 示例：值对统计
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+31
+1  data = [("A", 10), ("A", 20), ("B", 5), ("C", 8), ("B", 3)]
+2  rdd = sc.parallelize(data, 2)
+3  
+4  sum_rdd = rdd.reduceByKey(lambda x, y: x + y)
+5  filtered = rdd.filter(lambda kv: kv[1] >= 8)
+6  
+7  print("sum =", sum_rdd.collect())
+8  print("filtered =", filtered.collect())
+·
+parallelize 把本地集合并行化为 RDD。
+·
+reduceByKey 对相同 Key 的值做聚合。
+·
+filter 用条件筛选记录。
+·
+Pair RDD 是实际业务中很常见的数据形式。
+--- Page 32 ---
+惰性执行（ Lazy Evaluation ）
+p惰性执行：Transformation 默认不会立即运行，它们只会构建一条逻辑计算链； 
+Spark 等Action 出现后统一执行
+p带来的好处：
+p减少无意义中间结果
+p给优化器留出全局优化空间
+pSpark 能做DAG 优化与Stage 切分的前提
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+32
+--- Page 33 ---
+缓存策略：Cache和Persist
+pCache() ≈ Persist(MEMORY_ONLY)
+pPersist()： 支持更多存储级别
+pMEMORY_ONLY
+pMEMORY_AND_DISK
+pDISK_ONLY
+p数据复用越多，缓存收益越明显
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+33
+--- Page 34 ---
+血缘追踪（Lineage）与容错
+pSpark 为 RDD 记录 Lineage（血缘），而不是对每个中间结果都进行复制
+p一旦某个分区丢失，就沿着血缘链重新计算该分区
+p全量复制à按需重算
+p如果某些数据代价太高，通过Checkpoint 持久化提升恢复稳定性。
+--- Page 35 ---
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+35
+本讲内容大纲
+00
+01
+Spark 简介
+为什么Spark 取代大量MapReduce 工作
+02
+Spark 架构
+Driver / Executor / Cluster Manager / SparkSession
+03
+RDD
+分区、依赖、惰性执行、血缘、缓存
+04
+DataFrame 与Spark SQL
+结构化处理、Catalyst、Tungsten
+05
+Spark Streaming
+微批、Structured Streaming、Checkpoint
+--- Page 36 ---
+结构化数据处理的优势
+为什么需要 DataFrame 与 Spark SQL？
+pRDD 很灵活，但系统不知道字段名、类型和列结构，难以做高级自动优化
+pDataFrame = 带 Schema 的分布式表
+pSpark SQL 让用户用 SQL 描述结构化查询
+DataFrame = 数据 + 结构信息
+--- Page 37 ---
+DataFrame常用API
+操作
+作用
+示例
+select
+列选择/表达式
+df.select("name", "age")
+filter/where
+行过滤
+df.filter(df.age > 20)
+groupBy
+分组聚合
+df.groupBy("city").count()
+orderBy
+排序
+df.orderBy(df.age.desc())
+join
+表连接
+df1.join(df2, "id")
+--- Page 38 ---
+Spark SQL 查询示例
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.appName("SQLDemo").getOrCreate()
+data = [("Alice", 21, "CS"), ("Bob", 22, "SE"), ("Cici", 21, "CS")]
+df = spark.createDataFrame(data, ["name", "age", "major"])
+df.createOrReplaceTempView("students")
+result = spark.sql("""
+SELECT major, COUNT(*) AS cnt, AVG(age) AS avg_age
+FROM students
+GROUP BY major
+ORDER BY cnt DESC
+""")
+result.show()
+• createOrReplaceTempView 注册临时
+视图，把DataFrame 注册为临时视图
+students。
+• 随后可以使用标准SQL语法查询。
+• SQL 对用Spark进行分析的人员门槛降低
+--- Page 39 ---
+查询优化器Catalyst
+pCatalyst 是 Spark SQL 的查询优化器
+pCatalyst 的基本工作流程
+1. Logical Plan Creation
+2. Logical Plan Optimization
+3. Physical Plan Generation
+4. Code Generation
+--- Page 40 ---
+查询优化器Catalyst
+pStep 2: Logical Plan Optimization
+p常见操作：
+pPush down filters
+pCombine operations
+p目的：提升优化计算效率
+# Show the optimized logical plan
+filtered_df.explain(True)
+--- Page 41 ---
+查询优化器Catalyst
+pStep 3: Physical Plan Generation
+p将逻辑计划转换为机器执行计划
+p根据数据、资源等状态，优化执行效率
+# Physical plan explanation
+filtered_df.explain()
+summary.explain(mode="formatted")
+# == Physical Plan ==
+# AdaptiveSparkPlan
+# +- Sort
+#    +- HashAggregate
+#       +- Exchange
+#          +- HashAggregate
+#             +- Filter
+#                +- FileScan csv ...
+• FileScan：读取数据。
+• Filter：过滤操作。
+• Exchange：发生Shuffle。
+• HashAggregate：聚合物理算子。
+--- Page 42 ---
+Tungsten内存管理与代码生成
+p好计划还不够，执行层也要足够高效
+pTungsten的职责
+pSpark内存管理
+p堆外内存（off-heap memory） 管理
+p代码生成
+pStep 4：Code Generation
+--- Page 43 ---
+2026/5/25
+竢
+实
+扬
+华
+·
+自
+强
+不
+息
+43
+本讲内容大纲
+00
+01
+Spark 简介
+为什么Spark 取代大量MapReduce 工作
+02
+Spark 架构
+Driver / Executor / Cluster Manager / SparkSession
+03
+RDD
+分区、依赖、惰性执行、血缘、缓存
+04
+DataFrame 与Spark SQL
+结构化处理、Catalyst、Tungsten
+05
+Spark Streaming
+微批、Structured Streaming、Checkpoint
+--- Page 44 ---
+为什么需要Spark Streaming？
+p日志、点击流、传感器数据通常持续不断地产生
+p如果只做离线批处理，只能看到历史快照
+p业务希望边产生数据边分析，流处理Streaming就成为必要
+--- Page 45 ---
+微批处理（micro-batch）模型
+pMicro-batch：把连续的数据流按时间片切分为一批批的小任务
+p每个批次的小任务≈RDD
+p可以复用Spark批处理引擎
+--- Page 46 ---
+窗口操作
+p窗口操作：对一个时间窗口内的micro-batches做聚合
+p为什么要使用窗口：关注一段时间的性能/数据
+p常见参数：窗口大小、滑动间隔
+p例：每 10 秒统计最近 1 分钟错误日志数
+p窗口大小：1分钟
+p滑动间隔：10秒
+--- Page 47 ---
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import explode, split
+spark = SparkSession.builder.appName("StructuredStreamingWC").getOrCreate()
+lines = (spark.readStream
+.format("socket")
+.option("host", "localhost")
+.option("port", 9999)
+.load())
+words = lines.select(explode(split(lines.value, " ")).alias("word"))
+counts = words.groupBy("word").count()
+query = (counts.writeStream
+.outputMode("complete")
+.format("console")
+.option("checkpointLocation", "chk/wc")
+.start())
+query.awaitTermination()
+• readStream 建立流式数据源。
+• select / groupBy / count 与批处理写法相似
+• writeStream 指定输出模式和Sink。
+• checkpointLocation 用于故障恢复。
+Structured Streaming 的优势是用类似批处
+理的API 处理无界数据流。
+Structured Streaming 代码示例：实时词频统计
+--- Page 48 ---
+Checkpoint：流任务如何容错？
+p流式任务通常长时间运行，故障后不能简单从头再来
+pCheckpoint ：状态和元数据持久化到可靠存储
+p用途：
+p任务重启恢复状态
+p故障恢复
+p窗口统计
+p有状态计算
+State
+Checkpoint
+Recover
+--- Page 49 ---
+课堂思考题
+1. 为什么 Spark 在迭代机器学习任务上通常比 MapReduce 更有优势？
+2. 为什么 reduceByKey 往往比 groupByKey 更合适大规模聚合？
+3. 如果一个DataFrame 查询很慢，你会从Spark UI 与explain() 中先看什么？
+4. 什么场景下应选择persist(MEMORY_AND_DISK)，而不是cache()？
+5. 为什么Structured Streaming 更符合Spark 的长期演进方向？
