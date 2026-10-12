@@ -1,0 +1,37 @@
+spring:
+  config:
+    activate:
+      on-profile: demo
+
+  datasource:
+    url: jdbc:h2:file:./data/swjtu-forum-demo;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.H2Dialect
+
+  sql:
+    init:
+      mode: never
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+demo:
+  seed:
+    enabled: true
+    run-on-demo-profile: true
+
+jwt:
+  secret: ${JWT_SECRET:swjtu-forum-demo-secret-key-please-change-in-production}
+  expiration: ${JWT_EXPIRATION:86400000}

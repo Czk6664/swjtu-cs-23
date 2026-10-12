@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>交大论坛视觉素材接入预览</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    :root {
+      --preview-blue: #0075b8;
+      --preview-blue-deep: #004a78;
+      --preview-bg: #f4f9fc;
+      --preview-panel: #ffffff;
+      --preview-line: rgba(0, 82, 130, 0.12);
+      --preview-ink: #12263a;
+      --preview-muted: #5a7288;
+      --preview-soft: #e9f4fa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(0, 117, 184, 0.12), transparent 34%),
+        radial-gradient(circle at 88% 8%, rgba(80, 174, 207, 0.14), transparent 30%),
+        linear-gradient(180deg, #fbfdff 0%, var(--preview-bg) 48%, #edf6fb 100%);
+      color: var(--preview-ink);
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    }
+
+    .preview-shell {
+      width: min(1180px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 26px 0 72px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+      padding: 12px 16px;
+      border: 1px solid var(--preview-line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 8px 24px rgba(19, 68, 101, 0.08);
+    }
+
+    .brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-lockup img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 14px rgba(0, 117, 184, 0.16));
+    }
+
+    .brand-lockup strong {
+      display: block;
+      font-size: 16px;
+    }
+
+    .brand-lockup span,
+    .topbar-note {
+      color: var(--preview-muted);
+      font-size: 13px;
+    }
+
+    .preview-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      gap: 26px;
+      align-items: stretch;
+      padding: 26px;
+      border: 1px solid var(--preview-line);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 16px 38px rgba(18, 66, 98, 0.11);
+      overflow: hidden;
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 360px;
+    }
+
+    .hero-copy h1 {
+      max-width: 11em;
+      margin: 0 0 14px;
+      color: var(--preview-ink);
+      font-size: 38px;
+      line-height: 1.12;
+      letter-spacing: -0.025em;
+      text-wrap: balance;
+    }
+
+    .hero-copy p {
+      max-width: 58ch;
+      margin: 0;
+      color: var(--preview-muted);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .nav-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .nav-preview a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 8px 13px;
+      border: 1px solid rgba(0, 117, 184, 0.18);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--preview-blue-deep);
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 6px 14px rgba(0, 78, 123, 0.07);
+    }
+
+    .nav-preview img,
+    .mini-action img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+    }
+
+    .hero-art-preview {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 360px;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 72% 16%, rgba(0, 117, 184, 0.16), transparent 28%),
+        linear-gradient(145deg, #eef8fd 0%, #ffffff 54%, #e8f4fb 100%);
+      overflow: hidden;
+    }
+
+    .hero-art-preview::before,
+    .hero-art-preview::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(0, 117, 184, 0.1);
+    }
+
+    .hero-art-preview::before {
+      width: 210px;
+      height: 210px;
+      right: -64px;
+      top: -60px;
+    }
+
+    .hero-art-preview::after {
+      width: 150px;
+      height: 150px;
+      left: -54px;
+      bottom: -48px;
+      background: rgba(61, 161, 199, 0.12);
+    }
+
+    .hero-art-preview img {
+      position: relative;
+      z-index: 1;
+      width: min(96%, 500px);
+      object-fit: contain;
+      filter: drop-shadow(0 24px 34px rgba(20, 61, 92, 0.14));
+    }
+
+    .preview-section {
+      margin-top: 28px;
+    }
+
+    .preview-section__head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 14px;
+    }
+
+    .preview-section h2 {
+      margin: 0;
+      color: var(--preview-ink);
+      font-size: 22px;
+      letter-spacing: -0.01em;
+    }
+
+    .preview-section__head p {
+      max-width: 46ch;
+      margin: 0;
+      color: var(--preview-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      text-align: right;
+    }
+
+    .forum-mock {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+    }
+
+    .feed-card,
+    .side-card,
+    .asset-card {
+      border: 1px solid var(--preview-line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 8px 18px rgba(18, 66, 98, 0.08);
+    }
+
+    .feed-card {
+      padding: 18px;
+    }
+
+    .feed-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      color: var(--preview-muted);
+      font-size: 13px;
+    }
+
+    .feed-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--preview-soft);
+      object-fit: cover;
+    }
+
+    .feed-title {
+      margin: 0 0 8px;
+      color: var(--preview-ink);
+      font-size: 19px;
+      line-height: 1.35;
+    }
+
+    .feed-card p {
+      margin: 0 0 16px;
+      color: var(--preview-muted);
+      line-height: 1.75;
+    }
+
+    .mini-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .mini-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 7px 11px;
+      border: 1px solid rgba(0, 117, 184, 0.14);
+      border-radius: 999px;
+      background: #fff;
+      color: #37566e;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .side-card {
+      padding: 16px;
+    }
+
+    .side-card + .side-card {
+      margin-top: 14px;
+    }
+
+    .section-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0, 82, 130, 0.08);
+    }
+
+    .section-row:last-child {
+      border-bottom: 0;
+    }
+
+    .section-row img {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #f3f9fd;
+    }
+
+    .section-row strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .section-row span {
+      color: var(--preview-muted);
+      font-size: 12px;
+    }
+
+    .empty-demo {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .empty-card {
+      min-height: 210px;
+      padding: 18px;
+      border: 1px solid var(--preview-line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fff 0%, #f5fbff 100%);
+      box-shadow: 0 8px 18px rgba(18, 66, 98, 0.08);
+      text-align: center;
+    }
+
+    .empty-card img {
+      width: 132px;
+      height: 112px;
+      object-fit: contain;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 12px 16px rgba(20, 61, 92, 0.1));
+    }
+
+    .empty-card strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .empty-card span {
+      color: var(--preview-muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(156px, 1fr));
+      gap: 14px;
+    }
+
+    .asset-card {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      min-height: 154px;
+      padding: 14px;
+    }
+
+    .asset-stage {
+      display: grid;
+      place-items: center;
+      min-height: 78px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #f3f9fd 0%, #ffffff 100%);
+      overflow: hidden;
+    }
+
+    .asset-stage img {
+      max-width: 76%;
+      max-height: 76px;
+      object-fit: contain;
+      filter: drop-shadow(0 9px 14px rgba(20, 61, 92, 0.12));
+    }
+
+    .asset-card--large {
+      grid-column: span 2;
+      min-height: 226px;
+    }
+
+    .asset-card--large .asset-stage {
+      min-height: 166px;
+    }
+
+    .asset-card--large .asset-stage img {
+      max-height: 150px;
+    }
+
+    .asset-card code {
+      color: var(--preview-muted);
+      font-size: 12px;
+      line-height: 1.45;
+      word-break: break-all;
+    }
+
+    .asset-card strong {
+      color: var(--preview-ink);
+      font-size: 14px;
+    }
+
+    @media (max-width: 860px) {
+      .preview-hero,
+      .forum-mock,
+      .empty-demo {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy {
+        min-height: auto;
+      }
+
+      .preview-section__head {
+        display: block;
+      }
+
+      .preview-section__head p {
+        margin-top: 6px;
+        text-align: left;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .preview-shell {
+        width: min(100% - 24px, 1180px);
+        padding-top: 14px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .preview-hero {
+        padding: 18px;
+      }
+
+      .hero-copy h1 {
+        font-size: 28px;
+      }
+
+      .asset-card--large {
+        grid-column: span 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="preview-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <img src="../assets/generated/brand/swjtu-forum-logo-transparent.png" alt="交大论坛品牌标识" />
+        <div>
+          <strong>西南交大校园论坛</strong>
+          <span>视觉素材接入预览</span>
+        </div>
+      </div>
+      <div class="topbar-note">以真实论坛模块承载图片，判断正式接入后的页面观感。</div>
+    </header>
+
+    <section class="preview-hero">
+      <div class="hero-copy">
+        <h1>校园讨论、互助与成长集中在一个入口。</h1>
+        <p>页面模拟首页首屏、导航入口、帖子卡片和版块侧栏的真实组合。素材只作为界面辅助出现，避免喧宾夺主，保持论坛系统应有的清晰、稳定和可信。</p>
+        <nav class="nav-preview" aria-label="论坛导航图标预览">
+          <a><img src="../assets/generated/nav/nav-home.png" alt="" />首页</a>
+          <a><img src="../assets/generated/nav/nav-circles.png" alt="" />圈子</a>
+          <a><img src="../assets/generated/nav/nav-create.png" alt="" />发帖</a>
+          <a><img src="../assets/generated/nav/nav-growth.png" alt="" />成长</a>
+          <a><img src="../assets/generated/nav/nav-rewards.png" alt="" />商城</a>
+          <a><img src="../assets/generated/nav/nav-profile.png" alt="" />我的</a>
+        </nav>
+      </div>
+      <div class="hero-art-preview">
+        <img src="../assets/generated/pages/landing-hero-forum.png" alt="论坛首页插画预览" />
+      </div>
+    </section>
+
+    <section class="preview-section">
+      <div class="preview-section__head">
+        <h2>论坛组件接入效果</h2>
+        <p>将图标放在用户实际会点击、浏览和判断状态的位置，比单纯陈列素材更接近最终效果。</p>
+      </div>
+      <div class="forum-mock">
+        <article class="feed-card">
+          <div class="feed-meta">
+            <img class="feed-avatar" src="../assets/generated/avatars/avatar-student-neutral.png" alt="学生头像" />
+            <div>
+              <strong>土木学院 2023 级</strong>
+              <div>课程互助 · 今天 09:24</div>
+            </div>
+          </div>
+          <h3 class="feed-title">请问《数据结构》期末复习重点应该怎么整理？</h3>
+          <p>已经看完教材和实验报告，想再整理一份适合考前复盘的提纲。欢迎补充往年题型、易错点和资料链接。</p>
+          <div class="mini-actions">
+            <span class="mini-action"><img src="../assets/generated/actions/like.png" alt="" />128</span>
+            <span class="mini-action"><img src="../assets/generated/actions/reply.png" alt="" />42 条评论</span>
+            <span class="mini-action"><img src="../assets/generated/actions/favorite.png" alt="" />收藏</span>
+            <span class="mini-action"><img src="../assets/generated/actions/report.png" alt="" />举报</span>
+          </div>
+        </article>
+
+        <aside>
+          <div class="side-card">
+            <div class="section-row">
+              <img src="../assets/generated/sections/section-course-help.png" alt="" />
+              <div><strong>课程互助</strong><span>资料、作业、复习讨论</span></div>
+            </div>
+            <div class="section-row">
+              <img src="../assets/generated/sections/section-postgraduate.png" alt="" />
+              <div><strong>保研考研</strong><span>规划、经验、复试信息</span></div>
+            </div>
+            <div class="section-row">
+              <img src="../assets/generated/sections/section-market.png" alt="" />
+              <div><strong>二手闲置</strong><span>教材、设备、生活用品</span></div>
+            </div>
+          </div>
+          <div class="side-card">
+            <div class="section-row">
+              <img src="../assets/generated/badges/badge-course-master.png" alt="" />
+              <div><strong>课程大神</strong><span>本周贡献徽章</span></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="preview-section">
+      <div class="preview-section__head">
+        <h2>空状态与异常状态</h2>
+        <p>这些图片建议只在没有数据或需要说明状态时出现，尺寸要克制，文案要直接。</p>
+      </div>
+      <div class="empty-demo">
+        <div class="empty-card">
+          <img src="../assets/generated/empty/empty-posts.png" alt="" />
+          <strong>还没有帖子</strong>
+          <span>发布第一条内容后，这里会显示相关讨论。</span>
+        </div>
+        <div class="empty-card">
+          <img src="../assets/generated/empty/empty-comments.png" alt="" />
+          <strong>暂无评论</strong>
+          <span>可以补充资料、经验或对问题的进一步说明。</span>
+        </div>
+        <div class="empty-card">
+          <img src="../assets/generated/empty/error-network.png" alt="" />
+          <strong>网络请求失败</strong>
+          <span>检查网络连接后重新加载，已填写内容会尽量保留。</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview-section">
+      <div class="preview-section__head">
+        <h2>素材清单</h2>
+        <p>保留清单用于核对路径和尺寸，但显示方式改为正式页面底色。</p>
+      </div>
+      <div class="asset-grid" id="assetGrid"></div>
+    </section>
+  </main>
+
+  <script>
+    const assets = [
+      ["brand", "swjtu-forum-logo-transparent.png", "品牌标识", "large"],
+      ["brand", "favicon.png", "站点图标"],
+      ["nav", "nav-home.png", "首页导航"],
+      ["nav", "nav-circles.png", "圈子导航"],
+      ["nav", "nav-create.png", "发帖导航"],
+      ["nav", "nav-growth.png", "成长导航"],
+      ["nav", "nav-rewards.png", "商城导航"],
+      ["nav", "nav-admin.png", "后台导航"],
+      ["actions", "publish.png", "发布"],
+      ["actions", "favorite.png", "收藏"],
+      ["actions", "report.png", "举报"],
+      ["actions", "approve.png", "审核通过"],
+      ["actions", "ban.png", "封禁"],
+      ["sections", "section-course-help.png", "课程互助"],
+      ["sections", "section-postgraduate.png", "保研考研"],
+      ["sections", "section-xipu-life.png", "犀浦生活"],
+      ["sections", "section-market.png", "二手闲置"],
+      ["sections", "section-club.png", "社团活动"],
+      ["sections", "section-sports.png", "运动健身"],
+      ["sections", "section-programming.png", "程序设计"],
+      ["sections", "section-railway.png", "轨道交通"],
+      ["sections", "section-photography.png", "摄影旅行"],
+      ["sections", "section-food.png", "美食探店"],
+      ["badges", "badge-course-master.png", "课程大神", "large"],
+      ["badges", "badge-secondhand-expert.png", "二手达人", "large"],
+      ["badges", "badge-civil-user.png", "文明发言者", "large"],
+      ["badges", "badge-circle-creator.png", "圈子创建者", "large"],
+      ["badges", "badge-collector.png", "收藏达人", "large"],
+      ["badges", "badge-danmaku-pioneer.png", "弹幕先锋", "large"],
+      ["circles", "circle-course-help.png", "课程资料互助会", "large"],
+      ["circles", "circle-xipu-life.png", "犀浦生活情报站", "large"],
+      ["empty", "empty-posts.png", "暂无帖子", "large"],
+      ["empty", "empty-comments.png", "暂无评论", "large"],
+      ["empty", "error-network.png", "接口失败", "large"],
+      ["avatars", "avatar-student-neutral.png", "学生头像", "large"],
+      ["avatars", "avatar-admin.png", "管理员头像", "large"],
+      ["avatars", "avatar-anonymous.png", "匿名头像", "large"],
+      ["avatars", "avatar-organization.png", "组织头像", "large"],
+      ["rewards", "reward-campus-coffee-coupon.png", "咖啡兑换券", "large"],
+      ["rewards", "reward-library-priority-coupon.png", "自习室优先券", "large"],
+      ["rewards", "reward-swjtu-bookmark.png", "书签文创", "large"],
+      ["rewards", "reward-print-coupon.png", "打印券", "large"],
+      ["rewards", "reward-club-ticket.png", "社团活动票", "large"],
+      ["rewards", "reward-sticker-pack.png", "校园贴纸包", "large"],
+      ["pages", "landing-hero-forum.png", "首页首屏插画", "large"],
+      ["pages", "landing-feature-cards.png", "功能卡片插画", "large"],
+      ["pages", "home-word-cloud-swjtu.png", "SWJTU 词云", "large"],
+      ["pages", "create-post-editor.png", "发帖页插画", "large"],
+      ["pages", "admin-dashboard.png", "后台看板插画", "large"],
+      ["pages", "circle-community.png", "圈子中心插画", "large"],
+      ["pages", "moderation-review.png", "内容审核插画", "large"],
+      ["pages", "recommendation-config.png", "推荐策略插画", "large"],
+      ["pages", "rewards-store.png", "积分商城插画", "large"],
+      ["pages", "user-management.png", "用户管理插画", "large"]
+    ];
+
+    const grid = document.querySelector("#assetGrid");
+    grid.innerHTML = assets.map(([folder, file, label, size]) => `
+      <article class="asset-card ${size === "large" ? "asset-card--large" : ""}">
+        <div class="asset-stage">
+          <img src="../assets/generated/${folder}/${file}" alt="${label}" loading="lazy" />
+        </div>
+        <strong>${label}</strong>
+        <code>${folder}/${file}</code>
+      </article>
+    `).join("");
+  </script>
+</body>
+</html>

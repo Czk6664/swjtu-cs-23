@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>西南交大论坛 - 运营总览</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+</head>
+<body data-page="admin-overview">
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="topbar__inner container">
+        <div class="topbar__content">
+          <a class="brand" href="../index.html"><span class="brand__mark"></span><span class="brand__text">西南交大论坛</span></a>
+          <nav class="nav">
+            <a href="../index.html">页面总览</a>
+            <a href="../admin_overview/code.html" style="color: var(--interaction-blue);">管理总览</a>
+            <a href="../content_governance/code.html">内容治理</a>
+            <a href="../user_management_desktop/code.html">用户管理</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section class="hero">
+        <div class="container hero__grid">
+          <div class="hero__copy">
+            <div class="label">SWJTU Forum Ops</div>
+            <h1 class="hero__title">运营台看上去更像学校论坛后台，而不是一套抽象管理模版。</h1>
+            <p class="hero__lead">这里重点盯课程互助区、二手闲置、转租和失物招领这些校内论坛高风险高频场景，运营语义会更真实。</p>
+          </div>
+          <aside class="hero__panel band">
+            <div class="label band__eyebrow">今日概况</div>
+            <h2 class="band__title">今日待审内容主要集中在“课程资料共享”“转租信息”和“二手交易”三个版块。</h2>
+            <p class="band__body">这比通用“待处理事项”更像真实论坛后台会关心的内容。</p>
+          </aside>
+        </div>
+      </section>
+      <section class="section">
+        <div class="container">
+          <div class="stats-grid">
+            <article class="card metric-card"><div><div class="label">待审核内容</div><div class="metric-card__value">14</div></div><div class="metric-card__meta">课程资料与交易信息占多数</div></article>
+            <article class="card metric-card"><div><div class="label">风险用户</div><div class="metric-card__value">3</div></div><div class="metric-card__meta">均涉及重复引流或转租违规</div></article>
+            <article class="card metric-card"><div><div class="label">热门版块</div><div class="metric-card__value">2</div></div><div class="metric-card__meta">犀浦生活、课程互助活跃异常高</div></article>
+            <article class="card metric-card"><div><div class="label">推荐策略</div><div class="metric-card__value">v2.3</div></div><div class="metric-card__meta">已偏向课程互助与保研内容</div></article>
+          </div>
+        </div>
+      </section>
+      <section class="section">
+        <div class="container trio-grid">
+          <section class="card"><div class="label">入口 01</div><h3 class="post-card__title">内容治理</h3><p class="post-card__excerpt">处理课程资料引流、二手交易、转租信息和失物招领相关风险。</p><a class="button button--outline" href="../content_governance/code.html">进入治理台</a></section>
+          <section class="card"><div class="label">入口 02</div><h3 class="post-card__title">版主与用户</h3><p class="post-card__excerpt">查看各版版主、校内认证成员和封禁记录。</p><a class="button button--outline" href="../user_management_desktop/code.html">查看成员</a></section>
+          <section class="card"><div class="label">入口 03</div><h3 class="post-card__title">推荐策略</h3><p class="post-card__excerpt">控制课程互助、保研考研和犀浦生活版块的首页曝光。</p><a class="button button--outline" href="../recommendation_strategy_desktop/code.html">查看策略</a></section>
+        </div>
+      </section>
+          <div data-slot="admin-overview-content" hidden></div>
+    </main>
+  </div>
+  <script type="module" src="../assets/app.js"></script>
+</body>
+</html>
+
