@@ -1,0 +1,95 @@
+{
+  "downloaded_at": "2026-06-01",
+  "source_platform": "https://www.chengdu.gov.cn/data/oportal/catalog/index?domainId=domain-2&page=1",
+  "datasets": [
+    {
+      "file": "chengdu_bus_lines_stops.jsonl",
+      "title": "成都公交线路站点基本信息",
+      "source_url": "https://www.chengdu.gov.cn/data/oportal/catalog/1558519985475203404",
+      "format": "platform_jsonl",
+      "records": 5000,
+      "catalog_records": 28637,
+      "complete": false,
+      "note": "平台导出仅包含 5000 条，目录标称 28637 条；可用于离线原型，完整数据需通过 API 分页获取。"
+    },
+    {
+      "file": "chengdu_metro_tram_station_names.xls",
+      "title": "地铁、有轨电车站名称信息",
+      "source_url": "https://www.chengdu.gov.cn/data/oportal/catalog/UaLmwWB1EeeGP8z9ublHbw829",
+      "format": "xls",
+      "records": 373,
+      "complete": true
+    },
+    {
+      "file": "chengdu_highway_toll_stations.csv",
+      "title": "公路收费站信息",
+      "source_url": "https://www.chengdu.gov.cn/data/oportal/catalog/old_X5XqcWB1Eee6GM_IHOS5CQ1084",
+      "format": "csv",
+      "encoding": "gb18030",
+      "records": 39,
+      "complete": true
+    },
+    {
+      "file": "tianfu_parking_locations.csv",
+      "title": "停车场位置信息",
+      "source_url": "https://www.chengdu.gov.cn/data/oportal/catalog/e1591d581f84462c995f730a15c44d90",
+      "format": "csv",
+      "encoding": "gb18030",
+      "records": 698,
+      "complete": true
+    },
+    {
+      "file": "longquanyi_onstreet_parking.csv",
+      "title": "路内停车泊位信息",
+      "source_url": "https://www.chengdu.gov.cn/data/oportal/catalog/ae6bca3f0bfa47788cc228dd540702e3",
+      "format": "csv",
+      "encoding": "gb18030",
+      "records": 139,
+      "complete": true
+    },
+    {
+      "file": "jianyang_parking_fees.csv",
+      "title": "简阳市机动车停车收费",
+      "source_url": "https://www.chengdu.gov.cn/data/oportal/catalog/9bee1336d29a4c9fadbf7cf8b90c7bee",
+      "format": "csv",
+      "encoding": "gb18030",
+      "records": 38,
+      "complete": true
+    },
+    {
+      "file": "chenghua_rail_transit.csv",
+      "title": "轨道交通信息",
+      "source_url": "https://www.chengdu.gov.cn/data/oportal/catalog/e82bac075d6b4ebcafe42ccb9896d8db",
+      "format": "csv",
+      "encoding": "gb18030",
+      "records": 25,
+      "complete": true
+    },
+    {
+      "file": "shuangliu_bus_lines.jsonl",
+      "title": "公交线路",
+      "source_url": "https://www.chengdu.gov.cn/data/oportal/catalog/ba1124670aab4e079f18b82e5cfe85ca",
+      "format": "platform_jsonl",
+      "records": 203,
+      "complete": true
+    },
+    {
+      "file": "xindu_bus_lines.csv",
+      "title": "公交线路信息",
+      "source_url": "https://www.chengdu.gov.cn/data/oportal/catalog/9a757f26063e4953a30a354900bde7ae",
+      "format": "csv",
+      "encoding": "gb18030",
+      "records": 87,
+      "complete": true
+    },
+    {
+      "file": "chengdu_open_catalog_2026-06-01.zip",
+      "title": "成都市开放目录",
+      "source_url": "https://www.chengdu.gov.cn/data/oportal/catalog/downloadOpenCatalogFile",
+      "format": "zip",
+      "records": 24,
+      "complete": true,
+      "note": "包含市本级和区（市）县开放目录 XLSX 文件，用于后续发现更多数据集。"
+    }
+  ]
+}
