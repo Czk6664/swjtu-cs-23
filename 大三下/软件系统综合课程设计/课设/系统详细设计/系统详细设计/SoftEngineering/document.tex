@@ -1,0 +1,499 @@
+% !Mode:: "TeX:UTF-8"
+% !TEX program = xelatex
+
+\documentclass[bwprint]{report}
+
+\usepackage{placeins}
+
+\title{西南交通大学校园论坛系统详细设计报告}
+\stunum{2023112621、2023112548、2023112592、2023114956}
+\stuname{程泽凯、蒋焰、赵祺、金井直}
+\stuclass{软件工程专业 2023 级}
+\supervisor{李威老师、殷成凤老师}
+\dateinput{\today}
+\def\makeothertitle{}
+\setlength{\cftsecnumwidth}{3.2em}
+\setlength{\cftsubsecnumwidth}{4.4em}
+\setlength{\cftsubsubsecnumwidth}{5.6em}
+\sloppy
+
+\newcommand{\designfigure}[4][0.94\textwidth]{%
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=#1,height=0.40\textheight,keepaspectratio]{#2}
+    \caption{#3}
+    \label{#4}
+\end{figure}
+}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\pagestyle{plain}
+\pagenumbering{Roman}
+
+\begin{abstract}
+本文档在系统概要设计的基础上，对“西南交通大学校园论坛系统”的内部结构进行进一步细化说明。文档重点描述系统总体架构、模块边界、接口调用、核心数据结构、业务流程及主要用户界面，为后续编码、联调、测试与验收提供统一依据。
+
+本版本在原有文字说明基础上补充系统功能图、核心类图、模块类图、时序图以及前后台页面截图。通过图文结合的方式，开发人员可以更直观地理解控制层、业务层、数据访问层之间的协作关系；测试人员也可以根据界面图与流程图设计覆盖用户登录、发帖、点赞、签到、审核与举报处理等关键场景的测试用例。
+
+\vspace{0.5em}
+\noindent{\heiti 关键词：}校园论坛；详细设计；前后端分离；类图；时序图；数据库设计
+\end{abstract}
+
+\tableofcontents
+\newpage
+\listoffigures
+\newpage
+\pagestyle{plain}
+\setcounter{page}{1}
+\pagenumbering{arabic}
+
+% =========================
+\section{引言}
+
+\subsection{编写目的}
+
+本文档在系统概要设计的基础上，对“交大论坛系统”的内部结构进行进一步细化说明。文档重点描述系统的模块边界、接口调用、核心数据结构、业务流程及主要用户界面，为后续编码、联调、测试与验收提供统一依据。
+
+本版本在原有文字说明基础上补充了系统功能图、核心类图、模块类图、时序图以及前后台页面截图。通过图文结合的方式，开发人员可以更直观地理解控制层、业务层、数据访问层之间的协作关系；测试人员也可以根据界面图与流程图设计覆盖用户登录、发帖、点赞、签到、审核与举报处理等关键场景的测试用例。
+
+\subsection{系统背景}
+
+随着校园信息化建设的不断发展，传统信息交流方式已难以满足用户对高效互动平台的需求。交大论坛系统面向校园用户提供帖子发布、评论互动、版块浏览、积分成长与后台治理等能力，旨在形成一个可管理、可扩展、可持续运营的校园交流社区。
+
+系统采用前后端分离架构。前端负责页面展示、表单交互与状态反馈，后端基于 RESTful API 提供统一接口服务；后端内部按照 Controller、Service、Repository 分层组织，配合 JWT 认证与角色权限控制，降低模块耦合并提升系统安全性。
+
+% =========================
+\section{系统总体设计}
+
+\subsection{系统架构}
+
+系统整体采用三层架构设计：
+
+\begin{itemize}
+    \item 表现层（Controller）：接收前端请求，完成参数校验、身份识别和响应封装。
+    \item 业务逻辑层（Service）：承载注册登录、发帖、评论、签到、积分兑换、内容审核等核心业务规则。
+    \item 数据访问层（Repository）：负责与数据库交互，提供用户、帖子、评论、版块、举报、日志等实体的持久化能力。
+\end{itemize}
+
+同时，系统引入 JWT 认证机制与 RBAC 权限模型。JWT 用于实现无状态身份认证，便于前后端分离场景下的会话维护；RBAC 用于区分普通用户、版主和管理员的操作边界，避免越权访问。
+
+\designfigure[\textwidth]{fig2_1_system_core_layer_overview.png}{系统核心分层结构概览}{fig:system-core-layer-overview}
+
+图\ref{fig:system-core-layer-overview}展示了系统从控制层到服务层、仓储层的整体组织方式。各功能模块通过对应 Controller 暴露接口，再由 Service 层组合业务规则，最后通过 Repository 访问实体数据。这种设计能够减少跨模块直接依赖，并为后续增加缓存、消息队列或审计组件预留扩展空间。
+
+\subsection{功能模块划分}
+
+系统主要包含用户管理、帖子管理、评论互动、版块分类、成长体系和后台管理六个一级模块。用户管理提供注册、登录和个人信息维护；帖子管理承担内容创建与展示；评论互动负责点赞、收藏、举报和回复；版块分类用于组织内容；成长体系通过签到与积分提升活跃度；后台管理提供系统治理能力。
+
+\designfigure[\textwidth]{fig2_2_system_function_tree.jpg}{交大论坛系统功能结构图}{fig:system-function-tree}
+
+图\ref{fig:system-function-tree}从业务功能角度展示了交大论坛系统的主要能力，能够作为需求拆分和菜单设计的依据。功能树中不同分支对应不同开发模块，在实现阶段可分别映射到接口包、服务类和数据库表。同时该图展示了系统各功能点的层级关系，强调了后台管理与前台互动功能之间的关联。例如用户在前台产生的帖子、评论和举报数据，最终会流转到后台管理模块进行审核与处理。
+
+
+
+\subsection{核心类结构}
+
+系统核心类围绕 User、Post、Comment、Section、Tag、Report、Reward、OperationLog 等实体展开。用户与帖子、评论、举报、积分记录之间存在明确的一对多或多对多关系，这些关系决定了数据库外键设计、接口查询条件以及 Service 层聚合逻辑。
+
+\designfigure[\textwidth]{fig2_4_system_core_class_diagram_1.jpg}{系统核心类图（一）}{fig:system-core-class-1}
+
+图\ref{fig:system-core-class-1}展示了系统主要控制器、服务类与仓储类之间的依赖关系。Auth、Post、Growth、Admin 等模块分别拥有独立的入口类，能够保证不同业务线的代码职责清晰。
+
+\designfigure[0.86\textwidth]{fig2_5_system_core_class_diagram_2.jpg}{系统核心实体类图（二）}{fig:system-core-class-2}
+
+图\ref{fig:system-core-class-2}重点展示实体层关系：Section 包含多个 Post，User 可以发布 Post、提交 Comment、产生 OperationLog，并可与 Reward、Report 等实体发生业务关联。该图可作为数据库建模和 ORM 映射设计的参考。
+
+\FloatBarrier
+
+% =========================
+\section{用户认证模块详细设计}
+
+\subsection{功能说明}
+
+用户认证模块负责用户身份合法性验证，包括注册、登录、Token 生成与校验，以及登录后用户信息的获取。该模块是系统安全边界的入口，所有需要身份的业务请求都应依赖其认证结果。
+
+系统采用 JWT（JSON Web Token）进行无状态认证，其优势如下：
+
+\begin{itemize}
+    \item 减少服务器 Session 存储压力，提升横向扩展能力。
+    \item 支持浏览器端、移动端等多端统一访问。
+    \item 与前端路由守卫、后端过滤器配合后，能够实现接口级权限控制。
+\end{itemize}
+
+\subsection{用户交互界面设计}
+
+用户首次进入系统时会看到论坛初始界面，界面通过醒目的标题文案说明系统定位，并提供“进入论坛”或登录入口。该界面承担系统介绍和用户引导作用。
+
+\designfigure[0.96\textwidth]{fig3_1_forum_initial_page.jpg}{论坛初始界面}{fig:forum-initial-page}
+
+登录界面由左侧社区介绍区域和右侧登录表单组成。表单区域要求用户输入用户名与密码，提交后由前端调用认证接口；若认证失败，应在界面中给出明确错误提示，避免用户无法判断失败原因。
+
+\designfigure[0.96\textwidth]{fig3_2_forum_login_page.jpg}{论坛登录界面}{fig:forum-login-page}
+
+\designfigure[0.96\textwidth]{fig3_3_login_with_registered_account.jpg}{使用已注册账户登录}{fig:forum-login-registered}
+
+图\ref{fig:forum-login-registered}展示了用户输入已注册账号后的登录状态。前端应在提交前完成空值检查和格式检查，后端则负责密码校验、用户状态校验和 Token 签发。
+
+\designfigure[0.96\textwidth]{fig3_4_forum_home_page.jpg}{登录后的论坛主页}{fig:forum-home-page}
+
+成功登录后，系统跳转至论坛主页并在导航栏展示用户身份信息。主页作为前台功能的入口，提供帖子浏览、筛选、发帖、个人中心和成长体系等访问路径。
+
+\designfigure[0.96\textwidth]{fig3_5_forum_register_page.jpg}{论坛注册界面}{fig:forum-register-page}
+
+注册界面收集用户名、邮箱、密码、学号、学院和专业等信息。后端应对用户名和邮箱唯一性进行校验，并对密码进行加密存储，避免明文保存带来的安全风险。
+
+\subsection{登录流程}
+
+用户登录流程如下：
+
+\begin{enumerate}
+    \item 用户提交账号与密码。
+    \item AuthController 接收请求并封装 LoginRequest。
+    \item AuthService 查询用户并校验密码。
+    \item 校验成功后调用 JwtUtil 生成 Token。
+    \item 后端返回 Token 与用户摘要信息，前端保存至 LocalStorage 或其他安全存储位置。
+\end{enumerate}
+
+\designfigure[0.86\textwidth]{fig3_6_auth_class_diagram.jpg}{用户认证模块类图}{fig:auth-class-diagram}
+
+图\ref{fig:auth-class-diagram}展示了 AuthController、AuthService、JwtUtil、UserRepository 与 User 实体之间的调用关系。Controller 仅处理接口入口，Service 承担注册和登录业务，JwtUtil 封装 Token 的生成与校验细节。
+
+\designfigure[0.90\textwidth]{fig3_6_login_sequence.jpg}{用户登录时序图}{fig:login-sequence}
+
+图\ref{fig:login-sequence}给出了登录成功与失败两条分支。密码正确时系统生成并返回 Token；密码错误时抛出认证异常，并由前端展示用户名或密码错误提示。
+
+\FloatBarrier
+
+% =========================
+\section{帖子管理模块详细设计}
+
+\subsection{功能说明}
+
+帖子管理模块是论坛系统的核心，负责帖子内容的创建、展示、编辑、删除、筛选、搜索、点赞和详情查看。该模块既需要支持高频查询，也需要保证内容状态与用户互动数据的一致性。
+
+\subsection{用户交互界面设计}
+
+发布帖子界面要求用户输入标题、选择版块、填写正文并添加标签。前端应对标题长度、正文长度、必填字段和标签数量进行基础校验；后端应再次进行合法性校验，避免绕过前端限制。
+
+\designfigure[0.96\textwidth]{fig4_1_create_post_page.jpg}{发布帖子界面}{fig:create-post-page}
+
+帖子详情界面展示帖子标题、作者信息、正文内容、点赞数、收藏入口以及评论区。该页面是用户互动的核心场景，需重点关注点赞、评论、举报等操作的即时反馈。
+
+\designfigure[0.96\textwidth]{fig4_2_post_detail_page.jpg}{帖子详情界面}{fig:post-detail-page}
+
+在帖子列表页，用户可以按“最新”排序快速查看近期发布内容。该功能适合使用分页查询，并在数据库层对创建时间字段建立索引，以提升查询效率。
+
+\designfigure[0.96\textwidth]{fig4_3_filter_latest_page.jpg}{按“最新”筛选帖子界面}{fig:filter-latest-page}
+
+按“最热”排序时，系统通常综合浏览量、点赞数、评论数和发布时间等指标计算热度。为了降低实时计算压力，可将热度结果写入缓存或定时更新。
+
+\designfigure[0.96\textwidth]{fig4_4_filter_hot_page.jpg}{按“最热”筛选帖子界面}{fig:filter-hot-page}
+
+搜索功能支持用户按照关键词检索帖子。前端在搜索框输入关键词后调用列表查询接口，后端根据标题、正文或标签进行匹配，并返回分页结果。
+
+\designfigure[0.96\textwidth]{fig4_5_search_test_page.jpg}{按“Test”搜索帖子界面}{fig:search-test-page}
+
+点赞操作属于高频互动行为，前端应在按钮状态、点赞数量和提示消息上及时反馈。后端需要根据用户与帖子之间是否已存在点赞记录决定执行点赞或取消点赞。
+
+\designfigure[0.96\textwidth]{fig4_6_like_post_page.jpg}{点赞帖子界面}{fig:like-post-page}
+
+\subsection{业务流程与类设计}
+
+帖子发布流程如下：
+
+\begin{itemize}
+    \item 用户填写标题、正文、标签和版块信息。
+    \item JWT 过滤器解析用户身份并将请求转发给 PostController。
+    \item PostService 校验版块是否存在、标签是否有效并构造 Post 实体。
+    \item PostRepository 保存帖子数据，必要时同步创建标签关联记录。
+    \item 返回发帖成功结果，并刷新列表或跳转详情页。
+\end{itemize}
+
+\designfigure[0.95\textwidth]{fig4_7_post_class_diagram.jpg}{帖子管理模块类图}{fig:post-class-diagram}
+
+图\ref{fig:post-class-diagram}说明 PostController 负责发帖、列表查询、详情查询和更新入口；PostService 聚合 SectionRepository、TagRepository 与 PostRepository 完成业务；Post、Section、Tag 实体共同支撑帖子分类与标签能力。
+
+\designfigure[\textwidth]{fig4_8_create_post_sequence.jpg}{用户发帖时序图}{fig:create-post-sequence}
+
+图\ref{fig:create-post-sequence}展示了发帖接口从前端页面到 JWT 过滤器、控制器、服务层和仓储层的完整调用链。该流程明确了用户身份解析、版块查询、标签查询和帖子保存的先后顺序。
+
+\designfigure[0.90\textwidth]{fig4_9_like_post_sequence.jpg}{用户点赞帖子时序图}{fig:like-post-sequence}
+
+图\ref{fig:like-post-sequence}展示点赞与取消点赞的分支逻辑。当用户已点赞时，系统删除点赞记录并减少帖子点赞计数；当用户未点赞时，系统新增点赞记录并增加点赞计数。
+
+\subsection{设计优化说明}
+
+为了提升查询效率和系统体验，帖子模块可采用以下策略：
+
+\begin{itemize}
+    \item 列表接口统一支持分页、排序、关键词和版块筛选。
+    \item 对帖子创建时间、热度值、版块 ID、作者 ID 等字段建立索引。
+    \item 点赞数、收藏数、浏览数等计数信息可使用异步任务或缓存进行削峰。
+    \item 对编辑和删除操作增加作者权限校验，管理员和版主可根据权限处理违规内容。
+\end{itemize}
+
+\FloatBarrier
+
+% =========================
+\section{成长体系模块详细设计}
+
+\subsection{功能说明}
+
+成长体系模块用于提升用户活跃度，通过每日签到、积分累计、等级提升、积分兑换和积分流水记录构建用户激励机制。该模块与用户中心、帖子互动和后台运营数据均存在关联。
+
+\subsection{用户交互界面设计}
+
+用户主页展示个人资料、等级、积分和近期动态。该页面既是用户个人信息的集中入口，也能够承接签到成长、积分兑换和帖子记录等功能。
+
+\designfigure[0.96\textwidth]{fig5_1_user_profile_page.jpg}{用户主页}{fig:user-profile-page}
+
+每日签到页面突出展示当前积分和等级，并提供“今日签到”按钮。用户点击后，系统应判断当天是否已签到，避免重复增加积分。
+
+\designfigure[0.96\textwidth]{fig5_2_daily_checkin_page.jpg}{每日签到界面}{fig:daily-checkin-page}
+
+签到成功后，系统给出成功提示，并更新按钮状态、积分值和积分流水。该反馈能够让用户清楚感知本次操作已生效。
+
+\designfigure[0.96\textwidth]{fig5_3_checkin_success_page.jpg}{签到成功界面}{fig:checkin-success-page}
+
+积分显示界面展示签到后的积分变化和积分流水记录。积分流水用于追踪积分来源，也便于后续处理异常积分、退款或兑换失败等问题。
+
+\designfigure[0.96\textwidth]{fig5_4_points_display_page.jpg}{积分显示界面}{fig:points-display-page}
+
+\subsection{积分机制设计}
+
+积分来源包括：
+
+\begin{itemize}
+    \item 每日签到：+10 分。
+    \item 发帖：+20 分。
+    \item 评论：+5 分。
+    \item 被点赞：+2 分。
+\end{itemize}
+
+积分规则应统一封装在 GrowthService 中，避免在多个控制器中重复计算。所有积分变化均应写入 GrowthLog，保证可追溯性。
+
+\subsection{类设计与业务流程}
+
+\designfigure[0.80\textwidth]{fig5_5_growth_class_diagram_full.jpg}{成长体系模块类图（一）}{fig:growth-class-diagram-full}
+
+图\ref{fig:growth-class-diagram-full}展示成长体系的主要类结构。GrowthController 提供签到和积分查询入口，GrowthService 处理积分变更，RewardService 处理奖励兑换，GrowthLogRepository 和 RewardRepository 负责持久化记录。
+
+\designfigure[0.88\textwidth]{fig5_8_growth_layer_class_diagram.jpg}{成长体系模块类图（二）}{fig:growth-layer-class-diagram}
+
+图\ref{fig:growth-layer-class-diagram}从分层角度补充了 Controller、Service、Repository 与实体类之间的关系，便于开发人员按照模块边界组织代码文件。
+
+每日签到流程如下：
+
+\begin{enumerate}
+    \item 用户点击“每日签到”。
+    \item GrowthController 接收签到请求并传入用户 ID。
+    \item GrowthService 查询用户当天是否已经签到。
+    \item 若未签到，则更新积分和等级，并写入 GrowthLog。
+    \item 若已签到，则返回失败提示，不重复增加积分。
+\end{enumerate}
+
+\designfigure[0.92\textwidth]{fig5_6_checkin_sequence.jpg}{每日签到时序图}{fig:checkin-sequence}
+
+图\ref{fig:checkin-sequence}展示签到成功与重复签到两条分支。该流程体现了成长体系对幂等性的要求，即同一用户同一天只能获得一次签到积分。
+
+\designfigure[\textwidth]{fig5_7_reward_redeem_sequence.jpg}{积分兑换时序图}{fig:reward-redeem-sequence}
+
+图\ref{fig:reward-redeem-sequence}描述积分兑换流程。系统首先查询用户积分与奖励库存，在满足“积分足够且库存充足”时扣减积分、扣减库存并写入兑换记录；若积分不足或库存不足，则返回失败原因。
+
+\FloatBarrier
+
+% =========================
+\section{后台管理模块详细设计}
+
+\subsection{功能说明}
+
+后台管理模块用于系统级治理，包括用户管理、帖子审核、举报处理、版块管理、推荐配置和操作日志记录。该模块只允许管理员或具备权限的版主访问，是保障论坛内容质量与系统安全的重要组成部分。
+
+\subsection{后台界面设计}
+
+后台管理主页以数据概览为核心，展示用户数、帖子数、待审核数量、举报数量、活跃度趋势和风险统计等信息。管理员可通过仪表盘快速判断系统运行状态。
+
+\designfigure[0.96\textwidth]{fig6_1_admin_dashboard.jpg}{后台管理主页}{fig:admin-dashboard}
+
+用户与版块管理页面用于维护用户状态和论坛版块。管理员可以查看用户角色、状态并执行封禁、解封或编辑操作；同时可以创建或调整版块信息，保证内容分类结构清晰。
+
+\designfigure[0.96\textwidth]{fig6_2_user_section_management.jpg}{用户与版块管理页面}{fig:user-section-management}
+
+内容审核页面展示待审核帖子列表。管理员或版主可以根据标题、作者、内容摘要等信息判断是否通过审核，必要时可退回或隐藏违规内容。
+
+\designfigure[0.96\textwidth]{fig6_3_content_review_page.jpg}{内容审核页面}{fig:content-review-page}
+
+举报处理模块展示用户提交的举报数据，并提供采纳举报、驳回举报、查看详情和处理记录等能力。举报处理完成后，系统应同步更新举报状态并写入操作日志。
+
+\designfigure[0.96\textwidth]{fig6_4_report_handling_page.jpg}{举报处理模块界面}{fig:report-handling-page}
+
+\subsection{权限模型}
+
+系统采用 RBAC（Role-Based Access Control）模型：
+
+\begin{itemize}
+    \item 普通用户：可以浏览、发帖、评论、点赞、收藏、举报和签到。
+    \item 版主：可以审核指定版块内容、处理部分举报、管理版块内帖子。
+    \item 管理员：拥有用户管理、版块管理、全站内容审核、举报处理和系统配置权限。
+\end{itemize}
+
+不同角色拥有不同操作权限。后端应在接口层或安全过滤器中完成权限校验，前端菜单隐藏只能作为用户体验优化，不能替代后端鉴权。
+
+\subsection{类设计与举报处理流程}
+
+\designfigure[0.96\textwidth]{fig6_5_admin_class_diagram_1.jpg}{后台管理模块类图（一）}{fig:admin-class-diagram-1}
+
+图\ref{fig:admin-class-diagram-1}展示后台管理模块中 AdminController 与 RecommendService、AdminUserService、AdminPostService、ReportService、OperationLogService 的依赖关系。各 Service 分别承担推荐配置、用户管理、帖子审核、举报处理和日志记录职责。
+
+\designfigure[0.96\textwidth]{fig6_8_admin_class_diagram_2.jpg}{后台管理模块类图（二）}{fig:admin-class-diagram-2}
+
+图\ref{fig:admin-class-diagram-2}以更完整的方式展示了后台管理的服务层、仓储层与实体层结构。后台模块与用户、版块、帖子、举报、日志和推荐配置等数据均有关联，因此需要严格控制事务边界和权限边界。
+
+\designfigure[0.72\textwidth]{fig6_6_admin_entity_class_diagram.jpg}{后台管理实体类图}{fig:admin-entity-class-diagram}
+
+图\ref{fig:admin-entity-class-diagram}展示后台管理相关实体之间的关系。User 可以管理或审核 Post，Report 关联被举报的帖子与处理人员，OperationLog 记录管理员行为，RecommendConfig 保存推荐算法配置。
+
+举报处理流程如下：
+
+\begin{enumerate}
+    \item 管理员进入举报管理页面，系统请求举报列表。
+    \item AdminController 调用 ReportService 获取举报数据。
+    \item 管理员提交处理结果，系统根据采纳或驳回执行不同分支。
+    \item 采纳举报时更新帖子状态为隐藏或驳回，驳回举报时保持帖子状态不变。
+    \item 系统更新举报状态，并写入 OperationLog 作为审计记录。
+\end{enumerate}
+
+\designfigure[\textwidth]{fig6_7_report_review_sequence.jpg}{举报处理时序图}{fig:report-review-sequence}
+
+图\ref{fig:report-review-sequence}展示了举报列表查询与处理结果提交的完整过程。该流程保证了举报数据、帖子状态和后台操作日志之间的一致性。
+
+\subsection{审计机制}
+
+系统所有后台操作均记录至操作日志表（OperationLog），用于：
+
+\begin{itemize}
+    \item 行为追踪：记录操作者、操作对象、操作类型和时间。
+    \item 安全审计：发现异常管理行为并辅助追责。
+    \item 异常检测：结合统计规则识别频繁封禁、批量删除等高风险行为。
+\end{itemize}
+
+\FloatBarrier
+
+% =========================
+\section{数据库设计}
+
+\subsection{用户表（User）}
+
+\begin{longtable}{|c|c|p{7cm}|}
+\hline
+字段 & 类型 & 说明 \\
+\hline
+id & bigint & 主键，唯一标识用户 \\
+username & varchar & 用户名，用于登录与展示 \\
+password & varchar & 加密后的密码摘要 \\
+email & varchar & 邮箱，用于身份绑定与通知 \\
+role & varchar & 用户角色，如 USER、MODERATOR、ADMIN \\
+points & int & 当前积分余额 \\
+status & int & 用户状态，区分正常、封禁、注销等 \\
+create\_time & datetime & 用户创建时间 \\
+\hline
+\end{longtable}
+
+\subsection{帖子表（Post）}
+
+\begin{longtable}{|c|c|p{7cm}|}
+\hline
+字段 & 类型 & 说明 \\
+\hline
+id & bigint & 主键，唯一标识帖子 \\
+title & varchar & 帖子标题 \\
+content & text & 帖子正文内容 \\
+user\_id & bigint & 作者用户 ID \\
+section\_id & bigint & 所属版块 ID \\
+status & varchar & 帖子状态，如正常、待审核、隐藏、删除 \\
+view\_count & int & 浏览量 \\
+like\_count & int & 点赞数 \\
+create\_time & datetime & 创建时间 \\
+update\_time & datetime & 最后更新时间 \\
+\hline
+\end{longtable}
+
+\subsection{评论表（Comment）}
+
+评论表用于记录用户在帖子下的回复内容，提高系统社交属性。评论支持父评论 ID，以满足楼中楼或回复关系设计。
+
+\begin{longtable}{|c|c|p{7cm}|}
+\hline
+字段 & 类型 & 说明 \\
+\hline
+id & bigint & 主键，唯一标识评论 \\
+post\_id & bigint & 所属帖子 ID \\
+user\_id & bigint & 评论用户 ID \\
+parent\_id & bigint & 父评论 ID，可为空 \\
+content & text & 评论内容 \\
+status & varchar & 评论状态 \\
+create\_time & datetime & 评论创建时间 \\
+\hline
+\end{longtable}
+
+\subsection{举报表（Report）}
+
+举报表用于记录用户对违规内容的反馈。举报处理过程会影响帖子状态，因此建议在处理举报时采用事务，保证 Report、Post 和 OperationLog 三类数据一致。
+
+\begin{longtable}{|c|c|p{7cm}|}
+\hline
+字段 & 类型 & 说明 \\
+\hline
+id & bigint & 主键，唯一标识举报记录 \\
+post\_id & bigint & 被举报帖子 ID \\
+user\_id & bigint & 举报用户 ID \\
+reason & varchar & 举报原因 \\
+status & varchar & 举报状态，如待处理、已采纳、已驳回 \\
+reviewer\_id & bigint & 处理人 ID \\
+create\_time & datetime & 举报提交时间 \\
+\hline
+\end{longtable}
+
+\subsection{积分流水表（GrowthLog）}
+
+积分流水表记录签到、发帖、评论、点赞和兑换等积分变动。通过保留每一条积分变化记录，系统可以支持用户积分明细展示，也便于后台排查异常积分来源。
+
+\begin{longtable}{|c|c|p{7cm}|}
+\hline
+字段 & 类型 & 说明 \\
+\hline
+id & bigint & 主键，唯一标识流水记录 \\
+user\_id & bigint & 用户 ID \\
+type & varchar & 积分变动类型，如 CHECK\_IN、POST、COMMENT、REDEEM \\
+points\_change & int & 积分变化值，正数表示增加，负数表示扣减 \\
+create\_time & datetime & 记录创建时间 \\
+\hline
+\end{longtable}
+
+% =========================
+\section{非功能设计}
+
+\subsection{安全性设计}
+
+系统安全性设计重点包括身份认证、权限控制、数据校验和审计记录。登录接口应限制失败次数并对密码进行加密校验；所有需要身份的接口均应校验 JWT；后台接口必须叠加角色权限判断；用户输入内容需要进行敏感词、脚本注入和长度校验。
+
+\subsection{性能设计}
+
+系统主要性能压力集中在帖子列表、搜索、热门排序、点赞计数和后台统计。针对这些场景，可以采用分页查询、数据库索引、缓存、异步计数和定时统计等方案。对于首页热门帖子或后台仪表盘，可将统计结果缓存并定时刷新，避免每次请求都进行复杂聚合计算。
+
+\subsection{可维护性设计}
+
+系统按照模块拆分 Controller、Service、Repository 和 Entity，减少不同业务之间的直接耦合。公共响应结构、异常处理、权限校验、日志记录和参数校验应抽取为通用组件，避免重复代码。模块内部应通过接口或服务方法暴露能力，避免直接跨层访问数据库。
+
+% =========================
+\section{系统总结}
+
+本文档对交大论坛系统的详细设计进行了全面说明，包括系统架构设计、模块划分、用户认证、帖子管理、成长体系、后台管理、数据库结构与非功能设计。本图文增强版在文字说明的基础上加入了系统功能图、类图、时序图和前后台界面截图，使系统逻辑与页面交互更加直观。
+
+整体来看，系统采用分层架构与 JWT 认证机制，保证了较好的安全性与扩展性；通过帖子、评论、点赞、收藏和举报功能形成论坛核心互动闭环；通过积分成长体系提升用户活跃度；通过后台管理模块增强内容治理和运营可控性。该设计能够为后续编码实现、接口联调、测试验证和部署维护提供完整依据。
+
+\end{document}
