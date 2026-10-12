@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-06-09 09:26:37",
+  "designed_cases": 150,
+  "feature_points": 15,
+  "cases_per_feature": 10,
+  "executed_cases": 22,
+  "passed_cases": 19,
+  "failed_cases": 3,
+  "unexecuted_cases": 128,
+  "bugs_total": 6,
+  "bugs_fixed": 3,
+  "tex": "D:\\大三下\\软件系统综合课程设计\\软件测试报告\\swjtu_forum_report_work\\paper_spine_output\\final_paper\\software_test_report.tex",
+  "pdf_target": "D:\\大三下\\软件系统综合课程设计\\软件测试报告\\软件系统综合课程设计——练习1（黑盒+功能测试）.pdf"
+}

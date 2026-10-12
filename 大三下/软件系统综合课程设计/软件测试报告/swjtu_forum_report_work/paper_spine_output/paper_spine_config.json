@@ -1,0 +1,19 @@
+{
+  "workflow": "build_from_materials",
+  "scene": "report_review",
+  "tier": "pro",
+  "output_language": "zh",
+  "target_name": "西南交大校园论坛系统黑盒与功能测试报告",
+  "materials_dir": "D:\\大三下\\软件系统综合课程设计\\软件测试报告\\swjtu_forum_report_work",
+  "draft_path": "",
+  "user_motivation": "按课程实验要求基于真实运行系统完成功能点分析、黑盒用例设计、手工执行、缺陷记录、Selenium脚本和PDF报告。",
+  "official_urls": [],
+  "special_requirements": [
+    "不少于1万字",
+    "包含测试用例、脚本、完整测试报告",
+    "真实执行，不伪造结果"
+  ],
+  "word_output": "none",
+  "translation_package": "none",
+  "ui_language": "zh"
+}

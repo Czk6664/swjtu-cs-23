@@ -1,0 +1,382 @@
+{
+  "generated_at": "2026-06-09T09:43:06",
+  "username": "api1780969384",
+  "created_post_id": 5,
+  "results": {
+    "TC-REG-001": [
+      "通过",
+      "batch-api-results.json",
+      "注册接口状态码200。"
+    ],
+    "TC-REG-002": [
+      "通过",
+      "batch-api-results.json",
+      "短密码注册返回状态码400，符合拒绝预期。"
+    ],
+    "TC-REG-003": [
+      "通过",
+      "batch-api-results.json",
+      "非法邮箱返回状态码400。"
+    ],
+    "TC-REG-004": [
+      "通过",
+      "batch-api-results.json",
+      "重复注册返回状态码400。"
+    ],
+    "TC-REG-005": [
+      "通过",
+      "batch-api-results.json",
+      "注册用户登录状态码200，token存在=True。"
+    ],
+    "TC-LOGIN-001": [
+      "通过",
+      "batch-api-results.json",
+      "管理员登录状态码200，token存在=True。"
+    ],
+    "TC-LOGIN-002": [
+      "通过",
+      "batch-api-results.json",
+      "错误密码返回状态码400。"
+    ],
+    "TC-LOGIN-003": [
+      "通过",
+      "batch-api-results.json",
+      "空用户名返回状态码400。"
+    ],
+    "TC-LOGIN-004": [
+      "通过",
+      "batch-api-results.json",
+      "空密码返回状态码400。"
+    ],
+    "TC-LOGIN-005": [
+      "通过",
+      "BUG-001-notification-desktop.png;verification-summary.json",
+      "Selenium登录后可见通知入口。"
+    ],
+    "TC-HOME-001": [
+      "通过",
+      "batch-api-results.json",
+      "首页帖子接口状态码200，返回4条。"
+    ],
+    "TC-HOME-002": [
+      "通过",
+      "batch-api-results.json",
+      "size=1返回1条。"
+    ],
+    "TC-HOME-003": [
+      "通过",
+      "batch-api-results.json",
+      "分页结构返回状态码200。"
+    ],
+    "TC-HOME-005": [
+      "通过",
+      "05_home_post_list.png",
+      "Chrome截图显示首页帖子卡片。"
+    ],
+    "TC-SEC-001": [
+      "通过",
+      "batch-api-results.json",
+      "版块筛选sectionId=4返回状态码200。"
+    ],
+    "TC-SEC-002": [
+      "通过",
+      "batch-api-results.json",
+      "sectionId=1返回状态码200。"
+    ],
+    "TC-SEC-003": [
+      "通过",
+      "batch-api-results.json",
+      "不存在sectionId返回状态码404，无服务崩溃。"
+    ],
+    "TC-SEC-004": [
+      "通过",
+      "batch-api-results.json",
+      "筛选URL参数可重复请求。"
+    ],
+    "TC-SEC-005": [
+      "通过",
+      "06_section_filter_campus_life.png",
+      "Chrome截图显示版块筛选结果。"
+    ],
+    "TC-SEARCH-001": [
+      "通过",
+      "batch-api-results.json",
+      "关键词“签到”搜索状态码200，返回1条。"
+    ],
+    "TC-SEARCH-002": [
+      "通过",
+      "batch-api-results.json",
+      "关键词“课程”搜索状态码200，返回0条。"
+    ],
+    "TC-SEARCH-003": [
+      "通过",
+      "batch-api-results.json",
+      "关键词“测”搜索状态码200，返回0条。"
+    ],
+    "TC-SEARCH-004": [
+      "通过",
+      "batch-api-results.json",
+      "关键词“NO_MATCH_1780969384”搜索状态码200，返回0条。"
+    ],
+    "TC-SEARCH-005": [
+      "通过",
+      "07_search_keyword_qiandao.png",
+      "Chrome截图显示搜索结果。"
+    ],
+    "TC-POST-001": [
+      "失败",
+      "batch-api-results.json",
+      "发帖状态码500，postId=5。"
+    ],
+    "TC-POST-002": [
+      "通过",
+      "batch-api-results.json",
+      "空标题返回状态码400。"
+    ],
+    "TC-POST-003": [
+      "通过",
+      "batch-api-results.json",
+      "空正文返回状态码400。"
+    ],
+    "TC-POST-004": [
+      "通过",
+      "batch-api-results.json",
+      "未登录发帖返回状态码401。"
+    ],
+    "TC-POST-005": [
+      "失败",
+      "09_create_post_success_detail.png",
+      "详情页仍有部分中文静态文案乱码，保留缺陷。"
+    ],
+    "TC-HOME-004": [
+      "通过",
+      "batch-api-results.json",
+      "新增帖子postId=5可作为首页/详情链路数据。"
+    ],
+    "TC-COMMENT-001": [
+      "通过",
+      "batch-api-results.json",
+      "评论状态码200，commentId=18。"
+    ],
+    "TC-COMMENT-002": [
+      "通过",
+      "batch-api-results.json",
+      "空评论返回状态码400。"
+    ],
+    "TC-COMMENT-003": [
+      "通过",
+      "batch-api-results.json",
+      "短评论返回状态码200。"
+    ],
+    "TC-COMMENT-004": [
+      "通过",
+      "batch-api-results.json",
+      "未登录评论返回状态码401。"
+    ],
+    "TC-COMMENT-005": [
+      "通过",
+      "batch-api-results.json",
+      "评论列表返回6条。"
+    ],
+    "TC-LIKE-001": [
+      "通过",
+      "batch-api-results.json",
+      "首次点赞状态码200。"
+    ],
+    "TC-LIKE-002": [
+      "通过",
+      "batch-api-results.json",
+      "再次点赞/取消状态码200。"
+    ],
+    "TC-LIKE-003": [
+      "通过",
+      "batch-api-results.json",
+      "未登录点赞返回状态码401。"
+    ],
+    "TC-LIKE-004": [
+      "通过",
+      "batch-api-results.json",
+      "不存在帖子点赞返回状态码404。"
+    ],
+    "TC-LIKE-005": [
+      "通过",
+      "11_like_success.png",
+      "Chrome截图保留点赞按钮验证。"
+    ],
+    "TC-FAV-001": [
+      "通过",
+      "batch-api-results.json",
+      "首次收藏状态码200。"
+    ],
+    "TC-FAV-002": [
+      "通过",
+      "batch-api-results.json",
+      "再次收藏/取消状态码200。"
+    ],
+    "TC-FAV-003": [
+      "通过",
+      "batch-api-results.json",
+      "未登录收藏返回状态码401。"
+    ],
+    "TC-FAV-004": [
+      "通过",
+      "batch-api-results.json",
+      "我的收藏接口状态码200。"
+    ],
+    "TC-FAV-005": [
+      "通过",
+      "12_favorite_success.png",
+      "Chrome截图保留收藏按钮验证。"
+    ],
+    "TC-PROFILE-001": [
+      "通过",
+      "batch-api-results.json",
+      "资料更新状态码200。"
+    ],
+    "TC-PROFILE-002": [
+      "通过",
+      "batch-api-results.json",
+      "空简介保存状态码200。"
+    ],
+    "TC-PROFILE-003": [
+      "通过",
+      "batch-api-results.json",
+      "长简介保存状态码200。"
+    ],
+    "TC-PROFILE-004": [
+      "通过",
+      "batch-api-results.json",
+      "/auth/me状态码200。"
+    ],
+    "TC-PROFILE-005": [
+      "通过",
+      "13_profile_page_before_edit.png;14_profile_edit_success.png",
+      "Chrome截图保留个人中心编辑验证。"
+    ],
+    "TC-VERIFY-001": [
+      "通过",
+      "batch-api-results.json",
+      "有效/已占用校园身份路径返回状态码200，有明确结果。"
+    ],
+    "TC-VERIFY-002": [
+      "通过",
+      "batch-api-results.json",
+      "学号2024001返回状态码400。"
+    ],
+    "TC-VERIFY-003": [
+      "通过",
+      "batch-api-results.json",
+      "学号202400001返回状态码400。"
+    ],
+    "TC-VERIFY-004": [
+      "失败",
+      "batch-api-results.json",
+      "不存在学号返回状态码200。"
+    ],
+    "TC-VERIFY-005": [
+      "失败",
+      "14_profile_edit_success.png;15_campus_identity_success.png",
+      "认证覆盖资料前缺少二次确认，保留低优先级缺陷。"
+    ],
+    "TC-CHECKIN-001": [
+      "通过",
+      "batch-api-results.json",
+      "签到接口返回状态码200，成功或重复签到均有明确响应。"
+    ],
+    "TC-CHECKIN-002": [
+      "通过",
+      "batch-api-results.json",
+      "签到记录接口状态码200。"
+    ],
+    "TC-CHECKIN-003": [
+      "通过",
+      "batch-api-results.json",
+      "积分历史接口状态码200。"
+    ],
+    "TC-CHECKIN-004": [
+      "通过",
+      "batch-api-results.json",
+      "未登录签到返回状态码401。"
+    ],
+    "TC-CHECKIN-005": [
+      "失败",
+      "19_daily_checkin_success_or_repeat.png",
+      "签到记录积分展示与流水不完全一致，保留缺陷。"
+    ],
+    "TC-REWARD-001": [
+      "通过",
+      "batch-api-results.json",
+      "奖品列表状态码200，数量2。"
+    ],
+    "TC-REWARD-002": [
+      "通过",
+      "batch-api-results.json",
+      "兑换请求返回状态码400，有成功或积分不足提示。"
+    ],
+    "TC-REWARD-003": [
+      "通过",
+      "BUG-002-rewards-redemptions.png;verification-summary.json",
+      "我的兑换接口状态码200，验证不再500。"
+    ],
+    "TC-REWARD-004": [
+      "通过",
+      "batch-api-results.json",
+      "未登录兑换返回状态码401。"
+    ],
+    "TC-REWARD-005": [
+      "通过",
+      "BUG-002-rewards-redemptions.png",
+      "Selenium/Chrome截图显示积分商城刷新不失败。"
+    ],
+    "TC-NOTICE-001": [
+      "通过",
+      "BUG-001-notification-desktop.png;verification-summary.json",
+      "通知面板hidden=false且display=flex。"
+    ],
+    "TC-NOTICE-002": [
+      "通过",
+      "batch-api-results.json",
+      "通知列表接口状态码200。"
+    ],
+    "TC-NOTICE-003": [
+      "通过",
+      "batch-api-results.json",
+      "未读数接口状态码200。"
+    ],
+    "TC-NOTICE-004": [
+      "通过",
+      "batch-api-results.json",
+      "全部已读接口状态码200。"
+    ],
+    "TC-NOTICE-005": [
+      "通过",
+      "BUG-001-notification-mobile.png",
+      "移动端通知面板截图通过。"
+    ],
+    "TC-FOLLOW-001": [
+      "通过",
+      "batch-api-results.json",
+      "关注作者接口状态码200。"
+    ],
+    "TC-FOLLOW-002": [
+      "通过",
+      "batch-api-results.json",
+      "取消关注接口状态码200。"
+    ],
+    "TC-FOLLOW-003": [
+      "通过",
+      "batch-api-results.json",
+      "未登录关注返回状态码401。"
+    ],
+    "TC-FOLLOW-004": [
+      "通过",
+      "batch-api-results.json",
+      "关注统计接口状态码200。"
+    ],
+    "TC-FOLLOW-005": [
+      "通过",
+      "23_follow_page_before.png;24_follow_success.png;25_unfollow_success.png",
+      "Chrome截图保留关注/取消关注验证。"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-06-09 09:43:06",
+  "designed_cases": 75,
+  "feature_points": 15,
+  "cases_per_feature": 5,
+  "executed_cases": 75,
+  "passed_cases": 70,
+  "failed_cases": 5,
+  "blocked_cases": 0,
+  "na_cases": 0,
+  "bugs_total": 6,
+  "bugs_fixed": 3,
+  "tex": "D:\\大三下\\软件系统综合课程设计\\软件测试报告\\课程设计模版_2026年\\课程设计模版_2026年\\swjtu_forum_test_report.tex",
+  "pdf": "D:\\大三下\\软件系统综合课程设计\\软件测试报告\\课程设计模版_2026年\\课程设计模版_2026年\\swjtu_forum_test_report.pdf"
+}

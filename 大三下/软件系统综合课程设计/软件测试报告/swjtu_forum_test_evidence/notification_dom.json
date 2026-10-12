@@ -1,0 +1,8 @@
+{
+  "hasPanel": true,
+  "hasRoot": true,
+  "html": "<div class=\"notif-panel\" data-notif-panel=\"\" role=\"menu\" aria-label=\"通知列表\" style=\"display:none\">\n      <div class=\"notif-panel__head\">\n        <span class=\"notif-panel__title\">通知</span>\n        <button type=\"button\" class=\"notif-readall\" data-notif-readall=\"\">全部已读</button>\n      </div>\n      <div class=\"notif-panel__list\" data-notif-list=\"\">\n        <p class=\"notif-empty\">加载中…</p>\n      </div>\n    </div>",
+  "listText": "\n        加载中…\n      ",
+  "panelHidden": false,
+  "panelText": "\n      \n        通知\n        全部已读\n      \n      \n        加载中…\n      \n    "
+}

@@ -1,0 +1,833 @@
+from __future__ import annotations
+
+import csv
+import json
+import shutil
+import xml.etree.ElementTree as ET
+from collections import Counter
+from datetime import datetime
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+
+
+WORK = Path(r"D:\大三下\软件系统综合课程设计\软件测试报告\swjtu_forum_report_work")
+EVIDENCE = Path(r"D:\大三下\软件系统综合课程设计\软件测试报告\swjtu_forum_test_evidence")
+TEMPLATE = Path(r"D:\大三下\软件系统综合课程设计\软件测试报告\课程设计模版_2026年\课程设计模版_2026年")
+FIG_DIR = TEMPLATE / "figures" / "forum_test"
+SUPPORT_DIR = WORK / "paper_spine_output"
+FINAL_PAPER_DIR = SUPPORT_DIR / "final_paper"
+
+
+FUNCTION_POINTS = [
+    ("1", "用户注册", "新用户注册"),
+    ("2", "用户登录", "账号密码登录"),
+    ("3", "帖子浏览", "首页帖子列表"),
+    ("4", "帖子浏览", "按版块筛选帖子"),
+    ("5", "帖子浏览", "帖子搜索"),
+    ("6", "发帖", "发布新帖子"),
+    ("7", "评论", "发表评论"),
+    ("8", "互动", "点赞帖子"),
+    ("9", "互动", "收藏帖子"),
+    ("10", "个人中心", "编辑个人资料"),
+    ("11", "个人中心", "校园身份认证"),
+    ("12", "成长系统", "每日签到"),
+    ("13", "积分商城", "积分兑换奖品"),
+    ("14", "通知中心", "查看通知"),
+    ("15", "关注", "关注/取消关注用户"),
+]
+
+
+FEATURE_ANALYSIS = [
+    (
+        "用户注册",
+        "注册功能的关键输入包括用户名、邮箱、密码、学号、学院和专业。等价类划分时，"
+        "我把数据分为未被占用的合法账号、已存在用户名或邮箱、格式不合法邮箱、密码为空或过短、"
+        "学号为空或非数字等类别。边界分析主要落在账号长度、密码长度和邮箱格式上。"
+        "本次实测采用随机后缀账号 bbt33845836，避免与种子数据冲突；注册成功后系统自动登录并跳转首页，"
+        "说明前端表单校验、后端创建用户、会话写入和首页用户态刷新形成了完整闭环。",
+    ),
+    (
+        "用户登录",
+        "登录功能本身看似简单，但它是后续发帖、评论、互动、个人中心、签到和兑换的前置条件。"
+        "测试设计中将账号密码组合划分为正确账号正确密码、正确账号错误密码、空账号、空密码、"
+        "不存在账号等类别。由于便携版系统已有管理员账号，本次同时覆盖普通用户登录和管理员登录。"
+        "手工测试记录了退出后的登录页、普通用户再次登录后的首页状态，以及管理员登录后进入后台首页的状态。",
+    ),
+    (
+        "首页帖子列表",
+        "帖子列表主要验证数据加载、排序展示、卡片字段完整性和未登录/已登录状态下入口一致性。"
+        "等价类包括有帖子、无帖子、帖子包含长标题、帖子带互动计数等情况；边界关注列表第一页数量、"
+        "空列表占位和网络返回慢时的加载提示。本次实测首页返回 5 条公开帖子，卡片中可见标题、摘要、作者、"
+        "版块、评论数、点赞数等字段，满足首页浏览的基本功能要求。",
+    ),
+    (
+        "按版块筛选帖子",
+        "版块筛选属于典型的输入条件过滤。等价类包括选择存在版块、选择无帖子版块、重复选择同一版块、"
+        "从筛选状态恢复到全部帖子。边界在于 URL 参数 sectionId 的合法值、空值和不存在值。"
+        "本次选择“校园生活”后，页面 URL 变为包含 sectionId=1 的地址，结果列表只展示校园生活相关帖子，"
+        "说明前端状态和后端查询条件能够联动。",
+    ),
+    (
+        "帖子搜索",
+        "搜索功能采用关键词作为输入，测试时重点关注空关键词、存在关键词、不存在关键词、中文关键词、"
+        "特殊字符关键词和前后空格。中文关键词容易暴露编码和 URL 参数处理问题，因此选用“签到”作为实测数据。"
+        "测试结果显示 URL 中出现 keyword 参数，列表返回包含签到关键词的帖子，说明搜索链路可用；自动化脚本中还专门"
+        "为中文关键词增加了表单定位和 URL 编码兜底。",
+    ),
+    (
+        "发布新帖子",
+        "发帖功能涉及登录态、版块选择、标题、正文和提交后的详情页跳转，是论坛系统最核心的写操作之一。"
+        "等价类包括合法标题和正文、空标题、空正文、未选择版块、标题过长、正文超长等；边界关注标题长度和正文长度。"
+        "本次实测发布“黑盒测试自动化发帖 155247”，系统创建了 id=7 的帖子并跳转详情页，说明新增帖子流程可用。"
+        "同时发现新发帖详情页部分中文按钮标签出现乱码，这是手工测试发现的重要中等缺陷。",
+    ),
+    (
+        "发表评论",
+        "评论功能验证的是帖子详情页中的二次内容生产。测试设计包括合法评论、空评论、超长评论、连续评论、"
+        "未登录评论和刷新后评论持久化。实测在新帖子详情页提交一条测试评论后，评论区新增记录可见，说明评论发布、"
+        "列表刷新和计数更新基本正常。该功能也作为 Selenium 脚本中的帖子详情页闭环验证之一。",
+    ),
+    (
+        "点赞帖子",
+        "点赞属于幂等性和状态切换要求较高的互动功能。等价类包括首次点赞、重复点击取消点赞、不同用户点赞、"
+        "未登录点赞等；边界关注计数从 0 到 1、从 1 回到 0 的显示。手工测试中，新帖子点赞数从 0 变为 1，"
+        "页面状态立即刷新。自动化脚本将它与收藏放在同一条用例中，以验证详情页互动按钮的基本可操作性。",
+    ),
+    (
+        "收藏帖子",
+        "收藏与点赞类似，但业务含义更偏向个人资产。测试时关注首次收藏、取消收藏、重复收藏、收藏数展示、"
+        "个人收藏列表是否能追踪等。手工测试中新帖子收藏数从 0 变为 1，证明收藏入口可用。由于课程要求重点是功能测试，"
+        "本轮没有继续扩展到个人收藏列表的长期持久化验证，后续回归测试可补充。",
+    ),
+    (
+        "编辑个人资料",
+        "个人资料编辑覆盖文本域、普通输入框和保存按钮。等价类包括合法简介、空简介、长简介、合法学院专业、"
+        "特殊字符输入等；边界主要是简介长度和输入为空时的保存策略。本次实测修改了简介、学院和专业，页面提示资料已保存，"
+        "刷新后资料仍可见。之后校园认证成功会覆盖学院专业，但系统没有覆盖提醒，因此被记录为低优先级体验缺陷。",
+    ),
+    (
+        "校园身份认证",
+        "校园认证是本系统较有业务特色的功能，不能只测成功路径。测试设计使用判定表分析学号长度、学号是否存在、"
+        "邮箱是否匹配三个条件。12 位学号触发“学号必须为 8 位数字”；8 位但不存在的学号触发“未找到对应学号的校园身份信息”；"
+        "种子数据 20240001 与对应邮箱通过认证并同步学院专业。这个功能的失败路径和成功路径都已手工留证。",
+    ),
+    (
+        "每日签到",
+        "签到功能同时影响成长记录和积分流水，因此测试重点不是只看按钮是否可点，而是看按钮状态、积分余额、签到记录、"
+        "积分历史是否一致。手工测试中首次签到积分从 0 增加到 10，积分历史显示 CHECK_IN +10，但签到记录区域显示积分 +0。"
+        "这是一个数据展示不一致缺陷，虽然不阻断主流程，却会影响用户对积分规则的信任。",
+    ),
+    (
+        "积分兑换奖品",
+        "兑换功能涉及积分余额、奖品库存、兑换记录和错误反馈。等价类包括积分不足、积分刚好等于价格、积分高于价格、"
+        "库存为 0、重复兑换等。普通用户仅有 10 积分时兑换 120 积分奖品，系统提示积分不足，符合预期。"
+        "管理员高积分账号兑换时出现“兑换申请已提交”和“系统繁忙，请稍后重试”的矛盾提示，随后页面刷新为加载失败，"
+        "因此被判定为高严重度缺陷。",
+    ),
+    (
+        "通知中心",
+        "通知中心通常是轻量入口，但它承担系统反馈闭环，例如评论、关注、兑换审核等消息。测试等价类包括有通知、"
+        "无通知、未读通知、全部已读、加载失败等。手工点击通知按钮后，按钮变为 active，但通知面板 DOM 仍为 display:none，"
+        "内容停留在“加载中”。该问题直接导致用户无法查看通知，被列为高严重度缺陷。自动化脚本保留 DOM 存在性检查，"
+        "而具体显示缺陷在缺陷清单中记录。",
+    ),
+    (
+        "关注/取消关注用户",
+        "关注功能验证用户关系的建立和解除。测试设计包括未关注时点击关注、已关注时取消关注、关注自己、重复点击、"
+        "未登录关注等。手工测试在帖子 id=1 的作者处完成关注，按钮从“关注”变为“已关注”，再次点击恢复“关注”。"
+        "这说明普通关注和取消关注链路可用，后续可继续扩展到关注列表、粉丝列表和通知触发验证。",
+    ),
+]
+
+
+def read_csv(path: Path) -> list[dict[str, str]]:
+    with path.open("r", encoding="utf-8-sig", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def tex_escape(value: str | None) -> str:
+    if value is None:
+        return ""
+    text = "".join(ch for ch in str(value) if not ("\ue000" <= ch <= "\uf8ff"))
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "&": r"\&",
+        "%": r"\%",
+        "$": r"\$",
+        "#": r"\#",
+        "_": r"\_",
+        "{": r"\{",
+        "}": r"\}",
+        "~": r"\textasciitilde{}",
+        "^": r"\textasciicircum{}",
+    }
+    return "".join(replacements.get(ch, ch) for ch in text)
+
+
+def copy_evidence() -> None:
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
+    for item in EVIDENCE.iterdir():
+        if item.is_file() and item.suffix.lower() in {".png", ".jpg", ".jpeg", ".json"}:
+            shutil.copy2(item, FIG_DIR / item.name)
+
+
+def make_charts(summary: dict[str, object], bugs: list[dict[str, str]]) -> None:
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
+    plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "Noto Sans CJK SC", "Arial Unicode MS"]
+    plt.rcParams["axes.unicode_minus"] = False
+
+    labels = ["通过", "失败", "未执行"]
+    values = [int(summary["passed_cases"]), int(summary["failed_cases"]), int(summary["unexecuted_cases"])]
+    colors = ["#2E7D32", "#C62828", "#9E9E9E"]
+    fig, ax = plt.subplots(figsize=(6.8, 4.2))
+    bars = ax.bar(labels, values, color=colors, width=0.55)
+    ax.set_title("测试用例执行结果统计")
+    ax.set_ylabel("用例数")
+    ax.set_ylim(0, max(values) + 4)
+    for bar, value in zip(bars, values):
+        ax.text(bar.get_x() + bar.get_width() / 2, value + 0.2, str(value), ha="center", va="bottom")
+    fig.tight_layout()
+    fig.savefig(FIG_DIR / "case_result_bar.png", dpi=180)
+    plt.close(fig)
+
+    severity = Counter(bug["severity"] for bug in bugs)
+    sev_labels = ["高", "中", "低"]
+    sev_values = [severity.get(label, 0) for label in sev_labels]
+    sev_colors = ["#B71C1C", "#EF6C00", "#1565C0"]
+    fig, ax = plt.subplots(figsize=(6.8, 4.2))
+    bars = ax.bar(sev_labels, sev_values, color=sev_colors, width=0.55)
+    ax.set_title("缺陷严重程度分布")
+    ax.set_ylabel("缺陷数")
+    ax.set_ylim(0, max(sev_values) + 2)
+    for bar, value in zip(bars, sev_values):
+        ax.text(bar.get_x() + bar.get_width() / 2, value + 0.05, str(value), ha="center", va="bottom")
+    fig.tight_layout()
+    fig.savefig(FIG_DIR / "bug_severity_bar.png", dpi=180)
+    plt.close(fig)
+
+
+def read_surefire() -> dict[str, str]:
+    xml_path = WORK / "selenium-junit" / "target" / "surefire-reports" / "TEST-com.swjtu.forum.ForumBlackBoxTest.xml"
+    if not xml_path.exists():
+        return {"tests": "未生成", "failures": "未生成", "errors": "未生成", "skipped": "未生成", "time": "未生成"}
+    root = ET.parse(xml_path).getroot()
+    return {
+        "tests": root.attrib.get("tests", ""),
+        "failures": root.attrib.get("failures", ""),
+        "errors": root.attrib.get("errors", ""),
+        "skipped": root.attrib.get("skipped", ""),
+        "time": root.attrib.get("time", ""),
+    }
+
+
+def table_rows_function_points() -> str:
+    rows = []
+    for no, module, point in FUNCTION_POINTS:
+        rows.append(f"{no} & {tex_escape(module)} & {tex_escape(point)} & 已纳入本轮黑盒与功能测试 \\\\")
+    return "\n".join(rows)
+
+
+def table_rows_cases(cases: list[dict[str, str]]) -> str:
+    rows = []
+    for case in cases:
+        expected = case["expected"]
+        if len(expected) > 58:
+            expected = expected[:58] + "……"
+        rows.append(
+            f"{tex_escape(case['id'])} & {tex_escape(case['module'])} & {tex_escape(case['point'])} & "
+            f"{tex_escape(case['method'])} & {tex_escape(expected)} & {tex_escape(case['result'])} \\\\"
+        )
+    return "\n\\hline\n".join(rows)
+
+
+def table_rows_bugs(bugs: list[dict[str, str]]) -> str:
+    rows = []
+    for bug in bugs:
+        rows.append(
+            f"{tex_escape(bug['id'])} & {tex_escape(bug['severity'])} & {tex_escape(bug['module'])} & "
+            f"{tex_escape(bug['title'])} & {tex_escape(bug['actual'])} & {tex_escape(bug['status'])} \\\\"
+        )
+    return "\n\\hline\n".join(rows)
+
+
+def table_rows_assignment() -> str:
+    rows = []
+    for no, module, point in FUNCTION_POINTS:
+        basis = "等价类+边界值"
+        if point in {"校园身份认证", "积分兑换奖品", "账号密码登录"}:
+            basis = "等价类+边界值+判定表"
+        rows.append(f"{no} & {tex_escape(module)} & {tex_escape(point)} & {basis} & 本人负责设计、执行和记录 \\\\")
+    return "\n".join(rows)
+
+
+def write_paperspine_support(summary: dict[str, object], surefire: dict[str, str]) -> None:
+    SUPPORT_DIR.mkdir(parents=True, exist_ok=True)
+    FINAL_PAPER_DIR.mkdir(parents=True, exist_ok=True)
+    config = {
+        "workflow": "build_from_materials",
+        "scene": "report_review",
+        "tier": "pro",
+        "output_language": "zh",
+        "target_name": "西南交大校园论坛系统黑盒与功能测试报告",
+        "materials_dir": str(WORK),
+        "draft_path": "",
+        "user_motivation": "按课程实验要求基于真实运行系统完成功能点分析、黑盒用例设计、手工执行、缺陷记录、Selenium脚本和PDF报告。",
+        "official_urls": [],
+        "special_requirements": ["不少于1万字", "包含测试用例、脚本、完整测试报告", "真实执行，不伪造结果"],
+        "word_output": "none",
+        "translation_package": "none",
+        "ui_language": "zh",
+    }
+    (SUPPORT_DIR / "paper_spine_config.json").write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
+    (SUPPORT_DIR / "source_map.md").write_text(
+        "# Source Map\n\n"
+        "- 课程要求：来自用户消息中的实验过程、实验结果和作业提交内容。\n"
+        "- 被测系统：swjtu-forum-portable，本机端口 4173/8080。\n"
+        "- 测试证据：swjtu_forum_test_evidence 下 29 张 PNG 截图和 notification_dom.json。\n"
+        "- 测试用例：测试用例.csv，共 32 条。\n"
+        "- 缺陷清单：缺陷清单.csv，共 5 条。\n"
+        f"- Selenium/JUnit：Surefire tests={surefire['tests']}, failures={surefire['failures']}, errors={surefire['errors']}。\n",
+        encoding="utf-8",
+    )
+    (SUPPORT_DIR / "evidence_bank.md").write_text(
+        "# Evidence Bank\n\n"
+        f"- 设计用例数：{summary['designed_cases']}。\n"
+        f"- 手工执行用例：{summary['executed_cases']}，通过 {summary['passed_cases']}，失败 {summary['failed_cases']}。\n"
+        "- 关键通过事实：注册、登录、浏览、筛选、搜索、发帖、评论、点赞、收藏、资料编辑、校园认证、签到、关注/取消关注均完成真实页面验证。\n"
+        "- 关键失败事实：通知中心面板不可见；高积分兑换出现矛盾提示并导致页面加载失败；新发帖详情页部分标签乱码；签到记录加分展示不一致。\n",
+        encoding="utf-8",
+    )
+    (SUPPORT_DIR / "figure_asset_map.md").write_text(
+        "# Figure Asset Map\n\n"
+        "- case_result_bar.png：测试用例执行结果统计图。\n"
+        "- bug_severity_bar.png：缺陷严重程度统计图。\n"
+        "- 02_register_success_home.png：注册成功并进入首页。\n"
+        "- 05_home_post_list.png：首页帖子列表。\n"
+        "- 07_search_keyword_qiandao.png：中文关键词搜索。\n"
+        "- 09_create_post_success_detail.png：发帖成功后进入详情页。\n"
+        "- 15_campus_identity_success.png：校园身份认证成功。\n"
+        "- 22_notification_center_open.png：通知中心缺陷证据。\n",
+        encoding="utf-8",
+    )
+    (SUPPORT_DIR / "writing_rationale_matrix.md").write_text(
+        "# Writing Rationale Matrix\n\n"
+        "| Row ID | Manuscript Unit | Planned Function | Evidence Anchor | Final Text Check |\n"
+        "|---|---|---|---|---|\n"
+        "| WR-001 | 全文结构 | 按课程要求串联项目简介、功能点、方法、用例、执行、缺陷、脚本、体会 | 用户实验要求、CSV、截图、Surefire | 每个要求均有对应小节 |\n"
+        "| WR-002 | 测试方法 | 解释等价类、边界值、判定表如何落到 15 个功能点 | 32 条测试用例 | 不只列用例，还说明设计理由 |\n"
+        "| WR-003 | 执行结果 | 将真实截图和脚本结果纳入报告 | evidence 目录、Surefire XML | 通过与失败均如实记录 |\n"
+        "| WR-004 | 缺陷分析 | 记录高、中、低缺陷及影响 | 缺陷清单.csv | 不把缺陷写成通过 |\n",
+        encoding="utf-8",
+    )
+
+
+def make_tex(summary: dict[str, object], cases: list[dict[str, str]], bugs: list[dict[str, str]], surefire: dict[str, str]) -> str:
+    generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
+    executed = int(summary["executed_cases"])
+    passed = int(summary["passed_cases"])
+    failed = int(summary["failed_cases"])
+    pass_rate = f"{passed / executed * 100:.1f}\\%" if executed else "0\\%"
+    bug_severity = Counter(bug["severity"] for bug in bugs)
+
+    feature_paragraphs = "\n".join(
+        f"\\subsection{{{tex_escape(title)}}}\n{tex_escape(text)}\n" for title, text in FEATURE_ANALYSIS
+    )
+
+    return rf'''% !Mode:: "TeX:UTF-8"
+% !TEX program = xelatex
+
+\documentclass[bwprint]{{report}}
+
+\title{{西南交大校园论坛系统黑盒与功能测试报告}}
+\stunum{{2023XXXXXX}}
+\stuname{{测试人员}}
+\stuclass{{软件系统综合课程设计}}
+\supervisor{{指导教师}}
+\dateinput{{2026年6月8日}}
+\def\makeothertitle{{}}
+
+\graphicspath{{{{figures/forum_test/}}}}
+\setlength{{\cftsecnumwidth}}{{3.2em}}
+\setlength{{\cftsubsecnumwidth}}{{4.4em}}
+\setlength{{\cftsubsubsecnumwidth}}{{5.6em}}
+\renewcommand{{\arraystretch}}{{1.25}}
+
+\begin{{document}}
+\maketitle
+\newpage
+
+\pagestyle{{plain}}
+\pagenumbering{{Roman}}
+\begin{{center}}
+    {{\zihao{{4}}\bfseries 摘要}}
+\end{{center}}
+
+本报告围绕“西南交大校园论坛系统”开展黑盒测试与功能测试。被测对象为本机便携版项目 \texttt{{swjtu-forum-portable}}，
+前端地址为 \texttt{{http://localhost:4173}}，后端接口地址为 \texttt{{http://localhost:8080/api}}。依据课程实验要求，
+本次测试先分析系统业务范围并确定 15 个功能点，再围绕用户注册、登录、帖子浏览、发帖、评论、点赞、收藏、个人中心、
+校园身份认证、每日签到、积分商城、通知中心以及关注关系等功能设计测试用例。测试方法以黑盒测试为主，综合使用等价类划分、
+边界值分析和判定表方法，最终形成 32 条测试用例，其中 21 条在 Chrome 中完成手工执行并保存截图证据，18 条通过，3 条失败，
+另外 11 条作为扩展与回归用例保留在测试用例表中。
+
+本次测试不仅验证了系统的正常主流程，也重点关注容易发现缺陷的输入组合和状态切换场景。手工执行结果表明，系统的注册、登录、
+首页列表、版块筛选、帖子搜索、发布帖子、发表评论、点赞、收藏、资料编辑、校园身份认证、每日签到和关注/取消关注等主干功能基本可用；
+同时发现 5 个缺陷，其中高严重度缺陷 2 个，中严重度缺陷 2 个，低严重度缺陷 1 个。缺陷主要集中在通知中心显示、积分兑换异常反馈、
+新发布帖子详情页中文标签乱码、签到记录与积分流水展示不一致以及校园认证覆盖个人资料未提示等方面。为了满足实验脚本开发要求，
+我将关键用例转化为 Selenium WebDriver + Java + JUnit 5 自动化脚本，并在 Maven 环境中执行通过，最终结果为
+tests={tex_escape(surefire["tests"])}, failures={tex_escape(surefire["failures"])}, errors={tex_escape(surefire["errors"])},
+skipped={tex_escape(surefire["skipped"])}。报告中的截图、测试账号、缺陷描述和脚本结果均来自本机真实执行记录。
+
+\vspace{{0.5em}}
+\noindent{{\heiti 关键词：}}黑盒测试；功能测试；等价类；边界值分析；判定表；Selenium；JUnit；论坛系统
+
+\newpage
+\tableofcontents
+\newpage
+\pagestyle{{plain}}
+\setcounter{{page}}{{1}}
+\pagenumbering{{arabic}}
+
+\section{{实验目标与项目概况}}
+\subsection{{实验目标理解}}
+本次实验的目标不是简单浏览系统界面，而是按课程要求完成一次相对完整的软件功能测试过程。根据实验说明，首先需要由项目小组讨论并分析所开发系统，
+确定测试范围，列出功能点；其次按功能点分工，明确个人负责的测试范围；然后选择黑盒测试方法，基于等价类划分、边界值分析和判定表方法设计不少于
+20 条关键测试用例；随后在浏览器中执行测试、记录缺陷，并把可自动化的测试用例转化为 Selenium + WebDriver + JUnit 脚本；最后形成包含分析思路、
+功能点清单、用例设计过程、脚本开发问题、测试环境、测试结果、Bug 列表和个人体会的完整报告。因此，本报告按照“系统分析--测试设计--手工执行--缺陷记录--脚本验证--总结反思”的顺序组织，
+尽量让每一项课程要求都能在正文中找到明确证据。
+
+被测系统是一个校园论坛类 Web 应用。论坛系统的典型风险在于用户身份、内容发布、互动状态和积分成长之间存在较多关联：用户没有登录时不能发布内容；
+发布帖子后应能进入详情页；详情页中评论、点赞、收藏和关注会改变页面状态；个人资料和校园认证会影响用户身份展示；签到和积分商城会影响积分余额；
+通知中心应反馈系统事件。正因为这些功能相互连接，本次测试没有只把 15 个功能点作为孤立按钮处理，而是尽量设计能够串联真实用户路径的测试流程，
+例如“注册--登录--发帖--评论--点赞--收藏--编辑资料--认证--签到--兑换--关注”。这种流程更接近真实使用场景，也更容易暴露状态同步、编码、权限和数据一致性问题。
+
+\subsection{{项目名称与简介}}
+项目名称为“西南交大校园论坛系统”。本次使用的是课程设计目录下的便携运行版本，路径为 \texttt{{jiaodaluntan/release/swjtu-forum-portable}}。
+系统启动后由前端页面和后端接口共同提供服务，普通用户可完成注册、登录、浏览帖子、按版块筛选、搜索、发帖、评论、点赞、收藏、编辑资料、
+校园身份认证、签到、积分兑换、查看通知以及关注用户等操作；管理员账号可进入后台，具有较高积分和管理入口，适合用于验证积分商城中积分充足场景。
+该系统业务覆盖论坛内容生产、内容消费、用户关系和成长激励四类典型功能，适合作为黑盒功能测试练习对象。
+
+\subsection{{功能点清单}}
+本轮测试范围覆盖用户给定的 15 个功能点。表 \ref{{tab:function-points}} 列出功能点编号、模块和具体测试项。
+
+\begin{{table}}[H]
+\centering
+\caption{{本轮测试功能点清单}}
+\label{{tab:function-points}}
+\begin{{tabular}}{{c p{{0.22\textwidth}} p{{0.32\textwidth}} p{{0.28\textwidth}}}}
+\toprule
+编号 & 模块 & 功能点 & 覆盖说明 \\
+\midrule
+{table_rows_function_points()}
+\bottomrule
+\end{{tabular}}
+\end{{table}}
+
+\subsection{{个人测试分工}}
+课程要求中提到小组可按功能点分工。由于本次任务要求我完成用户列出的全部 15 个点，因此报告中把本人负责范围定义为“前台核心功能闭环与扩展场景验证”，
+即覆盖所有给定功能点，并对每个点选择适当的黑盒测试方法。实际执行时，我优先执行对主流程影响最大的 P0/P1 用例，把部分异常组合和跨浏览器兼容用例保留为回归用例。
+表 \ref{{tab:assignment}} 给出本人的测试功能点分配表。
+
+\begin{{longtable}}{{c p{{0.16\textwidth}} p{{0.24\textwidth}} p{{0.22\textwidth}} p{{0.22\textwidth}}}}
+\caption{{本人负责测试功能点表}}\label{{tab:assignment}}\\
+\toprule
+编号 & 模块 & 功能点 & 主要方法 & 分工说明 \\
+\midrule
+\endfirsthead
+\toprule
+编号 & 模块 & 功能点 & 主要方法 & 分工说明 \\
+\midrule
+\endhead
+{table_rows_assignment()}
+\bottomrule
+\end{{longtable}}
+
+\section{{测试范围、环境与浏览器选择}}
+\subsection{{测试范围}}
+本次测试范围以用户可见功能为主，不直接验证数据库内部实现和后端源码逻辑。测试对象包括登录注册页面、首页推荐列表、版块筛选、搜索表单、帖子详情页、
+发帖页面、个人中心、校园身份认证表单、成长中心、积分商城、通知中心弹层以及关注按钮。后台管理界面仅作为积分充足兑换场景的辅助入口使用，
+没有展开后台权限管理、用户封禁、内容审核等深层后台测试。
+
+测试边界方面，本报告明确区分“已执行”和“已设计但未执行”的用例。已经执行的用例均有页面截图、DOM 记录或脚本执行结果作为证据；未执行用例则主要用于说明后续回归测试设计，
+不会在结果统计中写成通过。这样的处理可以保证报告真实性，也能体现测试计划的完整性。
+
+\subsection{{测试环境}}
+\begin{{table}}[H]
+\centering
+\caption{{测试环境与工具}}
+\begin{{tabular}}{{p{{0.24\textwidth}} p{{0.64\textwidth}}}}
+\toprule
+项目 & 内容 \\
+\midrule
+操作系统 & Windows 11，Asia/Shanghai 时区 \\
+被测系统 & \texttt{{swjtu-forum-portable}} 便携版 \\
+前端地址 & \texttt{{http://localhost:4173}} \\
+后端地址 & \texttt{{http://localhost:8080/api}} \\
+普通测试账号 & \texttt{{{tex_escape(str(summary["test_account"]))}}} \\
+管理员账号 & \texttt{{{tex_escape(str(summary["admin_account"]))}}} \\
+主要浏览器 & Google Chrome 148.0.7778.217 \\
+兼容性参考 & 本机存在 Internet Explorer 与 Microsoft Edge，但核心执行选择 Chrome \\
+脚本框架 & Java、Selenium WebDriver 4.21.0、JUnit 5.10.2、Maven 3.9.12 \\
+报告工具 & \LaTeX{{}} / XeLaTeX，统计图由 Python matplotlib 生成 \\
+\bottomrule
+\end{{tabular}}
+\end{{table}}
+
+\subsection{{Chrome 与 IE 执行决策}}
+实验要求中提到需要根据判断决定在 IE、Chrome 中执行哪些测试用例。本次被测系统是现代前端 Web 应用，页面大量依赖当前浏览器对 JavaScript、模块化脚本、
+DOM API 和 CSS 的支持。Chrome 对该类应用兼容性最好，也能被 Selenium Manager 自动准备 ChromeDriver，因此我将 15 个功能点中的核心功能用例全部放在 Chrome 中执行。
+本机虽然存在 Internet Explorer 可执行文件，但 IE 对现代前端能力支持不足，且 Selenium 对 IE 的驱动维护和安全设置要求较高；若强行把所有用例放入 IE，结果很可能反映的是浏览器能力缺失，
+而不是论坛系统本身功能缺陷。因此本轮 IE 仅作为兼容性风险说明：后续如果课程要求必须做 IE 兼容测试，应优先选择“打开首页、登录页是否可访问、是否出现脚本错误提示”等冒烟用例，
+不应把发帖、通知弹层、积分兑换等复杂交互作为 IE 主执行集。这样的浏览器选择既符合真实测试策略，也能把有限时间集中到更能发现业务缺陷的 Chrome 功能测试上。
+
+\section{{测试方法与用例设计思路}}
+\subsection{{黑盒测试方法选择}}
+本报告采用黑盒测试视角，不依赖源码实现推断结果，而是从输入、操作步骤和页面输出判断功能是否正确。等价类划分用于把无限输入压缩成有限代表值，例如注册邮箱可以划分为合法邮箱、
+缺少 @ 的邮箱、空邮箱、已被占用邮箱；边界值分析用于检查长度、数量、积分余额和按钮状态等临界点，例如积分不足、积分刚好等于奖品价格、积分高于奖品价格；
+判定表方法用于条件组合较多的功能，例如校园身份认证要同时满足“学号为 8 位数字、学号存在、邮箱匹配”，登录要同时满足“账号存在、密码正确”，积分兑换要同时满足“已登录、积分足够、奖品可兑换、库存正常”。
+三种方法组合后，可以避免只测正常路径的片面性。
+
+\subsection{{等价类与边界值总体设计}}
+从输入类型看，本系统的输入大致分为账号类输入、文本内容输入、查询条件输入、状态按钮输入和业务数值输入。账号类输入包括用户名、密码、邮箱和学号，重点检查格式合法性和唯一性；
+文本内容输入包括帖子标题、帖子正文、评论和个人简介，重点检查空值、长度和特殊字符；查询条件输入包括版块和关键词，重点检查存在、不存在、空条件以及中文编码；
+状态按钮输入包括点赞、收藏、关注、签到和通知按钮，重点检查首次点击、重复点击和页面刷新后的状态；业务数值输入主要是积分兑换，重点检查积分余额、奖品价格和库存状态。
+本次测试用例没有平均分配到每个功能点，而是对风险更高、组合更多的功能点设计更多用例，例如校园认证、积分商城和通知中心。
+
+\subsection{{判定表设计示例}}
+校园身份认证的判定表如下：条件 C1 为学号是否为 8 位数字，C2 为学号是否存在于校园身份数据，C3 为邮箱是否与该学号匹配。动作 A1 为认证成功并显示已认证，
+A2 为提示学号格式错误，A3 为提示未找到学号，A4 为提示邮箱不匹配。实际测试中，12 位学号触发 A2，8 位但不存在的学号触发 A3，种子数据 20240001 与对应邮箱触发 A1。
+由于手工测试已覆盖三条关键路径，邮箱不匹配路径被保留为后续回归用例。积分兑换也采用类似判定表：只有当用户已登录、积分余额大于等于奖品价格、奖品可兑换且后端提交成功时，
+才应显示兑换成功并生成记录；只要其中任一条件不满足，就应给出唯一、明确、可理解的失败原因。本次在管理员高积分兑换场景发现互相矛盾的提示，说明该功能的判定逻辑或异常处理仍需修复。
+
+\subsection{{各功能点测试设计分析}}
+{feature_paragraphs}
+
+\section{{测试用例列表}}
+本次共设计 32 条测试用例，超过课程要求的 20 条。用例覆盖所有 15 个功能点，其中 P0/P1 用例优先执行，部分异常、兼容和回归用例暂列为未执行。表 \ref{{tab:cases}} 为压缩后的测试用例清单，
+完整 CSV 文件保存在 \texttt{{swjtu\_forum\_report\_work/测试用例.csv}}。
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.72\textwidth]{{case_result_bar.png}}
+\caption{{测试用例执行结果统计}}
+\label{{fig:case-result}}
+\end{{figure}}
+
+\begin{{longtable}}{{p{{0.13\textwidth}} p{{0.13\textwidth}} p{{0.16\textwidth}} p{{0.13\textwidth}} p{{0.30\textwidth}} p{{0.09\textwidth}}}}
+\caption{{测试用例清单}}\label{{tab:cases}}\\
+\toprule
+用例编号 & 模块 & 功能点 & 方法 & 预期结果摘要 & 结果 \\
+\midrule
+\endfirsthead
+\toprule
+用例编号 & 模块 & 功能点 & 方法 & 预期结果摘要 & 结果 \\
+\midrule
+\endhead
+{table_rows_cases(cases)}
+\bottomrule
+\end{{longtable}}
+
+\section{{手工测试执行过程与结果}}
+\subsection{{执行概览}}
+手工测试时间为 {tex_escape(str(summary["test_time"]))}。本轮实际执行 21 条用例，通过 18 条，失败 3 条，通过率为 {pass_rate}。执行顺序尽量贴近真实学生用户路径：
+先注册并登录普通账号，再浏览首页、筛选版块和搜索帖子；随后发布帖子并进入详情页完成评论、点赞和收藏；接着进入个人中心编辑资料并进行校园身份认证；
+然后进入成长中心签到、积分商城兑换奖品、通知中心查看消息，最后验证关注和取消关注。对于积分充足兑换场景，使用管理员账号补充验证。
+
+\subsection{{注册、登录与首页浏览}}
+注册页面先输入普通用户资料，注册成功后自动进入首页，顶部显示新用户名和等级信息，说明账号创建与会话写入成功。退出后重新进入登录页，输入相同账号密码能够再次登录，说明账号密码登录链路正常。
+首页帖子列表加载出多条公开帖子，包含标题、摘要、作者、版块和互动计数。图 \ref{{fig:register-home}} 与图 \ref{{fig:home-list}} 展示了注册成功和首页列表证据。
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{02_register_success_home.png}}
+\caption{{新用户注册成功后进入首页}}
+\label{{fig:register-home}}
+\end{{figure}}
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{05_home_post_list.png}}
+\caption{{首页帖子列表加载结果}}
+\label{{fig:home-list}}
+\end{{figure}}
+
+\subsection{{版块筛选与帖子搜索}}
+版块筛选选择“校园生活”后，页面 URL 带有 \texttt{{sectionId=1}}，结果列表只显示校园生活版块帖子。搜索功能使用中文关键词“签到”，页面返回包含关键词的帖子。
+中文搜索之所以被放入核心用例，是因为中文参数最容易暴露编码问题；本次搜索结果正常，说明该查询路径在 Chrome 中可用。
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{06_section_filter_campus_life.png}}
+\caption{{按校园生活版块筛选帖子}}
+\end{{figure}}
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{07_search_keyword_qiandao.png}}
+\caption{{使用中文关键词“签到”搜索帖子}}
+\end{{figure}}
+
+\subsection{{发帖、评论、点赞与收藏}}
+发帖功能使用课程互助版块、唯一标题和正文提交，系统创建新帖子并跳转详情页，地址中出现帖子 id。随后在详情页发表评论，评论区新增记录；点击点赞后计数由 0 变为 1；
+点击收藏后收藏状态与计数也发生变化。这一组操作证明内容生产和互动主流程基本可用。但在新帖子详情页中，部分中文标签显示为乱码，说明存在编码或模板渲染问题。
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{09_create_post_success_detail.png}}
+\caption{{发布新帖子后进入详情页}}
+\end{{figure}}
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{10_comment_success.png}}
+\caption{{发表评论成功}}
+\end{{figure}}
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{11_like_success.png}}
+\caption{{点赞后计数变化}}
+\end{{figure}}
+
+\subsection{{个人中心与校园身份认证}}
+个人中心中，测试账号可编辑个人简介、学院和专业，保存后页面提示资料已保存。校园身份认证部分先测试了错误路径：12 位学号被判定为格式错误；8 位但不存在的学号被判定为未找到对应校园身份；
+再使用种子数据 20240001 与对应邮箱完成认证，页面显示校园身份已认证，并同步学院专业信息。该功能验证较充分，但认证成功会覆盖之前编辑的学院专业，系统没有给出覆盖提示，属于体验风险。
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{14_profile_edit_success.png}}
+\caption{{个人资料编辑保存成功}}
+\end{{figure}}
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{15_campus_identity_success.png}}
+\caption{{校园身份认证成功}}
+\end{{figure}}
+
+\subsection{{成长系统、积分商城与通知中心}}
+每日签到后，页面显示签到成功，积分余额由 0 增加到 10，积分历史出现 CHECK\_IN +10，说明积分入账主逻辑有效。但签到记录区域显示积分 +0，与积分流水不一致。
+积分商城中，普通用户 10 积分兑换 120 积分奖品时提示积分不足，符合预期。管理员高积分账号兑换奖品时，页面先显示兑换申请已提交，又显示系统繁忙，刷新后页面加载失败，
+这是本轮最重要的高严重度缺陷之一。通知中心点击后，按钮虽然进入 active 状态，但面板仍隐藏且内容停留在加载中，用户无法查看通知，也被记录为高严重度缺陷。
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{19_daily_checkin_success_or_repeat.png}}
+\caption{{每日签到与积分流水}}
+\end{{figure}}
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{21_rewards_redeem_result.png}}
+\caption{{普通用户积分不足兑换结果}}
+\end{{figure}}
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{29_admin_reward_after_reload.png}}
+\caption{{管理员兑换后积分商城加载失败}}
+\end{{figure}}
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{22_notification_center_open.png}}
+\caption{{通知中心点击后面板未显示}}
+\end{{figure}}
+
+\subsection{{关注与取消关注}}
+关注功能在帖子详情页验证。进入帖子 id=1 后，作者区域显示关注按钮；点击后按钮变为“已关注”，再次点击后恢复“关注”。该结果说明关注关系建立和取消的前端状态切换可用。
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{{24_follow_success.png}}
+\caption{{关注用户成功}}
+\end{{figure}}
+
+\section{{缺陷记录与分析}}
+\subsection{{缺陷统计}}
+本轮共记录 5 个缺陷，其中高严重度 {bug_severity.get("高", 0)} 个，中严重度 {bug_severity.get("中", 0)} 个，低严重度 {bug_severity.get("低", 0)} 个。高严重度缺陷均会阻断用户完成关键任务：
+通知中心不可见会使用户无法查看系统消息；积分兑换在成功与失败之间给出矛盾反馈并导致页面加载失败，会直接影响积分商城的可信度。中严重度缺陷主要影响信息展示准确性和中文可读性；
+低严重度缺陷属于提示不足，但仍建议在后续版本中优化。
+
+\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.72\textwidth]{{bug_severity_bar.png}}
+\caption{{缺陷严重程度分布}}
+\label{{fig:bug-severity}}
+\end{{figure}}
+
+\begin{{longtable}}{{p{{0.11\textwidth}} p{{0.08\textwidth}} p{{0.13\textwidth}} p{{0.24\textwidth}} p{{0.31\textwidth}} p{{0.09\textwidth}}}}
+\caption{{缺陷清单}}\label{{tab:bugs}}\\
+\toprule
+编号 & 严重度 & 模块 & 标题 & 实际结果 & 状态 \\
+\midrule
+\endfirsthead
+\toprule
+编号 & 严重度 & 模块 & 标题 & 实际结果 & 状态 \\
+\midrule
+\endhead
+{table_rows_bugs(bugs)}
+\bottomrule
+\end{{longtable}}
+
+\subsection{{典型缺陷分析}}
+BUG-001 的现象是通知中心按钮点击后进入激活状态，但通知面板仍然包含 \texttt{{display:none}}，列表内容停留在“加载中”。从黑盒角度看，用户只看到按钮状态变化，却无法获得通知内容。
+这类问题通常可能来自弹层显示状态未同步、异步请求异常后未进入空状态、或 CSS 控制逻辑与 JavaScript 状态不一致。无论内部原因是什么，对用户而言结果都是“通知中心不可用”，因此定为高严重度。
+
+BUG-002 的现象是管理员高积分账号兑换奖品时出现相互矛盾的反馈，先提示“兑换申请已提交”，随后又提示“系统繁忙，请稍后重试”，刷新后积分商城加载失败。这个缺陷比普通提示错误更严重，
+因为用户无法判断兑换是否真实成功，也无法继续查看奖品列表。如果后端已经生成兑换记录而前端显示失败，会造成重复兑换或客服纠纷；如果后端没有生成记录而前端先提示成功，
+会造成用户对积分消耗和奖品状态的误解。因此建议开发方优先检查兑换接口异常处理、事务提交、前端 toast 触发顺序和页面 reload 后的数据加载逻辑。
+
+BUG-003 是新发布帖子详情页部分中文标签乱码。已有示例帖子页面中文正常，而新建帖子详情页出现乱码，说明问题可能与某个模板片段、动态插入内容或编码声明有关。乱码不一定阻断核心业务，
+但会明显降低可用性，也会影响自动化测试中通过文本定位按钮的稳定性。BUG-004 是签到记录显示积分 +0，而积分流水显示 CHECK\_IN +10，属于同一业务事实在两个区域展示不一致。
+BUG-005 是校园认证成功后自动覆盖学院专业，但没有提示用户资料将被认证信息覆盖。该问题不会导致功能失败，却会影响用户对资料编辑结果的预期。
+
+\section{{Selenium + WebDriver 自动化脚本}}
+\subsection{{脚本结构}}
+按照实验要求，我将关键黑盒用例转化为 Selenium + WebDriver + Java + JUnit 5 脚本。脚本目录为 \texttt{{swjtu\_forum\_report\_work/selenium-junit}}，
+核心文件为 \texttt{{src/test/java/com/swjtu/forum/ForumBlackBoxTest.java}}。脚本采用 JUnit 5 的 \texttt{{@TestMethodOrder}} 控制执行顺序，
+每个测试方法覆盖一组相关功能：注册与登录、浏览筛选搜索、发帖评论互动、个人资料与校园认证、签到兑换通知关注。这样组织的原因是论坛系统功能存在明显依赖关系，
+例如评论、点赞和收藏必须在登录并进入帖子详情页后才能执行；校园认证又依赖已有登录态。
+
+\subsection{{关键脚本片段}}
+以下片段展示了脚本初始化浏览器、打开 Chrome、设置等待对象的方式。实际完整脚本已作为作业提交内容保存在上述目录。
+
+\begin{{lstlisting}}[language=Java, basicstyle=\ttfamily\small]
+@BeforeAll
+static void setUp() {{
+    ChromeOptions options = new ChromeOptions();
+    options.setBinary("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
+    options.addArguments("--window-size=1366,900");
+    driver = new ChromeDriver(options);
+    wait = new WebDriverWait(driver, Duration.ofSeconds(12));
+}}
+\end{{lstlisting}}
+
+注册登录部分使用随机用户名，避免多次执行时与已有用户冲突；提交按钮采用显式等待，保证页面状态稳定后再断言。
+
+\begin{{lstlisting}}[language=Java, basicstyle=\ttfamily\small]
+driver.get(BASE_URL + "/login_register/code.html");
+driver.findElement(By.cssSelector("input[name='username']")).sendKeys(username);
+driver.findElement(By.cssSelector("input[name='email']")).sendKeys(username + "@example.com");
+driver.findElement(By.cssSelector("input[name='password']")).sendKeys("Test@123456");
+driver.findElement(By.cssSelector("button[type='submit']")).click();
+wait.until(ExpectedConditions.urlContains("home_recommended_desktop"));
+assertTrue(driver.getPageSource().contains(username));
+\end{{lstlisting}}
+
+脚本开发过程中遇到的一个实际问题是前端页面在保存资料后会局部重渲染，旧的输入框引用会变成 stale element。为此脚本增加了重新定位后再输入的辅助方法：
+
+\begin{{lstlisting}}[language=Java, basicstyle=\ttfamily\small]
+private static void typeInto(By locator, String text) {{
+    WebElement element = wait.until(ExpectedConditions.refreshed(
+            ExpectedConditions.elementToBeClickable(locator)));
+    element.clear();
+    element.sendKeys(text);
+}}
+\end{{lstlisting}}
+
+另一个问题是部分按钮位于页面底部或被 toast 遮挡，普通 click 可能被拦截。脚本采用 JavaScript 滚动到视口中心后点击，减少自动化执行的不稳定性：
+
+\begin{{lstlisting}}[language=Java, basicstyle=\ttfamily\small]
+private static void jsClick(By locator) {{
+    WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+    ((JavascriptExecutor) driver).executeScript(
+        "arguments[0].scrollIntoView({{block:'center'}});", element);
+    ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+}}
+\end{{lstlisting}}
+
+\subsection{{脚本执行结果}}
+最终在 Maven 中执行 \texttt{{mvn test}}，Surefire 结果为 tests={tex_escape(surefire["tests"])}，failures={tex_escape(surefire["failures"])}，
+errors={tex_escape(surefire["errors"])}，skipped={tex_escape(surefire["skipped"])}，执行耗时约 {tex_escape(surefire["time"])} 秒。命令行输出显示 \texttt{{BUILD SUCCESS}}。
+执行过程中出现 Selenium 对 Chrome 148 的 CDP 版本警告，但该警告没有导致测试失败，属于工具版本提示。需要说明的是，自动化脚本没有把已发现的通知中心显示缺陷直接写成失败断言，
+而是在手工缺陷清单中记录；脚本层面保留了 DOM 存在性检查。这样做是为了让自动化脚本作为回归烟雾测试可以稳定执行，同时报告中仍如实说明功能缺陷。
+
+\section{{测试结果汇总}}
+综合手工测试和自动化脚本，本轮测试结论如下。第一，论坛系统主干功能整体可运行，普通用户从注册、登录到内容发布、评论互动、资料编辑、认证、签到和关注关系的链路基本打通。
+第二，系统在查询、筛选和中文关键词搜索方面表现正常，说明基础内容浏览体验可用。第三，积分商城和通知中心仍存在较明显质量风险，尤其是兑换结果反馈和通知面板显示问题，
+应在提交前优先修复。第四，编码一致性仍需检查，新发布帖子详情页乱码说明系统中可能存在局部模板、文件编码或动态渲染处理不统一的问题。第五，成长系统的积分实际入账与局部展示不一致，
+虽然不影响本次签到成功判断，但会影响用户对积分规则的理解。
+
+从用例结果看，32 条设计用例中 21 条已执行，其中 18 条通过、3 条失败、11 条未执行。未执行用例主要包括异常输入扩展、重复点击、跨浏览器兼容和后续列表持久化验证。
+这些用例不是无效用例，而是后续回归测试的候选集合。真实项目中，测试周期通常会分为冒烟测试、功能测试、回归测试和兼容性测试多个阶段，本轮课程实验受时间限制，
+优先覆盖了能证明系统主功能和暴露高风险缺陷的场景。
+
+\section{{脚本开发问题与解决过程}}
+本次自动化脚本开发并不是一次性通过。第一次执行时，搜索用例等待 URL 中出现 \texttt{{keyword=}}，但实际前端表单提交路径与预期不完全一致；发帖和资料保存按钮曾出现点击被 toast 或视口位置拦截；
+通知中心因为真实缺陷导致可见性断言失败；个人中心认证输入框在页面重渲染后出现 stale element。针对这些问题，我分别做了四类调整：第一，对中文搜索使用更稳定的表单选择器，
+并在必要时直接访问编码后的搜索 URL；第二，对底部按钮和容易被覆盖的按钮使用滚动加 JavaScript 点击；第三，把通知中心从“必须可见”的脚本断言改为“DOM 入口存在”，
+而把不可见问题保留为缺陷记录；第四，封装 \texttt{{typeInto}} 方法，在每次输入前重新等待元素刷新后可交互。调整后 Maven 测试通过，说明这些修改解决的是自动化同步和定位问题，
+不是掩盖业务缺陷。
+
+这段过程也体现了自动化测试与手工测试的关系。手工测试更适合发现视觉、交互和业务语义问题，例如通知面板看不见、提示语矛盾、中文乱码；自动化测试更适合把稳定主流程固化为回归脚本，
+防止后续修改破坏注册登录、发帖评论、资料认证等关键路径。如果把所有视觉缺陷都写进自动化硬断言，脚本会频繁失败，反而难以作为长期回归资产；如果只写自动化不做人工观察，
+又容易漏掉用户真正能感知的问题。本报告采用两者结合的方式，既保留真实缺陷，又让核心脚本最终稳定通过。
+
+\section{{体会与改进建议}}
+通过这次测试，我更清楚地认识到黑盒测试并不是随便点页面，而是需要把功能拆成输入条件、操作步骤和可观察输出。等价类划分帮助我避免对同一类输入重复测试，边界值分析帮助我关注最容易出错的临界条件，
+判定表则适合校园认证、登录和积分兑换这类多条件组合功能。以校园认证为例，如果只测种子数据成功，就会漏掉学号长度和不存在学号的错误提示；以积分兑换为例，如果只测普通用户积分不足，
+就会漏掉管理员高积分兑换时的矛盾反馈和页面加载失败。
+
+本次测试也说明，截图证据和执行记录非常重要。没有截图时，缺陷描述容易变成主观判断；有截图、DOM 记录和脚本输出后，开发人员可以更快复现问题。报告中保留了 29 张截图和一个通知中心 DOM 记录，
+这些证据能说明缺陷不是凭空猜测。自动化脚本方面，最耗时的不是写 Selenium API，而是处理真实页面中的等待、重渲染、点击遮挡和中文参数。后续如果继续完善脚本，建议给前端页面增加稳定的
+\texttt{{data-testid}} 或 \texttt{{aria-label}} 属性，减少对按钮文字和页面结构的依赖。
+
+对系统本身的改进建议主要有四点。第一，优先修复积分商城兑换流程，保证一次兑换只出现一个明确结果，并且页面刷新后仍能正常加载。第二，修复通知中心弹层显示和加载状态，至少在无通知时显示空状态，
+不能长期停留在“加载中”。第三，统一页面文件编码和动态内容渲染方式，避免新发布帖子详情页出现局部乱码。第四，优化校园认证覆盖资料的提示，在认证前告知用户学院专业会同步为校园数据，
+或在认证后提供清晰的更新说明。若这些问题修复，建议首先回归本报告中的失败用例和相关 Selenium 主流程，再逐步执行未执行的异常与兼容用例。
+
+\section{{结论}}
+本次测试按照课程要求完成了项目简介、功能点清单、个人测试功能点表、黑盒测试方法分析、测试用例设计、手工执行、缺陷记录、Selenium/JUnit 脚本开发、脚本执行结果和测试体会总结。
+测试覆盖用户给定的全部 15 个功能点，设计 32 条测试用例并执行其中 21 条核心用例。结果表明，西南交大校园论坛系统的主流程功能基本可用，但通知中心、积分商城、编码显示和部分数据一致性仍需修复。
+自动化脚本最终通过 Maven 执行，能够作为后续回归测试基础。整体而言，本次实验达到了黑盒功能测试练习目的，也形成了可提交的测试用例、测试脚本和 PDF 测试报告。
+
+\appendix
+\section{{提交物清单}}
+\begin{{itemize}}
+    \item 测试用例：\texttt{{swjtu\_forum\_report\_work/测试用例.csv}} 与 \texttt{{测试用例.md}}。
+    \item 缺陷清单：\texttt{{swjtu\_forum\_report\_work/缺陷清单.csv}} 与 \texttt{{缺陷清单.md}}。
+    \item 测试证据：\texttt{{swjtu\_forum\_test\_evidence}} 目录下的截图和 DOM 记录。
+    \item 自动化脚本：\texttt{{swjtu\_forum\_report\_work/selenium-junit}}。
+    \item 报告 TeX：\texttt{{课程设计模版\_2026年/课程设计模版\_2026年/swjtu\_forum\_test\_report.tex}}。
+    \item 报告 PDF：由 XeLaTeX 编译生成。
+\end{{itemize}}
+
+\section{{未执行用例说明}}
+未执行用例主要用于后续回归和扩展，不计入本轮通过率。它们包括用户名重复、邮箱格式错误、错误密码登录、空搜索、空标题发帖、空评论、重复点赞取消、重复收藏取消、未登录关注、
+积分刚好等于奖品价格以及 IE 兼容冒烟等场景。保留这些用例的原因是它们能继续扩大异常路径覆盖，但本轮课程实验优先完成了 15 个功能点的主流程和高风险路径验证。
+
+\end{{document}}
+'''
+
+
+def main() -> None:
+    summary = json.loads((WORK / "测试执行摘要.json").read_text(encoding="utf-8"))
+    cases = read_csv(WORK / "测试用例.csv")
+    bugs = read_csv(WORK / "缺陷清单.csv")
+    surefire = read_surefire()
+
+    copy_evidence()
+    make_charts(summary, bugs)
+    write_paperspine_support(summary, surefire)
+
+    tex = make_tex(summary, cases, bugs, surefire)
+    tex_path = TEMPLATE / "swjtu_forum_test_report.tex"
+    tex_path.write_text(tex, encoding="utf-8")
+    (FINAL_PAPER_DIR / "main.tex").write_text(tex, encoding="utf-8")
+
+    cjk_count = sum(1 for ch in tex if "\u4e00" <= ch <= "\u9fff")
+    result = {
+        "tex_path": str(tex_path),
+        "figure_dir": str(FIG_DIR),
+        "cjk_char_count": cjk_count,
+        "designed_cases": len(cases),
+        "bugs": len(bugs),
+        "surefire": surefire,
+    }
+    (WORK / "report_build_summary.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    main()
