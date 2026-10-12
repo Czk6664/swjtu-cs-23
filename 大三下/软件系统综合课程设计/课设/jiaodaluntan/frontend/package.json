@@ -1,0 +1,17 @@
+{
+  "name": "swjtu-forum-frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/clean-dist.mjs && vite build",
+    "test": "node tests/phase06-plan01.test.mjs && node tests/xss-runtime.test.mjs",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "animejs": "^4.4.1"
+  }
+}

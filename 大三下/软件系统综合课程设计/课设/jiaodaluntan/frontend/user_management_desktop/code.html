@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>西南交大论坛 - 用户管理桌面端</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+</head>
+<body data-page="user-management-desktop">
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="topbar__inner container">
+        <div class="topbar__content">
+          <a class="brand" href="../index.html"><span class="brand__mark"></span><span class="brand__text">西南交大论坛</span></a>
+          <nav class="nav">
+            <a href="../admin_overview/code.html">管理总览</a>
+            <a href="../user_management_desktop/code.html" style="color: var(--interaction-blue);">用户管理桌面端</a>
+            <a href="../user_management/code.html">用户管理移动端</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section class="section">
+        <div class="container">
+          <div class="stats-grid">
+            <article class="card metric-card"><div><div class="label">总用户数</div><div class="metric-card__value">12,480</div></div><div class="metric-card__meta">管理员 8 · 版主 42 · 认证用户 9,100+</div></article>
+            <article class="card metric-card"><div><div class="label">今日新增</div><div class="metric-card__value">31</div></div><div class="metric-card__meta">新注册主要来自 2025 级和 2024 级</div></article>
+            <article class="card metric-card"><div><div class="label">封禁用户</div><div class="metric-card__value">18</div></div><div class="metric-card__meta">多为课程资料引流与交易风险</div></article>
+            <article class="card metric-card"><div><div class="label">活跃率</div><div class="metric-card__value">63%</div></div><div class="metric-card__meta">近 7 日在课程互助区活跃明显</div></article>
+          </div>
+        </div>
+      </section>
+      <section class="section">
+        <div class="container">
+          <section class="card table-card">
+            <div class="toolbar-space">
+              <div><div class="label">Member Directory</div><h2 class="post-card__title">用户目录</h2></div>
+              <div class="input" style="max-width: 320px;">搜索用户名、学号后缀、邮箱、角色</div>
+            </div>
+            <table class="table">
+              <thead><tr><th>成员</th><th>角色</th><th>状态</th><th>积分</th><th>操作</th></tr></thead>
+              <tbody>
+                <tr><td>张同学 · zhang@swjtu.edu.cn</td><td><span class="tag">学生</span></td><td><span class="tag">正常</span></td><td>820</td><td><a class="button button--outline" href="javascript:void(0)">详情</a></td></tr>
+                <tr><td>王版主 · wang@swjtu.edu.cn</td><td><span class="tag tag--blue">课程互助版主</span></td><td><span class="tag">正常</span></td><td>1,920</td><td><a class="button button--outline" href="javascript:void(0)">详情</a></td></tr>
+                <tr><td>李同学 · li@swjtu.edu.cn</td><td><span class="tag">学生</span></td><td><span class="tag">封禁</span></td><td>140</td><td><a class="button button--outline" href="javascript:void(0)">处理</a></td></tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
+      </section>
+          <div data-slot="user-management-desktop-content" hidden></div>
+    </main>
+  </div>
+  <script type="module" src="../assets/app.js"></script>
+</body>
+</html>
+

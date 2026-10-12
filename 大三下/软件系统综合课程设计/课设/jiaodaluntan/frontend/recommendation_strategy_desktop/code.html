@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>西南交大论坛 - 推荐策略桌面端</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+</head>
+<body data-page="recommendation-desktop">
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="topbar__inner container">
+        <div class="topbar__content">
+          <a class="brand" href="../index.html"><span class="brand__mark"></span><span class="brand__text">西南交大论坛</span></a>
+          <nav class="nav">
+            <a href="../admin_overview/code.html">管理总览</a>
+            <a href="../recommendation_strategy_desktop/code.html" style="color: var(--interaction-blue);">推荐策略桌面端</a>
+            <a href="../recommendation_strategy/code.html">移动端</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section class="section">
+        <div class="container split-layout">
+          <section class="surface-section stack">
+            <div><div class="label">Forum Recommendation</div><h1 class="section__title">首页推荐策略</h1></div>
+            <article class="card card--quiet"><div class="toolbar-space"><strong>课程互助 / 保研考研匹配</strong><span class="tag tag--blue">50%</span></div><div class="progress"><span style="width: 50%"></span></div></article>
+            <article class="card card--quiet"><div class="toolbar-space"><strong>互动热度</strong><span class="tag tag--blue">30%</span></div><div class="progress"><span style="width: 30%"></span></div></article>
+            <article class="card card--quiet"><div class="toolbar-space"><strong>校内时效性</strong><span class="tag tag--blue">20%</span></div><div class="progress"><span style="width: 20%"></span></div></article>
+            <div class="hero__actions"><a class="button button--solid" href="javascript:void(0)">保存策略</a><a class="button button--outline" href="javascript:void(0)">恢复默认</a></div>
+          </section>
+          <aside class="stack">
+            <section class="band">
+              <div class="label band__eyebrow">推荐预览</div>
+              <h2 class="band__title">策略预览应该能直接看出论坛偏向“课程互助、保研考研”还是“犀浦生活、二手闲置”。</h2>
+            </section>
+            <section class="card">
+              <div class="label">首页预览帖子</div>
+              <div class="comment-list">
+                <article class="comment-card"><strong>26 届保研时间线整理帖</strong><p class="muted">得分 0.92 · 标签高度匹配</p></article>
+                <article class="comment-card"><strong>电路课复习资料汇总</strong><p class="muted">得分 0.78 · 收藏量高</p></article>
+                <article class="comment-card"><strong>犀浦图书馆期中周座位观察</strong><p class="muted">得分 0.66 · 热度上升</p></article>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="../assets/app.js"></script>
+</body>
+</html>
+
