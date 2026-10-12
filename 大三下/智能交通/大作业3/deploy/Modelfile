@@ -1,0 +1,34 @@
+# Modelfile —— Ollama 配方
+#
+# 用法 (在 GGUF 同目录):
+#   ollama create travelqa -f Modelfile
+#   ollama run travelqa "成都东站到春熙路怎么走?"
+#
+# 或用绝对路径:
+#   ollama create travelqa -f D:\models\Modelfile
+
+FROM ./travelqa-q4km.gguf
+
+# 上下文窗口 (与训练 max_seq_len 对齐, 不必过大)
+PARAMETER num_ctx 4096
+
+# 温度: 偏低, 让拒答/工具调用格式更稳
+PARAMETER temperature 0.1
+PARAMETER top_p 0.9
+
+# 重复惩罚 (修 bulletin 死循环)
+PARAMETER repeat_penalty 1.1
+PARAMETER repeat_last_n 64
+
+# 停止符 (避免模型把"### 指令"也生成出来)
+PARAMETER stop "<|im_end|>"
+PARAMETER stop "### 指令"
+
+# 系统提示
+SYSTEM """你是成都『智能交通出行问答』助手。基于下方提供的依据/工具结果作答, 做到准确、简洁、可溯源; 信息不足时明确说明并建议查阅官方发布, 不要编造。"""
+
+# 训练时的 prompt 模板, 保持一致
+TEMPLATE """### 指令:
+{{ .Prompt }}
+### 回答:
+"""

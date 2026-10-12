@@ -1,0 +1,52 @@
+{
+  "seed": 20260601,
+  "total": 1228,
+  "train": 1104,
+  "validation": 124,
+  "groups": 1228,
+  "train_groups": 1104,
+  "validation_groups": 124,
+  "group_leakage": 0,
+  "quality": {
+    "max_output_repeat": 3,
+    "sensitive_max_output_repeat": 1
+  },
+  "source_audit": {
+    "xindu_bus_lines": {
+      "rows": 87,
+      "fixed_schedule_rows_excluded": 12
+    },
+    "open_catalog": {
+      "rows": 7408,
+      "departments": 553,
+      "rows_with_known_file_formats": 7147,
+      "selected_rows": 160,
+      "selected_departments": 70,
+      "selected_api_interfaces": 8,
+      "selected_rows_with_known_file_formats": 151
+    }
+  },
+  "categories": {
+    "bus": 320,
+    "detection": 20,
+    "forecast": 20,
+    "metro": 252,
+    "open_catalog": 160,
+    "parking": 198,
+    "parking_realtime_boundary": 20,
+    "rag_grounding_boundary": 16,
+    "refusal": 80,
+    "route": 8,
+    "toll_station": 38,
+    "tool_call": 40,
+    "tool_unavailable": 8,
+    "traffic_rule": 20,
+    "travel_advice": 20,
+    "weather": 8
+  },
+  "outputs": [
+    "sft.jsonl",
+    "train.jsonl",
+    "val.jsonl"
+  ]
+}

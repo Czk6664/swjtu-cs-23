@@ -1,0 +1,12 @@
+{"query": "成都尾号限行怎么规定的？", "expected_intent": "traffic-info", "must_include": ["7:30", "绕城", "新能源"]}
+{"query": "违章了在哪里查询和处理？", "expected_intent": "traffic-info", "must_include": ["12123"]}
+{"query": "天府大道最近施工吗？", "expected_intent": "traffic-info", "must_include": ["施工"]}
+{"query": "下雨天开车要注意什么？", "expected_intent": "travel-advice", "must_include": ["车距"]}
+{"query": "发生小剐蹭怎么处理？", "expected_intent": "travel-advice", "must_include": ["快处"]}
+{"query": "成都今天天气如何，适合开车吗？", "expected_intent": "weather", "must_include": []}
+{"query": "我从天府广场到春熙路怎么走？", "expected_intent": "route", "must_include": []}
+{"query": "去地铁站坐什么最快？", "expected_intent": "route", "must_include": []}
+{"query": "PEMS08 上交通流预测精度怎么样？", "expected_intent": "forecast", "must_include": []}
+{"query": "STAEformer 的 MAE 是多少？", "expected_intent": "forecast", "must_include": []}
+{"query": "系统能识别哪些交通标志？", "expected_intent": "detection", "must_include": []}
+{"query": "交通标志检测的 mAP 是多少？", "expected_intent": "detection", "must_include": []}

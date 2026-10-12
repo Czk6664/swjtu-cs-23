@@ -1,0 +1,58 @@
+# Dify 应用编排 DSL（可导入自建 Dify 实例）。
+# 体现“基于 Dify 框架”的要求：以 DeepSeek 为基座 + RAG 知识库 + 工具调用 + 意图路由。
+#
+# 导入方式：Dify 控制台 -> 创建应用 -> 导入 DSL，或通过 Dify API 创建。
+# 知识库内容来源：本仓库 data/kb（由 scraper 抓取的成都交管发布栏构建），
+#                可导出为文本后在 Dify「知识库」中创建并绑定。
+app:
+  name: 成都智能交通出行问答
+  mode: advanced-chat        # 工作流式对话，支持意图分支 + 工具
+  description: 大小模型协同的出行问答（交管信息/天气/出行建议/路径规划 + 预测/检测理解）
+
+model:
+  provider: deepseek         # 或 openai_compatible 指向本地 vLLM
+  name: deepseek-llm-7b-chat # 微调后改为合并 LoRA 的模型名
+  completion_params:
+    temperature: 0.3
+    max_tokens: 1024
+
+# RAG 知识库（成都交管发布栏）
+knowledge_base:
+  - name: chengdu-traffic-kb
+    indexing: high_quality
+    retrieval:
+      search_method: semantic_search
+      top_k: 4
+      score_threshold: 0.5
+    source: ../data/kb        # 由 scripts/2_build_kb.py 产出，导入 Dify 时上传对应文档
+
+# 意图分支（对应 router.py 的六类意图）
+workflow:
+  entry: classifier
+  nodes:
+    - id: classifier
+      type: question-classifier
+      classes: [交管信息, 天气, 出行建议, 路径规划, 交通流预测, 交通标志识别]
+    - id: kb_qa            # 交管信息 / 出行建议 -> 知识检索
+      type: knowledge-retrieval + llm
+      knowledge_base: chengdu-traffic-kb
+    - id: weather_tool
+      type: tool
+      tool: weather_query  # 见 dify/tools/ 自定义工具或 HTTP 节点
+    - id: route_tool
+      type: tool
+      tool: route_plan
+    - id: forecast_tool    # 高阶：调用大作业1 预测结果服务
+      type: tool
+      tool: forecast_summarize
+    - id: detection_tool   # 高阶：调用大作业2 检测结果服务
+      type: tool
+      tool: detection_summarize
+    - id: answer
+      type: llm
+      prompt: |
+        你是成都出行问答助手。基于上游节点提供的知识片段/工具结果作答，
+        准确、简洁、可溯源；信息不足时说明并建议查阅官方发布，不要编造。
+
+# 工具通过 HTTP 暴露：可用 scripts/serve_tools.py(可选) 或本项目 src/travelqa 封装。
+prompt_opening: 你好，我是成都智能交通出行助手，可以问我限行、违章、天气、路线、车流预测或交通标志识别。

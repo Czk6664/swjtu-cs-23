@@ -1,0 +1,23 @@
+# 部署侧 Python 依赖
+# 与 autodl/requirements-autodl.txt (训练侧) 不同: 部署侧不需要 bitsandbytes / datasets / swanlab
+# 也不需要 AutoDL 镜像里已装的 torch / transformers / peft / sentencepiece (但写在这里也无害)
+
+# --- 基础 ---
+pyyaml>=6.0
+
+# --- 合并 LoRA 需要 ---
+torch>=2.2
+transformers>=4.50,<5
+peft>=0.12
+sentencepiece>=0.2
+safetensors>=0.4
+
+# --- GGUF 转换 + 量化 ---
+# gguf 是 llama.cpp 的 Python 绑定, 提供 HF -> GGUF 转换器
+gguf>=0.10
+# huggingface_hub 用于下载 llama.cpp Windows prebuilt binary
+huggingface_hub>=0.24
+
+# --- 推理侧 (Ollama 自带二进制, 不需要装 llama-cpp-python) ---
+# 下列是可选, 仅在你想用 Python 直接调 GGUF 而不走 Ollama 时才装
+# llama-cpp-python>=0.3

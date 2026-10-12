@@ -1,0 +1,159 @@
+openapi: 3.0.3
+info:
+  title: TravelQA Tools
+  version: 1.0.0
+  description: HTTP tools for the Chengdu intelligent transportation Q&A workflow.
+servers:
+  - url: http://host.docker.internal:8001
+    description: Windows host service when Dify runs in Docker Desktop
+  - url: http://127.0.0.1:8001
+    description: Local service when Dify and TravelQA run on the same host network
+paths:
+  /api/ask:
+    post:
+      operationId: askTravelQA
+      summary: Ask the full TravelQA orchestrator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+      responses:
+        "200":
+          description: TravelQA answer
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/tools/weather:
+    post:
+      operationId: weatherQuery
+      summary: Query Chengdu weather
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                city:
+                  type: string
+                  default: 成都
+                date:
+                  type: string
+                  enum: [今天, 明天, 后天]
+                  default: 今天
+      responses:
+        "200":
+          description: Weather result
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/tools/route:
+    post:
+      operationId: routePlan
+      summary: Query route planning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                origin:
+                  type: string
+                  description: Origin place name
+                destination:
+                  type: string
+                  description: Destination place name
+                mode:
+                  type: string
+                  enum: [drive, transit, walk]
+                  default: drive
+                query:
+                  type: string
+                  description: Optional natural-language query. Used to extract origin and destination if explicit fields are empty.
+      responses:
+        "200":
+          description: Route result
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/tools/forecast/predict:
+    post:
+      operationId: forecastPredict
+      summary: Run STAEformer traffic-flow prediction from homework 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataset:
+                  type: string
+                  default: PEMS08
+                variant:
+                  type: string
+                  default: baseline
+                node_id:
+                  type: integer
+                  default: 0
+                sample_index:
+                  type: integer
+                  default: -1
+      responses:
+        "200":
+          description: Prediction result
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/tools/forecast/summary:
+    post:
+      operationId: forecastSummary
+      summary: Read STAEformer experiment metrics from homework 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataset:
+                  type: string
+                  default: PEMS08
+                variant:
+                  type: string
+                  default: baseline
+      responses:
+        "200":
+          description: Forecast metrics
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/tools/detection/summary:
+    post:
+      operationId: detectionSummary
+      summary: Read YOLO/TT100K detection capability and metrics from homework 2
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Detection summary
+          content:
+            application/json:
+              schema:
+                type: object

@@ -1,0 +1,29 @@
+# TravelQA runtime dependencies
+# Keep this file ASCII-only for pip on Windows systems using the GBK locale.
+
+# Scraping and parsing
+requests>=2.31
+beautifulsoup4>=4.12
+lxml>=5.0
+openpyxl>=3.1
+xlrd>=2.0
+pypdf>=6.0
+
+# Configuration
+pyyaml>=6.0
+
+# Web UI
+fastapi>=0.110
+uvicorn>=0.27
+
+# Semantic retrieval
+sentence-transformers>=3.0
+numpy>=1.26
+modelscope>=1.20
+
+# Optional LoRA fine-tuning:
+# torch>=2.2
+# transformers>=4.44
+# peft>=0.12
+# datasets>=2.20
+# accelerate>=0.33

@@ -1,0 +1,48 @@
+# TravelQA LoRA 微调配置 —— 云端 AutoDL QLoRA → 本地 Ollama Q4_K_M
+#
+# 基座模型：DeepSeek-R1-Distill-Qwen-7B
+#   - 蒸馏于 R1 推理能力，7B 量级可在 24GB 消费级 GPU 上 QLoRA 微调
+#   - 与基线 7B 相比对指令跟随与中文表达更稳健
+#   - 推理侧经 GGUF Q4_K_M 量化后约 4.7GB，8GB 显存可跑
+#   - ModelScope: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
+#   - 也可以换 1.5B/8B/14B 同系列；本文档默认 7B
+#
+# 训练数据由 finetune/build_dataset.py 生成；
+# 训练完成后用 merge_lora.py 合并，再用 quantize_gguf.py 转 GGUF Q4_K_M。
+
+base_model: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
+dataset: data/train.jsonl
+validation_dataset: data/val.jsonl
+output_dir: outputs/deepseek-travelqa-lora-v4
+merged_dir: outputs/deepseek-travelqa-merged
+gguf_dir: outputs/deepseek-travelqa-q4km
+
+# LoRA 超参：r=16 是 7B QLoRA 常用档位
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+# 训练超参（24GB 单卡可跑）
+train:
+  epochs: 2
+  per_device_batch_size: 2          # QLoRA 后 24GB 显存可放到 2
+  gradient_accumulation_steps: 8     # 等效 batch_size = 16
+  per_device_eval_batch_size: 1
+  learning_rate: 2.0e-4
+  max_seq_len: 1024
+  bf16: true
+  gradient_checkpointing: true
+  load_in_4bit: true                 # QLoRA 4bit 加载基座
+  optim: paged_adamw_8bit
+  logging_steps: 5
+  save_total_limit: 2
+  report_to_swanlab: true
+  seed: 20260602
+
+# 合并与量化超参
+export:
+  merge_dtype: bfloat16              # 合并后权重的存放精度
+  gguf_quant: Q4_K_M                 # llama.cpp 量化档位：4bit + K-quants + medium
+  gguf_context: 4096                 # 导出时使用的上下文长度
