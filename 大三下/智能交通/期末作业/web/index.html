@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>调度台 · 智能交通管理决策系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0a0e13; --ink-2:#0e141c; --panel:#111925; --panel-2:#0d1620;
+    --line:#1f2b3a; --line-2:#2a3a4d;
+    --fg:#eaf1f7; --fg-dim:#8696a6; --fg-mute:#5a6personally; --fg-mute:#5b6b7c;
+    --amber:#ffb020; --amber-2:#ff8c1a; --amber-soft:rgba(255,176,32,.14);
+    --green:#34d17a; --red:#ff5a63; --cyan:#4fd0e0;
+    --serif:"Noto Serif SC",serif;
+    --sans:"Noto Sans SC",-apple-system,sans-serif;
+    --sign:"Big Shoulders Display","Noto Sans SC",sans-serif;
+    --mono:"Space Mono",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--fg);font-family:var(--sans);line-height:1.5;
+    -webkit-font-smoothing:antialiased}
+  /* 蓝图网格 + 顶部辉光 + 颗粒 */
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(900px 480px at 78% -8%, rgba(255,176,32,.10), transparent 60%),
+      radial-gradient(700px 500px at 8% 110%, rgba(79,208,224,.06), transparent 60%),
+      linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px) 0 0/34px 34px,
+      linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px) 0 0/34px 34px;}
+  body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .app{position:relative;z-index:1}
+
+  /* 顶栏 */
+  nav{display:flex;align-items:center;gap:20px;padding:18px 34px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .light{display:flex;flex-direction:column;gap:3px}
+  .light i{width:9px;height:9px;border-radius:50%;background:#27323f;display:block}
+  .light i.r{background:var(--red);box-shadow:0 0 9px var(--red)}
+  .light i.y{background:var(--amber);box-shadow:0 0 9px var(--amber);animation:blink 2.4s infinite}
+  .light i.g{background:var(--green);box-shadow:0 0 9px var(--green)}
+  @keyframes blink{0%,90%,100%{opacity:1}93%{opacity:.25}}
+  .brand .nm{font-family:var(--serif);font-weight:700;font-size:18px;letter-spacing:1px}
+  .brand .nm small{display:block;font-family:var(--mono);font-size:9.5px;color:var(--fg-dim);
+    letter-spacing:3px;font-weight:400;margin-top:1px}
+  .navtabs{display:flex;gap:4px;margin-left:10px}
+  .navtabs span{font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--fg-dim);
+    padding:6px 13px;border-radius:2px;text-transform:uppercase}
+  .navtabs span.on{color:var(--ink);background:var(--amber)}
+  .badges{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--fg-dim);
+    border:1px solid var(--line);padding:6px 12px;border-radius:2px}
+
+  /* hero */
+  .hero{padding:46px 34px 12px;display:flex;align-items:flex-end;gap:24px;
+    border-bottom:1px solid var(--line)}
+  .hero .idx{font-family:var(--sign);font-weight:900;font-size:120px;line-height:.8;
+    color:transparent;-webkit-text-stroke:1.5px var(--line-2);letter-spacing:-4px}
+  .hero h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,4.4vw,56px);
+    line-height:1.06;margin:0 0 8px;letter-spacing:.5px}
+  .hero h1 em{font-style:normal;color:var(--amber)}
+  .hero p{color:var(--fg-dim);font-size:14.5px;max-width:560px;margin:0}
+  .hero .kick{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--amber);
+    text-transform:uppercase;margin-bottom:10px}
+
+  .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:1px;background:var(--line);
+    border-bottom:1px solid var(--line)}
+  @media(max-width:940px){.grid{grid-template-columns:1fr}.hero .idx{display:none}}
+  .panel{background:var(--ink-2);padding:30px 34px;position:relative;
+    animation:rise .6s cubic-bezier(.16,1,.3,1) both}
+  .panel:nth-child(2){animation-delay:.1s}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .ph{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .ph .no{font-family:var(--mono);font-size:12px;color:var(--fg-mute)}
+  .ph h2{font-family:var(--serif);font-weight:700;font-size:23px;margin:0;letter-spacing:.5px}
+  .ph .tag{font-family:var(--sign);font-weight:800;font-size:13px;letter-spacing:2px;
+    margin-left:auto;padding:3px 10px;color:var(--ink);background:var(--amber);border-radius:2px}
+  .ph .tag.gr{background:var(--green)}
+  .hint{font-family:var(--mono);color:var(--fg-dim);font-size:11.5px;line-height:1.7;
+    margin-bottom:20px;border-left:2px solid var(--amber);padding-left:11px}
+
+  label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;
+    text-transform:uppercase;color:var(--fg-dim);margin:16px 0 7px}
+  label b{color:var(--amber)}
+  input[type=range]{width:100%;accent-color:var(--amber)}
+  input[type=text],select{width:100%;background:var(--panel-2);border:1px solid var(--line-2);
+    border-radius:3px;padding:11px 13px;color:var(--fg);font-size:14px;font-family:var(--sans);
+    outline:none;transition:.15s}
+  input[type=text]:focus,select:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-soft)}
+
+  .btn{font-family:var(--sign);font-weight:800;letter-spacing:2px;background:var(--amber);
+    color:var(--ink);border:none;border-radius:3px;padding:13px 22px;font-size:14px;cursor:pointer;
+    transition:.15s;margin-top:20px;text-transform:uppercase}
+  .btn:hover{background:#fff;box-shadow:0 0 22px var(--amber-soft)}
+  .btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line-2)}
+  .btn.ghost:hover{border-color:var(--amber);color:var(--amber);background:transparent;box-shadow:none}
+  .btn:disabled{opacity:.4;cursor:default}
+  .rowbtns{display:flex;gap:10px;flex-wrap:wrap}
+
+  #result{display:none;margin-top:24px;padding-top:22px;border-top:1px dashed var(--line-2)}
+  .gauge{display:flex;align-items:center;gap:22px;margin-bottom:20px}
+  .ring{width:118px;height:118px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;
+    background:conic-gradient(var(--g) var(--p),#19222e 0);transition:--p .8s ease;
+    box-shadow:0 0 30px -6px var(--g)}
+  .ring span{width:92px;height:92px;border-radius:50%;background:var(--ink-2);display:grid;
+    place-items:center;font-family:var(--sign);font-weight:900;font-size:34px;color:var(--fg)}
+  .verdict .lv{font-family:var(--serif);font-size:26px;font-weight:900}
+  .verdict .ac{font-size:13px;color:var(--fg-dim);margin-top:6px;line-height:1.65}
+  .bar{margin:13px 0}
+  .bar .t{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;
+    margin-bottom:6px;color:var(--fg-dim)}
+  .bar .t b{color:var(--amber)}
+  .bar .track{height:6px;background:#19222e;border-radius:0;overflow:hidden}
+  .bar .fill{height:100%;background:linear-gradient(90deg,var(--amber-2),var(--amber));
+    transition:width .7s cubic-bezier(.16,1,.3,1)}
+  .why{margin-top:15px;font-size:13px;color:var(--fg-dim);line-height:1.7;
+    background:var(--panel-2);border-radius:4px;padding:13px 15px;border:1px solid var(--line)}
+  .dis{margin-top:11px;font-family:var(--mono);font-size:11.5px;color:var(--red)}
+
+  canvas{width:100%;height:172px;margin-top:8px}
+  .reg{margin-top:14px;font-family:var(--mono);font-size:12px}
+  .reg .v{display:flex;justify-content:space-between;padding:9px 13px;border-radius:3px;
+    border:1px solid var(--line);margin-bottom:6px;background:var(--panel-2)}
+  .reg .v.prod{border-color:var(--amber);background:var(--amber-soft);color:var(--amber)}
+  .reg .st{color:var(--fg-mute);text-transform:uppercase;font-size:10px;letter-spacing:1px}
+  .log{margin-top:14px;font-family:var(--mono);font-size:11.5px;max-height:130px;overflow:auto;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:12px;color:var(--fg-dim)}
+  .log div{margin:3px 0}.log .ok{color:var(--green)}.log .no{color:var(--red)}
+
+  footer{padding:24px 34px;font-family:var(--mono);font-size:11px;letter-spacing:1px;
+    color:var(--fg-mute);display:flex;gap:16px;flex-wrap:wrap}
+  footer b{color:var(--amber);font-weight:400}
+</style>
+</head>
+<body><div class="app">
+<nav>
+  <div class="brand">
+    <div class="light"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+    <div class="nm">智能交通 · 调度台<small>DISPATCH CONSOLE</small></div>
+  </div>
+  <div class="navtabs"><span class="on">Decision</span><span>Flywheel</span><span>Registry</span></div>
+  <div class="badges" id="badges">CONNECTING…</div>
+</nav>
+
+<header class="hero">
+  <div class="idx">01</div>
+  <div>
+    <div class="kick">Big-Small Model Collaboration</div>
+    <h1>大小模型协同的<br><em>智能交通决策</em></h1>
+    <p>小模型做事、大模型做决策融合、数据飞轮让模型越用越准 —— 可观测、可回滚。</p>
+  </div>
+</header>
+
+<div class="grid">
+  <section class="panel">
+    <div class="ph"><span class="no">/ 02</span><h2>决策驾驶舱</h2><span class="tag">FUSION</span></div>
+    <div class="hint">场景输入 → 路由小模型 → 加权置信融合 → 风险决策与可解释归因</div>
+
+    <label>工作流 · Workflow</label>
+    <select id="workflow">
+      <option value="intersection-risk">路口风险（预测+检测+知识）</option>
+      <option value="congestion">拥堵评估（预测+知识）</option>
+      <option value="full-decision">全量决策</option>
+      <option value="sign-only">仅检测</option>
+    </select>
+
+    <label>当前交通负载 · Load <b id="loadv">0.85</b></label>
+    <input type="range" id="load" min="0" max="1" step="0.05" value="0.85" />
+
+    <label>检测到的标志（类别:置信，逗号分隔）</label>
+    <input type="text" id="dets" value="pl40:0.42, pn:0.31" />
+
+    <label>关联问题 · RAG Query</label>
+    <input type="text" id="query" value="这个路口高峰期有什么管制？" />
+
+    <button class="btn" id="decide">运行决策 · RUN</button>
+
+    <div id="result">
+      <div class="gauge">
+        <div class="ring" id="ring"><span id="ringv">0%</span></div>
+        <div class="verdict"><div class="lv" id="lv"></div><div class="ac" id="ac"></div></div>
+      </div>
+      <div id="bars"></div>
+      <div class="why" id="why"></div>
+      <div class="dis" id="dis"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="ph"><span class="no">/ 03</span><h2>数据飞轮</h2><span class="tag gr">FLYWHEEL</span></div>
+    <div class="hint">采集→挖掘→标注→重训→门控→晋升/回滚。指标随轮次提升，劣化候选被拦截。</div>
+
+    <label>目标模型 · Model</label>
+    <select id="fmodel">
+      <option value="detection">detection · mAP50（大作业2 基线 0.758）</option>
+      <option value="forecast">forecast · MAE（大作业1 基线 13.706）</option>
+    </select>
+
+    <div class="rowbtns">
+      <button class="btn ghost" id="seed">① 灌入难例</button>
+      <button class="btn" id="round">② 跑飞轮</button>
+      <button class="btn ghost" id="bad">③ 注入劣化</button>
+    </div>
+
+    <canvas id="chart" width="600" height="172"></canvas>
+    <div class="reg" id="reg"></div>
+    <div class="log" id="log"></div>
+  </section>
+</div>
+
+<footer>
+  <span>大作业1 · STAEFORMER 预测</span><span>大作业2 · YOLO 检测</span>
+  <span>大作业3 · DEEPSEEK RAG 问答</span><b>· 大小模型协同 ·</b>
+</footer>
+</div>
+<script>
+const API=location.origin;
+const LV={low:{t:"低风险",c:"#34d17a"},medium:{t:"中风险",c:"#ffb020"},
+  high:{t:"高风险",c:"#ff5a63"},unknown:{t:"数据不足",c:"#5b6b7c"}};
+const $=id=>document.getElementById(id);
+$('load').oninput=e=>$('loadv').textContent=e.target.value;
+
+$('decide').onclick=async()=>{
+  const dets=$('dets').value.split(',').map(s=>s.trim()).filter(Boolean).map(p=>{
+    const [cls,conf]=p.split(':');return {cls:(cls||'').trim(),conf:parseFloat(conf)||0.3};});
+  const scene={scene_id:"web",workflow:$('workflow').value,traffic_load:parseFloat($('load').value),
+    detections:dets,query:$('query').value};
+  $('decide').disabled=true;
+  try{
+    const d=await(await fetch(API+'/api/decide',{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify(scene)})).json();
+    renderDecision(d);
+  }catch(e){alert('决策请求失败: '+e.message);}
+  $('decide').disabled=false;
+};
+function renderDecision(d){
+  $('result').style.display='block';
+  const lv=LV[d.risk_level]||LV.unknown,pct=Math.round(d.risk_score*100);
+  const ring=$('ring');ring.style.setProperty('--g',lv.c);ring.style.setProperty('--p',pct+'%');
+  $('ringv').textContent=pct+'%';
+  $('lv').textContent=lv.t;$('lv').style.color=lv.c;$('ac').textContent=d.action;
+  $('bars').innerHTML=(d.contributions||[]).map(c=>`
+    <div class="bar"><div class="t"><span>${c.signal} · w${c.weight} · conf ${c.confidence}</span>
+    <b>+${c.contribution}</b></div>
+    <div class="track"><div class="fill" style="width:${Math.min(100,c.contribution*100/Math.max(d.risk_score,0.01))}%"></div></div></div>`).join('');
+  $('why').textContent='融合理由：'+d.rationale;
+  $('dis').textContent=(d.disagreements&&d.disagreements.length)?
+    '⚠ 协同分歧（已入飞轮难例）：'+JSON.stringify(d.disagreements):'';
+}
+
+const logEl=$('log');
+function log(msg,cls=''){const d=document.createElement('div');if(cls)d.className=cls;
+  d.textContent='› '+msg;logEl.prepend(d);}
+$('seed').onclick=async()=>{const m=$('fmodel').value;
+  const r=await(await fetch(API+'/api/flywheel/seed',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({model:m,n:8})})).json();
+  log(`SEED ${r.seeded} hard cases · ${m}`);};
+$('round').onclick=()=>runRound(false);
+$('bad').onclick=()=>runRound(true);
+async function runRound(bad){
+  const m=$('fmodel').value;
+  const r=await(await fetch(API+'/api/flywheel/round',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({model:m,inject_regression:bad})})).json();
+  if(r.status==='skip'){log(r.note);return;}
+  const g=r.gate;
+  log(`${bad?'[REGRESS] ':''}hard ${r.hard_cases} · cand ${g.metric}=${g.candidate} `+
+    (g.passed?`PROMOTE→${r.promoted_to}`:`REJECT keep ${r.kept}`),g.passed?'ok':'no');
+  await refresh(m);
+}
+async function refresh(model){
+  const d=await(await fetch(API+'/api/registry/'+model)).json();
+  $('reg').innerHTML=d.curve.map(v=>`<div class="v ${v.status==='production'?'prod':''}">
+    <span>${v.version} · ${d.primary}=${v.metric}</span><span class="st">${v.status}</span></div>`).join('');
+  drawChart(d.curve.map(v=>v.metric),d.primary);
+}
+function drawChart(vals,primary){
+  const cv=$('chart'),x=cv.getContext('2d'),W=cv.width,H=cv.height,P=32;
+  x.clearRect(0,0,W,H);if(!vals.length)return;
+  const mn=Math.min(...vals),mx=Math.max(...vals),rng=(mx-mn)||1;
+  for(let i=0;i<=3;i++){const gy=P+(H-2*P)*i/3;x.strokeStyle='rgba(255,255,255,.05)';
+    x.beginPath();x.moveTo(P,gy);x.lineTo(W-8,gy);x.stroke();}
+  const pts=vals.map((v,i)=>[P+(W-P-16)*(i/Math.max(1,vals.length-1)),H-P-(H-2*P)*((v-mn)/rng)]);
+  const grd=x.createLinearGradient(0,P,0,H-P);
+  grd.addColorStop(0,'rgba(255,176,32,.30)');grd.addColorStop(1,'rgba(255,176,32,0)');
+  x.beginPath();x.moveTo(pts[0][0],H-P);pts.forEach(p=>x.lineTo(p[0],p[1]));
+  x.lineTo(pts[pts.length-1][0],H-P);x.closePath();x.fillStyle=grd;x.fill();
+  x.strokeStyle='#ffb020';x.lineWidth=2.5;x.shadowColor='#ffb020';x.shadowBlur=12;
+  x.beginPath();pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.stroke();
+  x.shadowBlur=0;
+  pts.forEach((p,i)=>{x.fillStyle='#0a0e13';x.beginPath();x.arc(p[0],p[1],4,0,7);x.fill();
+    x.strokeStyle='#ffb020';x.lineWidth=2;x.stroke();
+    x.fillStyle='#8696a6';x.font='10px "Space Mono",monospace';x.fillText(vals[i],p[0]-13,p[1]-11);});
+  x.fillStyle='#5b6b7c';x.font='10px "Space Mono",monospace';
+  x.fillText(primary.toUpperCase()+' / ROUND',P,18);
+}
+fetch(API+'/api/health').then(r=>r.json()).then(d=>{
+  $('badges').textContent='PROD '+JSON.stringify(d.models);refresh($('fmodel').value);
+}).catch(()=>$('badges').textContent='OFFLINE');
+$('fmodel').onchange=()=>refresh($('fmodel').value);
+</script>
+</body>
+</html>
