@@ -1,0 +1,232 @@
+% !TEX program = xelatex
+\documentclass[UTF8,a4paper,12pt]{ctexart}
+\usepackage[margin=2.45cm]{geometry}
+\usepackage{array,longtable,booktabs,float,xcolor}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\definecolor{academicBlue}{HTML}{3B6FB6}
+\definecolor{academicGreen}{HTML}{4E9F70}
+\definecolor{academicRed}{HTML}{C44E52}
+\definecolor{academicGray}{HTML}{6B7280}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.25em}
+\title{软件系统综合课程设计练习2性能测试报告\\稳定性测试}
+\author{程泽凯}
+\date{2026年6月17日}
+
+\begin{document}
+\begin{titlepage}
+\centering
+\vspace*{2.2cm}
+{\zihao{2}\bfseries 软件系统综合课程设计\par}
+\vspace{0.5cm}
+{\zihao{3}\bfseries 练习2 性能测试报告\par}
+\vspace{1.1cm}
+{\zihao{3}\bfseries 稳定性测试\par}
+\vfill
+\begin{tabular}{rl}
+姓名： & 程泽凯\\[0.4cm]
+项目名称： & 西南交大校园论坛系统\\[0.4cm]
+测试主题： & 稳定性测试\\[0.4cm]
+日期： & 2026年6月17日
+\end{tabular}
+\vfill
+{\large 软件工程实验室（X7507/7508）\par}
+\end{titlepage}
+\setcounter{page}{1}
+
+\section{实验目的与前提}
+本报告选择稳定性测试作为个人负责内容。稳定性测试关注系统在持续请求下是否保持可用，是否出现错误率上升、响应时间突然变差或吞吐量明显下降。本轮实验受课堂时间限制，采用短时持续访问方式，不把 20 秒测试夸大成生产环境长稳压测。
+
+目标部署服务器为 Ubuntu-mbpr，公网 IP 47.108.218.39，私有 IP 172.19.41.159，Ubuntu 22.04，2 核 CPU，2 GiB 内存，40 GiB 系统盘，公网带宽上限 200 Mbps。服务器监控快照显示 CPU 2.33\%，内存 1.16 GiB/2 GiB，系统盘 8.57 GiB/40 GiB。本轮实测在本地同版本后端 demo profile 下完成，服务器信息用于说明部署约束。
+
+\section{测试场景总表}
+\begin{longtable}{P{2.3cm}P{2.4cm}P{5.0cm}P{4.5cm}}
+\toprule
+负责人 & 测试类型 & 测试内容 & 测试目标\\
+\midrule
+金井直 & 负载测试 & 公共浏览混合访问 & 验证正常负载下是否稳定\\
+蒋焰 & 压力测试 & 搜索与列表接口并发阶梯加压 & 观察高并发下响应时间增长\\
+赵祺 & 容量测试 & 调整分页大小为 10、20、50、100 & 观察单页数据量扩大后的性能变化\\
+程泽凯 & 稳定性测试 & 10 并发持续访问公共浏览接口 20 秒 & 检查短时持续运行中是否出现错误和抖动\\
+\bottomrule
+\end{longtable}
+
+\section{测试环境}
+\begin{longtable}{P{3.2cm}P{10.8cm}}
+\toprule
+类别 & 配置\\
+\midrule
+目标服务器 & Ubuntu 22.04，2 核 CPU，2 GiB 内存，40 GiB 系统盘，200 Mbps 公网带宽\\
+服务器快照 & CPU 2.33\%，内存 1.16 GiB/2 GiB，系统盘 8.57 GiB/40 GiB\\
+本轮实测机 & Windows 10.0.26200，16 逻辑 CPU，31.31 GiB 内存\\
+被测服务 & Spring Boot 3.2.0，JDK 17，demo profile，H2 内存数据库\\
+测试地址 & http://127.0.0.1:18081/api\\
+测试工具 & Node.js 并发请求脚本，固定 10 并发，持续混合请求 20 秒\\
+\bottomrule
+\end{longtable}
+
+\section{性能指标要求}
+\begin{longtable}{P{3.2cm}P{4.2cm}P{6.2cm}}
+\toprule
+指标 & 要求 & 说明\\
+\midrule
+错误率 & 0\% & 稳定性测试首先关注持续运行中是否出错\\
+P95 响应时间 & 小于 200 ms & 短时持续请求下不应出现大量慢请求\\
+吞吐量 & 记录稳定区间实测值 & 观察持续访问中是否明显下降\\
+资源利用率 & 记录服务器背景信息 & 本轮未采集长时间 CPU 曲线，不能伪造资源峰值\\
+\bottomrule
+\end{longtable}
+
+\section{测试对象与统计口径}
+稳定性测试选择公共浏览混合接口作为对象，关注点不是瞬时最大吞吐，而是持续请求期间接口是否保持稳定。测试对象包含帖子列表、热门帖子、搜索和版块列表等读接口，这些接口可以连续访问且不会改变业务状态，适合作为短时稳定性实验的基础场景。
+
+统计口径包括成功率、错误率、吞吐量和响应时间分位数。成功率用于判断接口是否持续可用，错误率用于发现 5xx、连接失败或超时。响应时间分位数用于观察请求是否出现长尾，尤其是 P95 和 P99。稳定性测试中平均值不能单独说明问题，因为少量慢请求可能被平均值掩盖，所以报告同时展示 P50、P90、P95 和 P99。
+
+本轮测试持续时间较短，只有一次完整样本，因此不使用置信区间。图表采用分位数柱状图和成功率/错误率百分比图。成功请求数和错误请求数差异极大，如果直接使用原始请求数绘图，错误柱会几乎不可见，因此改用百分比尺度表达，这比断裂轴更适合当前结论。
+
+\section{实验执行过程}
+执行前先确认后端服务和公共接口正常，随后启动稳定性测试脚本，以固定并发持续循环访问接口集合。测试期间不重启后端服务，也不手工清理缓存，尽量观察系统在连续请求下的自然表现。测试结束后统计总请求数、成功请求数、错误请求数、吞吐量和响应时间分布。
+
+本轮稳定性测试属于课堂阶段的短时验证，更像冒烟测试与小规模持续访问测试的结合。它可以发现接口立即报错、连接不稳定或响应时间突然恶化的问题，但不能替代长时间稳定性测试。报告因此把结论限定为“短时持续访问稳定”，不扩大为“线上长期稳定”。
+
+\section{稳定性测试方案设计}
+测试采用 10 个并发 worker，持续 20 秒循环访问公共接口。接口组合包括帖子列表、热门帖子、关键词搜索和版块列表。选择这些接口的原因是它们都属于论坛首页或公共浏览链路，访问频率高，而且不需要登录态，适合做稳定性基础验证。
+
+\begin{longtable}{P{1.2cm}P{9.2cm}P{3.3cm}}
+\toprule
+序号 & 接口 & 说明\\
+\midrule
+1 & /posts?page=0\&size=20 & 首页帖子列表\\
+2 & /posts/hot?page=0\&size=20 & 热门帖子列表\\
+3 & /posts/search?keyword=测试\&page=0\&size=20 & 关键词搜索\\
+4 & /sections?page=0\&size=20 & 版块列表\\
+\bottomrule
+\end{longtable}
+
+\section{测试结果展示}
+\begin{longtable}{P{3.2cm}P{1.8cm}P{2.0cm}P{2.0cm}P{2.0cm}P{2.0cm}}
+\toprule
+场景 & 并发 & 持续时间 & 总请求 & 吞吐量 & 错误率\\
+\midrule
+STAB-01 短时持续混合访问 & 10 & 20 秒 & 60825 & 3041.10 req/s & 0.00\%\\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}{P{2.4cm}P{2.4cm}P{2.4cm}P{2.4cm}P{2.4cm}}
+\toprule
+平均响应 & P50 & P90 & P95 & P99\\
+\midrule
+3.29 ms & 3.05 ms & 4.44 ms & 5.34 ms & 7.18 ms\\
+\bottomrule
+\end{longtable}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    width=0.80\textwidth,
+    height=5.2cm,
+    xtick={1,2,3,4,5},
+    xticklabels={Avg,P50,P90,P95,P99},
+    ylabel={响应时间/ms},
+    ymin=0,
+    ymax=8.5,
+    ymajorgrids=true,
+    grid style={draw=gray!20},
+    axis line style={black!70},
+    tick style={black!70},
+    nodes near coords,
+    every node near coord/.append style={font=\small},
+    bar width=15pt,
+    enlarge x limits=0.16
+]
+\addplot[fill=academicGreen!75, draw=academicGreen!90!black] coordinates {(1,3.29) (2,3.05) (3,4.44) (4,5.34) (5,7.18)};
+\end{axis}
+\end{tikzpicture}
+\caption{稳定性测试响应时间分布}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    width=0.62\textwidth,
+    height=4.8cm,
+    xtick={1,2},
+    xticklabels={成功率,错误率},
+    ylabel={比例/\%},
+    ymin=0,
+    ymax=105,
+    ymajorgrids=true,
+    grid style={draw=gray!20},
+    axis line style={black!70},
+    tick style={black!70},
+    nodes near coords,
+    every node near coord/.append style={font=\small},
+    bar width=24pt,
+    enlarge x limits=0.28
+]
+\addplot[fill=academicGreen!75, draw=academicGreen!90!black] coordinates {(1,100.00) (2,0.00)};
+\end{axis}
+\end{tikzpicture}
+\caption{稳定性测试成功率与错误率}
+\end{figure}
+
+\section{图表设计说明}
+稳定性测试的响应时间图采用分位数柱状图，原因是本轮实验关注请求耗时是否集中以及是否存在长尾。Avg、P50、P90、P95、P99 五个指标标签较短，纵向柱状图可以保持较好的可读性。由于各分位数都在毫秒级同一数量级内，不需要使用对数坐标或断裂轴。
+
+成功与错误结果没有继续使用原始请求数绘图。原始成功请求为 60825，错误请求为 0，二者差异过大，若使用请求数柱状图，错误柱几乎不可见，图表会传达很少信息。因此报告改用成功率与错误率百分比图，直接表达“本轮持续访问没有错误”这一结论。该处理属于尺度适应性中的归一化方案，比断裂坐标更简洁。
+
+\section{测试结果分析}
+从错误率看，20 秒持续混合访问共完成 60825 次请求，成功 60825 次，错误 0 次，错误率为 0\%。这说明在短时持续请求下，公共浏览链路没有出现连接失败、超时或服务器错误。
+
+从响应时间看，平均响应时间为 3.29 ms，P95 为 5.34 ms，P99 为 7.18 ms，响应时间分布较集中。最大响应时间为 17.88 ms，没有出现明显长尾。吞吐量为 3041.10 req/s，说明本地 demo 环境下短时间持续请求比较平稳。
+
+从资源角度看，目标云服务器只有 2 GiB 内存，而监控快照已使用 1.16 GiB。正式稳定性测试应至少持续 30 分钟到 2 小时，并同步记录 CPU、内存、GC、数据库连接池和网络带宽。本轮结果只能证明同版本后端在本地短时持续访问下稳定，不能替代线上长稳压测。
+
+\section{测试有效性与局限}
+本次稳定性测试的有效性在于请求数量较多，并且使用混合公共接口持续访问，能够基本验证系统在短时间内不会因为重复请求而立即出错。测试结果同时记录了成功请求数、错误请求数、吞吐量和响应时间分位数，便于判断是否存在明显异常。
+
+局限性是持续时间不足，且没有按时间窗口拆分结果。如果只给出 20 秒整体平均值，可能掩盖前 5 秒和后 5 秒的差异。例如系统可能在开始阶段较慢，后续因缓存变快；也可能前期稳定，后期逐渐变慢。当前报告无法回答这种趋势问题。另外，本轮没有监控 JVM 堆、GC、线程数和数据库连接池，也没有检查测试结束后服务日志，因此稳定性结论仍属于短时验证。
+
+后续改进应把稳定性测试拆成多个时间窗口，例如每 30 秒统计一次 P95、错误率和吞吐量，并绘制趋势图。如果连续多个窗口指标保持接近，稳定性结论会更有说服力；如果某个窗口开始升高，就可以结合日志和资源监控定位原因。
+
+\section{缺陷与风险记录}
+\begin{longtable}{P{2.0cm}P{5.5cm}P{5.8cm}}
+\toprule
+编号 & 现象或风险 & 处理建议\\
+\midrule
+STAB-R1 & 20 秒持续时间较短，不能证明长期稳定 & 增加 30 分钟以上持续测试，并分窗口统计结果\\
+STAB-R2 & 未采集 JVM 和系统资源，无法判断稳定性余量 & 同步记录 CPU、内存、堆使用、GC 和线程数\\
+STAB-R3 & 只覆盖公共读接口，未触发写入和登录相关状态变化 & 增加登录、发帖、评论等混合业务流\\
+\bottomrule
+\end{longtable}
+
+\section{优化方案}
+\begin{enumerate}
+\item 上云部署后增加长期监控，重点看 JVM 堆、GC 次数、线程数、数据库连接池和系统内存。
+\item 对公共 GET 接口增加缓存，降低持续访问时数据库压力。
+\item 日志级别不要长期保持 DEBUG，避免稳定性测试时日志写入成为额外瓶颈。
+\item 稳定性测试正式执行时应增加 30 分钟、1 小时、2 小时三个时长档位，观察是否存在内存增长趋势。
+\end{enumerate}
+
+\section{小组性能观测点对比}
+\begin{longtable}{P{2.3cm}P{2.2cm}P{2.0cm}P{2.0cm}P{2.0cm}P{3.0cm}}
+\toprule
+测试类型 & 代表场景 & 并发/容量 & 吞吐量 & P95 & 结论\\
+\midrule
+负载测试 & 混合浏览 & 8 并发 & 1147.24 & 15.78 ms & 正常负载可用\\
+压力测试 & 搜索+列表 & 48 并发 & 2590.05 & 27.59 ms & 高并发仍无错误\\
+容量测试 & page size=100 & 12 并发 & 2337.80 & 7.95 ms & 大分页吞吐下降\\
+稳定性测试 & 混合持续访问 & 10 并发 & 3041.10 & 5.34 ms & 短时持续访问稳定\\
+\bottomrule
+\end{longtable}
+
+\section{实验收获}
+稳定性测试让我认识到，短时间内响应快并不等于系统长期稳定。本轮实验只有 20 秒，因此只能算课堂练习版短稳测试。真正上线前还应做更长时间的压测，并观察内存是否持续增长、线程是否泄漏、数据库连接是否被耗尽。报告中把这个限制写清楚，比直接编造长时间稳定性结果更可靠。
+
+\end{document}

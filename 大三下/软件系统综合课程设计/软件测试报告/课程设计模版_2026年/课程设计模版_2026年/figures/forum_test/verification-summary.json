@@ -1,0 +1,54 @@
+{
+  "generatedAt": "2026-06-09T01:06:25.062Z",
+  "frontend": "http://127.0.0.1:4173",
+  "backend": "http://127.0.0.1:8080/api",
+  "checks": [
+    {
+      "name": "后端版块接口",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "name": "管理员账号登录",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "name": "积分商城奖品列表",
+      "status": 200,
+      "ok": true,
+      "count": 2
+    },
+    {
+      "name": "我的兑换记录接口（回归 BUG-002）",
+      "status": 200,
+      "ok": true,
+      "count": 0
+    },
+    {
+      "name": "通知中心面板展开（回归 BUG-001）",
+      "ok": true,
+      "state": {
+        "hidden": false,
+        "display": "flex",
+        "aria": "通知列表",
+        "text": "通知\n全部已读\n\n暂无通知，安静得很。"
+      }
+    },
+    {
+      "name": "积分商城页面加载（回归 BUG-002）",
+      "ok": true,
+      "screenshot": "D:\\大三下\\软件系统综合课程设计\\软件测试报告\\swjtu_forum_report_work\\evidence\\20260609_fix\\BUG-002-rewards-redemptions.png"
+    },
+    {
+      "name": "移动端通知中心展开截图",
+      "ok": true,
+      "screenshot": "D:\\大三下\\软件系统综合课程设计\\软件测试报告\\swjtu_forum_report_work\\evidence\\20260609_fix\\BUG-001-notification-mobile.png"
+    }
+  ],
+  "screenshots": [
+    "D:\\大三下\\软件系统综合课程设计\\软件测试报告\\swjtu_forum_report_work\\evidence\\20260609_fix\\BUG-001-notification-desktop.png",
+    "D:\\大三下\\软件系统综合课程设计\\软件测试报告\\swjtu_forum_report_work\\evidence\\20260609_fix\\BUG-002-rewards-redemptions.png",
+    "D:\\大三下\\软件系统综合课程设计\\软件测试报告\\swjtu_forum_report_work\\evidence\\20260609_fix\\BUG-001-notification-mobile.png"
+  ]
+}
