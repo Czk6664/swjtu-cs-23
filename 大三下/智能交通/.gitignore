@@ -1,0 +1,8 @@
+node_modules/
+dist/
+build/
+.venv/
+__pycache__/
+*.pyc
+.env
+services/api/.task_state/
