@@ -1,0 +1,295 @@
+meta:
+  profile: engineering-review
+  source: generated
+  theme: high-contrast
+  layout: vertical
+  canvas: 1000x2200
+  routing: orthogonal
+  title: 客户购物活动图
+  description: 仿照参考图样式绘制的竖向客户购物活动图，包含客户、系统、供应商三个泳道。
+modules:
+  - id: customer
+    label: 客户
+    color: '#FFFFFF'
+  - id: system
+    label: 系统
+    color: '#FFFFFF'
+  - id: supplier
+    label: 供应商
+    color: '#FFFFFF'
+nodes:
+  - id: start
+    label: ' '
+    type: terminal
+    module: customer
+    size: small
+    position:
+      x: 160
+      'y': 80
+    style:
+      fillColor: '#000000'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: placeOrder
+    label: 下订单
+    type: process
+    module: customer
+    position:
+      x: 100
+      'y': 180
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: choosePayment
+    label: 选择支付方式
+    type: process
+    module: customer
+    position:
+      x: 100
+      'y': 320
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: forkPayment
+    label: ' '
+    type: process
+    module: system
+    size: small
+    position:
+      x: 460
+      'y': 440
+    style:
+      fillColor: '#000000'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: receivePayment
+    label: 收款
+    type: process
+    module: system
+    position:
+      x: 340
+      'y': 560
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: prepareDeliveryNote
+    label: 生成送货单
+    type: process
+    module: system
+    position:
+      x: 580
+      'y': 560
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: paymentSuccess
+    label: 收款成功？
+    type: decision
+    module: system
+    position:
+      x: 340
+      'y': 720
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: cancelOrTimeout
+    label: 取消订单
+    type: process
+    module: system
+    position:
+      x: 100
+      'y': 860
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: joinReady
+    label: ' '
+    type: process
+    module: system
+    size: small
+    position:
+      x: 460
+      'y': 900
+    style:
+      fillColor: '#000000'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: startDelivery
+    label: 开始送货
+    type: process
+    module: supplier
+    position:
+      x: 700
+      'y': 1040
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: updateItemStatus
+    label: 修改订单项状态
+    type: process
+    module: supplier
+    position:
+      x: 700
+      'y': 1180
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: notifySystem
+    label: 通知系统
+    type: process
+    module: supplier
+    position:
+      x: 700
+      'y': 1320
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: allDelivered
+    label: 全部商品已送货完成？
+    type: decision
+    module: system
+    position:
+      x: 460
+      'y': 1480
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: continueDelivery
+    label: 通知供应商继续送货
+    type: process
+    module: system
+    position:
+      x: 460
+      'y': 1660
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: completeOrder
+    label: 订单完成
+    type: process
+    module: system
+    position:
+      x: 220
+      'y': 1660
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+  - id: end
+    label: ' '
+    type: terminal
+    module: system
+    size: small
+    position:
+      x: 280
+      'y': 1840
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#000000'
+      fontColor: '#000000'
+      strokeWidth: 3
+edges:
+  - from: start
+    to: placeOrder
+    type: primary
+  - from: placeOrder
+    to: choosePayment
+    type: primary
+  - from: choosePayment
+    to: forkPayment
+    type: primary
+    waypoints:
+      - x: 160
+        'y': 440
+  - from: forkPayment
+    to: receivePayment
+    type: primary
+    waypoints:
+      - x: 400
+        'y': 500
+  - from: forkPayment
+    to: prepareDeliveryNote
+    type: primary
+    waypoints:
+      - x: 640
+        'y': 500
+  - from: receivePayment
+    to: paymentSuccess
+    type: primary
+  - from: paymentSuccess
+    to: cancelOrTimeout
+    type: primary
+    label: 否
+    waypoints:
+      - x: 220
+        'y': 790
+  - from: paymentSuccess
+    to: joinReady
+    type: primary
+    label: 是
+    waypoints:
+      - x: 460
+        'y': 790
+  - from: prepareDeliveryNote
+    to: joinReady
+    type: primary
+    waypoints:
+      - x: 640
+        'y': 900
+  - from: cancelOrTimeout
+    to: end
+    type: primary
+    waypoints:
+      - x: 160
+        'y': 1840
+  - from: joinReady
+    to: startDelivery
+    type: primary
+    waypoints:
+      - x: 760
+        'y': 980
+  - from: startDelivery
+    to: updateItemStatus
+    type: primary
+  - from: updateItemStatus
+    to: notifySystem
+    type: primary
+  - from: notifySystem
+    to: allDelivered
+    type: primary
+    waypoints:
+      - x: 580
+        'y': 1410
+  - from: allDelivered
+    to: completeOrder
+    type: primary
+    label: 是
+    waypoints:
+      - x: 280
+        'y': 1570
+  - from: completeOrder
+    to: end
+    type: primary
+  - from: allDelivered
+    to: continueDelivery
+    type: primary
+    label: 否
+  - from: continueDelivery
+    to: startDelivery
+    type: primary
+    waypoints:
+      - x: 880
+        'y': 1730
+      - x: 880
+        'y': 1110

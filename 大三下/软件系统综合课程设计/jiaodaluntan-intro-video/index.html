@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0A1628; --bg2: #0F1E36; --bg3: #1A2A4A;
+      --panel: rgba(255,255,255,0.06);
+      --panel-strong: rgba(255,255,255,0.10);
+      --t1: #FFFFFF; --t2: #B8C5D6; --t3: #6B7F92;
+      --blue: #0071E3; --blue2: #36A3FF; --deep: #003D7A; --ink:#E8F0FF;
+      --accent: #00E5FF; --accent-glow: rgba(0,229,255,0.4);
+      --sep: rgba(0,229,255,0.15);
+      --shadow: 0 20px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(0,113,227,0.15);
+      --soft-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 1px 3px rgba(0,113,227,0.08);
+      --glow: 0 0 30px rgba(0,229,255,0.15);
+      --font-d: "Inter", "Helvetica Neue", Arial, sans-serif;
+      --font-m: "SF Mono", "JetBrains Mono", "Consolas", "Menlo", monospace;
+    }
+    body {
+      font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+      color: var(--t1);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    /* ---------- Deep atmospheric background ---------- */
+    #bg0 {
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(0,113,227,0.18), transparent 40%),
+        radial-gradient(ellipse at 80% 80%, rgba(54,163,255,0.12), transparent 40%),
+        radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.04), transparent 60%),
+        linear-gradient(135deg, #0A1628 0%, #0F1E36 40%, #1A2A4A 100%) !important;
+    }
+    #bg0::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.25;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.06) 1px, transparent 1px);
+      background-size: 80px 80px;
+      mask-image: linear-gradient(120deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+      -webkit-mask-image: linear-gradient(120deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+    }
+    #bg0::after {
+      content: "";
+      position: absolute;
+      width: 1200px;
+      height: 1200px;
+      right: -300px;
+      bottom: -500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,113,227,0.10), rgba(0,229,255,0.03) 50%, transparent 70%);
+    }
+    /* ---------- Persistent HUD ---------- */
+    .hud {
+      position: absolute;
+      inset: 0;
+      z-index: 80;
+      pointer-events: none;
+      font-family: "SF Mono", "JetBrains Mono", Consolas, Menlo, monospace;
+    }
+    .hud-topbar {
+      position: absolute;
+      left: 56px; right: 56px; top: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      color: var(--t2);
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(0,229,255,0.08);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .hud-brand { display: flex; align-items: center; gap: 12px; font-weight: 700; color: var(--t1); }
+    .hud-brand .glyph {
+      width: 32px; height: 32px; border-radius: 9px;
+      background: linear-gradient(135deg, rgba(0,229,255,0.15), rgba(0,113,227,0.25));
+      border: 1px solid rgba(0,229,255,0.30);
+      box-shadow: 0 0 20px rgba(0,229,255,0.20), inset 0 1px 0 rgba(255,255,255,0.10);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent); font-size: 16px; font-weight: 800; font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+    }
+    .hud-brand .nm { font-family: "Inter", "Helvetica Neue", Arial, sans-serif; font-size: 17px; letter-spacing: 0.02em; color: var(--t1); }
+    .hud-meta { display: flex; align-items: center; gap: 14px; }
+    .hud-dot { width: 7px; height: 7px; border-radius: 50%; background: #2BB673; box-shadow: 0 0 0 4px rgba(43,182,115,0.15), 0 0 12px rgba(43,182,115,0.4); }
+    .hud-pill { padding: 4px 12px; border: 1px solid rgba(0,229,255,0.15); border-radius: 999px; background: rgba(0,229,255,0.05); font-size: 13px; color: var(--accent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    .hud-divider { width: 1px; height: 14px; background: rgba(0,229,255,0.15); }
+
+    .hud-chapters {
+      position: absolute;
+      left: 50%; bottom: 30px;
+      transform: translateX(-50%);
+      display: flex; gap: 8px; align-items: center;
+    }
+    .hud-ch { width: 34px; height: 4px; border-radius: 2px; overflow: hidden; position: relative; background: rgba(255,255,255,0.08); }
+    .hud-ch-fill { position: absolute; inset: 0; background: linear-gradient(90deg, var(--blue), var(--accent)); transform: scaleX(0); transform-origin: left; box-shadow: 0 0 8px var(--accent-glow); }
+
+    .hud-progress {
+      position: absolute;
+      left: 56px; right: 56px; bottom: 18px;
+      height: 2px;
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+    }
+    .hud-progress-fill { position: absolute; inset: 0; transform: scaleX(0); transform-origin: left; background: linear-gradient(90deg, var(--blue), var(--accent)); box-shadow: 0 0 8px var(--accent-glow); }
+
+    .scene {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+    .scene::before {
+      content: "";
+      position: absolute;
+      top: 58px;
+      right: 82px;
+      width: 220px;
+      height: 220px;
+      border-radius: 48px;
+      border: 1px solid rgba(0,229,255,0.06);
+      transform: rotate(18deg);
+      background: linear-gradient(135deg, rgba(0,229,255,0.03), rgba(0,113,227,0.02));
+      pointer-events: none;
+    }
+    .scene::after {
+      content: "";
+      position: absolute;
+      left: 90px;
+      right: 90px;
+      bottom: 96px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,229,255,0.15), transparent);
+      pointer-events: none;
+    }
+    .sc { position: relative; z-index: 2; display: flex; flex-direction: column; width: 100%; height: 100%; padding: 78px 90px 110px; }
+    .sc-row { flex-direction: row; align-items: center; }
+    .device { border-radius: 22px; overflow: hidden; box-shadow: var(--shadow); background: #fff; }
+    .device img, .device video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center center; }
+    /* ---------- Product-style demo window with glow ---------- */
+    .vclip {
+      position: absolute;
+      display: block;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow:
+        0 30px 80px rgba(0,0,0,0.5),
+        0 8px 24px rgba(0,113,227,0.15),
+        0 0 0 1px rgba(255,255,255,0.08),
+        0 0 0 6px rgba(0,229,255,0.06);
+      background: #fff;
+      object-fit: cover;
+      object-position: center center;
+      outline: 1px solid rgba(0,229,255,0.12);
+    }
+    .freeze-frame {
+      box-shadow: none !important;
+      outline: none !important;
+      background: transparent !important;
+    }
+    .lbl {
+      align-self: flex-start;
+      padding: 8px 16px 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,229,255,0.25);
+      background: rgba(0,229,255,0.06);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 0 20px rgba(0,229,255,0.08);
+      font-family: "SF Mono", "JetBrains Mono", Consolas, Menlo, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .lbl::before {
+      content: "";
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+    .h1 {
+      font-size: 58px;
+      font-weight: 800;
+      color: var(--t1);
+      line-height: 1.06;
+      letter-spacing: -0.01em;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .h2 { font-size: 22px; font-weight: 400; color: var(--t2); line-height: 1.5; }
+    .sep { height: 1px; background: linear-gradient(90deg, transparent, rgba(0,229,255,0.20), transparent); }
+    .tag {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 980px;
+      border: 1px solid rgba(0,229,255,0.20);
+      background: rgba(0,229,255,0.05);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: var(--accent);
+      box-shadow: 0 0 16px rgba(0,229,255,0.06);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    /* ---------- Feature rows: glassmorphism with accent dot ---------- */
+    .fr {
+      position: relative;
+      margin: 9px 0;
+      padding: 16px 18px 16px 26px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+      font-size: 21px;
+      font-weight: 500;
+      color: var(--ink);
+      transition: all 0.3s ease;
+    }
+    .fr::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 12px; bottom: 12px;
+      width: 3px;
+      background: linear-gradient(180deg, var(--accent), var(--blue));
+      border-radius: 0 3px 3px 0;
+      box-shadow: 0 0 12px rgba(0,229,255,0.30);
+    }
+    .fr::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      display: none;
+    }
+    .fr:last-child { border-bottom: none; }
+    .sn { font-size: 52px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; text-shadow: 0 0 20px rgba(0,229,255,0.30); }
+    .sl { font-size: 14px; font-weight: 600; color: var(--t2); margin-top: 4px; letter-spacing: 0.04em; }
+    /* ---------- Highlight cards: glassmorphism with glow ---------- */
+    .card {
+      position: relative;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 22px 24px 22px 30px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06);
+      overflow: hidden;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--accent), var(--blue));
+      box-shadow: 0 0 12px rgba(0,229,255,0.30);
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      right: -30px; top: -30px;
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,229,255,0.08), transparent 70%);
+      pointer-events: none;
+    }
+    .card .tt { font-size: 22px; font-weight: 700; color: var(--t1); margin-bottom: 6px; letter-spacing: -0.005em; }
+    .card .dd { font-size: 16px; font-weight: 400; color: var(--t2); line-height: 1.45; }
+    /* ---------- Architecture layers: glowing connectors ---------- */
+    .layer {
+      position: relative;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 20px 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .layer .nm { font-size: 20px; font-weight: 700; color: var(--t1); }
+    .layer .dt { font-family: "SF Mono", "JetBrains Mono", Consolas, Menlo, monospace; font-size: 16px; font-weight: 600; color: var(--accent); padding: 4px 12px; border-radius: 8px; background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.15); }
+    .map-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 20px;
+      font-weight: 400;
+      padding: 15px 22px;
+      margin: 7px 0;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    }
+    .map-row:last-child { border-bottom: none; }
+    .map-row .left { color: var(--accent); width: 200px; text-align: right; font-weight: 700; }
+    .map-row .arrow { color: var(--accent); font-weight: 600; }
+    .map-row .right { color: var(--t1); }
+    .sub-clip {
+      position: absolute;
+      inset: 0;
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      padding-bottom:46px;
+      pointer-events:none;
+    }
+    .sub-text {
+      color: var(--t1);
+      font-size:27px;
+      padding:11px 30px 12px;
+      border-radius:999px;
+      letter-spacing:1px;
+      font-weight:500;
+      background: rgba(10,22,40,0.80);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(0,229,255,0.15);
+      border-bottom: 2px solid rgba(0,229,255,0.30);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 20px rgba(0,229,255,0.08);
+      text-shadow: none;
+    }
+    /* ---------- Cover / ending gradient title + glow ---------- */
+    #s1b, #s15b {
+      background: linear-gradient(135deg, #FFFFFF 0%, #36A3FF 50%, #00E5FF 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: none;
+      filter: drop-shadow(0 8px 32px rgba(0,229,255,0.30));
+    }
+    #s1a, #s15a {
+      box-shadow: 0 0 20px rgba(0,229,255,0.30), 0 0 40px rgba(0,229,255,0.15);
+      background: var(--accent) !important;
+    }
+    /* ---------- Decorative geometric rings ---------- */
+    .deco-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(0,229,255,0.08);
+      pointer-events: none;
+    }
+    .deco-dot {
+      position: absolute;
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      pointer-events: none;
+    }
+    /* ---------- Watermark background text ---------- */
+    .watermark {
+      position: absolute;
+      font-size: 200px;
+      font-weight: 900;
+      color: rgba(255,255,255,0.015);
+      letter-spacing: -0.05em;
+      pointer-events: none;
+      z-index: 1;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+<div data-hf-id="hf-root" id="root" data-composition-id="swjtu-forum-intro" data-start="0" data-duration="81.8" data-width="1920" data-height="1080">
+
+  <!-- TRACK 0: BG -->
+  <div data-hf-id="hf-bg0" id="bg0" class="clip" data-start="0" data-duration="81.8" data-track-index="0" style="position:absolute;inset:0;background:var(--bg);"></div>
+
+  <!-- Decorative background elements -->
+  <div data-hf-id="hf-deco1" class="clip" data-start="0" data-duration="81.8" data-track-index="8" style="position:absolute;inset:0;pointer-events:none;">
+    <div data-hf-id="hf-jbqw" class="deco-ring" style="width:400px;height:400px;left:-100px;top:-100px;opacity:0.3;"></div>
+    <div data-hf-id="hf-ojaq" class="deco-ring" style="width:600px;height:600px;right:-200px;bottom:-200px;opacity:0.2;"></div>
+    <div data-hf-id="hf-v2ez" class="deco-dot" style="left:15%;top:20%;"></div>
+    <div data-hf-id="hf-rqkz" class="deco-dot" style="left:85%;top:30%;"></div>
+    <div data-hf-id="hf-036a" class="deco-dot" style="left:70%;top:75%;"></div>
+    <div data-hf-id="hf-g7xo" class="deco-dot" style="left:25%;top:80%;"></div>
+  </div>
+
+  <!-- Persistent HUD overlay -->
+  <div data-hf-id="hf-goo3" id="hud" class="hud clip" data-start="0" data-duration="81.8" data-track-index="7" style="position:absolute;inset:0;">
+    <div data-hf-id="hf-2d7c" class="hud-topbar">
+      <div data-hf-id="hf-vaab" class="hud-brand">
+        <span data-hf-id="hf-oecr" class="glyph">交</span>
+        <span data-hf-id="hf-xgg5" class="nm">交大论坛 · 课程设计汇报</span>
+      </div>
+      <div data-hf-id="hf-5m9n" class="hud-meta">
+        <span data-hf-id="hf-sy0a" class="hud-dot"></span>
+        <span data-hf-id="hf-dx01">SWJTU FORUM</span>
+        <span data-hf-id="hf-ibgo" class="hud-divider"></span>
+        <span data-hf-id="hf-dbpa" class="hud-pill">Spring Boot 3.2</span>
+        <span data-hf-id="hf-k9m2" class="hud-pill">Vite MPA</span>
+      </div>
+    </div>
+    <div data-hf-id="hf-ff5e" class="hud-chapters" id="hud-chapters"></div>
+    <div data-hf-id="hf-vxpp" class="hud-progress"><div data-hf-id="hf-qgw4" class="hud-progress-fill" id="hud-progress-fill"></div></div>
+  </div>
+
+  <!-- S1 Opening 0-3.4 T1 -->
+  <div data-hf-id="hf-s01" id="s1" class="clip scene" data-start="0" data-duration="3.4" data-track-index="1">
+    <div data-hf-id="hf-s01a" class="sc" style="justify-content:center;align-items:center;text-align:center;gap:24px;">
+      <div data-hf-id="hf-s01b" id="s1a" style="width:40px;height:3px;border-radius:2px;background:var(--blue);"></div>
+      <h1 data-hf-id="hf-s01c" id="s1b" style="font-size:120px;font-weight:700;letter-spacing:-3px;line-height:1;">交大论坛</h1>
+      <p data-hf-id="hf-s01d" id="s1c" style="font-size:24px;color:var(--accent);letter-spacing:4px;font-weight:400;">全栈校园社区平台</p>
+      <div data-hf-id="hf-s01e" id="s1d" class="sep" style="width:160px;margin:8px 0;"></div>
+      <div data-hf-id="hf-s01f" id="s1e" style="display:flex;gap:10px;">
+        <span data-hf-id="hf-s01g" class="tag" id="s1t1">Spring Boot 3.2</span>
+        <span data-hf-id="hf-s01h" class="tag" id="s1t2">Vite MPA</span>
+        <span data-hf-id="hf-s01i" class="tag" id="s1t3">JWT</span>
+        <span data-hf-id="hf-s01j" class="tag" id="s1t4">四维推荐</span>
+        <span data-hf-id="hf-s01k" class="tag" id="s1t5">17 页面</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2 Homepage 3-7.4 T2 -->
+  <div data-hf-id="hf-s02" id="s2" class="clip scene" data-start="3" data-duration="5.2" data-track-index="2">
+    <div data-hf-id="hf-s02a" class="sc sc-row" style="gap:42px;">
+      <div data-hf-id="hf-s02b" style="flex:0 0 63%;">
+        <div data-hf-id="hf-s02c" style="width:100%;aspect-ratio:16/9;"></div>
+      </div>
+      <div data-hf-id="hf-s02e" style="flex:0 0 31%;display:flex;flex-direction:column;gap:14px;">
+        <div data-hf-id="hf-s02f" id="s2a" class="lbl">RECOMMENDATION</div>
+        <div data-hf-id="hf-s02g" id="s2b" class="h1">智能推荐首页</div>
+        <p data-hf-id="hf-s02h" id="s2c" class="h2">四维加权 · 后台可调</p>
+        <div data-hf-id="hf-s02i" style="margin-top:8px;">
+          <div data-hf-id="hf-s02j" id="s2f1" class="fr">热度权重排序</div>
+          <div data-hf-id="hf-s02k" id="s2f2" class="fr">用户标签匹配</div>
+          <div data-hf-id="hf-s02l" id="s2f3" class="fr">社交关系推荐</div>
+          <div data-hf-id="hf-s02m" id="s2f4" class="fr">时效衰减机制</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3 Login Experience 7-11.4 T1 -->
+  <div data-hf-id="hf-s03" id="s3" class="clip scene" data-start="7.8" data-duration="4.8" data-track-index="1">
+    <div data-hf-id="hf-s03a" class="sc sc-row" style="gap:42px;">
+      <div data-hf-id="hf-s03b" style="flex:0 0 31%;display:flex;flex-direction:column;gap:14px;">
+        <div data-hf-id="hf-s03c" id="s3a" class="lbl">EXPERIENCE</div>
+        <div data-hf-id="hf-s03d" id="s3b" class="h1">登录体验</div>
+        <p data-hf-id="hf-s03e" id="s3c" class="h2">安全注册 · 快速登录 · 无缝体验</p>
+        <div data-hf-id="hf-s03f" style="margin-top:8px;">
+          <div data-hf-id="hf-s03g" id="s3f1" class="fr">安全注册登录</div>
+          <div data-hf-id="hf-s03h" id="s3f2" class="fr">JWT 无状态认证</div>
+          <div data-hf-id="hf-s03i" id="s3f3" class="fr">角色权限控制</div>
+          <div data-hf-id="hf-s03j" id="s3f4" class="fr">个人信息管理</div>
+        </div>
+      </div>
+      <div data-hf-id="hf-s03k" style="flex:0 0 63%;">
+        <div data-hf-id="hf-s03l" style="width:100%;aspect-ratio:16/9;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4 Create Post 11-15.4 T2 -->
+  <div data-hf-id="hf-s04" id="s4" class="clip scene" data-start="12.2" data-duration="7" data-track-index="2">
+    <div data-hf-id="hf-s04a" class="sc sc-row" style="gap:42px;">
+      <div data-hf-id="hf-s04b" style="flex:0 0 63%;">
+        <div data-hf-id="hf-s04c" style="width:100%;aspect-ratio:16/9;"></div>
+      </div>
+      <div data-hf-id="hf-s04e" style="flex:0 0 31%;display:flex;flex-direction:column;gap:14px;">
+        <div data-hf-id="hf-s04f" id="s4a" class="lbl">CONTENT</div>
+        <div data-hf-id="hf-s04g" id="s4b" class="h1">内容创作</div>
+        <p data-hf-id="hf-s04h" id="s4c" class="h2">富文本 · 标签 · 版块</p>
+        <div data-hf-id="hf-s04i" style="margin-top:8px;">
+          <div data-hf-id="hf-s04j" id="s4f1" class="fr">富文本编辑器</div>
+          <div data-hf-id="hf-s04k" id="s4f2" class="fr">版块与标签选择</div>
+          <div data-hf-id="hf-s04l" id="s4f3" class="fr">草稿自动保存</div>
+          <div data-hf-id="hf-s04m" id="s4f4" class="fr">发布审核流程</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5 Interaction 15-19.4 T1 -->
+  <div data-hf-id="hf-s05" id="s5" class="clip scene" data-start="18.8" data-duration="8.5" data-track-index="1">
+    <div data-hf-id="hf-s05a" class="sc sc-row" style="gap:42px;">
+      <div data-hf-id="hf-s05b" style="flex:0 0 61%;">
+        <div data-hf-id="hf-s05va" style="width:100%;aspect-ratio:16/9;"></div>
+      </div>
+      <div data-hf-id="hf-s05vc" style="flex:0 0 31%;display:flex;flex-direction:column;gap:14px;">
+        <div data-hf-id="hf-s05c" id="s5a" class="lbl">INTERACTION</div>
+        <div data-hf-id="hf-s05d" id="s5b" class="h1">社区互动</div>
+        <p data-hf-id="hf-s05vd" id="s5c" class="h2">点赞 · 收藏 · 评论 · 举报</p>
+        <div data-hf-id="hf-s05e" style="margin-top:8px;" id="s5g">
+          <div data-hf-id="hf-s05f" id="s5c1" class="fr">点赞帖子与评论</div>
+          <div data-hf-id="hf-s05j" id="s5c2" class="fr">个人收藏夹</div>
+          <div data-hf-id="hf-s05n" id="s5c3" class="fr">楼中楼评论回复</div>
+          <div data-hf-id="hf-s05r" id="s5c4" class="fr">多类型内容举报</div>
+          <div data-hf-id="hf-s05v" id="s5c5" class="fr">浏览足迹记录</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6 Search 19-23.4 T2 -->
+  <div data-hf-id="hf-s06" id="s6" class="clip scene" data-start="26.9" data-duration="8.2" data-track-index="2">
+    <div data-hf-id="hf-s06a" class="sc sc-row" style="gap:42px;">
+      <div data-hf-id="hf-s06b" style="flex:0 0 31%;display:flex;flex-direction:column;gap:14px;">
+        <div data-hf-id="hf-s06c" id="s6a" class="lbl">DISCOVERY</div>
+        <div data-hf-id="hf-s06d" id="s6b" class="h1">校园圈子</div>
+        <p data-hf-id="hf-s06e" id="s6c" class="h2">版块 · 标签 · 搜索 · 推荐</p>
+        <div data-hf-id="hf-s06f" style="margin-top:8px;" id="s6g">
+          <div data-hf-id="hf-s06g" id="s6c1" class="fr">版块分类导航</div>
+          <div data-hf-id="hf-s06h" id="s6c2" class="fr">兴趣标签体系</div>
+          <div data-hf-id="hf-s06i" id="s6c3" class="fr">关键词全文搜索</div>
+          <div data-hf-id="hf-s06j" id="s6c4" class="fr">不感兴趣反馈</div>
+        </div>
+      </div>
+      <div data-hf-id="hf-s06k" style="flex:0 0 61%;">
+        <div data-hf-id="hf-s06l" style="width:100%;aspect-ratio:16/9;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7 Growth 23-27.4 T1 -->
+  <div data-hf-id="hf-s07" id="s7" class="clip scene" data-start="34.7" data-duration="7.2" data-track-index="1">
+    <div data-hf-id="hf-s07a" class="sc sc-row" style="gap:42px;">
+      <div data-hf-id="hf-s07b" style="flex:0 0 61%;">
+        <div data-hf-id="hf-s07c" style="width:100%;aspect-ratio:16/9;"></div>
+      </div>
+      <div data-hf-id="hf-s07e" style="flex:0 0 31%;display:flex;flex-direction:column;gap:14px;">
+        <div data-hf-id="hf-s07f" id="s7a" class="lbl">GROWTH</div>
+        <div data-hf-id="hf-s07g" id="s7b" class="h1">成长中心</div>
+        <p data-hf-id="hf-s07h" id="s7c" class="h2">签到 · 积分 · 等级 · 徽章</p>
+        <div data-hf-id="hf-s07i" style="margin-top:8px;">
+          <div data-hf-id="hf-s07j" id="s7f1" class="fr">每日签到奖励</div>
+          <div data-hf-id="hf-s07k" id="s7f2" class="fr">积分获取与消费</div>
+          <div data-hf-id="hf-s07l" id="s7f3" class="fr">经验等级体系</div>
+          <div data-hf-id="hf-s07m" id="s7f4" class="fr">积分明细历史</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8 Rewards 27-31.4 T2 -->
+  <div data-hf-id="hf-s08" id="s8" class="clip scene" data-start="41.5" data-duration="6.2" data-track-index="2">
+    <div data-hf-id="hf-s08a" class="sc sc-row" style="gap:42px;">
+      <div data-hf-id="hf-s08b" style="flex:0 0 31%;display:flex;flex-direction:column;gap:14px;">
+        <div data-hf-id="hf-s08c" id="s8a" class="lbl">REWARDS</div>
+        <div data-hf-id="hf-s08d" id="s8b" class="h1">积分商城</div>
+        <p data-hf-id="hf-s08e" id="s8c" class="h2">积分兑换实物与虚拟奖品</p>
+        <div data-hf-id="hf-s08f" style="margin-top:8px;">
+          <div data-hf-id="hf-s08g" id="s8f1" class="fr">商品浏览与兑换</div>
+          <div data-hf-id="hf-s08h" id="s8f2" class="fr">库存实时扣减</div>
+          <div data-hf-id="hf-s08i" id="s8f3" class="fr">兑换记录查询</div>
+          <div data-hf-id="hf-s08j" id="s8f4" class="fr">管理员审核发放</div>
+        </div>
+      </div>
+      <div data-hf-id="hf-s08k" style="flex:0 0 61%;">
+        <div data-hf-id="hf-s08l" style="width:100%;aspect-ratio:16/9;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S9 Social 31-35.4 T1 -->
+  <div data-hf-id="hf-s09" id="s9" class="clip scene" data-start="47.3" data-duration="8.5" data-track-index="1">
+    <div data-hf-id="hf-s09a" class="sc sc-row" style="gap:42px;">
+      <div data-hf-id="hf-s09b" style="flex:0 0 61%;">
+        <div data-hf-id="hf-s09va" style="width:100%;aspect-ratio:16/9;"></div>
+      </div>
+      <div data-hf-id="hf-s09c" style="flex:0 0 31%;display:flex;flex-direction:column;gap:14px;">
+        <div data-hf-id="hf-s09d" id="s9a" class="lbl">SOCIAL</div>
+        <div data-hf-id="hf-s09e" id="s9b" class="h1">社交与通知</div>
+        <p data-hf-id="hf-s09f" id="s9c" class="h2">关注 · 粉丝 · 通知 · 个人主页</p>
+        <div data-hf-id="hf-s09g" style="margin-top:8px;" id="s9g">
+          <div data-hf-id="hf-s09h" id="s9c1" class="fr">关注与粉丝系统</div>
+          <div data-hf-id="hf-s09i" id="s9c2" class="fr">多类型消息通知</div>
+          <div data-hf-id="hf-s09j" id="s9c3" class="fr">个人主页与资料</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S10 Admin Dashboard 35-39.4 T2 -->
+  <div data-hf-id="hf-s10" id="s10" class="clip scene" data-start="55.4" data-duration="5.2" data-track-index="2">
+    <div data-hf-id="hf-s10a" class="sc" style="gap:20px;">
+      <div data-hf-id="hf-s10b" style="display:flex;align-items:baseline;gap:20px;">
+        <div data-hf-id="hf-s10c" id="s10a" class="lbl">ADMIN</div>
+        <div data-hf-id="hf-s10d" id="s10b" class="h1" style="font-size:48px;">管理仪表盘</div>
+        <div data-hf-id="hf-s10e" style="flex:1;"></div>
+      </div>
+      <div data-hf-id="hf-s10p" class="sep" id="s10sep"></div>
+      <div data-hf-id="hf-s10q" style="flex:1;min-height:0;"></div>
+    </div>
+  </div>
+
+  <!-- S11 Admin Features 39-43.4 T1 -->
+  <div data-hf-id="hf-s11" id="s11" class="clip scene" data-start="60.2" data-duration="12.4" data-track-index="1">
+    <div data-hf-id="hf-s11a" class="sc sc-row" style="gap:42px;">
+      <div data-hf-id="hf-s11b" style="flex:0 0 31%;display:flex;flex-direction:column;gap:14px;">
+        <div data-hf-id="hf-s11c" id="s11a" class="lbl">MODERATION</div>
+        <div data-hf-id="hf-s11d" id="s11b" class="h1">管理功能矩阵</div>
+        <p data-hf-id="hf-s11e" id="s11c" class="h2">审核 · 举报 · 用户 · 版块 · 调控</p>
+        <div data-hf-id="hf-s11f" style="margin-top:8px;" id="s11g">
+          <div data-hf-id="hf-s11g" id="s11c1" class="fr">内容审核与评论管理</div>
+          <div data-hf-id="hf-s11h" id="s11c2" class="fr">举报队列与审核日志</div>
+          <div data-hf-id="hf-s11i" id="s11c3" class="fr">用户封禁与角色权限</div>
+          <div data-hf-id="hf-s11j" id="s11c4" class="fr">版块增删改与排序</div>
+          <div data-hf-id="hf-s11k" id="s11c5" class="fr">推荐权重动态调控</div>
+          <div data-hf-id="hf-s11l" id="s11c6" class="fr">数据统计与趋势分析</div>
+        </div>
+      </div>
+      <div data-hf-id="hf-s11m" style="flex:0 0 61%;">
+        <div data-hf-id="hf-s11n" style="width:100%;aspect-ratio:16/9;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S12 Architecture 43-47.4 T2 -->
+  <div data-hf-id="hf-s12" id="s12" class="clip scene" data-start="72.2" data-duration="5" data-track-index="2">
+    <div data-hf-id="hf-s12a" class="sc sc-row" style="gap:72px;">
+      <div data-hf-id="hf-s12b" style="flex:1;display:flex;flex-direction:column;gap:14px;">
+        <div data-hf-id="hf-s12c" id="s12a" class="lbl">ARCHITECTURE</div>
+        <div data-hf-id="hf-s12d" id="s12b" class="h1" style="font-size:48px;">技术架构</div>
+        <div data-hf-id="hf-s12e" style="display:flex;flex-direction:column;gap:6px;margin-top:8px;">
+          <div data-hf-id="hf-s12f" id="s12l1" class="layer" style="border-left:3px solid #00E5FF;"><span data-hf-id="hf-s12g" class="nm">前端 · Vite MPA</span><span data-hf-id="hf-s12h" class="dt">17 页面</span></div>
+          <div data-hf-id="hf-s12i" id="s12c1" style="width:1.5px;height:12px;background:var(--sep);margin:0 auto;"></div>
+          <div data-hf-id="hf-s12j" id="s12l2" class="layer" style="border-left:3px solid #34C759;"><span data-hf-id="hf-s12k" class="nm">服务层 · Spring Boot</span><span data-hf-id="hf-s12l" class="dt">13 Service</span></div>
+          <div data-hf-id="hf-s12m" id="s12c2" style="width:1.5px;height:12px;background:var(--sep);margin:0 auto;"></div>
+          <div data-hf-id="hf-s12n" id="s12l3" class="layer" style="border-left:3px solid #FF9500;"><span data-hf-id="hf-s12o" class="nm">数据层 · MySQL / H2</span><span data-hf-id="hf-s12p" class="dt">24 张表</span></div>
+        </div>
+        <div data-hf-id="hf-s12q" id="s12t" style="display:flex;gap:8px;margin-top:8px;">
+          <span data-hf-id="hf-s12r" class="tag" id="s12k1">JWT</span>
+          <span data-hf-id="hf-s12s" class="tag" id="s12k2">RBAC</span>
+          <span data-hf-id="hf-s12t" class="tag" id="s12k3">AOP</span>
+          <span data-hf-id="hf-s12u" class="tag" id="s12k4">Redis</span>
+        </div>
+      </div>
+      <div data-hf-id="hf-s12v" style="width:480px;display:flex;flex-direction:column;gap:14px;">
+        <div data-hf-id="hf-s12w" id="s12ia" class="lbl">HIGHLIGHTS</div>
+        <div data-hf-id="hf-s12x" id="s12ib" style="font-size:32px;font-weight:700;margin-bottom:4px;color:var(--t1);">创新亮点</div>
+        <div data-hf-id="hf-s12y" id="s12i1" class="card"><div data-hf-id="hf-s12z" class="tt">小红书式体验</div><div data-hf-id="hf-s1a1" class="dd">瀑布流 · 响应式 · 移动适配</div></div>
+        <div data-hf-id="hf-s1a2" id="s12i2" class="card"><div data-hf-id="hf-s1a3" class="tt">四维推荐引擎</div><div data-hf-id="hf-s1a4" class="dd">热度 × 标签 × 社交 × 时效</div></div>
+        <div data-hf-id="hf-s1a5" id="s12i3" class="card"><div data-hf-id="hf-s1a6" class="tt">成长激励闭环</div><div data-hf-id="hf-s1a7" class="dd">签到 → 积分 → 等级 → 商城</div></div>
+        <div data-hf-id="hf-s1a8" id="s12i4" class="card"><div data-hf-id="hf-s1a9" class="tt">全链路治理</div><div data-hf-id="hf-s1b0" class="dd">审核 · 举报 · 调控 · 仪表盘</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S15 Ending -->
+  <div data-hf-id="hf-s15" id="s15" class="clip scene" data-start="76.8" data-duration="5" data-track-index="1">
+    <div data-hf-id="hf-s15a" class="sc" style="justify-content:center;align-items:center;text-align:center;gap:24px;">
+      <div data-hf-id="hf-s15b" id="s15a" style="width:40px;height:3px;border-radius:2px;background:var(--blue);"></div>
+      <h1 data-hf-id="hf-s15c" id="s15b" style="font-size:96px;font-weight:700;letter-spacing:-2px;line-height:1;">交大论坛</h1>
+      <p data-hf-id="hf-s15d" id="s15c" style="font-size:20px;color:var(--accent);font-weight:500;">http://47.108.218.39:8082/</p>
+      <div data-hf-id="hf-s15e" id="s15d" class="sep" style="width:120px;margin:8px 0;"></div>
+      <p data-hf-id="hf-s15f" id="s15e" style="font-size:22px;color:var(--t3);letter-spacing:6px;font-weight:400;">感谢观看</p>
+    </div>
+  </div>
+
+  <!-- Operation videos: top-level timed clips (NOT nested inside scene clips) -->
+  <video data-hf-id="hf-v2" id="v2" class="clip vclip" data-start="3" data-duration="5.2" data-track-index="4" src="assets/cropped/首页帖子浏览.mp4" muted playsinline preload="auto" autoplay style="left:52px;top:198px;width:1120px;height:700px;"></video>
+  <video data-hf-id="hf-v3" id="v3" class="clip vclip" data-start="7.8" data-duration="4.8" data-track-index="5" src="assets/cropped/登录视频.mp4" muted playsinline preload="auto" autoplay style="left:748px;top:198px;width:1120px;height:700px;"></video>
+  <video data-hf-id="hf-v4" id="v4" class="clip vclip" data-start="12.2" data-duration="7" data-track-index="4" src="assets/cropped/发布新帖子.mp4" muted playsinline preload="auto" autoplay style="left:52px;top:198px;width:1120px;height:700px;"></video>
+  <video data-hf-id="hf-v5" id="v5" class="clip vclip" data-start="18.8" data-duration="8.5" data-track-index="5" src="assets/cropped/点赞收藏.mp4" muted playsinline preload="auto" autoplay style="left:52px;top:205px;width:1120px;height:700px;"></video>
+  <video data-hf-id="hf-v6" id="v6" class="clip vclip" data-start="26.9" data-duration="8.2" data-track-index="4" src="assets/cropped/校园圈子.mp4" muted playsinline preload="auto" autoplay style="left:748px;top:205px;width:1120px;height:700px;"></video>
+  <video data-hf-id="hf-v7" id="v7" class="clip vclip" data-start="34.7" data-duration="7.2" data-track-index="5" src="assets/cropped/签到与成就徽章展示.mp4" muted playsinline preload="auto" autoplay style="left:52px;top:205px;width:1120px;height:700px;"></video>
+  <video data-hf-id="hf-v8" id="v8" class="clip vclip" data-start="41.5" data-duration="6.2" data-track-index="4" src="assets/cropped/积分商城积分兑换.mp4" muted playsinline preload="auto" autoplay style="left:748px;top:205px;width:1120px;height:700px;"></video>
+  <video data-hf-id="hf-v9" id="v9" class="clip vclip" data-start="47.3" data-duration="8.5" data-track-index="5" src="assets/cropped/通知展示.mp4" muted playsinline preload="auto" autoplay style="left:52px;top:205px;width:1120px;height:700px;"></video>
+  <video data-hf-id="hf-v10" id="v10" class="clip vclip" data-start="55.4" data-duration="5.2" data-track-index="4" src="assets/cropped/管理员工作台首页.mp4" muted playsinline preload="auto" autoplay style="left:235px;top:145px;width:1450px;height:906px;"></video>
+  <video data-hf-id="hf-v11" id="v11" class="clip vclip" data-start="60.2" data-duration="12.4" data-track-index="5" src="assets/cropped/管理员工作台其他页面.mp4" muted playsinline preload="auto" autoplay style="left:748px;top:205px;width:1120px;height:700px;"></video>
+
+  <!-- Freeze frames: keep the final video frame visible after each source clip ends -->
+  <img data-hf-id="hf-freeze-v2" id="freeze-v2" class="clip vclip freeze-frame" data-start="7" data-duration="1.2" data-track-index="6" src="assets/freezes/freeze-v2.jpg" style="left:52px;top:198px;width:1120px;height:700px;">
+  <img data-hf-id="hf-freeze-v3" id="freeze-v3" class="clip vclip freeze-frame" data-start="11.4" data-duration="1.2" data-track-index="6" src="assets/freezes/freeze-v3.jpg" style="left:748px;top:198px;width:1120px;height:700px;">
+  <img data-hf-id="hf-freeze-v4" id="freeze-v4" class="clip vclip freeze-frame" data-start="18.03" data-duration="1.17" data-track-index="6" src="assets/freezes/freeze-v4.jpg" style="left:52px;top:198px;width:1120px;height:700px;">
+  <img data-hf-id="hf-freeze-v5" id="freeze-v5" class="clip vclip freeze-frame" data-start="26.13" data-duration="1.17" data-track-index="6" src="assets/freezes/freeze-v5.jpg" style="left:52px;top:205px;width:1120px;height:700px;">
+  <img data-hf-id="hf-freeze-v6" id="freeze-v6" class="clip vclip freeze-frame" data-start="33.9" data-duration="1.2" data-track-index="6" src="assets/freezes/freeze-v6.jpg" style="left:748px;top:205px;width:1120px;height:700px;">
+  <img data-hf-id="hf-freeze-v7" id="freeze-v7" class="clip vclip freeze-frame" data-start="40.7" data-duration="1.2" data-track-index="6" src="assets/freezes/freeze-v7.jpg" style="left:52px;top:205px;width:1120px;height:700px;">
+  <img data-hf-id="hf-freeze-v8" id="freeze-v8" class="clip vclip freeze-frame" data-start="46.5" data-duration="1.2" data-track-index="6" src="assets/freezes/freeze-v8.jpg" style="left:748px;top:205px;width:1120px;height:700px;">
+  <img data-hf-id="hf-freeze-v9" id="freeze-v9" class="clip vclip freeze-frame" data-start="54.63" data-duration="1.17" data-track-index="6" src="assets/freezes/freeze-v9.jpg" style="left:52px;top:205px;width:1120px;height:700px;">
+  <img data-hf-id="hf-freeze-v10" id="freeze-v10" class="clip vclip freeze-frame" data-start="59.4" data-duration="1.2" data-track-index="6" src="assets/freezes/freeze-v10.jpg" style="left:235px;top:145px;width:1450px;height:906px;">
+  <img data-hf-id="hf-freeze-v11" id="freeze-v11" class="clip vclip freeze-frame" data-start="71.4" data-duration="1.2" data-track-index="6" src="assets/freezes/freeze-v11.jpg" style="left:748px;top:205px;width:1120px;height:700px;">
+
+  <!-- Subtitles Track 3 -->
+  <div data-hf-id="hf-sub01" id="sub1" class="clip sub-clip" data-start="0.1" data-duration="3.648" data-track-index="3">
+    <span data-hf-id="hf-sub01t" class="sub-text">交大论坛 — 一站式校园社区平台</span></div>
+  <div data-hf-id="hf-sub02" id="sub2" class="clip sub-clip" data-start="3.8" data-duration="3.984" data-track-index="3">
+    <span data-hf-id="hf-sub02t" class="sub-text">瀑布流首页 · 浏览帖子与热门推荐</span></div>
+  <div data-hf-id="hf-sub03" id="sub3" class="clip sub-clip" data-start="8.6" data-duration="3.552" data-track-index="3">
+    <span data-hf-id="hf-sub03t" class="sub-text">安全注册 · 快速登录 · 无缝体验</span></div>
+  <div data-hf-id="hf-sub04" id="sub4" class="clip sub-clip" data-start="13" data-duration="4.44" data-track-index="3">
+    <span data-hf-id="hf-sub04t" class="sub-text">富文本编辑 · 图文发布 · 草稿自动保存</span></div>
+  <div data-hf-id="hf-sub05" id="sub5" class="clip sub-clip" data-start="19.6" data-duration="3.456" data-track-index="3">
+    <span data-hf-id="hf-sub05t" class="sub-text">点赞 · 收藏 · 评论 · 举报</span></div>
+  <div data-hf-id="hf-sub06" id="sub6" class="clip sub-clip" data-start="27.7" data-duration="3.552" data-track-index="3">
+    <span data-hf-id="hf-sub06t" class="sub-text">版块导航 · 标签体系 · 内容发现</span></div>
+  <div data-hf-id="hf-sub07" id="sub7" class="clip sub-clip" data-start="35.5" data-duration="3.768" data-track-index="3">
+    <span data-hf-id="hf-sub07t" class="sub-text">每日签到 · 积分成长 · 等级体系</span></div>
+  <div data-hf-id="hf-sub08" id="sub8" class="clip sub-clip" data-start="42.3" data-duration="3.72" data-track-index="3">
+    <span data-hf-id="hf-sub08t" class="sub-text">积分商城 · 实物与虚拟奖品兑换</span></div>
+  <div data-hf-id="hf-sub09" id="sub9" class="clip sub-clip" data-start="48.1" data-duration="3.648" data-track-index="3">
+    <span data-hf-id="hf-sub09t" class="sub-text">关注好友 · 消息通知 · 社交网络</span></div>
+  <div data-hf-id="hf-sub10" id="sub10" class="clip sub-clip" data-start="56.2" data-duration="3.336" data-track-index="3">
+    <span data-hf-id="hf-sub10t" class="sub-text">管理员仪表盘 · 实时运营数据</span></div>
+  <div data-hf-id="hf-sub11" id="sub11" class="clip sub-clip" data-start="61" data-duration="3.96" data-track-index="3">
+    <span data-hf-id="hf-sub11t" class="sub-text">审核 · 举报 · 用户管理 · 推荐调控</span></div>
+  <div data-hf-id="hf-sub12" id="sub12" class="clip sub-clip" data-start="73" data-duration="4.128" data-track-index="3">
+    <span data-hf-id="hf-sub12t" class="sub-text">Vite MPA + Spring Boot · 三层架构</span></div>
+  <div data-hf-id="hf-sub15" id="sub15" class="clip sub-clip" data-start="77.6" data-duration="2.688" data-track-index="3">
+    <span data-hf-id="hf-sub15t" class="sub-text">交大论坛 · 感谢观看</span></div>
+
+  <!-- GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+    /* ---------- Build HUD chapter dots + global progress ---------- */
+    const SCENE_STARTS = [0, 3, 7.8, 12.2, 18.8, 26.9, 34.7, 41.5, 47.3, 55.4, 60.2, 72.2, 76.8];
+    const TOTAL = 81.8;
+    (function buildHud() {
+      const wrap = document.getElementById("hud-chapters");
+      if (!wrap) return;
+      SCENE_STARTS.forEach((_, i) => {
+        const seg = document.createElement("div");
+        seg.className = "hud-ch";
+        seg.id = "hud-ch-" + i;
+        const fill = document.createElement("div");
+        fill.className = "hud-ch-fill";
+        seg.appendChild(fill);
+        wrap.appendChild(seg);
+      });
+    })();
+
+    /* Helper: fade-in with diverse easing and motion */
+    function fi(sel, t, o) {
+      const p = Object.assign({ y: 10, opacity: 0, duration: 0.4, ease: "power2.out" }, o || {});
+      const { y, opacity, duration, ease, ...rest } = p;
+      tl.from(sel, { y, opacity, duration, ease, ...rest }, t);
+    }
+
+    /* Helper: scale-in with elastic feel */
+    function fs(sel, t, o) {
+      const p = Object.assign({ scale: 0.8, opacity: 0, duration: 0.5, ease: "back.out(1.4)" }, o || {});
+      const { scale, opacity, duration, ease, ...rest } = p;
+      tl.from(sel, { scale, opacity, duration, ease, ...rest }, t);
+    }
+
+    /* Helper: slide-in from direction */
+    function fsl(sel, t, dir, o) {
+      const defaults = { left: { x: -60 }, right: { x: 60 }, up: { y: 40 }, down: { y: -40 } };
+      const d = Object.assign({ opacity: 0, duration: 0.5, ease: "power3.out" }, defaults[dir] || {}, o || {});
+      const { x, y, opacity, duration, ease, ...rest } = d;
+      tl.from(sel, { x, y, opacity, duration, ease, ...rest }, t);
+    }
+
+    /* S1 Opening — scale + blur entrance */
+    tl.from("#s1a", { scaleX: 0, opacity: 0, duration: 0.5, ease: "power4.out" }, 0.2);
+    tl.from("#s1b", { scale: 1.15, opacity: 0, filter: "blur(20px)", duration: 0.8, ease: "power3.out" }, 0.3);
+    fi("#s1c", 0.9, { y: 15, ease: "power2.out" });
+    tl.from("#s1d", { scaleX: 0, opacity: 0, duration: 0.4, ease: "power2.out" }, 1.2);
+    fs("#s1t1", 1.3, { ease: "back.out(1.6)" });
+    fs("#s1t2", 1.4, { ease: "back.out(1.6)" });
+    fs("#s1t3", 1.5, { ease: "back.out(1.6)" });
+    fs("#s1t4", 1.6, { ease: "back.out(1.6)" });
+    fs("#s1t5", 1.7, { ease: "back.out(1.6)" });
+
+    /* T 1->2 slide with slight scale */
+    tl.to("#s1", { x: -1920, scale: 0.95, opacity: 0.7, duration: 0.5, ease: "power3.inOut" }, 3);
+    tl.from("#s2", { x: 1920, scale: 1.05, opacity: 0, duration: 0.5, ease: "power3.inOut" }, 3);
+
+    /* S2 Homepage — video scale-in, text slide from right */
+    tl.from("#v2", { scale: 0.85, opacity: 0, duration: 0.5, ease: "back.out(1.2)" }, 3.3);
+    fsl("#s2a", 3.4, "right");
+    tl.from("#s2b", { y: 20, opacity: 0, duration: 0.5, ease: "power4.out" }, 3.6);
+    fi("#s2c", 3.8, { y: 10 });
+    fi("#s2f1", 4.0, { y: 15, ease: "back.out(1.2)" });
+    fi("#s2f2", 4.1, { y: 15, ease: "back.out(1.2)" });
+    fi("#s2f3", 4.2, { y: 15, ease: "back.out(1.2)" });
+    fi("#s2f4", 4.4, { y: 15, ease: "back.out(1.2)" });
+
+    /* T 2->3 fade with slight scale */
+    tl.to("#s2", { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 7.8);
+    tl.from("#s3", { opacity: 0, scale: 1.04, duration: 0.4, ease: "power2.inOut" }, 7.8);
+
+    /* S3 Login — video slide from right, text from left */
+    fsl("#s3a", 8.0, "left");
+    tl.from("#s3b", { y: 20, opacity: 0, duration: 0.5, ease: "power4.out" }, 8.1);
+    fi("#s3c", 8.4, { y: 10 });
+    fi("#s3f1", 8.6, { y: 15, ease: "back.out(1.2)" });
+    fi("#s3f2", 8.7, { y: 15, ease: "back.out(1.2)" });
+    fi("#s3f3", 8.8, { y: 15, ease: "back.out(1.2)" });
+    fi("#s3f4", 9.0, { y: 15, ease: "back.out(1.2)" });
+    tl.from("#v3", { x: 60, opacity: 0, duration: 0.5, ease: "power3.out" }, 8.0);
+
+    /* T 3->4 slide with rotation */
+    tl.to("#s3", { x: -1920, rotation: -2, opacity: 0.8, duration: 0.5, ease: "power3.inOut" }, 12.2);
+    tl.from("#s4", { x: 1920, rotation: 2, opacity: 0, duration: 0.5, ease: "power3.inOut" }, 12.2);
+
+    /* S4 Create Post — video scale-in, text from right */
+    tl.from("#v4", { scale: 0.85, opacity: 0, duration: 0.5, ease: "back.out(1.2)" }, 12.5);
+    fsl("#s4a", 12.6, "right");
+    tl.from("#s4b", { y: 20, opacity: 0, duration: 0.5, ease: "power4.out" }, 12.7);
+    fi("#s4c", 13.0, { y: 10 });
+    fi("#s4f1", 13.2, { y: 15, ease: "back.out(1.2)" });
+    fi("#s4f2", 13.3, { y: 15, ease: "back.out(1.2)" });
+    fi("#s4f3", 13.4, { y: 15, ease: "back.out(1.2)" });
+    fi("#s4f4", 13.6, { y: 15, ease: "back.out(1.2)" });
+
+    /* T 4->5 fade with scale */
+    tl.to("#s4", { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 18.8);
+    tl.from("#s5", { opacity: 0, scale: 1.04, duration: 0.4, ease: "power2.inOut" }, 18.8);
+
+    /* S5 Interaction — video from bottom, text from right */
+    tl.from("#v5", { y: 40, opacity: 0, duration: 0.5, ease: "power3.out" }, 19.1);
+    fsl("#s5a", 19.2, "right");
+    tl.from("#s5b", { y: 20, opacity: 0, duration: 0.5, ease: "power4.out" }, 19.4);
+    fi("#s5c", 19.6, { y: 10 });
+    fi("#s5c1", 19.7, { y: 15, ease: "back.out(1.3)" });
+    fi("#s5c2", 19.8, { y: 15, ease: "back.out(1.3)" });
+    fi("#s5c3", 19.9, { y: 15, ease: "back.out(1.3)" });
+    fi("#s5c4", 20.1, { y: 15, ease: "back.out(1.3)" });
+    fi("#s5c5", 20.2, { y: 15, ease: "back.out(1.3)" });
+
+    /* T 5->6 fade with slight scale */
+    tl.to("#s5", { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 26.9);
+    tl.from("#s6", { opacity: 0, scale: 1.04, duration: 0.4, ease: "power2.inOut" }, 26.9);
+
+    /* S6 Search — text from left, video from right */
+    fsl("#s6a", 27.1, "left");
+    tl.from("#s6b", { y: 20, opacity: 0, duration: 0.5, ease: "power4.out" }, 27.3);
+    fi("#s6c", 27.4, { y: 10 });
+    fi("#s6c1", 27.6, { y: 15, ease: "back.out(1.2)" });
+    fi("#s6c2", 27.7, { y: 15, ease: "back.out(1.2)" });
+    fi("#s6c3", 27.8, { y: 15, ease: "back.out(1.2)" });
+    fi("#s6c4", 28.0, { y: 15, ease: "back.out(1.2)" });
+    tl.from("#v6", { x: 60, opacity: 0, duration: 0.5, ease: "power3.out" }, 27.1);
+
+    /* T 6->7 slide with rotation */
+    tl.to("#s6", { x: -1920, rotation: -2, opacity: 0.8, duration: 0.5, ease: "power3.inOut" }, 34.7);
+    tl.from("#s7", { x: 1920, rotation: 2, opacity: 0, duration: 0.5, ease: "power3.inOut" }, 34.7);
+
+    /* S7 Growth — video scale-in, text from right */
+    tl.from("#v7", { scale: 0.85, opacity: 0, duration: 0.5, ease: "back.out(1.2)" }, 35.0);
+    fsl("#s7a", 35.1, "right");
+    tl.from("#s7b", { y: 20, opacity: 0, duration: 0.5, ease: "power4.out" }, 35.3);
+    fi("#s7c", 35.5, { y: 10 });
+    fi("#s7f1", 35.7, { y: 15, ease: "back.out(1.2)" });
+    fi("#s7f2", 35.8, { y: 15, ease: "back.out(1.2)" });
+    fi("#s7f3", 35.9, { y: 15, ease: "back.out(1.2)" });
+    fi("#s7f4", 36.1, { y: 15, ease: "back.out(1.2)" });
+
+    /* T 7->8 fade with scale */
+    tl.to("#s7", { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 41.5);
+    tl.from("#s8", { opacity: 0, scale: 1.04, duration: 0.4, ease: "power2.inOut" }, 41.5);
+
+    /* S8 Rewards — text from left, video from right */
+    fsl("#s8a", 41.7, "left");
+    tl.from("#s8b", { y: 20, opacity: 0, duration: 0.5, ease: "power4.out" }, 41.9);
+    fi("#s8c", 42.1, { y: 10 });
+    fi("#s8f1", 42.3, { y: 15, ease: "back.out(1.2)" });
+    fi("#s8f2", 42.4, { y: 15, ease: "back.out(1.2)" });
+    fi("#s8f3", 42.5, { y: 15, ease: "back.out(1.2)" });
+    fi("#s8f4", 42.7, { y: 15, ease: "back.out(1.2)" });
+    tl.from("#v8", { x: 60, opacity: 0, duration: 0.5, ease: "power3.out" }, 41.7);
+
+    /* T 8->9 slide with rotation */
+    tl.to("#s8", { x: -1920, rotation: -2, opacity: 0.8, duration: 0.5, ease: "power3.inOut" }, 47.3);
+    tl.from("#s9", { x: 1920, rotation: 2, opacity: 0, duration: 0.5, ease: "power3.inOut" }, 47.3);
+
+    /* S9 Social — video from bottom, text from right */
+    tl.from("#v9", { y: 40, opacity: 0, duration: 0.5, ease: "power3.out" }, 47.6);
+    fsl("#s9a", 47.7, "right");
+    tl.from("#s9b", { y: 20, opacity: 0, duration: 0.5, ease: "power4.out" }, 47.9);
+    fi("#s9c", 48.0, { y: 10 });
+    fi("#s9c1", 48.1, { y: 15, ease: "back.out(1.3)" });
+    fi("#s9c2", 48.2, { y: 15, ease: "back.out(1.3)" });
+    fi("#s9c3", 48.3, { y: 15, ease: "back.out(1.3)" });
+
+    /* T 9->10 fade with scale */
+    tl.to("#s9", { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 55.4);
+    tl.from("#s10", { opacity: 0, scale: 1.04, duration: 0.4, ease: "power2.inOut" }, 55.4);
+
+    /* S10 Admin Dashboard — scale-in video, text from top */
+    tl.from("#s10a", { y: -20, opacity: 0, duration: 0.4, ease: "power3.out" }, 55.6);
+    tl.from("#s10b", { y: 20, opacity: 0, duration: 0.5, ease: "power4.out" }, 55.7);
+    tl.from("#s10sep", { scaleX: 0, opacity: 0, duration: 0.4, ease: "power2.out" }, 56.1);
+    tl.from("#v10", { scale: 1.15, opacity: 0, duration: 0.6, ease: "power3.out" }, 55.8);
+
+    /* T 10->11 fade with scale */
+    tl.to("#s10", { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 60.2);
+    tl.from("#s11", { opacity: 0, scale: 1.04, duration: 0.4, ease: "power2.inOut" }, 60.2);
+
+    /* S11 Admin Features — text from left, video from right */
+    fsl("#s11a", 60.4, "left");
+    tl.from("#s11b", { y: 20, opacity: 0, duration: 0.5, ease: "power4.out" }, 60.6);
+    fi("#s11c", 60.8, { y: 10 });
+    fi("#s11c1", 60.9, { y: 15, ease: "back.out(1.2)" });
+    fi("#s11c2", 61.0, { y: 15, ease: "back.out(1.2)" });
+    fi("#s11c3", 61.1, { y: 15, ease: "back.out(1.2)" });
+    fi("#s11c4", 61.3, { y: 15, ease: "back.out(1.2)" });
+    fi("#s11c5", 61.4, { y: 15, ease: "back.out(1.2)" });
+    fi("#s11c6", 61.5, { y: 15, ease: "back.out(1.2)" });
+    tl.from("#v11", { x: 60, opacity: 0, duration: 0.5, ease: "power3.out" }, 60.4);
+
+    /* T 11->12 slide with rotation */
+    tl.to("#s11", { x: -1920, rotation: -2, opacity: 0.8, duration: 0.5, ease: "power3.inOut" }, 72.2);
+    tl.from("#s12", { x: 1920, rotation: 2, opacity: 0, duration: 0.5, ease: "power3.inOut" }, 72.2);
+
+    /* S12 Architecture — layers drop down, cards from corners */
+    fsl("#s12a", 72.4, "left");
+    tl.from("#s12b", { y: 20, opacity: 0, duration: 0.5, ease: "power4.out" }, 72.6);
+    tl.from("#s12l1", { y: -30, opacity: 0, rotation: -3, duration: 0.5, ease: "back.out(1.3)" }, 72.8);
+    tl.from("#s12c1", { scaleY: 0, opacity: 0, duration: 0.3, ease: "power2.out" }, 73.1);
+    tl.from("#s12l2", { y: -30, opacity: 0, rotation: -3, duration: 0.5, ease: "back.out(1.3)" }, 73.1);
+    tl.from("#s12c2", { scaleY: 0, opacity: 0, duration: 0.3, ease: "power2.out" }, 73.4);
+    tl.from("#s12l3", { y: -30, opacity: 0, rotation: -3, duration: 0.5, ease: "back.out(1.3)" }, 73.4);
+    fs("#s12k1", 73.7, { ease: "back.out(1.5)" });
+    fs("#s12k2", 73.8, { ease: "back.out(1.5)" });
+    fs("#s12k3", 73.9, { ease: "back.out(1.5)" });
+    fs("#s12k4", 74.0, { ease: "back.out(1.5)" });
+    fsl("#s12ia", 72.5, "right");
+    tl.from("#s12ib", { y: 20, opacity: 0, duration: 0.5, ease: "power4.out" }, 72.7);
+    tl.from("#s12i1", { x: -40, y: -40, opacity: 0, duration: 0.5, ease: "back.out(1.2)" }, 72.9);
+    tl.from("#s12i2", { x: 40, y: -40, opacity: 0, duration: 0.5, ease: "back.out(1.2)" }, 73.1);
+    tl.from("#s12i3", { x: -40, y: 40, opacity: 0, duration: 0.5, ease: "back.out(1.2)" }, 73.2);
+    tl.from("#s12i4", { x: 40, y: 40, opacity: 0, duration: 0.5, ease: "back.out(1.2)" }, 73.3);
+
+    /* T 12->15 fade with scale */
+    tl.to("#s12", { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 76.8);
+    tl.from("#s15", { opacity: 0, scale: 1.05, duration: 0.5, ease: "sine.inOut" }, 76.8);
+
+    /* S15 Ending — blur to clear, breathing scale */
+    tl.from("#s15a", { scaleX: 0, opacity: 0, duration: 0.5, ease: "power4.out" }, 77.0);
+    tl.from("#s15b", { scale: 1.1, opacity: 0, filter: "blur(15px)", duration: 0.8, ease: "power3.out" }, 77.1);
+    fi("#s15c", 77.8, { y: 10 });
+    tl.from("#s15d", { scaleX: 0, opacity: 0, duration: 0.4, ease: "power2.out" }, 78.0);
+    fi("#s15e", 78.2, { y: 10 });
+    tl.to("#s15b", { scale: 1.015, duration: 1.0, ease: "sine.inOut" }, 80.5);
+
+    /* Subtitles — slide from bottom with elastic */
+    tl.from("#sub1", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 0.8);
+    tl.to("#sub1", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, 3);
+    tl.from("#sub2", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 3.8);
+    tl.to("#sub2", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, 6.5);
+    tl.from("#sub3", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 8.6);
+    tl.to("#sub3", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, 11.3);
+    tl.from("#sub4", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 13);
+    tl.to("#sub4", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, 15.7);
+    tl.from("#sub5", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 19.6);
+    tl.to("#sub5", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, 22.3);
+    tl.from("#sub6", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 27.7);
+    tl.to("#sub6", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, 30.4);
+    tl.from("#sub7", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 35.5);
+    tl.to("#sub7", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, 38.2);
+    tl.from("#sub8", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 42.3);
+    tl.to("#sub8", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, 45);
+    tl.from("#sub9", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 48.1);
+    tl.to("#sub9", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, 50.8);
+    tl.from("#sub10", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 56.2);
+    tl.to("#sub10", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, 58.9);
+    tl.from("#sub11", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 61);
+    tl.to("#sub11", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, 63.7);
+    tl.from("#sub12", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 73);
+    tl.to("#sub12", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, 75.7);
+    tl.from("#sub15", { y: 15, opacity: 0, duration: 0.3, ease: "back.out(1.2)" }, 77.6);
+
+    /* Operation video fade-outs at scene transitions */
+    tl.to("#v2",  { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" },  7.8);
+    tl.to("#v3",  { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 12.2);
+    tl.to("#v4",  { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 18.8);
+    tl.to("#v5",  { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 26.9);
+    tl.to("#v6",  { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 34.7);
+    tl.to("#v7",  { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 41.5);
+    tl.to("#v8",  { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 47.3);
+    tl.to("#v9",  { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 55.4);
+    tl.to("#v10", { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 60.2);
+    tl.to("#v11", { opacity: 0, scale: 0.96, duration: 0.4, ease: "power2.inOut" }, 72.2);
+
+    tl.to("#freeze-v2",  { opacity: 0, duration: 0.4, ease: "power2.inOut" },  7.8);
+    tl.to("#freeze-v3",  { opacity: 0, duration: 0.4, ease: "power2.inOut" }, 12.2);
+    tl.to("#freeze-v4",  { opacity: 0, duration: 0.4, ease: "power2.inOut" }, 18.8);
+    tl.to("#freeze-v5",  { opacity: 0, duration: 0.4, ease: "power2.inOut" }, 26.9);
+    tl.to("#freeze-v6",  { opacity: 0, duration: 0.4, ease: "power2.inOut" }, 34.7);
+    tl.to("#freeze-v7",  { opacity: 0, duration: 0.4, ease: "power2.inOut" }, 41.5);
+    tl.to("#freeze-v8",  { opacity: 0, duration: 0.4, ease: "power2.inOut" }, 47.3);
+    tl.to("#freeze-v9",  { opacity: 0, duration: 0.4, ease: "power2.inOut" }, 55.4);
+    tl.to("#freeze-v10", { opacity: 0, duration: 0.4, ease: "power2.inOut" }, 60.2);
+    tl.to("#freeze-v11", { opacity: 0, duration: 0.4, ease: "power2.inOut" }, 72.2);
+
+    /* ---------- HUD: chapter progress + global progress bar ---------- */
+    SCENE_STARTS.forEach(function (start, i) {
+      var end = i < SCENE_STARTS.length - 1 ? SCENE_STARTS[i + 1] : TOTAL;
+      var seg = "#hud-ch-" + i + " .hud-ch-fill";
+      tl.set(seg, { scaleX: 0 }, 0);
+      tl.to(seg, { scaleX: 1, duration: Math.max(0.3, end - start), ease: "none" }, start);
+    });
+    tl.fromTo("#hud-progress-fill", { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: "none" }, 0);
+    /* HUD topbar fades in with the opening */
+    tl.from(".hud-topbar", { opacity: 0, y: -12, duration: 0.6, ease: "power3.out" }, 0.1);
+
+    window.__timelines["swjtu-forum-intro"] = tl;
+  </script>
+</div>
+</body>
+</html>

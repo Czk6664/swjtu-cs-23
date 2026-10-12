@@ -1,0 +1,552 @@
+--- Page 1 ---
+表征学习
+SCAI011112 视觉计算
+计算机科学与技术专业
+2025-2026 (2)
+--- Page 2 ---
+• 表征学习问题
+• 基于压缩的学习原则
+• 自编码器，对比学习，信息瓶颈，聚类
+• 基于预测的学习原则
+• 预测编码，自监督学习，插补
+• 信息论与信息瓶颈
+2
+本章主要内容
+--- Page 3 ---
+z
+Embedding
+Data
+Generative modeling
+Representation learning
+• Deep nets transform datapoints, layer by layer
+• Each layer is a different representation of the data
+• In the forward direction, the mapping goes from 
+observed data to latent embeddings — this direction is 
+called representation learning
+• In the reverse direction, the mapping goes from latent 
+embeddings to observed data — this direction is called 
+generative modeling
+表征学习问题
+3
+--- Page 4 ---
+表征学习问题
+Data space
+Representation 
+space
+c
+Encoder
+Embedding
+• 表示学习的目标是学习如何将数据点𝐱∈𝒳 映射到抽象表示𝐳∈𝒵
+• 将这种映射称为“编码”，并学习一个函数𝑓: 𝒳→𝒵。通常𝐱 和𝐳都是高维向
+量，而𝐳被称为𝐱的向量嵌入
+4
+本章我们关注目标函
+数，而不是网络结构
+--- Page 5 ---
+训练映射𝑓的目的是让𝐳具备某些属性：
+• 𝐳的维度低于𝐱
+• 𝐳 值的分布𝑝𝐳具有简单的结构（例如单位正态分布）
+• 𝐳各个维度是解耦的（disentangled）
+• 𝐳是可解释的
+• ……
+5
+表征学习问题
+𝓩成为一个比𝓧更简单、更抽象或组织得更好的表示空间
+--- Page 6 ---
+表征学习问题
+Image
+layer 3 representation of image
+layer 1 representation of image
+Represent data as a neural embedding — a vector/tensor of neural activations 
+(perhaps representing a vector of detected texture patterns or object parts)
+car
+road
+building
+6
+--- Page 7 ---
+CLIP
+maps from complex 
+data space to simple 
+embedding space
+[Radford*, Kim* et al., ICML 2021]
+7
+--- Page 8 ---
+好的表示是简约的（parsimonious），并且仅捕捉数据中对于人类感
+兴趣的任务所必需的本质特征。压缩表示的必要性至少体现在以下三个
+层面：
+• 压缩的表示需要更少的存储内存
+• 压缩是实现对无关干扰因素（nuisance factors）保持不变性的一种
+方式
+• 压缩是奥卡姆剃刀法则（Occam's razor）的一种体现：在所有能同
+等很好地解释数据的竞争假设中，最简单的往往最可能是真实的
+• 在同样能很好地拟合数据的两种表示中，优先选择压缩程度更高的那一个。
+8
+压缩
+压缩的本质是“剥离伪相关”
+--- Page 9 ---
+• 拥有视觉系统的全部意义在于能够采取行动以实现理想的未来结果。
+• 一般来说，预测可以指在给定观测数据的情况下，对世界任意属性的
+推断，包括未来、过去、心理状态、因果关系等。要做这些预测，好
+的表示具有决定性作用
+• 视觉领域的大多数表示学习算法都是关于学习世界的压缩编码，这些
+编码同时也要对未来具有预测能力
+9
+预测
+--- Page 10 ---
+10
+表征学习器的类型
+学习方法
+(Learning Method)
+学习原则
+(Learning Principle)
+简短摘要
+(Short Summary)
+自编码(Autoencoding)
+压缩(Compression)
+移除冗余信息
+对比学习(Contrastive)
+压缩(Compression)
+实现对观察变换的不变性
+聚类(Clustering)
+压缩(Compression)
+将连续数据量化为离散类别
+未来预测(Future prediction)
+预测(Prediction)
+预测未来
+缺失填补(Imputation)
+预测(Prediction)
+预测缺失数据
+代理任务(Pretext tasks)
+预测(Prediction)
+预测数据的抽象属性
+--- Page 11 ---
+• 表征学习问题
+• 基于压缩的学习原则
+• 自编码器，对比学习，信息瓶颈，聚类
+• 基于预测的学习原则
+• 预测编码，自监督学习，插补
+• 信息论与信息瓶颈
+11
+本章主要内容
+--- Page 12 ---
+• 自编码器是一个将数据映射回其自身的函数，但必须经过一个低维的
+表示瓶颈
+12
+自编码器（Autoencoders）
+--- Page 13 ---
+13
+自编码器（Autoencoders）
+c
+c
+--- Page 14 ---
+14
+去噪自编码器（Denoising Autoencoders）
+--- Page 15 ---
+15
+自编码器（Autoencoders）
+•
+Dataset consists just of colored circles, triangles, and 
+squares.
+•
+Each shape has a randomized size, position, and 
+rotation. Each shape’s color is sampled from one of 
+eight color classes (orange, green, purple, etc.) plus a 
+small random perturbation.
+--- Page 16 ---
+• 在对比学习中，表征被监督对特定的观察变换保持“不变性”，从而
+产生一种仅捕获不同数据“视图”之间共有属性的压缩表示
+• 监督信号以正样本对和负样本对的形式提供
+16
+对比学习
+--- Page 17 ---
+对比学习— 基于变换
+c
+c
+c
+17
+--- Page 18 ---
+对比学习— 基于共现
+c
+c
+c
+18
+--- Page 19 ---
+c
+c
+c
+c
+19
+--- Page 20 ---
+聚类
+Data
+Encoder
+Training
+Clusters
+Inference
+Data
+20
+--- Page 21 ---
+基于聚类的表征
+21
+聚类源于压缩原则
+• 如果我们能仅用一个离散类别标签很好地
+概括一个信号，那么这个概括就可以作为
+进一步推理的更轻量级和更抽象的基础
+--- Page 22 ---
+22
+k-means
+• 将数据点映射到整数（即聚类）
+• 映射方式：使得每个数据点尽可能接近其所属聚类的均值。
+--- Page 23 ---
+23
+k-means
+c
+Encoder
+c
+Decoder
+𝒛𝟏𝟏
+⋯
+𝒛𝟏𝑫
+⋮
+⋱
+⋮
+𝒛𝑲𝟏
+⋯
+𝒛𝑲𝑫
+--- Page 24 ---
+• 表征学习问题
+• 基于压缩的学习原则
+• 自编码器，对比学习，信息瓶颈，聚类
+• 基于预测的学习原则
+• 预测编码，自监督学习，插补
+• 信息论与信息瓶颈
+24
+本章主要内容
+--- Page 25 ---
+Data
+Data
+数据压缩
+25
+--- Page 26 ---
+26
+标签预测
+Data
+--- Page 27 ---
+Some data
+Other data
+数据预测-自监督学习
+27
+--- Page 28 ---
+自监督学习
+• 将无监督问题转化为有监督的
+经验风险最小化问题
+• 代理任务（pretext task）：
+直接从原始数据本身“炮制/构
+造”出标签（即预测目标）
+Escher, 1948
+28
+--- Page 29 ---
+c
+Bird
+c
+c
+c
+29
+--- Page 30 ---
+缺失填补：统一的代理任务？
+c
+c
+N
+M
+C
+N
+M
+C
+c
+c
+N
+M
+C
+N
+M
+C
+Observed
+Masked
+c
+c
+N
+M
+C
+N
+M
+C
+30
+--- Page 31 ---
+Object Detectors Emerge in Deep Scene CNNs
+[Zhou, Khosla, Lapedriza, Oliva, Torralba 2015]
+31
+--- Page 32 ---
+[Zhou, Khosla, Lapedriza, Oliva, Torralba 2015]
+Object Detectors Emerge in Deep Scene CNNs
+32
+--- Page 33 ---
+[Zhang, Isola, Efros 2016]
+Object Detectors Emerge in Deep Scene CNNs
+33
+--- Page 34 ---
+[Zhang, Isola, Efros 2016]
+Object Detectors Emerge in Deep Scene CNNs
+34
+--- Page 35 ---
+• 表征学习问题
+• 基于压缩的学习原则
+• 自编码器，对比学习，信息瓶颈，聚类
+• 基于预测的学习原则
+• 预测编码，自监督学习，插补
+• 信息论与信息瓶颈
+35
+本章主要内容
+--- Page 36 ---
+• 大学的类型：{985, 211, 普通本科，其他}
+36
+信息认知的改变
+985
+211
+普通本科
+其他
+𝑞𝑥
+985
+211
+普通本科
+其他
+𝑝𝑥
+石河子大学是什么类型的大学？
+从𝑞𝑥到𝑝𝑥，我们的认知更新了多少？
+外部信息
+认知的更新：𝐼(𝑝||𝑞)
+--- Page 37 ---
+• 连续性
+• 非负性
+• 排列不变性
+• 𝑰𝑝“985”, “211” ∥𝑞“985”, “211”
+= 𝑰𝑝“211”, “985” ∥𝑞“211”, “985”
+• 对于均匀分布的单调性
+• 从均匀分布到某个非均匀分布，应该有信息增益
+• 满足自然链式法则
+37
+认知更新𝑰(𝒑| 𝒒的性质
+Ø 若𝑥= [𝑥!, 𝑥"]，𝑝(𝑥) = 𝑝𝑥! 𝑃(𝑥"|𝑥!)
+--- Page 38 ---
+• KL散度，也叫相对熵或信息增益
+38
+KL满足𝑰(𝒑||𝒒)的性质
+离散情形：
+连续情形：
+= 𝔼𝒑(𝒙) 𝑙𝑜𝑔𝑝(𝑥)
+𝑞(𝑥)
+= D 𝑝𝑥log 𝑝𝑥𝑑𝑥−𝑝𝑥log 𝑞𝑥𝑑𝑥
+𝑫𝑲𝑳𝒑∥𝒒≥𝟎
+--- Page 39 ---
+39
+KL的非对称性
+𝑫𝑲𝑳𝒑∥𝒒≠𝑫𝑲𝑳𝒒∥𝒑
+Min 𝑫𝑲𝑳𝒑∥𝒒
+Min 𝑫𝑲𝑳𝒒∥𝒑
+注：蓝色曲线为真实的分布p
+--- Page 40 ---
+41
+生成式模型
+min
+! 𝑫𝑲𝑳𝒑𝑬𝒙∥𝒑𝜽𝒙
+𝒑𝑬𝒙= 1
+𝑁R
+012
+3
+𝛿(𝑥0 −𝑥)
+𝒑𝜽𝒙
+𝒑𝑫𝒙
+真实的未知分布
+生成式
+模型
+经验分布
+模型分布
+--- Page 41 ---
+• 最小化KL散度，等价于极大似然
+42
+计算𝑫𝑲𝑳𝒑# 𝒙∥𝒑𝜽𝒙
+𝐷&' 𝑝( 𝑥∥𝑝! 𝑥
+= 𝔼)! *
+log 𝑝( 𝑥
+𝑝! 𝑥
+真实样本的熵取负
+号（常量）
+对数似然
+= 𝔼)" * log 𝑝+ 𝑥
+−𝔼)" * log 𝑝! 𝑥
+从𝑝5 𝑥中采样，
+估计该期望
+--- Page 42 ---
+• 训练集𝑥,, 𝑦, ,-.
+/
+43
+KL散度与交叉熵— 判别式模型
+条件概率
+边缘概率
+𝑝(𝑥, 𝑦) = 𝑝𝑥𝑝(𝑦|𝑥)
+= 𝔼𝒙~𝒑𝒙
+𝔼$~% $|' log 𝑝𝑦|𝑥
+−𝔼𝒚~𝒑𝒚|𝒙log 𝑞𝑦|𝑥
+常量
+交叉熵
+判别式模型只对条件
+概率建模！假设
+𝑫𝕂𝕃(𝒑𝒙| 𝒒𝒙
+= 𝟎
+𝔼%(')[
+]
+--- Page 43 ---
+• 如果𝑞(𝑋)分布为均匀分布𝑢(𝑋)，意味着对该事件一无所知
+44
+信息熵
+𝐷)*(𝑝| 𝑢= > 𝑝𝑋log 𝑝𝑋−> 𝑝𝑋log 1
+𝐾= > 𝑝𝑋log 𝑝𝑋+ log 𝐾
+985
+211
+普通本科
+其他
+𝑢𝑋
+985
+211
+普通本科
+其他
+𝑝𝑋
+𝑯𝑿= −> 𝑝𝑋log 𝑝𝑋= log 𝐾−𝐷)*(𝑝| 𝑢≤log 𝐾
+• 熵描述事物的不确定性；
+• 熵只依赖于随机变量的分布，与随机变量的取值无关。
+外部信息
+消除不确定
+性的信息量
+克劳德·艾尔伍德·香农
+--- Page 44 ---
+“在一个封闭的孤立系统内，热量总是从高温流向低温，从有序走向无序，
+而且这一过程是不可逆转的”
+—德国物理学家克劳修斯
+物理熵
+45
+--- Page 45 ---
+• 外部施加能量才能熵减
+46
+物理熵
+熵高
+熵低
+--- Page 46 ---
+• 通过从数据进行模型学习来使熵降低
+49
+信息熵与机器学习
+熵高
+熵低
+--- Page 47 ---
+50
+压缩编码
+• 编码长度
+• 信息损失
+--- Page 48 ---
+• 信源的模型化— 离散信源
+51
+无损压缩（信源编码）
+• 如果随机序列中各个变量具有相同的概率分布，则称为离散平稳信源。
+• 如果离散平稳信源的输出序列中各个变量是相互独立的，即前一个符号的出现
+不影响以后任何一个符号出现的概率，则称为离散无记忆平稳信源，否则称为
+离散有记忆平稳信源。
+--- Page 49 ---
+• 信源的模型化—离散信源
+• 假定信源的符号系列为𝑨= {𝒂𝟏, 𝒂𝟐, … , 𝒂𝒋} ，信源产生符号𝒂𝒋的事件概率是
+𝑷(𝒂𝒋) ，并有: 
+52
+无损压缩（信源编码）
+• 一个𝐽×1向量𝒛= [𝑷𝒂𝟏, 𝑷𝒂𝟐, … , 𝑷(𝒂𝒎)]𝑻，用于表示所有信源符号的概率集
+合。
+• 有限总体集合(𝑨, 𝒛)完全描述了信息源。
+--- Page 50 ---
+• 无记忆：不考虑字符之间的相关性
+• 如果对字符𝒂𝒋的编码长度为𝑳𝒋，则𝑿的平均码长为: 
+53
+离散无记忆信源的编码
+（证明略）
+• 平均码长的下界为𝐻(𝑋) 
+Ø当𝑳𝒋 = −log𝟐𝒑𝒋时，等号成立
+Ø对出现概率较大的符号取较短的码长，对出现概率较小的符号取较大的码长
+Ø压缩的基本途径之一：使各字符的编码长度尽量等于字符的信息量
+𝐿= >
++,-
+.
+𝑝+ ∗𝐿+
+--- Page 51 ---
+符号
+𝒂𝟏
+𝒂𝟐
+……
+𝒂𝒎
+平均码长
+真实概率
+𝒑𝟏
+𝒑𝟐
+……
+𝒑𝒎
+理想编码长度
+−log𝟐𝒑𝟏
+−log𝟐𝒑𝟐
+……
+−log𝟐𝒑𝒎
+−J 𝒑𝒋𝐥𝐨𝐠𝒑𝒋= 𝑯(𝒑)
+建模概率
+𝒒𝟏
+𝒒𝟐
+……
+𝒒𝒎
+实际编码长度
+−log𝟐𝒒𝟏
+−log𝟐𝒒𝟐
+……
+−log𝟐𝒒𝒎
+−J 𝒑𝒋𝐥𝐨𝐠𝒒𝒋= 𝑯𝒄𝒆(𝒑, 𝒒)
+54
+概率模型对编码的影响
+• 实际编码长度与理想编码长度之差：
+𝐻OP 𝑝, 𝑞−𝐻𝑝= 𝐷Q!(𝑝| 𝑞
+熵
+交叉熵
+• 交叉熵是按照分布q的最优编码对真实分布p的信息进行编码的平均长度
+--- Page 52 ---
+• 衡量两个随机变量之间的依赖性
+• 从𝑝𝑋𝑝(𝑌)到𝑝(𝑋, 𝑌)的信息增益
+55
+互信息
+--- Page 53 ---
+56
+互信息
+--- Page 54 ---
+• 从输入X中学习表征Z，用于预测标签Y
+57
+信息瓶颈—判别式模型
+表征
+学习
+𝑿
+𝒁
+分类
+器
+𝒀
+• 若𝐲⊥𝐱|𝐳，则称Z对于预测Y是充分的
+Ø Z包含了X中的所有关于Y的信息。
+𝕀𝑥; 𝑦= ℍ𝑦−ℍ𝑦|𝑧
+𝕀𝑧; 𝑦= ℍ𝑦−ℍ𝑦|𝑧
+--- Page 55 ---
+𝒎𝒊𝒏𝜷𝕀𝒛; 𝒙−𝕀𝒛; 𝒚
+• 若Z对于预测Y是充分的，且找不到其他的Z，使𝕀𝑧; 𝑥具有更小的值，则称Z是最
+小充分统计的
+• 优化目标：找到一个Z，使得𝕀𝑧; 𝑦最大，而𝕀𝑧; 𝑥最小
+58
+信息瓶颈原则
+--- Page 56 ---
+Thank You
+SCAI011112 视觉计算

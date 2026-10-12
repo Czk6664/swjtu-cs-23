@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "title": "Page-1",
+  "type": "flow-diagram",
+  "source": "edited",
+  "profile": "default",
+  "theme": "tech-blue",
+  "layout": "horizontal",
+  "counts": {
+    "nodes": 8,
+    "edges": 6,
+    "modules": 0
+  },
+  "nodes": [
+    {
+      "id": "n2",
+      "label": "系统管理员",
+      "type": "service",
+      "size": "tiny"
+    },
+    {
+      "id": "n20",
+      "label": "账号管理系统",
+      "type": "service",
+      "size": "xl"
+    },
+    {
+      "id": "n3",
+      "label": "创建新账户",
+      "type": "user",
+      "size": "xl"
+    },
+    {
+      "id": "n4",
+      "label": "设置账户",
+      "type": "user",
+      "size": "xl"
+    },
+    {
+      "id": "n5",
+      "label": "设置账户基本信息",
+      "type": "user",
+      "size": "xl"
+    },
+    {
+      "id": "n6",
+      "label": "设置账户权限",
+      "type": "user",
+      "size": "xl"
+    },
+    {
+      "id": "n7",
+      "label": "删除账户",
+      "type": "user",
+      "size": "xl"
+    },
+    {
+      "id": "n8",
+      "label": "查询账户",
+      "type": "user",
+      "size": "xl"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "from": "n2",
+      "to": "n3",
+      "type": "bidirectional"
+    },
+    {
+      "id": "edge-2",
+      "from": "n2",
+      "to": "n4",
+      "type": "bidirectional"
+    },
+    {
+      "id": "edge-3",
+      "from": "n2",
+      "to": "n7",
+      "type": "bidirectional"
+    },
+    {
+      "id": "edge-4",
+      "from": "n2",
+      "to": "n8",
+      "type": "bidirectional"
+    },
+    {
+      "id": "edge-5",
+      "from": "n4",
+      "to": "n5",
+      "type": "optional",
+      "label": ">"
+    },
+    {
+      "id": "edge-6",
+      "from": "n4",
+      "to": "n6",
+      "type": "optional",
+      "label": ">"
+    }
+  ],
+  "modules": []
+}

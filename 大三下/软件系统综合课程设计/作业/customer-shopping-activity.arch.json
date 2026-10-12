@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "title": "客户购物活动图",
+  "type": "engineering-diagram",
+  "source": "generated",
+  "profile": "engineering-review",
+  "theme": "high-contrast",
+  "layout": "vertical",
+  "counts": {
+    "nodes": 16,
+    "edges": 18,
+    "modules": 3
+  },
+  "nodes": [
+    {
+      "id": "start",
+      "label": " ",
+      "type": "terminal",
+      "module": "customer",
+      "size": "small"
+    },
+    {
+      "id": "placeOrder",
+      "label": "下订单",
+      "type": "process",
+      "module": "customer"
+    },
+    {
+      "id": "choosePayment",
+      "label": "选择支付方式",
+      "type": "process",
+      "module": "customer"
+    },
+    {
+      "id": "forkPayment",
+      "label": " ",
+      "type": "process",
+      "module": "system",
+      "size": "small"
+    },
+    {
+      "id": "receivePayment",
+      "label": "收款",
+      "type": "process",
+      "module": "system"
+    },
+    {
+      "id": "prepareDeliveryNote",
+      "label": "生成送货单",
+      "type": "process",
+      "module": "system"
+    },
+    {
+      "id": "paymentSuccess",
+      "label": "收款成功？",
+      "type": "decision",
+      "module": "system"
+    },
+    {
+      "id": "cancelOrTimeout",
+      "label": "取消订单",
+      "type": "process",
+      "module": "system"
+    },
+    {
+      "id": "joinReady",
+      "label": " ",
+      "type": "process",
+      "module": "system",
+      "size": "small"
+    },
+    {
+      "id": "startDelivery",
+      "label": "开始送货",
+      "type": "process",
+      "module": "supplier"
+    },
+    {
+      "id": "updateItemStatus",
+      "label": "修改订单项状态",
+      "type": "process",
+      "module": "supplier"
+    },
+    {
+      "id": "notifySystem",
+      "label": "通知系统",
+      "type": "process",
+      "module": "supplier"
+    },
+    {
+      "id": "allDelivered",
+      "label": "全部商品已送货完成？",
+      "type": "decision",
+      "module": "system"
+    },
+    {
+      "id": "continueDelivery",
+      "label": "通知供应商继续送货",
+      "type": "process",
+      "module": "system"
+    },
+    {
+      "id": "completeOrder",
+      "label": "订单完成",
+      "type": "process",
+      "module": "system"
+    },
+    {
+      "id": "end",
+      "label": " ",
+      "type": "terminal",
+      "module": "system",
+      "size": "small"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "from": "start",
+      "to": "placeOrder",
+      "type": "primary"
+    },
+    {
+      "id": "edge-2",
+      "from": "placeOrder",
+      "to": "choosePayment",
+      "type": "primary"
+    },
+    {
+      "id": "edge-3",
+      "from": "choosePayment",
+      "to": "forkPayment",
+      "type": "primary"
+    },
+    {
+      "id": "edge-4",
+      "from": "forkPayment",
+      "to": "receivePayment",
+      "type": "primary"
+    },
+    {
+      "id": "edge-5",
+      "from": "forkPayment",
+      "to": "prepareDeliveryNote",
+      "type": "primary"
+    },
+    {
+      "id": "edge-6",
+      "from": "receivePayment",
+      "to": "paymentSuccess",
+      "type": "primary"
+    },
+    {
+      "id": "edge-7",
+      "from": "paymentSuccess",
+      "to": "cancelOrTimeout",
+      "type": "primary",
+      "label": "否"
+    },
+    {
+      "id": "edge-8",
+      "from": "paymentSuccess",
+      "to": "joinReady",
+      "type": "primary",
+      "label": "是"
+    },
+    {
+      "id": "edge-9",
+      "from": "prepareDeliveryNote",
+      "to": "joinReady",
+      "type": "primary"
+    },
+    {
+      "id": "edge-10",
+      "from": "cancelOrTimeout",
+      "to": "end",
+      "type": "primary"
+    },
+    {
+      "id": "edge-11",
+      "from": "joinReady",
+      "to": "startDelivery",
+      "type": "primary"
+    },
+    {
+      "id": "edge-12",
+      "from": "startDelivery",
+      "to": "updateItemStatus",
+      "type": "primary"
+    },
+    {
+      "id": "edge-13",
+      "from": "updateItemStatus",
+      "to": "notifySystem",
+      "type": "primary"
+    },
+    {
+      "id": "edge-14",
+      "from": "notifySystem",
+      "to": "allDelivered",
+      "type": "primary"
+    },
+    {
+      "id": "edge-15",
+      "from": "allDelivered",
+      "to": "completeOrder",
+      "type": "primary",
+      "label": "是"
+    },
+    {
+      "id": "edge-16",
+      "from": "completeOrder",
+      "to": "end",
+      "type": "primary"
+    },
+    {
+      "id": "edge-17",
+      "from": "allDelivered",
+      "to": "continueDelivery",
+      "type": "primary",
+      "label": "否"
+    },
+    {
+      "id": "edge-18",
+      "from": "continueDelivery",
+      "to": "startDelivery",
+      "type": "primary"
+    }
+  ],
+  "modules": [
+    {
+      "id": "customer",
+      "label": "客户",
+      "color": "#FFFFFF"
+    },
+    {
+      "id": "system",
+      "label": "系统",
+      "color": "#FFFFFF"
+    },
+    {
+      "id": "supplier",
+      "label": "供应商",
+      "color": "#FFFFFF"
+    }
+  ]
+}

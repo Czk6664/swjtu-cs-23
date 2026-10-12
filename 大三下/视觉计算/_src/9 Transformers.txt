@@ -1,0 +1,338 @@
+--- Page 1 ---
+Transformer 网络
+SCAI011112 视觉计算
+计算机科学与技术专业
+2025-2026 (2)
+--- Page 2 ---
+• 卷积网络的局限
+• 注意力机制
+• 词元
+• 注意力层
+• 完整Transformer 架构
+• 置换等变性
+• 位置编码
+• 掩码注意力
+• 比较 CNN 与Transformer
+2
+本章主要内容
+--- Page 3 ---
+• Transformer 是一种新兴的架构，它对CNN的思想进行了推广和扩展。
+最初应用于语言建模，后来被用于视觉中。
+• 与CNN类似，Transformer 将信号处理问题分解为涉及“独立且相同
+处理”块（chunks）的阶段。然而，它们还包含了一些能够跨块混合
+信息的层，称为注意力层，从而使整个流程能够建模块之间的依赖关
+系。
+3
+引言
+--- Page 4 ---
+• CNN的局部性思想：图像的不同局部区域可以被安全地独立处理。
+• 局限性：不擅长处理信息的全局信息。
+4
+CNN 的局限
+卷积核大小为3的2层CNN，任务是
+比较𝒙𝟏和𝒙𝟕。它无法做到这一点：
+没有任何神经元同时连接到𝒙𝟏和𝒙𝟕
+CNN 要处理全局信息的方式：
+• 方式1：增加滤波器的卷积核大小
+• 方式2：通过堆叠层数来增加深层神经
+元的感受野
+--- Page 5 ---
+全连接网络
+卷积网络
+循环网络
+5
+MLP, CNN, and RNN
+•
+可以全局信息传递
+•
+参数量大
+•
+无法处理变长数据
+•
+不具备平移、旋转不变性
+•
+参数量小（权值共享）
+•
+具备平移不变性
+•
+并行化计算
+•
+长程依赖建模较弱（需堆叠）
+•
+处理任意长度序列
+•
+具备“时序记忆”能力
+•
+并行化困难
+•
+长程依赖建模能力弱
+--- Page 6 ---
+6
+注意力机制
+所有黑色牌的数字之和为多少？
+--- Page 7 ---
+• 注意力是一种高效处理全局信息的策略，它只聚焦于信号中对当前任
+务最显著的部分，关注那些突出的元素，而不是一次性接收整个场景
+的所有信息
+• 在神经网络中，注意力遵循同样的直观思路。第𝑙层的一组神经元可
+能会关注第𝑙−1 层的一组神经元，以决定它们应该做出怎样的响应
+• 如果我们“要求”这组神经元报告输入图像中任何汽车的颜色，那么它们就应
+该将注意力导向上一层中代表汽车颜色的神经元
+7
+注意力机制
+--- Page 8 ---
+• 词元是神经元的另一种的组合形式，可以将其视为封装的信息组，本
+章考虑的单一的词元通过一个列向量t ∈ℝ!×#来表示，有时被称为代
+码向量
+8
+词元（Token）
+神经元集合
+词元集合
+--- Page 9 ---
+• 对图像进行词元化，用一个Token 来代表图像中的每一个图像块
+9
+数据词元化
+• 当每个图像块都由一个词元表示时，整
+幅图像就对应于一个词元阵列。
+• 直接向量化：不涉及任何学习过程，只是
+数据的重排
+• 16*16像素，RGB三通道，拉长成768 
+维（256+256+256）向量 x
+• 低维投影：引入可学习的嵌入矩阵W!"#$%&'$， 
+z = W!"#$%&'$x
+--- Page 10 ---
+数据词元化
+Three guineafowl.
+[Th][re]
+[wl][.]
+...
+You can tokenize anything. 
+General strategy: chop the input up into chunks, project each chunk to a vector.
+10
+--- Page 11 ---
+11
+词元序列
+• 神经网络层运行在神经元阵列之上
+• MLP的输入是一个列向量𝐱，其每一行都是一个标量神经元。
+• Transformer 运行在词元阵列之上
+• 矩阵𝐗仅仅是向量值词元的一维阵列的一种便捷表示方式。
+• Transformer针对词元两项核心操作：线性组合，逐点非线性变换
+--- Page 12 ---
+词元的线性组合
+12
+--- Page 13 ---
+逐点非线性变换
+tokens
+主流选择将设为 MLP，具有可学习参数，使得逐点运算更具表达力且参数更丰富。
+13
+--- Page 14 ---
+14
+词元网络（Token Net）
+--- Page 15 ---
+W 为自由参数
+注意力层
+•
+A 是某些输入数据的函数
+•
+这些数据告诉我们应该关注（即在加
+权求和中分配较高的权重）哪些词元
+•
+A 通常仅包含非负值
+•
+f 实际上是确定词元的组合权重
+• 注意力层采用特殊的 tokens线性组合方式，它是一种具有数据依赖权重的 FC 层
+• 或者叫动态池化，即采用加权平均的池化，其中权重根据输入数据动态确定
+15
+--- Page 16 ---
+How many 
+animals are in 
+the photo?
+16
+--- Page 17 ---
+How many 
+animals are in 
+the photo?
+What is the 
+color of the 
+impala?
+17
+--- Page 18 ---
+18
+Query-Key-Value 注意力
+--- Page 19 ---
+19
+自注意力（Self-Attention）
+--- Page 20 ---
+自注意力层
+20
+--- Page 21 ---
+21
+自注意力层
+• t2 关注代表黑斑羚其他部位的词元，并
+利用它们将t2 优化为一个更抽象的词元
+向量，从而捕捉到“黑斑羚”这一标签
+• 在给定周围其他相关图像块的上下文信
+息时，识别某个特定的图像块会变得更
+容易
+• 减少了三个被关注的黑斑羚图像块之间
+不共享的噪声，从而放大了它们之间的
+共性— 即“黑斑羚”这一标签
+--- Page 22 ---
+22
+自注意力层
+矩阵A 是输入数据的函数：
+• 动态性：Query 变了，生成的感受野（高亮区域）就完全变了。这在CNN 
+中是不可想象的，CNN 的卷积核感受野是固定形状的
+• 打破空间限制：注意力机制完全无视了空间距离。红框位于左上角，但它依
+然能给予右上角的天空极高的权重。只要特征匹配，“天涯若比邻”
+--- Page 23 ---
+• Query/key/value 映射矩阵W$, W%, W& 定义了用于将查询与键进行
+匹配的相似度概念
+• 一个单一的自注意力层只能以一种方式来衡量相似度
+• Transformer 使用多头自注意力，并行地运行k 个注意力层
+23
+多头自注意力（Multi-head Self-Attention）
+--- Page 24 ---
+24
+多头自注意力（Multi-head Self-Attention）
+--- Page 25 ---
+25
+Transformer Blocks 
+• Feedforward layer
+•
+N position-wise networks, one at each position
+•
+Networks are independent for each position 
+•
+The weights are the same for each position, but the 
+parameters are different from layer to layer. 
+• Layer Norm
+--- Page 26 ---
+26
+完整 Transformer 架构
+--- Page 27 ---
+ViT (Vision Transformer)
+27
+--- Page 28 ---
+28
+置换等变（Permutation Equivariance）
+--- Page 29 ---
+• 位置编码将一个表示位置的编码，拼接到每一个词元上
+• 使用位置的周期性表示，即把坐标编码为一组正弦波在每个位置上取
+得的值所构成的向量：
+29
+位置编码（Positional Encoding）
+•
+sin 𝑥处的波长极短，频率极高。
+•
+sin 𝑥/𝐵! 处波长极长、频率很低。
+--- Page 30 ---
+• The model has access to all of the inputs up to and including the one under 
+consideration, but no access to information about inputs beyond the current one. 
+• Useful for creating language model and autoregressive generation 
+• The computation performed for each item is independent of all the other computations 
+• Easily parallelize both forward inference and training
+30
+Causal Self-Attention
+--- Page 31 ---
+• The calculation in 𝑄𝐾. results in a score for each query value to every key value, 
+including those that follow the query. This is inappropriate in the setting of language 
+modeling: guessing the next word is pretty simple if you already know it! 
+• To fix this, the elements in the upper-triangular portion of the matrix are zeroed out 
+(set to −∞), thus eliminating any knowledge of words that follow in the sequence. 
+31
+Causal Self-Attention
+Masking out the future
+--- Page 32 ---
+• Conditional generation: generating 
+text conditioned on an input piece of 
+text, a prompt. 
+• The fact that transformers have such 
+long contexts (1024 or even 4096 
+tokens) makes them very powerful 
+for conditional generation, because 
+they can look back so far into the 
+prompting text. 
+32
+Large Language Models with Transformers 
+Many practical NLP tasks can be cast as word prediction
+--- Page 33 ---
+• Sentiment classification
+33
+Large Language Models with Transformers 
+“I like Jackie Chan”
+• Question Answering
+--- Page 34 ---
+Text summarization 
+34
+Large Language Models with Transformers
+--- Page 35 ---
+• Cast summarization as language modeling by giving a large language model a text, and 
+follow the text by a token like tl;dr; 
+• tl;dr is short for something like ‘too long; don’t read’
+35
+Large Language Models with Transformers
+--- Page 36 ---
+• Self-supervised training algorithm 
+• Each training item can be processed in parallel since the output for each 
+element in the sequence is computed separately. 
+36
+LLM: Training Transformer
+--- Page 37 ---
+• CNN 与 Transformer 的相同点
+• Token 化
+• QKV 投影
+• 逐 Token 多层感知机
+• 其他：归一化、残差连接等
+• CNN 与 Transformer 的不同点
+• CNN 可具备非单一尺度的卷积核
+• Transformer 有注意力层
+37
+CNN 与 Transformer
+核心思想：把信号处理
+问题分解为多个数据块
+--- Page 38 ---
+38
+Token 化
+• Token 化操作可以写成卷积的形式
+• Token 化可以写成一个卷积核大小和步长都等于K 的卷积层
+𝑲×𝑲
+--- Page 39 ---
+39
+QKV 投影
+N×d
+d×m
+𝟏×𝟏，d 通道
+的卷积核
+• 线性代数中，矩阵相乘 AB，都可理解成多通道滤波器组 B与信号 A 的卷积运算
+• 矩阵B 的每行代表一个𝟏×𝟏卷积核，A 中行对应索引，列对应通道
+--- Page 40 ---
+• Transformer 的MLP 中包含线性层和非线性层
+• 线性层的本质上可表述为𝟏×𝟏卷积核的卷积运算
+40
+逐 Token 多层感知机
+• 逐点非线性激活和 CNN 是一致的
+--- Page 41 ---
+• Transformer：尺寸为1的卷积+ 位置编码+注意力
+• 若使用更大的卷积核，它将破坏Transformer 的置换不变性
+• 为了解决空间结构信息问题，引入位置编码
+• 注意力层非卷积结构，不分解为独立的数据块，而是执行全局操作，解决了
+CNN 中每个滤波器只能看到其感受野内的信息这一局限
+• CNN：使用𝐾 ×𝐾的滤波器，使相邻的图像区域被放在一起进行处理
+41
+CNN 与 Transformer 的差异
+--- Page 42 ---
+Wiring graph
+Matrix
+Properties
+Fixed input dimensionality
+learnable parameters
+Variable input dimensionality
++1 learnable parameters (    = kernel size)
+Variable input dimensionality
+learnable parameters
+A Family Of Linear Layers
+42
+--- Page 43 ---
+Thank You
+SCAI011112 视觉计算

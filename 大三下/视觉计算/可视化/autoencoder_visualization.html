@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自编码器可视化 · Autoencoder Visualization</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0e1a;
+    --bg-2: #111827;
+    --panel: #151b2e;
+    --border: #1f2937;
+    --text: #e5e7eb;
+    --muted: #6b7280;
+    --accent: #22d3ee;
+    --accent-2: #a78bfa;
+    --accent-3: #f472b6;
+    --good: #34d399;
+    --bad: #f87171;
+  }
+
+  html, body {
+    height: 100%;
+    background: radial-gradient(1200px 800px at 50% -10%, #1a2240 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    overflow: hidden;
+  }
+
+  .app {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    height: 100vh;
+    padding: 14px 18px;
+    gap: 12px;
+  }
+
+  /* ===== Header ===== */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .title h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .title p {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .stats {
+    display: flex;
+    gap: 14px;
+  }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 7px 14px;
+    min-width: 100px;
+    text-align: center;
+  }
+  .stat .label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .stat .value {
+    font-size: 17px;
+    font-weight: 700;
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  #epochVal { color: var(--accent); }
+  #lossVal { color: var(--accent-3); }
+  #accVal { color: var(--good); }
+
+  /* ===== Main stage ===== */
+  .stage {
+    display: grid;
+    grid-template-columns: 200px 1fr 200px;
+    gap: 14px;
+    min-height: 0;
+  }
+
+  .panel {
+    background: linear-gradient(180deg, rgba(21,27,46,0.9), rgba(17,24,39,0.9));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(6px);
+  }
+  .panel h2 {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel h2 .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+  .panel.output h2 .dot { background: var(--accent-2); box-shadow: 0 0 10px var(--accent-2); }
+
+  .canvas-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #060912;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    padding: 6px;
+  }
+  canvas { image-rendering: pixelated; max-width: 100%; max-height: 100%; }
+
+  .meta {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .meta span { color: var(--text); }
+
+  /* ===== Network ===== */
+  .network-col {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 10px;
+    min-height: 0;
+  }
+  .network {
+    position: relative;
+    background: linear-gradient(180deg, rgba(21,27,46,0.6), rgba(10,14,26,0.6));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 0;
+  }
+  #netSvg { width: 100%; height: 100%; display: block; }
+
+  .layer-label {
+    font-size: 10px;
+    fill: var(--muted);
+    text-anchor: middle;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .layer-title {
+    font-size: 11px;
+    fill: var(--text);
+    text-anchor: middle;
+    font-weight: 600;
+  }
+  .neuron { transition: opacity .2s; }
+  .link { stroke-opacity: 0.18; }
+  .pulse { filter: drop-shadow(0 0 4px currentColor); }
+
+  .legend {
+    position: absolute;
+    bottom: 8px;
+    left: 12px;
+    display: flex;
+    gap: 14px;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .legend i {
+    width: 9px; height: 9px; border-radius: 50%; display: inline-block;
+  }
+
+  .phase-tag {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(34,211,238,0.12);
+    border: 1px solid rgba(34,211,238,0.4);
+    color: var(--accent);
+    letter-spacing: 1px;
+    transition: all .3s;
+  }
+  .phase-tag.decode {
+    background: rgba(167,139,250,0.12);
+    border-color: rgba(167,139,250,0.4);
+    color: var(--accent-2);
+  }
+  .phase-tag.done {
+    background: rgba(52,211,153,0.12);
+    border-color: rgba(52,211,153,0.4);
+    color: var(--good);
+  }
+
+  .loss-chart {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    width: 150px;
+    height: 64px;
+    background: rgba(6,9,18,0.75);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px;
+  }
+  .loss-chart .lc-title {
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ===== Layer activations row ===== */
+  .layers-row {
+    background: linear-gradient(180deg, rgba(21,27,46,0.9), rgba(17,24,39,0.9));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  }
+  .layer-card {
+    background: #060912;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: border-color .3s, box-shadow .3s;
+  }
+  .layer-card.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(34,211,238,0.4);
+  }
+  .layer-card.latent.active {
+    border-color: var(--accent-3);
+    box-shadow: 0 0 12px rgba(244,114,182,0.4);
+  }
+  .layer-card.decode.active {
+    border-color: var(--accent-2);
+    box-shadow: 0 0 12px rgba(167,139,250,0.4);
+  }
+  .layer-card .lc-name {
+    font-size: 10px;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .layer-card .lc-dim {
+    font-size: 9px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .layer-card canvas {
+    background: #060912;
+    border-radius: 4px;
+  }
+  .layer-card.latent .lc-name { color: var(--accent-3); }
+
+  /* ===== Controls ===== */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 16px;
+  }
+  button {
+    background: linear-gradient(135deg, var(--accent), #0891b2);
+    color: #06121a;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 14px rgba(34,211,238,0.3);
+  }
+  button:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(34,211,238,0.45); }
+  button:active { transform: translateY(0); }
+  button.ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    box-shadow: none;
+  }
+  button.ghost:hover { border-color: var(--accent); color: var(--accent); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .divider { width: 1px; height: 22px; background: var(--border); }
+
+  .select-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  select {
+    background: var(--bg-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .speed-wrap {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--muted);
+  }
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100px; height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  .spacer { flex: 1; }
+  .hint { font-size: 11px; color: var(--muted); }
+
+  .toast {
+    position: fixed;
+    top: 20px; left: 50%;
+    transform: translateX(-50%) translateY(-60px);
+    background: var(--panel);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all .3s;
+    z-index: 100;
+    box-shadow: 0 8px 30px rgba(34,211,238,0.3);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="title">
+      <h1>Autoencoder 自编码器可视化</h1>
+      <p>编码 → 压缩 → 解码 · anime.js 驱动数据流 · 实时显示各层激活值</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="label">Epoch</div><div class="value" id="epochVal">0</div></div>
+      <div class="stat"><div class="label">Loss</div><div class="value" id="lossVal">—</div></div>
+      <div class="stat"><div class="label">重建相似度</div><div class="value" id="accVal">—</div></div>
+    </div>
+  </header>
+
+  <div class="stage">
+
+    <!-- Input -->
+    <div class="panel input">
+      <h2><span class="dot"></span>输入 Input</h2>
+      <div class="canvas-wrap">
+        <canvas id="inputCanvas" width="160" height="160"></canvas>
+      </div>
+      <div class="meta">
+        样本: <span id="sampleName">数字 3</span><br>
+        分辨率: <span>14×14</span><br>
+        像素数: <span>196</span>
+      </div>
+    </div>
+
+    <!-- Network + Layer Activations -->
+    <div class="network-col">
+      <div class="network">
+        <svg id="netSvg" viewBox="0 0 900 420" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="loss-chart">
+          <div class="lc-title">Loss 曲线</div>
+          <svg id="lossSvg" width="100%" height="44" viewBox="0 0 150 44"></svg>
+        </div>
+        <div class="phase-tag" id="phaseTag">就绪</div>
+        <div class="legend">
+          <span><i style="background:#22d3ee"></i>编码路径</span>
+          <span><i style="background:#a78bfa"></i>解码路径</span>
+          <span><i style="background:#f472b6"></i>潜在编码</span>
+        </div>
+      </div>
+
+      <!-- 7 层激活值面板 -->
+      <div class="layers-row" id="layersRow"></div>
+    </div>
+
+    <!-- Output -->
+    <div class="panel output">
+      <h2><span class="dot"></span>输出 Output</h2>
+      <div class="canvas-wrap">
+        <canvas id="outputCanvas" width="160" height="160"></canvas>
+      </div>
+      <div class="meta">
+        状态: <span id="reconStatus">等待运行</span><br>
+        MSE: <span id="mseVal">—</span><br>
+        压缩比: <span>196 → 16 (12.25×)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="runBtn">▶ 运行</button>
+    <button id="stepBtn" class="ghost">⏭ 单步</button>
+    <button id="resetBtn" class="ghost">↺ 重置</button>
+    <div class="divider"></div>
+    <div class="select-group">
+      输入样本
+      <select id="sampleSel">
+        <option value="3">数字 3</option>
+        <option value="7">数字 7</option>
+        <option value="5">数字 5</option>
+        <option value="0">数字 0</option>
+        <option value="8">数字 8</option>
+        <option value="smile">笑脸</option>
+        <option value="heart">爱心</option>
+      </select>
+    </div>
+    <div class="divider"></div>
+    <div class="speed-wrap">
+      速度
+      <input type="range" id="speedRange" min="0.3" max="2.5" step="0.1" value="1">
+      <span id="speedVal" style="width:30px">1.0×</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="hint">提示: 点击「运行」观察数据流经各层, 下方面板显示每层激活值</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   自编码器可视化 - anime.js 驱动
+   ============================================================ */
+
+const GRID = 14;
+const LAYER_SIZES = [196, 64, 32, 16, 32, 64, 196];
+const LAYER_NAMES = ['输入层', '编码层 1', '编码层 2', '潜在编码', '解码层 2', '解码层 1', '输出层'];
+const LAYER_SUBS = ['Input 196', 'Encoder 64', 'Encoder 32', 'Latent 16', 'Decoder 32', 'Decoder 64', 'Output 196'];
+const BOTTLENECK_IDX = 3;
+const TOTAL_EPOCHS = 50;
+const SVG_W = 900, SVG_H = 420;
+
+const COLORS = {
+  encode: '#22d3ee',
+  decode: '#a78bfa',
+  latent: '#f472b6',
+  neuron: '#374151'
+};
+
+/* ---------- 固定种子伪随机 (保证可复现与收敛) ---------- */
+function makeRng(seed) {
+  let s = seed;
+  return () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+// 预生成固定噪声 (每个位置一个固定随机值, 训练时只衰减幅度)
+const rng = makeRng(42);
+const NOISE = {
+  l1: Array.from({length: 64}, () => (rng() - 0.5) * 2),
+  l2: Array.from({length: 32}, () => (rng() - 0.5) * 2),
+  l3: Array.from({length: 16}, () => (rng() - 0.5) * 2),
+  l4: Array.from({length: 32}, () => (rng() - 0.5) * 2),
+  l5: Array.from({length: 64}, () => (rng() - 0.5) * 2),
+  l6: Array.from({length: 196}, () => (rng() - 0.5) * 2)
+};
+
+/* ---------- 样本数据 ---------- */
+const SAMPLES = {
+  '3': [
+    "00111111110000","01111111111000","00000011111000","00000001111000",
+    "00000001110000","00000011110000","00001111100000","00000011100000",
+    "00000001110000","00000000111000","00000001111000","00000011111000",
+    "01111111111000","00111111100000"
+  ],
+  '7': [
+    "01111111111000","11111111110000","00000001110000","00000011100000",
+    "00000111000000","00001110000000","00011100000000","00011000000000",
+    "00110000000000","01100000000000","01100000000000","11000000000000",
+    "11000000000000","10000000000000"
+  ],
+  '5': [
+    "00111111110000","01111111110000","01110000000000","01100000000000",
+    "01100000000000","01111111000000","00111111110000","00000001111000",
+    "00000000111000","00000000111000","00000001111000","00000011110000",
+    "01111111100000","00111111000000"
+  ],
+  '0': [
+    "00011111100000","00111111110000","01110001110000","01100000111000",
+    "11100000011100","11100000001100","11100000001100","11100000001100",
+    "11100000011100","11100000111000","01110001110000","01110011100000",
+    "00111111110000","00011111100000"
+  ],
+  '8': [
+    "00011111100000","00111111110000","01110001110000","01110001110000",
+    "01110011100000","00111111000000","00011110000000","00111111100000",
+    "01110001110000","11100000111000","11100000011100","11100000011100",
+    "01110001110000","00111111110000"
+  ],
+  'smile': [
+    "00001111110000","00110000001100","01000000000010","10000110000100",
+    "10000110000100","10000000000010","10000000000010","10001000000010",
+    "10001000000010","10000100000010","01000010000010","01000001100100",
+    "00110000001100","00001111110000"
+  ],
+  'heart': [
+    "00000000000000","00011000011000","00111100111100","01111111111100",
+    "01111111111100","01111111111100","01111111111100","00111111111100",
+    "00011111111000","00001111110000","00000111100000","00000011000000",
+    "00000000000000","00000000000000"
+  ]
+};
+
+function parseSample(key) {
+  const rows = SAMPLES[key];
+  const arr = [];
+  for (let r = 0; r < GRID; r++)
+    for (let c = 0; c < GRID; c++)
+      arr.push(rows[r][c] === '1' ? 1 : 0);
+  return arr;
+}
+
+/* ============================================================
+   可收敛的"伪自编码器"前向传播
+   - 每层目标激活 = 输入的确定性降采样/上采样
+   - 当前激活 = 目标激活 + 固定噪声 * (1-progress)^2
+   - progress = epoch / TOTAL_EPOCHS, 训练越大噪声越小, 最终收敛
+   ============================================================ */
+
+// 14×14 -> 8×8 (64 维): 2×2 块平均
+function down14to8(input) {
+  const out = new Array(64);
+  for (let by = 0; by < 8; by++)
+    for (let bx = 0; bx < 8; bx++) {
+      let sum = 0, cnt = 0;
+      for (let dy = 0; dy < 2; dy++)
+        for (let dx = 0; dx < 2; dx++) {
+          const y = by * 2 + dy, x = bx * 2 + dx;
+          if (y < 14 && x < 14) { sum += input[y * 14 + x]; cnt++; }
+        }
+      out[by * 8 + bx] = cnt ? sum / cnt : 0;
+    }
+  return out;
+}
+
+// 8×8 (64) -> 4×8 (32): 行两两合并
+function down8to4x8(input) {
+  const out = new Array(32);
+  for (let y = 0; y < 4; y++)
+    for (let x = 0; x < 8; x++) {
+      out[y * 8 + x] = (input[(y*2)*8 + x] + input[(y*2+1)*8 + x]) / 2;
+    }
+  return out;
+}
+
+// 14×14 -> 4×4 (16 维): 4×4 块平均 (潜在编码)
+function down14to4(input) {
+  const out = new Array(16);
+  for (let by = 0; by < 4; by++)
+    for (let bx = 0; bx < 4; bx++) {
+      let sum = 0, cnt = 0;
+      for (let dy = 0; dy < 4; dy++)
+        for (let dx = 0; dx < 4; dx++) {
+          const y = by * 4 + dy, x = bx * 4 + dx;
+          if (y < 14 && x < 14) { sum += input[y * 14 + x]; cnt++; }
+        }
+      out[by * 4 + bx] = cnt ? sum / cnt : 0;
+    }
+  return out;
+}
+
+// 4×4 (16) -> 4×8 (32): 列方向上采样
+function up4to4x8(latent) {
+  const out = new Array(32);
+  for (let y = 0; y < 4; y++)
+    for (let x = 0; x < 8; x++) {
+      const sx = Math.min(3, Math.floor(x / 2));
+      out[y * 8 + x] = latent[y * 4 + sx];
+    }
+  return out;
+}
+
+// 4×8 (32) -> 8×8 (64): 行方向上采样
+function up4x8to8x8(input) {
+  const out = new Array(64);
+  for (let y = 0; y < 8; y++)
+    for (let x = 0; x < 8; x++) {
+      const sy = Math.min(3, Math.floor(y / 2));
+      out[y * 8 + x] = input[sy * 8 + x];
+    }
+  return out;
+}
+
+// 8×8 (64) -> 14×14 (196): 双线性插值
+function up8to14(input) {
+  const out = new Array(196);
+  for (let y = 0; y < 14; y++)
+    for (let x = 0; x < 14; x++) {
+      const fy = y / 13 * 7, fx = x / 13 * 7;
+      const y0 = Math.floor(fy), x0 = Math.floor(fx);
+      const y1 = Math.min(7, y0 + 1), x1 = Math.min(7, x0 + 1);
+      const ty = fy - y0, tx = fx - x0;
+      const top = input[y0 * 8 + x0] * (1 - tx) + input[y0 * 8 + x1] * tx;
+      const bot = input[y1 * 8 + x0] * (1 - tx) + input[y1 * 8 + x1] * tx;
+      out[y * 14 + x] = top * (1 - ty) + bot * ty;
+    }
+  return out;
+}
+
+// 应用 ReLU + 归一化到 [0,1]
+function reluNorm(arr) {
+  return arr.map(v => Math.max(0, Math.min(1, v)));
+}
+
+// 加固定噪声 (幅度随训练衰减)
+function addNoise(target, noise, amp) {
+  return target.map((v, i) => Math.max(0, Math.min(1, v + noise[i] * amp)));
+}
+
+// 完整前向传播: 返回 7 层激活
+function forward(input, epoch) {
+  const progress = Math.min(1, epoch / TOTAL_EPOCHS);
+  // 噪声幅度随训练平方衰减 -> 真正收敛
+  const amp = Math.pow(1 - progress, 2);
+
+  const l0 = input.slice();
+  const l1_ideal = reluNorm(down14to8(input));
+  const l2_ideal = reluNorm(down8to4x8(l1_ideal));
+  const l3_ideal = down14to4(input);
+  const l4_ideal = reluNorm(up4to4x8(l3_ideal));
+  const l5_ideal = reluNorm(up4x8to8x8(l4_ideal));
+  const l6_ideal = reluNorm(up8to14(l5_ideal));
+
+  const l1 = addNoise(l1_ideal, NOISE.l1, amp * 0.5);
+  const l2 = addNoise(l2_ideal, NOISE.l2, amp * 0.6);
+  const l3 = addNoise(l3_ideal, NOISE.l3, amp * 0.7);
+  const l4 = addNoise(l4_ideal, NOISE.l4, amp * 0.6);
+  const l5 = addNoise(l5_ideal, NOISE.l5, amp * 0.5);
+  const l6 = addNoise(l6_ideal, NOISE.l6, amp * 0.4);
+
+  return [l0, l1, l2, l3, l4, l5, l6];
+}
+
+function mse(a, b) {
+  let s = 0;
+  for (let i = 0; i < a.length; i++) s += (a[i] - b[i]) ** 2;
+  return s / a.length;
+}
+function similarity(a, b) { return 1 - Math.min(1, mse(a, b) * 4); }
+
+/* ============================================================
+   Canvas 绘制
+   ============================================================ */
+function drawCanvas(canvas, data, alpha = 1) {
+  const ctx = canvas.getContext('2d');
+  const size = canvas.width;
+  const cell = size / GRID;
+  ctx.clearRect(0, 0, size, size);
+  ctx.fillStyle = '#060912';
+  ctx.fillRect(0, 0, size, size);
+  for (let i = 0; i < data.length; i++) {
+    const v = Math.max(0, Math.min(1, data[i]));
+    const y = Math.floor(i / GRID), x = i % GRID;
+    if (v > 0.05) {
+      const r = Math.round(34 + (244 - 34) * v);
+      const g = Math.round(211 + (114 - 211) * v);
+      const b = Math.round(238 + (182 - 238) * v);
+      ctx.fillStyle = `rgba(${r},${g},${b},${(0.3 + 0.7 * v) * alpha})`;
+      ctx.fillRect(x * cell, y * cell, cell, cell);
+      if (v > 0.5) {
+        ctx.fillStyle = `rgba(255,255,255,${0.15 * v * alpha})`;
+        ctx.fillRect(x * cell, y * cell, cell, 1);
+      }
+    } else {
+      ctx.fillStyle = `rgba(255,255,255,${0.02 * alpha})`;
+      ctx.fillRect(x * cell, y * cell, cell, cell);
+    }
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= GRID; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * cell, 0); ctx.lineTo(i * cell, size); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, i * cell); ctx.lineTo(size, i * cell); ctx.stroke();
+  }
+}
+
+// 绘制任意维度激活值到小 canvas (自动布局网格)
+function drawLayerActivation(canvas, data, color) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#060912';
+  ctx.fillRect(0, 0, W, H);
+
+  const n = data.length;
+  // 自动选择网格布局
+  let cols, rows;
+  if (n === 196) { cols = 14; rows = 14; }
+  else if (n === 64) { cols = 8; rows = 8; }
+  else if (n === 32) { cols = 8; rows = 4; }
+  else if (n === 16) { cols = 4; rows = 4; }
+  else { cols = Math.ceil(Math.sqrt(n)); rows = Math.ceil(n / cols); }
+
+  const cellW = W / cols, cellH = H / rows;
+  const gap = 1;
+  for (let i = 0; i < n; i++) {
+    const r = Math.floor(i / cols), c = i % cols;
+    const v = Math.max(0, Math.min(1, data[i]));
+    if (v > 0.03) {
+      // 颜色根据值在暗->亮之间过渡
+      const alpha = 0.2 + 0.8 * v;
+      ctx.fillStyle = colorWithAlpha(color, alpha);
+      ctx.fillRect(c * cellW + gap, r * cellH + gap, cellW - gap * 2, cellH - gap * 2);
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      ctx.fillRect(c * cellW + gap, r * cellH + gap, cellW - gap * 2, cellH - gap * 2);
+    }
+  }
+}
+
+function colorWithAlpha(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/* ============================================================
+   构建网络 SVG
+   ============================================================ */
+const svg = document.getElementById('netSvg');
+const DISPLAY_NEURONS = [10, 9, 7, 6, 7, 9, 10];
+const layerX = [], layerY = [];
+
+function buildNetwork() {
+  svg.innerHTML = '';
+  const n = LAYER_SIZES.length;
+  const marginX = 80;
+  const gap = (SVG_W - marginX * 2) / (n - 1);
+  const centerY = SVG_H / 2 + 10;
+
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  defs.innerHTML = `
+    <radialGradient id="neuronGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#67e8f9"/><stop offset="100%" stop-color="#0891b2"/>
+    </radialGradient>
+    <radialGradient id="latentGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#f9a8d4"/><stop offset="100%" stop-color="#be185d"/>
+    </radialGradient>
+    <radialGradient id="decodeGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#c4b5fd"/><stop offset="100%" stop-color="#6d28d9"/>
+    </radialGradient>
+  `;
+  svg.appendChild(defs);
+
+  layerX.length = 0; layerY.length = 0;
+  for (let i = 0; i < n; i++) {
+    layerX.push(marginX + gap * i);
+    const cnt = DISPLAY_NEURONS[i];
+    const totalH = (cnt - 1) * 32;
+    const ys = [];
+    for (let j = 0; j < cnt; j++) ys.push(centerY - totalH / 2 + j * 32);
+    layerY.push(ys);
+  }
+
+  // 区域背景
+  const bgEnc = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bgEnc.setAttribute('x', layerX[0] - 35);
+  bgEnc.setAttribute('y', 50);
+  bgEnc.setAttribute('width', layerX[BOTTLENECK_IDX] - layerX[0] + 70);
+  bgEnc.setAttribute('height', SVG_H - 90);
+  bgEnc.setAttribute('fill', 'rgba(34,211,238,0.03)');
+  bgEnc.setAttribute('stroke', 'rgba(34,211,238,0.12)');
+  bgEnc.setAttribute('stroke-dasharray', '4 4');
+  bgEnc.setAttribute('rx', '12');
+  svg.appendChild(bgEnc);
+
+  const bgDec = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bgDec.setAttribute('x', layerX[BOTTLENECK_IDX] - 35);
+  bgDec.setAttribute('y', 50);
+  bgDec.setAttribute('width', layerX[n - 1] - layerX[BOTTLENECK_IDX] + 70);
+  bgDec.setAttribute('height', SVG_H - 90);
+  bgDec.setAttribute('fill', 'rgba(167,139,250,0.03)');
+  bgDec.setAttribute('stroke', 'rgba(167,139,250,0.12)');
+  bgDec.setAttribute('stroke-dasharray', '4 4');
+  bgDec.setAttribute('rx', '12');
+  svg.appendChild(bgDec);
+
+  // 连接线
+  const linkGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  linkGroup.setAttribute('id', 'links');
+  for (let i = 0; i < n - 1; i++) {
+    const isEncode = i < BOTTLENECK_IDX;
+    const color = isEncode ? COLORS.encode : COLORS.decode;
+    const from = layerY[i], to = layerY[i + 1];
+    for (let b = 0; b < to.length; b++) {
+      const connectCount = Math.min(from.length, 3);
+      for (let k = 0; k < connectCount; k++) {
+        const a = Math.floor((from.length / connectCount) * k + b % connectCount) % from.length;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', layerX[i]);
+        line.setAttribute('y1', from[a]);
+        line.setAttribute('x2', layerX[i + 1]);
+        line.setAttribute('y2', to[b]);
+        line.setAttribute('stroke', color);
+        line.setAttribute('stroke-width', '0.8');
+        line.setAttribute('class', 'link');
+        line.setAttribute('data-from', i);
+        line.setAttribute('data-to', i + 1);
+        linkGroup.appendChild(line);
+      }
+    }
+  }
+  svg.appendChild(linkGroup);
+
+  // 神经元
+  const neuronGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  neuronGroup.setAttribute('id', 'neurons');
+  for (let i = 0; i < n; i++) {
+    const isLatent = i === BOTTLENECK_IDX;
+    const isDecode = i > BOTTLENECK_IDX;
+    const r = isLatent ? 9 : 7;
+    for (let j = 0; j < layerY[i].length; j++) {
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', layerX[i]);
+      c.setAttribute('cy', layerY[i][j]);
+      c.setAttribute('r', r);
+      c.setAttribute('fill', COLORS.neuron);
+      c.setAttribute('stroke', isLatent ? COLORS.latent : (isDecode ? COLORS.decode : COLORS.encode));
+      c.setAttribute('stroke-width', '1.2');
+      c.setAttribute('class', 'neuron');
+      c.setAttribute('data-layer', i);
+      c.setAttribute('data-idx', j);
+      neuronGroup.appendChild(c);
+    }
+  }
+  svg.appendChild(neuronGroup);
+
+  // 标签
+  const labelGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  for (let i = 0; i < n; i++) {
+    const t1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t1.setAttribute('x', layerX[i]);
+    t1.setAttribute('y', 24);
+    t1.setAttribute('class', 'layer-title');
+    t1.textContent = LAYER_NAMES[i];
+    labelGroup.appendChild(t1);
+
+    const t2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t2.setAttribute('x', layerX[i]);
+    t2.setAttribute('y', 38);
+    t2.setAttribute('class', 'layer-label');
+    t2.textContent = LAYER_SUBS[i];
+    labelGroup.appendChild(t2);
+
+    const t3 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t3.setAttribute('x', layerX[i]);
+    t3.setAttribute('y', SVG_H - 12);
+    t3.setAttribute('class', 'layer-label');
+    t3.textContent = `dim=${LAYER_SIZES[i]}`;
+    labelGroup.appendChild(t3);
+  }
+  svg.appendChild(labelGroup);
+
+  const encLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  encLabel.setAttribute('x', (layerX[0] + layerX[BOTTLENECK_IDX - 1]) / 2);
+  encLabel.setAttribute('y', SVG_H - 30);
+  encLabel.setAttribute('class', 'layer-label');
+  encLabel.setAttribute('fill', COLORS.encode);
+  encLabel.textContent = '◀ 编码器 Encoder';
+  svg.appendChild(encLabel);
+
+  const decLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  decLabel.setAttribute('x', (layerX[BOTTLENECK_IDX + 1] + layerX[n - 1]) / 2);
+  decLabel.setAttribute('y', SVG_H - 30);
+  decLabel.setAttribute('class', 'layer-label');
+  decLabel.setAttribute('fill', COLORS.decode);
+  decLabel.textContent = '解码器 Decoder ▶';
+  svg.appendChild(decLabel);
+}
+
+/* ============================================================
+   构建层激活面板
+   ============================================================ */
+const layersRow = document.getElementById('layersRow');
+const layerCanvases = [];
+
+function buildLayerPanels() {
+  layersRow.innerHTML = '';
+  layerCanvases.length = 0;
+  for (let i = 0; i < LAYER_SIZES.length; i++) {
+    const isLatent = i === BOTTLENECK_IDX;
+    const isDecode = i > BOTTLENECK_IDX;
+    const card = document.createElement('div');
+    card.className = 'layer-card' + (isLatent ? ' latent' : '') + (isDecode ? ' decode' : '');
+    card.dataset.layer = i;
+
+    const name = document.createElement('div');
+    name.className = 'lc-name';
+    name.textContent = LAYER_NAMES[i];
+    card.appendChild(name);
+
+    const dim = document.createElement('div');
+    dim.className = 'lc-dim';
+    dim.textContent = `${LAYER_SIZES[i]} 维`;
+    card.appendChild(dim);
+
+    const cv = document.createElement('canvas');
+    cv.width = 70; cv.height = 70;
+    card.appendChild(cv);
+    layerCanvases.push(cv);
+
+    card.addEventListener('click', () => {
+      if (state.layers[i]) {
+        showToast(`${LAYER_NAMES[i]} (${LAYER_SIZES[i]} 维) - 当前激活已显示`);
+      }
+    });
+
+    layersRow.appendChild(card);
+  }
+}
+
+function highlightLayerCard(idx) {
+  document.querySelectorAll('.layer-card').forEach((c, i) => {
+    c.classList.toggle('active', i === idx);
+  });
+}
+
+function updateLayerPanel(idx, data) {
+  const isLatent = idx === BOTTLENECK_IDX;
+  const isDecode = idx > BOTTLENECK_IDX;
+  const color = isLatent ? COLORS.latent : (isDecode ? COLORS.decode : COLORS.encode);
+  drawLayerActivation(layerCanvases[idx], data, color);
+}
+
+/* ============================================================
+   动效
+   ============================================================ */
+const phaseTag = document.getElementById('phaseTag');
+function setPhase(text, mode = '') {
+  phaseTag.textContent = text;
+  phaseTag.className = 'phase-tag' + (mode ? ' ' + mode : '');
+}
+
+function activateLayer(layerIdx, color, duration = 400) {
+  const neurons = svg.querySelectorAll(`circle.neuron[data-layer="${layerIdx}"]`);
+  const count = Math.max(1, Math.floor(neurons.length * 0.6));
+  const chosen = [...neurons].sort(() => Math.random() - 0.5).slice(0, count);
+  chosen.forEach((n, i) => {
+    anime({
+      targets: n,
+      fill: color,
+      duration: duration,
+      delay: i * 20,
+      easing: 'easeOutQuad',
+      complete: () => {
+        anime({ targets: n, fill: COLORS.neuron, duration: 500, easing: 'easeInQuad' });
+      }
+    });
+  });
+}
+
+function sendPulses(fromLayer, toLayer, color, duration = 600) {
+  const links = svg.querySelectorAll(`line.link[data-from="${fromLayer}"][data-to="${toLayer}"]`);
+  const pulseGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  svg.appendChild(pulseGroup);
+  const sample = [...links].filter((_, i) => i % 2 === 0).slice(0, 14);
+  const pulses = [];
+  sample.forEach((line, i) => {
+    const x1 = +line.getAttribute('x1'), y1 = +line.getAttribute('y1');
+    const x2 = +line.getAttribute('x2'), y2 = +line.getAttribute('y2');
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', x1); c.setAttribute('cy', y1);
+    c.setAttribute('r', 2.5); c.setAttribute('fill', color);
+    c.setAttribute('class', 'pulse'); c.style.color = color;
+    pulseGroup.appendChild(c);
+    pulses.push({ el: c, x1, y1, x2, y2 });
+    anime({
+      targets: line,
+      strokeOpacity: [0.18, 0.7],
+      strokeWidth: [0.8, 1.6],
+      duration: duration,
+      easing: 'easeOutQuad',
+      direction: 'alternate',
+      complete: () => { line.setAttribute('stroke-opacity', 0.18); line.setAttribute('stroke-width', 0.8); }
+    });
+  });
+  return new Promise(resolve => {
+    let done = 0;
+    pulses.forEach((p, i) => {
+      anime({
+        targets: p.el,
+        cx: p.x2, cy: p.y2, r: [2.5, 4, 1],
+        duration: duration, delay: i * 15, easing: 'easeInQuad',
+        complete: () => { done++; if (done === pulses.length) { pulseGroup.remove(); resolve(); } }
+      });
+    });
+  });
+}
+
+function highlightLatent(duration = 800) {
+  const neurons = svg.querySelectorAll(`circle.neuron[data-layer="${BOTTLENECK_IDX}"]`);
+  neurons.forEach((n, i) => {
+    anime({
+      targets: n, r: [9, 13, 9], strokeWidth: [1.2, 2.5, 1.2],
+      duration: duration, delay: i * 60, easing: 'easeInOutSine'
+    });
+    anime({
+      targets: n, fill: [COLORS.neuron, COLORS.latent, COLORS.neuron],
+      duration: duration, delay: i * 60, easing: 'easeInOutSine'
+    });
+  });
+}
+
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ============================================================
+   状态与流程
+   ============================================================ */
+let state = {
+  input: parseSample('3'),
+  layers: null,
+  epoch: 0,
+  running: false,
+  speed: 1,
+  lossHistory: []
+};
+
+const inputCanvas = document.getElementById('inputCanvas');
+const outputCanvas = document.getElementById('outputCanvas');
+
+function refreshCanvases() {
+  drawCanvas(inputCanvas, state.input);
+  if (state.layers) {
+    drawCanvas(outputCanvas, state.layers[6], 1);
+    for (let i = 0; i < 7; i++) updateLayerPanel(i, state.layers[i]);
+  } else {
+    drawCanvas(outputCanvas, new Array(196).fill(0), 1);
+    for (let i = 0; i < 7; i++) updateLayerPanel(i, new Array(LAYER_SIZES[i]).fill(0));
+  }
+}
+
+function updateStats(loss, sim) {
+  document.getElementById('epochVal').textContent = state.epoch;
+  document.getElementById('lossVal').textContent = loss != null ? loss.toFixed(4) : '—';
+  document.getElementById('accVal').textContent = sim != null ? (sim * 100).toFixed(1) + '%' : '—';
+  document.getElementById('mseVal').textContent = loss != null ? loss.toFixed(4) : '—';
+}
+
+function updateLossChart() {
+  const lsvg = document.getElementById('lossSvg');
+  lsvg.innerHTML = '';
+  if (state.lossHistory.length < 2) return;
+  const w = 150, h = 44;
+  const max = state.lossHistory[0] || 1;
+  const pts = state.lossHistory.map((v, i) => {
+    const x = (i / (state.lossHistory.length - 1)) * w;
+    const y = h - (v / max) * (h - 6) - 3;
+    return [x, y];
+  });
+  let d = `M0,${h} `;
+  pts.forEach(p => d += `L${p[0]},${p[1]} `);
+  d += `L${w},${h} Z`;
+  const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  area.setAttribute('d', d);
+  area.setAttribute('fill', 'rgba(244,114,182,0.2)');
+  lsvg.appendChild(area);
+  let ld = `M${pts[0][0]},${pts[0][1]} `;
+  pts.forEach(p => ld += `L${p[0]},${p[1]} `);
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  line.setAttribute('d', ld);
+  line.setAttribute('fill', 'none');
+  line.setAttribute('stroke', '#f472b6');
+  line.setAttribute('stroke-width', '1.5');
+  lsvg.appendChild(line);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+/* ---------- 前向传播动画 (逐层更新激活面板) ---------- */
+async function forwardPassAnimated() {
+  // 预计算所有层激活
+  state.layers = forward(state.input, state.epoch);
+
+  setPhase('编码中…');
+
+  // L0 输入层
+  highlightLayerCard(0);
+  updateLayerPanel(0, state.layers[0]);
+  activateLayer(0, COLORS.encode, 300);
+  await wait(250 / state.speed);
+
+  // 编码路径 0->1->2->3
+  for (let i = 0; i < BOTTLENECK_IDX; i++) {
+    await sendPulses(i, i + 1, COLORS.encode, 450 / state.speed);
+    highlightLayerCard(i + 1);
+    updateLayerPanel(i + 1, state.layers[i + 1]);
+    activateLayer(i + 1, i + 1 === BOTTLENECK_IDX ? COLORS.latent : COLORS.encode, 300);
+    await wait(60 / state.speed);
+  }
+
+  // 潜在编码高亮
+  setPhase('潜在编码');
+  highlightLatent(600 / state.speed);
+  await wait(500 / state.speed);
+
+  // 解码路径 3->4->5->6
+  setPhase('解码中…', 'decode');
+  for (let i = BOTTLENECK_IDX; i < LAYER_SIZES.length - 1; i++) {
+    await sendPulses(i, i + 1, COLORS.decode, 450 / state.speed);
+    highlightLayerCard(i + 1);
+    updateLayerPanel(i + 1, state.layers[i + 1]);
+    activateLayer(i + 1, COLORS.decode, 300);
+    await wait(60 / state.speed);
+  }
+
+  // 输出更新
+  drawCanvas(outputCanvas, state.layers[6], 1);
+  setPhase('完成', 'done');
+  await wait(200 / state.speed);
+  highlightLayerCard(-1);
+}
+
+async function trainStep() {
+  state.epoch++;
+  await forwardPassAnimated();
+  const loss = mse(state.input, state.layers[6]);
+  const sim = similarity(state.input, state.layers[6]);
+  state.lossHistory.push(loss);
+  if (state.lossHistory.length > 60) state.lossHistory.shift();
+  updateStats(loss, sim);
+  updateLossChart();
+  document.getElementById('reconStatus').textContent = `Epoch ${state.epoch} 已重建`;
+}
+
+async function run() {
+  if (state.running) return;
+  state.running = true;
+  document.getElementById('runBtn').textContent = '⏸ 暂停';
+  while (state.running && state.epoch < TOTAL_EPOCHS) {
+    await trainStep();
+    await wait(300 / state.speed);
+  }
+  if (state.epoch >= TOTAL_EPOCHS) {
+    showToast(`训练完成! Loss=${state.lossHistory[state.lossHistory.length-1].toFixed(4)}, 已收敛`);
+    setPhase('已收敛', 'done');
+  }
+  state.running = false;
+  document.getElementById('runBtn').textContent = '▶ 运行';
+}
+
+function reset() {
+  state.running = false;
+  state.epoch = 0;
+  state.lossHistory = [];
+  state.layers = null;
+  state.input = parseSample(document.getElementById('sampleSel').value);
+  document.getElementById('sampleName').textContent = document.getElementById('sampleSel').selectedOptions[0].text;
+  refreshCanvases();
+  updateStats(null, null);
+  updateLossChart();
+  setPhase('就绪');
+  document.getElementById('reconStatus').textContent = '等待运行';
+  document.getElementById('runBtn').textContent = '▶ 运行';
+  svg.querySelectorAll('circle.neuron').forEach(n => n.setAttribute('fill', COLORS.neuron));
+  highlightLayerCard(-1);
+}
+
+/* ---------- 事件 ---------- */
+document.getElementById('runBtn').addEventListener('click', () => {
+  if (state.running) {
+    state.running = false;
+    document.getElementById('runBtn').textContent = '▶ 运行';
+  } else {
+    run();
+  }
+});
+document.getElementById('stepBtn').addEventListener('click', async () => {
+  if (state.running) return;
+  if (state.epoch >= TOTAL_EPOCHS) { showToast('已训练完成, 请重置'); return; }
+  await trainStep();
+});
+document.getElementById('resetBtn').addEventListener('click', reset);
+document.getElementById('sampleSel').addEventListener('change', reset);
+
+const speedRange = document.getElementById('speedRange');
+const speedVal = document.getElementById('speedVal');
+speedRange.addEventListener('input', () => {
+  state.speed = +speedRange.value;
+  speedVal.textContent = state.speed.toFixed(1) + '×';
+});
+
+/* ---------- 初始化 ---------- */
+buildNetwork();
+buildLayerPanels();
+reset();
+
+// 入场动画
+anime({
+  targets: '.panel, .network, .controls, .layers-row',
+  opacity: [0, 1],
+  translateY: [20, 0],
+  duration: 800,
+  delay: anime.stagger(100),
+  easing: 'easeOutCubic'
+});
+svg.querySelectorAll('circle.neuron').forEach(c => {
+  c.style.transformOrigin = `${c.getAttribute('cx')}px ${c.getAttribute('cy')}px`;
+  c.style.transformBox = 'fill-box';
+});
+anime({
+  targets: 'circle.neuron',
+  scale: [0, 1],
+  duration: 600,
+  delay: anime.stagger(6, { from: 'center' }),
+  easing: 'easeOutBack'
+});
+anime({
+  targets: 'line.link',
+  strokeOpacity: [0, 0.18],
+  duration: 1000,
+  delay: anime.stagger(2),
+  easing: 'easeOutQuad'
+});
+
+showToast('点击「运行」观察数据流经各层');
+</script>
+</body>
+</html>

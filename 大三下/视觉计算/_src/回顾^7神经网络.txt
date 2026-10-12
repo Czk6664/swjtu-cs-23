@@ -1,0 +1,205 @@
+--- Page 1 ---
+1
+SCAI011112 视觉计算
+回顾：神经网络
+计算机科学与技术专业
+2025-2026(2)
+--- Page 2 ---
+2
+机器学习
+--- Page 3 ---
+3
+Data, Priors, and Hypotheses
+--- Page 4 ---
+4
+Multilayer Perceptron (MLP)
+Input Intermediate/hidde
+n
+Output
+--- Page 5 ---
+5
+深度网络
+heron
+Linear
+Nonlinearity
+…
+--- Page 6 ---
+6
+Mapping
+Wiring graph
+Equation
+--- Page 7 ---
+7
+Fast Activations vs Slow Parameters
+--- Page 8 ---
+8
+Ground truth label
+dolphin
+cat
+night heron
+angel fish
+elephant
+guitarfish
+…
+0
+1
+Prob
+Prediction
+dolphin
+cat
+night heron
+angel fish
+elephant
+guitarfish
+…
+-
+log prob
+0
+Elementwise scores
+-
+0
+How much better you 
+could have done
+bumble bee
+fly
+bumble bee
+fly
+--- Page 9 ---
+9
+蒙特卡洛(Monte Carlo) 
+1. Draw 𝑁random samples from the probability distribution 𝑝(𝑥); denote
+them by 𝒙!, ⋯, 𝒙".
+2. Calculate )𝒇=
+𝟏
+𝑵∑𝒊&𝟏
+𝑵
+𝒇𝐱𝒊.
+3. Return )𝒇as an approximation to 𝔼'~) 𝑓𝑋.
+估计期望：𝔼'~) 𝑓𝑋
+= ∫ℝ! 𝑓𝒙⋅𝑝𝒙𝑑𝒙.
+𝔼𝑿~𝒑𝒇𝑿
+≈𝟏
+𝑵'
+𝒊%𝟏
+𝑵
+𝒇𝒙𝒊
+--- Page 10 ---
+10
+10
+经验风险近似期望风险
+𝓛= 𝟏
+𝑵7
+𝒏&𝟏
+𝑵
+𝓛8𝒚, 𝒚
+𝑝𝒙, 𝒚
+真实的未知分布
+𝒙𝒏, 𝒚𝒏
+𝔼𝒑(𝒙,𝒚) 𝓛8𝒚, 𝒚
+经验风险
+I.I.D.
+OOD
+采样
+期望风险
+近似
+机器学习
+模型
+𝒑!(𝒙, 𝒚)
+𝒑(𝒙, 𝒚)
+--- Page 11 ---
+11
+11
+深度学习
+guitarfish
+Loss
+Learned
+--- Page 12 ---
+12
+12
+深度学习
+heron
+Loss
+Learned
+--- Page 13 ---
+13
+13
+深度学习
+car
+Loss
+Learned
+--- Page 14 ---
+14
+14
+张量表示
+…
+Furry?
+Is a fish?
+Size
+Color
+…
+Each layer is a representation of the data
+--- Page 15 ---
+15
+15
+张量表示
+Tensor processing with batch size = 3:
+--- Page 16 ---
+16
+16
+归一化层
+• 归一化层基于神经元群体的值，将激活值压缩至更优的数值范围。
+•
+Batchnorm: standardizes all 
+values in a column of the 
+activation tensor (subtracts 
+mean, divides by variance)
+•
+Data normalization: each 
+variable now has zero 
+mean and unit variance 
+across the data set. 
+•
+Layernorm: does the 
+same except to a row
+of the activation 
+tensor.
+--- Page 17 ---
+17
+17
+What does training a deep net classifier look like?
+--- Page 18 ---
+18
+18
+Steps of gradient 
+descent training an 
+MLP with hidden 
+dimensionality 2 on 
+each layer.
+--- Page 19 ---
+19
+19
+Training iteration
+…
+…
+--- Page 20 ---
+20
+20
+Mapping
+Wiring graph
+Equation
+--- Page 21 ---
+21
+21
+[CLIP, Radford*, Kim* et al., ICML 2021]
+--- Page 22 ---
+22
+22
+BP 算法
+Forward:
+Backward:
+Update:
+… and repeat
+--- Page 23 ---
+23
+23
+Thank You

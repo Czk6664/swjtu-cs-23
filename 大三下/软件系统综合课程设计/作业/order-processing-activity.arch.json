@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "title": "订单处理活动图",
+  "type": "flow-diagram",
+  "source": "generated",
+  "profile": "default",
+  "theme": "tech-blue",
+  "layout": "vertical",
+  "counts": {
+    "nodes": 13,
+    "edges": 14,
+    "modules": 0
+  },
+  "nodes": [
+    {
+      "id": "start",
+      "label": " ",
+      "type": "terminal",
+      "size": "small"
+    },
+    {
+      "id": "receiveOrder",
+      "label": "接到用户订单",
+      "type": "process"
+    },
+    {
+      "id": "fork",
+      "label": "并发处理",
+      "type": "process"
+    },
+    {
+      "id": "prepareGoods",
+      "label": "准备货物",
+      "type": "process"
+    },
+    {
+      "id": "isUrgent",
+      "label": "是否加急？",
+      "type": "decision"
+    },
+    {
+      "id": "shipEms",
+      "label": "EMS发货",
+      "type": "process"
+    },
+    {
+      "id": "shipNormal",
+      "label": "普通包裹发货",
+      "type": "process"
+    },
+    {
+      "id": "shipMerge",
+      "label": "发货完成",
+      "type": "process"
+    },
+    {
+      "id": "issueInvoice",
+      "label": "开具发票",
+      "type": "document"
+    },
+    {
+      "id": "collectPayment",
+      "label": "收款",
+      "type": "process"
+    },
+    {
+      "id": "join",
+      "label": "两路完成",
+      "type": "process"
+    },
+    {
+      "id": "closeOrder",
+      "label": "自动关闭订单",
+      "type": "process"
+    },
+    {
+      "id": "end",
+      "label": " ",
+      "type": "terminal",
+      "size": "small"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "from": "start",
+      "to": "receiveOrder",
+      "type": "primary"
+    },
+    {
+      "id": "edge-2",
+      "from": "receiveOrder",
+      "to": "fork",
+      "type": "primary"
+    },
+    {
+      "id": "edge-3",
+      "from": "fork",
+      "to": "prepareGoods",
+      "type": "primary"
+    },
+    {
+      "id": "edge-4",
+      "from": "prepareGoods",
+      "to": "isUrgent",
+      "type": "primary"
+    },
+    {
+      "id": "edge-5",
+      "from": "isUrgent",
+      "to": "shipEms",
+      "type": "primary",
+      "label": "是"
+    },
+    {
+      "id": "edge-6",
+      "from": "isUrgent",
+      "to": "shipNormal",
+      "type": "primary",
+      "label": "否"
+    },
+    {
+      "id": "edge-7",
+      "from": "shipEms",
+      "to": "shipMerge",
+      "type": "primary"
+    },
+    {
+      "id": "edge-8",
+      "from": "shipNormal",
+      "to": "shipMerge",
+      "type": "primary"
+    },
+    {
+      "id": "edge-9",
+      "from": "fork",
+      "to": "issueInvoice",
+      "type": "primary"
+    },
+    {
+      "id": "edge-10",
+      "from": "issueInvoice",
+      "to": "collectPayment",
+      "type": "primary"
+    },
+    {
+      "id": "edge-11",
+      "from": "shipMerge",
+      "to": "join",
+      "type": "primary"
+    },
+    {
+      "id": "edge-12",
+      "from": "collectPayment",
+      "to": "join",
+      "type": "primary"
+    },
+    {
+      "id": "edge-13",
+      "from": "join",
+      "to": "closeOrder",
+      "type": "primary"
+    },
+    {
+      "id": "edge-14",
+      "from": "closeOrder",
+      "to": "end",
+      "type": "primary"
+    }
+  ],
+  "modules": []
+}

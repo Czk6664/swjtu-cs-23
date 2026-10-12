@@ -1,0 +1,212 @@
+meta:
+  theme: tech-blue
+  layout: horizontal
+  source: edited
+  title: Page-1
+modules: []
+nodes:
+  - id: n2
+    label: 系统管理员
+    type: service
+    position:
+      x: 96
+      'y': 336
+    size: tiny
+    style:
+      fontColor: '#1E293B'
+      fontSize: 13
+  - id: n20
+    label: 账号管理系统
+    type: service
+    position:
+      x: 608
+      'y': 368
+    size: xl
+    style:
+      strokeColor: '#334155'
+      fontColor: '#0F172A'
+      strokeWidth: 1.5
+      fontSize: 14
+  - id: n3
+    label: 创建新账户
+    type: user
+    position:
+      x: 416
+      'y': 184
+    size: xl
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#2563EB'
+      fontColor: '#1E293B'
+      strokeWidth: 1.5
+      fontSize: 13
+  - id: n4
+    label: 设置账户
+    type: user
+    position:
+      x: 416
+      'y': 320
+    size: xl
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#2563EB'
+      fontColor: '#1E293B'
+      strokeWidth: 1.5
+      fontSize: 13
+  - id: n5
+    label: 设置账户基本信息
+    type: user
+    position:
+      x: 768
+      'y': 264
+    size: xl
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#2563EB'
+      fontColor: '#1E293B'
+      strokeWidth: 1.5
+      fontSize: 13
+  - id: n6
+    label: 设置账户权限
+    type: user
+    position:
+      x: 768
+      'y': 376
+    size: xl
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#2563EB'
+      fontColor: '#1E293B'
+      strokeWidth: 1.5
+      fontSize: 13
+  - id: n7
+    label: 删除账户
+    type: user
+    position:
+      x: 416
+      'y': 488
+    size: xl
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#2563EB'
+      fontColor: '#1E293B'
+      strokeWidth: 1.5
+      fontSize: 13
+  - id: n8
+    label: 查询账户
+    type: user
+    position:
+      x: 416
+      'y': 600
+    size: xl
+    style:
+      fillColor: '#FFFFFF'
+      strokeColor: '#2563EB'
+      fontColor: '#1E293B'
+      strokeWidth: 1.5
+      fontSize: 13
+edges:
+  - from: n2
+    to: n3
+    type: bidirectional
+    style:
+      strokeColor: '#1E293B'
+      strokeWidth: 1.5
+      endArrow: none
+      endFill: false
+      exitX: 1
+      exitY: 0.2
+      exitDx: 0
+      exitDy: 0
+      entryX: 0
+      entryY: 0.2
+      entryDx: 0
+      entryDy: 0
+  - from: n2
+    to: n4
+    type: bidirectional
+    style:
+      strokeColor: '#1E293B'
+      strokeWidth: 1.5
+      endArrow: none
+      endFill: false
+      exitX: 1
+      exitY: 0.4
+      exitDx: 0
+      exitDy: 0
+      entryX: 0
+      entryY: 0.4
+      entryDx: 0
+      entryDy: 0
+  - from: n2
+    to: n7
+    type: bidirectional
+    style:
+      strokeColor: '#1E293B'
+      strokeWidth: 1.5
+      endArrow: none
+      endFill: false
+      exitX: 1
+      exitY: 0.6
+      exitDx: 0
+      exitDy: 0
+      entryX: 0
+      entryY: 0.6
+      entryDx: 0
+      entryDy: 0
+  - from: n2
+    to: n8
+    type: bidirectional
+    style:
+      strokeColor: '#1E293B'
+      strokeWidth: 1.5
+      endArrow: none
+      endFill: false
+      exitX: 1
+      exitY: 0.8
+      exitDx: 0
+      exitDy: 0
+      entryX: 0
+      entryY: 0.8
+      entryDx: 0
+      entryDy: 0
+  - from: n4
+    to: n5
+    type: optional
+    label: '>'
+    style:
+      strokeColor: '#64748B'
+      strokeWidth: 1.2
+      dashed: true
+      dashPattern: 6 4
+      endArrow: open
+      endFill: false
+      exitX: 1
+      exitY: 0.35
+      exitDx: 0
+      exitDy: 0
+      entryX: 0
+      entryY: 0.35
+      entryDx: 0
+      entryDy: 0
+    labelPosition: center
+  - from: n4
+    to: n6
+    type: optional
+    label: '>'
+    style:
+      strokeColor: '#64748B'
+      strokeWidth: 1.2
+      dashed: true
+      dashPattern: 6 4
+      endArrow: open
+      endFill: false
+      exitX: 1
+      exitY: 0.65
+      exitDx: 0
+      exitDy: 0
+      entryX: 0
+      entryY: 0.65
+      entryDx: 0
+      entryDy: 0
+    labelPosition: center

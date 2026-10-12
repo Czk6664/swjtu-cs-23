@@ -1,0 +1,14 @@
+{
+  "name": "jiaodaluntan-intro-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.6.91 preview",
+    "check": "npx --yes hyperframes@0.6.91 lint && npx --yes hyperframes@0.6.91 validate && npx --yes hyperframes@0.6.91 inspect",
+    "render": "npx --yes hyperframes@0.6.91 render",
+    "publish": "npx --yes hyperframes@0.6.91 publish"
+  },
+  "dependencies": {
+    "puppeteer": "^25.1.0"
+  }
+}
