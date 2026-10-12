@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>哈希函数入门 · 小白教学</title>
+<style>
+  :root{
+    --bg:#0f1729;
+    --bg-soft:#16213e;
+    --card:#1b2745;
+    --card-2:#212f52;
+    --ink:#e8edf7;
+    --ink-soft:#a9b4cc;
+    --line:#2c3a5e;
+    --accent:#5b9dff;
+    --accent-2:#7c5cff;
+    --green:#36d399;
+    --amber:#fbbd23;
+    --red:#f87272;
+    --pink:#f472b6;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0f1729 0%,#131d38 100%);
+    color:var(--ink);
+    line-height:1.75;
+    font-size:16px;
+  }
+  #progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:999;transition:width .1s}
+
+  .chapnav{position:sticky;top:0;z-index:200;display:flex;gap:4px;flex-wrap:wrap;background:rgba(10,16,30,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 14px}
+  .chapnav a{color:var(--ink-soft);text-decoration:none;font-size:13px;padding:5px 11px;border-radius:8px;white-space:nowrap;transition:.15s}
+  .chapnav a:hover{background:var(--card-2);color:var(--ink)}
+  .chapnav a.cur{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;display:flex;gap:26px}
+
+  nav{
+    position:sticky;top:0;align-self:flex-start;
+    width:230px;flex:0 0 230px;height:100vh;overflow-y:auto;
+    padding:26px 8px 40px 0;
+    font-size:14px;
+  }
+  nav .nav-title{font-weight:700;color:var(--accent);letter-spacing:1px;margin:0 0 14px 10px;font-size:13px}
+  nav a{
+    display:block;color:var(--ink-soft);text-decoration:none;
+    padding:8px 12px;border-radius:10px;margin:2px 0;
+    border-left:3px solid transparent;transition:.2s;
+  }
+  nav a:hover{background:var(--card);color:var(--ink)}
+  nav a.active{background:var(--card-2);color:#fff;border-left-color:var(--accent)}
+
+  main{flex:1;min-width:0;padding:34px 0 90px}
+
+  header.hero{
+    background:radial-gradient(120% 140% at 0% 0%,#26356b 0%,#1a234a 60%,#161f3e 100%);
+    border:1px solid var(--line);border-radius:24px;
+    padding:38px 38px 32px;margin-bottom:30px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  header.hero::after{content:"#️⃣";position:absolute;right:30px;top:18px;font-size:90px;opacity:.12}
+  header.hero .tag{display:inline-block;background:rgba(91,157,255,.18);color:var(--accent);
+    padding:4px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:14px}
+  header.hero h1{margin:0 0 8px;font-size:32px;letter-spacing:.5px}
+  header.hero p{margin:0;color:var(--ink-soft);font-size:15px}
+
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px 30px;margin-bottom:24px;box-shadow:var(--shadow);scroll-margin-top:60px;
+  }
+  h2{font-size:23px;margin:0 0 18px;padding-bottom:12px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:10px}
+  h2 .num{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+    width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 34px}
+  h3{font-size:18px;margin:22px 0 10px;color:#cfe0ff}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px;overflow:hidden;border-radius:12px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--card-2);color:#cfe0ff;font-weight:600}
+  tr:hover td{background:rgba(91,157,255,.06)}
+  td code,p code,li code{background:#0d1530;color:#8fd6ff;padding:2px 7px;border-radius:6px;font-size:13.5px}
+
+  .box{border-radius:12px;padding:14px 18px;margin:16px 0;border-left:4px solid;font-size:15px}
+  .box .bt{font-weight:700;display:block;margin-bottom:4px}
+  .box.tip{background:rgba(54,211,153,.08);border-color:var(--green)}
+  .box.warn{background:rgba(251,189,35,.08);border-color:var(--amber)}
+  .box.key{background:rgba(124,92,255,.10);border-color:var(--accent-2)}
+  .box.quote{background:rgba(244,114,182,.07);border-color:var(--pink);font-style:italic}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:18px 0}
+  .ccard{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s}
+  .ccard:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.35)}
+  .ccard .emoji{font-size:34px}
+  .ccard h4{margin:8px 0 6px;font-size:18px}
+  .ccard .en{color:var(--ink-soft);font-size:13px}
+  .ccard.c{border-top:3px solid var(--accent)}
+  .ccard.i{border-top:3px solid var(--green)}
+  .ccard.a{border-top:3px solid var(--amber)}
+  .ccard.d{border-top:3px solid var(--pink)}
+
+  details{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:6px 18px;margin:12px 0}
+  details summary{cursor:pointer;font-weight:600;padding:10px 0;list-style:none}
+  details summary::before{content:"❓ ";}
+  details[open] summary{color:var(--accent)}
+  details .ans{color:var(--ink-soft);padding:6px 0 14px;border-top:1px dashed var(--line)}
+
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .pill{display:inline-block;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;margin:3px}
+
+  .fig{background:#0d1530;border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;text-align:center}
+  .fig svg{max-width:100%;height:auto}
+  .fig .cap{color:var(--ink-soft);font-size:13px;margin-top:10px}
+  .fig text{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+
+  /* 哈希 vs 加密 vs 编码 三栏 */
+  .three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .tcol{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}
+  .tcol.h{border-top:3px solid var(--accent)}
+  .tcol.e{border-top:3px solid var(--amber)}
+  .tcol.c{border-top:3px solid var(--green)}
+  .tcol h4{margin:6px 0}
+  .tcol .flow{font-size:13px;color:var(--ink-soft);margin:8px 0}
+  .tcol .tag2{display:inline-block;background:#0d1530;border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-size:12.5px;margin-top:6px;color:#8fd6ff}
+
+  /* 雪崩对比 */
+  .aval{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+  .acard{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .acard .in{font-family:"Consolas","Courier New",monospace;color:var(--ink);font-size:15px}
+  .acard .digest{font-family:"Consolas","Courier New",monospace;color:#8fd6ff;font-size:13px;word-break:break-all;margin-top:6px}
+  .acard.b1{border-left:3px solid var(--green)}
+  .acard.b2{border-left:3px solid var(--red)}
+
+  details{background:var(--card-2)}
+
+  /* ===== 互动测验 ===== */
+  .quiz{background:linear-gradient(135deg,#1a2547,#212f52);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0}
+  .quiz .q{font-weight:600;margin-bottom:12px}
+  .quiz .q .badge{background:var(--accent-2);color:#fff;border-radius:8px;padding:1px 9px;font-size:12px;margin-right:8px}
+  .opt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:11px 15px;border-radius:10px;margin:7px 0;cursor:pointer;transition:.15s;font-size:14.5px;font-family:inherit}
+  .opt:hover{border-color:var(--accent);background:var(--card-2)}
+  .opt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .opt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .opt.disabled{pointer-events:none;opacity:.75}
+  .feedback{font-size:14px;margin-top:8px;padding:10px 14px;border-radius:10px;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:rgba(54,211,153,.12);color:#aef5d4}
+  .feedback.no{background:rgba(248,114,114,.12);color:#ffc2c2}
+
+  /* ===== 匹配题 ===== */
+  .match{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0}
+  .match .col{display:flex;flex-direction:column;gap:10px}
+  .match .col .ct{font-size:13px;color:var(--ink-soft);margin-bottom:2px}
+  .mitem{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;transition:.15s;font-size:14px}
+  .mitem:hover{border-color:var(--accent)}
+  .mitem.sel{border-color:var(--accent-2);background:var(--card-2)}
+  .mitem.done{border-color:var(--green);background:rgba(54,211,153,.12);cursor:default;color:#aef5d4}
+  .mitem.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  .checkbar{position:sticky;top:46px;z-index:50;background:rgba(15,23,41,.92);backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+  .checkbar .lbl{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .checkbar .track{flex:1;height:10px;background:var(--card);border-radius:999px;overflow:hidden}
+  .checkbar .fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--accent));transition:width .4s}
+  .checkbar .pct{font-weight:700;color:var(--green);font-size:14px;min-width:42px;text-align:right}
+
+  /* ===== 题库 ===== */
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{flex:1;min-width:140px;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    padding:11px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;transition:.15s}
+  .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent}
+  .tabpane{display:none}
+  .tabpane.active{display:block}
+
+  .score{position:sticky;top:100px;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:rgba(15,23,41,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:16px}
+  .score b{color:var(--green);font-size:18px}
+  .score .mini{font-size:13px;color:var(--ink-soft)}
+  .score .resetb{margin-left:auto;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    border-radius:8px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:13px}
+  .score .resetb:hover{border-color:var(--accent);color:var(--ink)}
+
+  .qitem{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  .qitem .qh{font-weight:600;margin-bottom:10px;line-height:1.6}
+  .qitem .qh .no{display:inline-block;background:var(--accent);color:#fff;border-radius:7px;padding:1px 9px;font-size:13px;margin-right:8px}
+  .qopt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:9px 14px;border-radius:9px;margin:6px 0;cursor:pointer;transition:.12s;font-size:14px;font-family:inherit}
+  .qopt:hover{border-color:var(--accent)}
+  .qopt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .qopt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .qopt.lock{pointer-events:none}
+  .qexp{font-size:13.5px;color:var(--ink-soft);margin-top:8px;padding:9px 13px;background:rgba(91,157,255,.08);border-radius:9px;border-left:3px solid var(--accent);display:none}
+  .qexp.show{display:block}
+
+  .blank-in{background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);
+    padding:7px 12px;font-size:14.5px;font-family:inherit;width:200px;margin:0 4px}
+  .blank-in:focus{outline:none;border-color:var(--accent)}
+  .blank-in.ok{border-color:var(--green);background:rgba(54,211,153,.12)}
+  .blank-in.bad{border-color:var(--red);background:rgba(248,114,114,.10)}
+  .blank-btns{margin-top:10px;display:flex;gap:8px}
+  .sbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:inherit;font-size:13.5px}
+  .sbtn:hover{border-color:var(--accent)}
+  .sbtn.primary{background:var(--accent);color:#fff;border-color:transparent}
+  .ansline{font-size:13.5px;color:var(--green);margin-top:8px;display:none}
+  .ansline.show{display:block}
+
+  footer{text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 0 10px}
+
+  #top{position:fixed;right:26px;bottom:26px;width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none;
+    font-size:20px;cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s}
+  #top.show{opacity:1;pointer-events:auto}
+
+  @media(max-width:880px){
+    nav{display:none}
+    .wrap{padding:0 14px}
+    header.hero{padding:26px 22px}
+    section{padding:20px 18px}
+    .three{grid-template-columns:1fr}
+    .aval{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<div class="chapnav">
+  <a href="index.html">🏠 目录</a>
+  <a href="CH1-信息安全概论.html">CH1 概论</a>
+  <a href="CH2-风险管理与国产化.html">CH2 风险管理</a>
+  <a href="CH3-信息安全保障与运维.html">CH3 安全保障</a>
+  <a href="CH4-信息安全技术体系.html">CH4 技术体系</a>
+  <a href="CH5-鉴别技术.html">CH5 鉴别</a>
+  <a href="CH6-访问控制.html">CH6 访问控制</a>
+  <a href="CH7-防火墙技术.html">CH7 防火墙</a>
+  <a href="CH8-入侵检测技术.html">CH8 入侵检测</a>
+  <a href="古典密码-入门讲义.html">古典密码</a>
+  <a href="哈希函数-入门课.html" class="cur">哈希函数</a>
+  <a href="牛津古典密码学-讲义.html">牛津密码练习</a>
+</div>
+
+<div class="wrap">
+  <nav id="nav">
+    <p class="nav-title">📖 本讲目录</p>
+    <a href="#s0">学习目标</a>
+    <a href="#s1">① 一句话理解</a>
+    <a href="#s2">② 哈希vs加密vs编码 ⭐</a>
+    <a href="#s3">③ 5 个特性 ⭐</a>
+    <a href="#s4">④ 用途1 完整性校验</a>
+    <a href="#s5">⑤ 用途2 密码存储 ⭐</a>
+    <a href="#s6">⑥ 用途3 哈希表</a>
+    <a href="#s7">⑦ 用途4 底层积木</a>
+    <a href="#s8">⑧ 三个误区</a>
+    <a href="#s9">⑨ 5句话总结</a>
+    <a href="#s10">🎯 自测</a>
+    <a href="#bank">📝 强化题库 40 题</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="tag">密码学基础 · 哈希函数</span>
+      <h1>#️⃣ 哈希函数入门</h1>
+      <p>把"任意长度内容"压成"固定长度摘要" · 校验 / 密码存储 / 哈希表 / 数字签名</p>
+    </header>
+
+    <div class="checkbar">
+      <span class="lbl">📚 学习进度</span>
+      <div class="track"><div class="fill" id="learnFill"></div></div>
+      <span class="pct" id="learnPct">0%</span>
+    </div>
+
+    <section id="s0">
+      <h2><span class="num">🎯</span>学习目标</h2>
+      <p>读完这一讲，你应该能回答：</p>
+      <ol>
+        <li>一句话说清哈希函数是什么？（任意长 → 定长摘要 / 短指纹）</li>
+        <li>分清<b>哈希、加密、编码</b>三者的区别。</li>
+        <li>好哈希函数的 <b>5 个特性</b>是什么？</li>
+        <li>哈希的 <b>4 大用途</b>（完整性校验 / 密码存储 / 哈希表 / 底层积木）。</li>
+        <li>避开 3 个常见误区，记住 5 句话总结。</li>
+      </ol>
+    </section>
+
+    <!-- 1 一句话理解 -->
+    <section id="s1">
+      <h2><span class="num">1</span>一句话理解：把任意内容压成固定长度摘要</h2>
+      <div class="box key">
+        <span class="bt">💡 一句话</span>
+        哈希函数把"<b>任意长度的内容</b>"压成"<b>固定长度的摘要</b>"。摘要是内容的"<b>短指纹</b>"，但<b>不是原文本身</b>。
+      </div>
+      <div class="fig">
+        <svg viewBox="0 0 540 240" width="540">
+          <rect x="20" y="30" width="150" height="30" rx="6" fill="#1b2745" stroke="#2c3a5e"/><text x="30" y="50" fill="#a9b4cc" font-size="12">文本"你好,哈希!"</text>
+          <rect x="20" y="75" width="120" height="40" rx="6" fill="#1b2745" stroke="#2c3a5e"/><text x="30" y="100" fill="#a9b4cc" font-size="12">图片 4.8 MB</text>
+          <rect x="20" y="130" width="100" height="55" rx="6" fill="#1b2745" stroke="#2c3a5e"/><text x="30" y="162" fill="#a9b4cc" font-size="12">lab1.zip 128MB</text>
+          <rect x="20" y="200" width="140" height="20" rx="6" fill="#1b2745" stroke="#2c3a5e"/><text x="30" y="215" fill="#a9b4cc" font-size="12">学号 2025112345</text>
+          <rect x="220" y="95" width="100" height="60" rx="14" fill="#7c5cff"/><text x="270" y="120" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">hash()</text><text x="270" y="140" text-anchor="middle" fill="#e8edf7" font-size="11">压缩</text>
+          <line x1="170" y1="45" x2="218" y2="110" stroke="#2c3a5e" stroke-width="2"/>
+          <line x1="140" y1="95" x2="218" y2="120" stroke="#2c3a5e" stroke-width="2"/>
+          <line x1="120" y1="155" x2="218" y2="130" stroke="#2c3a5e" stroke-width="2"/>
+          <line x1="160" y1="210" x2="218" y2="140" stroke="#2c3a5e" stroke-width="2"/>
+          <line x1="320" y1="125" x2="370" y2="125" stroke="#5b9dff" stroke-width="2" marker-end="url(#ah)"/>
+          <rect x="375" y="95" width="150" height="60" rx="10" fill="#0d1530" stroke="#5b9dff" stroke-width="2"/>
+          <text x="450" y="118" text-anchor="middle" fill="#8fd6ff" font-size="12">d7fa2828…</text>
+          <text x="450" y="138" text-anchor="middle" fill="#a9b4cc" font-size="11">固定长度摘要</text>
+          <defs><marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5b9dff"/></marker></defs>
+        </svg>
+        <div class="cap">图1 · 不管原始内容多长，摘要长度都固定（SHA-256 始终 256 位）</div>
+      </div>
+      <p>日常说的"<b>哈希值</b>""<b>摘要</b>""<b>digest</b>"，通常就指这串短结果。同样输入 → 同样摘要；只改一点 → 摘要大变。</p>
+    </section>
+
+    <!-- 2 哈希 vs 加密 vs 编码 -->
+    <section id="s2">
+      <h2><span class="num">2</span>别和"加密""编码"混淆 ⭐</h2>
+      <p>这三个概念最容易搞混，一定要分清——一眼区分：<b>哈希偏"摘要与校验"，加密偏"保密"，编码偏"换一种表示"</b>。</p>
+      <div class="three">
+        <div class="tcol h">
+          <div class="emoji">#️⃣</div>
+          <h4>哈希</h4>
+          <div class="flow">原文 → 摘要</div>
+          <div>可逆性：<b style="color:var(--red)">通常不可逆</b></div>
+          <div>目的：校验 / 索引</div>
+          <div class="tag2">SHA-256</div>
+        </div>
+        <div class="tcol e">
+          <div class="emoji">🔒</div>
+          <h4>加密</h4>
+          <div class="flow">原文 →(有密钥)→ 密文</div>
+          <div>可逆性：<b style="color:var(--green)">有密钥可逆</b></div>
+          <div>目的：保密</div>
+          <div class="tag2">AES · RSA</div>
+        </div>
+        <div class="tcol c">
+          <div class="emoji">🔁</div>
+          <h4>编码</h4>
+          <div class="flow">数据 → 另一种表示</div>
+          <div>可逆性：<b style="color:var(--green)">完全可还原</b></div>
+          <div>目的：表示转换</div>
+          <div class="tag2">Base64 · UTF-8</div>
+        </div>
+      </div>
+      <table>
+        <tr><th></th><th>哈希</th><th>加密</th><th>编码</th></tr>
+        <tr><td>输入→输出</td><td>原文→摘要</td><td>原文→密文</td><td>数据→另一种表示</td></tr>
+        <tr><td>可逆性</td><td><b>通常不可逆</b></td><td>有密钥可逆</td><td><b>完全可还原</b></td></tr>
+        <tr><td>目的</td><td>校验 / 索引</td><td>保密</td><td>表示转换</td></tr>
+        <tr><td>例子</td><td>SHA-256</td><td>AES、RSA</td><td>Base64、UTF-8</td></tr>
+      </table>
+      <div class="box warn">
+        <span class="bt">⚠️ 最常见的误解</span>
+        想把内容"藏起来"时去用哈希。<b>正确做法</b>：需要<b>保密</b>用<b>加密</b>；需要<b>验证内容</b>用<b>哈希</b>；只是换表示用编码。
+      </div>
+
+      <h3>🎮 小练习：把需求和正确做法连起来</h3>
+      <p style="color:var(--ink-soft);font-size:14px">先点左边一个需求，再点右边对应的做法。连对会变绿。</p>
+      <div class="match" id="match1">
+        <div class="col">
+          <div class="ct">📌 需求</div>
+          <div class="mitem" data-k="E">把内容藏起来不让别人看</div>
+          <div class="mitem" data-k="H">验证文件有没有被改</div>
+          <div class="mitem" data-k="C">把二进制变成可传输文本</div>
+        </div>
+        <div class="col">
+          <div class="ct">🎯 正确做法</div>
+          <div class="mitem" data-k="C">编码（Base64）</div>
+          <div class="mitem" data-k="E">加密（AES/RSA）</div>
+          <div class="mitem" data-k="H">哈希（SHA-256）</div>
+        </div>
+      </div>
+      <div class="feedback" id="match1fb"></div>
+    </section>
+
+    <!-- 3 五特性 -->
+    <section id="s3">
+      <h2><span class="num">3</span>好哈希函数的 5 个特性 ⭐</h2>
+      <p>本科阶段先记住 5 个关键词：<b>定长、确定、快速、雪崩、难逆推/难碰撞</b>（原文按"任意长输入、定长输出、确定、雪崩、难逆推难碰撞"列）。</p>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">📥</div><h4>1 任意长度输入</h4><span class="en">一篇论文和一串学号都能哈希</span></div>
+        <div class="ccard i"><div class="emoji">📏</div><h4>2 固定长度输出</h4><span class="en">如 SHA-256 始终输出 256 位</span></div>
+        <div class="ccard a"><div class="emoji">🎯</div><h4>3 确定性</h4><span class="en">同样输入→同样输出，否则无法比较/定位</span></div>
+        <div class="ccard d"><div class="emoji">❄️</div><h4>4 雪崩效应</h4><span class="en">输入改一点→摘要大变，便于发现篡改</span></div>
+        <div class="ccard c"><div class="emoji">🛡️</div><h4>5 难逆推/难碰撞</h4><span class="en">安全场景必需</span></div>
+      </div>
+
+      <h3>❄️ 雪崩效应：只改一个字符，摘要完全不同</h3>
+      <div class="aval">
+        <div class="acard b1">
+          <div class="in">输入 A：OpenAI-2025</div>
+          <div class="digest">→ d7fa28287222217a…</div>
+        </div>
+        <div class="acard b2">
+          <div class="in">输入 B：OpenAI-202<b style="color:var(--red)">6</b></div>
+          <div class="digest">→ 2b10233e76f1f365…</div>
+        </div>
+      </div>
+      <div class="box tip">
+        <span class="bt">💡 为什么重要？</span>
+        雪崩效应让"内容只改一点点，校验值就显著不同"，从而能可靠地发现文件损坏或篡改。
+      </div>
+    </section>
+
+    <!-- 4 用途1 -->
+    <section id="s4">
+      <h2><span class="num">4</span>用途 1：完整性校验——检查"内容有没有变"</h2>
+      <p>哈希最朴素、也最常见的用途：下载、传输、备份、版本发布时做完整性验证。</p>
+      <div class="fig">
+        <svg viewBox="0 0 540 170" width="540">
+          <rect x="20" y="50" width="140" height="50" rx="8" fill="#1b2745" stroke="#36d399"/>
+          <text x="90" y="72" text-anchor="middle" fill="#fff" font-size="13">发布方</text>
+          <text x="90" y="90" text-anchor="middle" fill="#a9b4cc" font-size="11">文件 + 摘要</text>
+          <rect x="380" y="50" width="140" height="50" rx="8" fill="#1b2745" stroke="#5b9dff"/>
+          <text x="450" y="72" text-anchor="middle" fill="#fff" font-size="13">接收方</text>
+          <text x="450" y="90" text-anchor="middle" fill="#a9b4cc" font-size="11">重新算一次哈希</text>
+          <line x1="160" y1="75" x2="378" y2="75" stroke="#2c3a5e" stroke-width="2" marker-end="url(#a4)"/>
+          <text x="270" y="65" text-anchor="middle" fill="#cfe0ff" font-size="12">下载</text>
+          <text x="270" y="120" text-anchor="middle" fill="#36d399" font-size="13">摘要一致 → 未变 ✓</text>
+          <text x="270" y="142" text-anchor="middle" fill="#f87272" font-size="13">摘要不一致 → 损坏或被篡改 ✗</text>
+          <defs><marker id="a4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5b9dff"/></marker></defs>
+        </svg>
+        <div class="cap">图2 · 完整性校验流程：两边摘要一致说明内容没变</div>
+      </div>
+      <ol>
+        <li>发布方先公布：<b>文件 + 摘要</b>（如 SHA-256）。</li>
+        <li>接收方下载后，对同一文件再算一次哈希。</li>
+        <li>两边摘要<b>一致 → 未变</b>；<b>不一致 → 可能损坏或被篡改</b>。</li>
+      </ol>
+      <p>例如 <code>课件_v1.pdf → 363b8eae…</code>，文件名只改一个字母 <code>课件_v1.pdg → ada327c9…</code>，摘要就显著不同。</p>
+      <div class="box tip">
+        <span class="bt">📌 要点</span>
+        哈希负责"<b>验有没有变</b>"，不是"把原文藏起来"。
+      </div>
+    </section>
+
+    <!-- 5 用途2 -->
+    <section id="s5">
+      <h2><span class="num">5</span>用途 2：密码存储——服务器不该保存明文密码 ⭐</h2>
+      <p>正确姿势：<b>带盐（salt）</b>，并使用专门的"<b>慢哈希 / 自适应哈希</b>"算法，而不是把密码原样存进数据库。</p>
+      <div class="fig">
+        <svg viewBox="0 0 560 160" width="560">
+          <rect x="10" y="55" width="110" height="50" rx="8" fill="#1b2745" stroke="#2c3a5e"/><text x="65" y="78" text-anchor="middle" fill="#fff" font-size="12">用户密码</text><text x="65" y="95" text-anchor="middle" fill="#a9b4cc" font-size="11">hunter2?</text>
+          <rect x="150" y="55" width="100" height="50" rx="8" fill="#1b2745" stroke="#fbbd23"/><text x="200" y="78" text-anchor="middle" fill="#fbbd23" font-size="12">+ 随机 salt</text>
+          <rect x="280" y="50" width="120" height="60" rx="10" fill="#7c5cff"/><text x="340" y="74" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">Argon2id</text><text x="340" y="93" text-anchor="middle" fill="#e8edf7" font-size="10">bcrypt/scrypt</text>
+          <rect x="430" y="55" width="120" height="50" rx="8" fill="#0d1530" stroke="#36d399"/><text x="490" y="76" text-anchor="middle" fill="#36d399" font-size="12">数据库只存</text><text x="490" y="93" text-anchor="middle" fill="#8fd6ff" font-size="11">salt + hash</text>
+          <line x1="120" y1="80" x2="148" y2="80" stroke="#2c3a5e" stroke-width="2" marker-end="url(#a5)"/>
+          <line x1="250" y1="80" x2="278" y2="80" stroke="#2c3a5e" stroke-width="2" marker-end="url(#a5)"/>
+          <line x1="400" y1="80" x2="428" y2="80" stroke="#2c3a5e" stroke-width="2" marker-end="url(#a5)"/>
+          <defs><marker id="a5" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5b9dff"/></marker></defs>
+        </svg>
+        <div class="cap">图3 · 密码存储：密码+盐 → 慢哈希 → 数据库只存 salt+hash（不是明文）</div>
+      </div>
+      <div class="box tip">
+        <span class="bt">🔑 登录时怎么验证？</span>
+        用户重新输入密码 → 系统取出该用户的 salt → 用同样算法再算一次 → <b>只比较 hash 是否一致</b>。
+      </div>
+      <div class="box warn">
+        <span class="bt">✗ 别这么做</span>
+        ✗ 明文存密码；✗ 只用普通快速哈希（如直接 MD5）存密码。<br>
+        <b>推荐：Argon2id</b>（带盐的慢哈希）；没有时再考虑 <b>bcrypt / scrypt</b>。
+      </div>
+      <div class="box key">
+        <span class="bt">💡 为什么要"慢哈希"+"加盐"？</span>
+        <b>慢哈希</b>让暴力破解变慢；<b>加盐</b>让攻击者无法用预先算好的"彩虹表"批量破解。
+      </div>
+    </section>
+
+    <!-- 6 用途3 -->
+    <section id="s6">
+      <h2><span class="num">6</span>用途 3：哈希表——把"找东西"变快</h2>
+      <p>在数据结构里，哈希函数把 key 映射到数组<b>槽位</b>；平均情况下，插入与查找都很快。</p>
+      <div class="fig">
+        <svg viewBox="0 0 540 200" width="540">
+          <rect x="20" y="80" width="150" height="40" rx="8" fill="#1b2745" stroke="#2c3a5e"/><text x="95" y="105" text-anchor="middle" fill="#fff" font-size="13">key 学号 2025112345</text>
+          <rect x="210" y="75" width="90" height="50" rx="10" fill="#7c5cff"/><text x="255" y="105" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">hash(key)</text>
+          <line x1="170" y1="100" x2="208" y2="100" stroke="#2c3a5e" stroke-width="2" marker-end="url(#a6)"/>
+          <g font-size="12">
+            <rect x="360" y="20" width="40" height="28" fill="#1b2745" stroke="#2c3a5e"/><text x="380" y="39" text-anchor="middle" fill="#a9b4cc">0</text>
+            <rect x="360" y="50" width="40" height="28" fill="#1b2745" stroke="#2c3a5e"/><text x="380" y="69" text-anchor="middle" fill="#a9b4cc">1</text>
+            <rect x="360" y="80" width="40" height="28" fill="#1b2745" stroke="#2c3a5e"/><text x="380" y="99" text-anchor="middle" fill="#a9b4cc">2</text>
+            <rect x="360" y="110" width="40" height="28" fill="#36d399" stroke="#36d399"/><text x="380" y="129" text-anchor="middle" fill="#0f1729" font-weight="700">3</text>
+            <rect x="360" y="140" width="40" height="28" fill="#1b2745" stroke="#2c3a5e"/><text x="380" y="159" text-anchor="middle" fill="#a9b4cc">4</text>
+          </g>
+          <rect x="420" y="110" width="100" height="28" rx="6" fill="#0d1530" stroke="#36d399"/><text x="470" y="129" text-anchor="middle" fill="#8fd6ff" font-size="12">张三记录</text>
+          <line x1="300" y1="100" x2="358" y2="124" stroke="#5b9dff" stroke-width="2" marker-end="url(#a6)"/>
+          <text x="255" y="150" text-anchor="middle" fill="#a9b4cc" font-size="11">映射到槽位 3</text>
+          <defs><marker id="a6" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5b9dff"/></marker></defs>
+        </svg>
+        <div class="cap">图4 · 哈希表：hash(学号) → 槽位 3 → 直接定位"张三记录"</div>
+      </div>
+      <div class="box warn">
+        <span class="bt">⚠️ 碰撞（Collision）</span>
+        如果两个 key 落到同一槽位，就叫<b>碰撞</b>。系统需要用<b>拉链法、开放寻址</b>等方法继续处理。平均情况查找很快；坏情况（碰撞多）会拖慢。
+      </div>
+      <p>一句话总结：哈希函数让"从 key 找到数据"通常不必从头扫完整个列表。</p>
+    </section>
+
+    <!-- 7 用途4 -->
+    <section id="s7">
+      <h2><span class="num">7</span>用途 4：很多安全系统的底层积木</h2>
+      <p>把大对象先压成短摘要，能让"签名、命名、链接结构"都更高效。<b>共同点：先压缩，再验证 / 定位 / 链接</b>。</p>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">✍️</div><h4>数字签名</h4><span class="en">先对长消息取哈希，再对摘要签名；更快、适合大文件</span></div>
+        <div class="ccard i"><div class="emoji">🌿</div><h4>Git / 内容寻址</h4><span class="en">对象内容一变，哈希名就变，能精确定位对象</span></div>
+        <div class="ccard a"><div class="emoji">🌳</div><h4>Merkle 树 / 区块链</h4><span class="en">底层任一叶子改动，整条向上的哈希都变化，便于整体校验</span></div>
+        <div class="ccard d"><div class="emoji">🧱</div><h4>底层积木</h4><span class="en">先压缩再验证/定位/链接，是各类系统的通用套路</span></div>
+      </div>
+      <div class="fig">
+        <svg viewBox="0 0 460 200" width="460">
+          <rect x="180" y="10" width="100" height="34" rx="6" fill="#7c5cff"/><text x="230" y="32" text-anchor="middle" fill="#fff" font-size="13">根哈希</text>
+          <rect x="80" y="80" width="90" height="30" rx="6" fill="#5b9dff"/><text x="125" y="100" text-anchor="middle" fill="#fff" font-size="12">H(1+2)</text>
+          <rect x="290" y="80" width="90" height="30" rx="6" fill="#5b9dff"/><text x="335" y="100" text-anchor="middle" fill="#fff" font-size="12">H(3+4)</text>
+          <rect x="40" y="155" width="50" height="28" rx="5" fill="#36d399"/><text x="65" y="174" text-anchor="middle" fill="#0f1729" font-size="11">H1</text>
+          <rect x="110" y="155" width="50" height="28" rx="5" fill="#36d399"/><text x="135" y="174" text-anchor="middle" fill="#0f1729" font-size="11">H2</text>
+          <rect x="300" y="155" width="50" height="28" rx="5" fill="#36d399"/><text x="325" y="174" text-anchor="middle" fill="#0f1729" font-size="11">H3</text>
+          <rect x="370" y="155" width="50" height="28" rx="5" fill="#36d399"/><text x="395" y="174" text-anchor="middle" fill="#0f1729" font-size="11">H4</text>
+          <line x1="125" y1="80" x2="210" y2="44" stroke="#2c3a5e" stroke-width="2"/>
+          <line x1="335" y1="80" x2="250" y2="44" stroke="#2c3a5e" stroke-width="2"/>
+          <line x1="65" y1="155" x2="110" y2="110" stroke="#2c3a5e" stroke-width="2"/>
+          <line x1="135" y1="155" x2="125" y2="110" stroke="#2c3a5e" stroke-width="2"/>
+          <line x1="325" y1="155" x2="320" y2="110" stroke="#2c3a5e" stroke-width="2"/>
+          <line x1="395" y1="155" x2="350" y2="110" stroke="#2c3a5e" stroke-width="2"/>
+        </svg>
+        <div class="cap">图5 · Merkle 树：底层叶子先各自取哈希，再逐层汇总到根哈希</div>
+      </div>
+    </section>
+
+    <!-- 8 误区 -->
+    <section id="s8">
+      <h2><span class="num">8</span>三个常见误区（别把哈希想成"万能胶"）</h2>
+      <div class="box warn">
+        <span class="bt">❌ 误区 1："哈希 = 加密"</span>
+        纠正：哈希<b>通常不可逆</b>，主要做摘要与验证；需要保密时应使用<b>加密</b>。
+      </div>
+      <div class="box warn">
+        <span class="bt">❌ 误区 2："摘要相同绝不可能发生"</span>
+        纠正：输出空间有限，<b>碰撞在理论上必然存在</b>；目标是让它"<b>极难找到</b>"，而非绝不可能。
+      </div>
+      <div class="box warn">
+        <span class="bt">❌ 误区 3："任何 hash 都适合安全场景"</span>
+        纠正：<b>SHA-1 已不安全</b>，新的抗碰撞设计不要再用；密码存储也不该直接用普通快速哈希。
+      </div>
+      <div class="fig">
+        <svg viewBox="0 0 460 140" width="460">
+          <rect x="20" y="30" width="110" height="34" rx="6" fill="#1b2745" stroke="#36d399"/><text x="75" y="52" text-anchor="middle" fill="#fff" font-size="13">输入 A</text>
+          <rect x="20" y="78" width="110" height="34" rx="6" fill="#1b2745" stroke="#5b9dff"/><text x="75" y="100" text-anchor="middle" fill="#fff" font-size="13">输入 B</text>
+          <rect x="320" y="54" width="130" height="36" rx="8" fill="#0d1530" stroke="#f87272"/><text x="385" y="77" text-anchor="middle" fill="#f87272" font-size="12">同一摘要（碰撞）</text>
+          <line x1="130" y1="47" x2="318" y2="68" stroke="#2c3a5e" stroke-width="2" marker-end="url(#a8)"/>
+          <line x1="130" y1="95" x2="318" y2="76" stroke="#2c3a5e" stroke-width="2" marker-end="url(#a8)"/>
+          <defs><marker id="a8" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5b9dff"/></marker></defs>
+        </svg>
+        <div class="cap">图6 · 碰撞不是"绝不可能"，而应"在现实中极难构造"</div>
+      </div>
+    </section>
+
+    <!-- 9 五句话 -->
+    <section id="s9">
+      <h2><span class="num">9</span>带走这 5 句话</h2>
+      <ol>
+        <li>哈希函数把<b>任意长度输入</b>压成<b>固定长度摘要</b>。</li>
+        <li>同样输入得同样输出；<b>改一点，摘要大变</b>（雪崩）。</li>
+        <li>验<b>文件完整性</b>，优先想到 <b>SHA-256</b> 这类安全哈希。</li>
+        <li>存<b>密码</b>，要用<b>带盐的 Argon2id / bcrypt / scrypt</b>，而不是明文或普通快速哈希。</li>
+        <li>想<b>保密</b>用<b>加密</b>；想<b>快速按 key 查找</b>想到<b>哈希表</b>。</li>
+      </ol>
+      <h3>场景 → 首选思路</h3>
+      <table>
+        <tr><th>场景</th><th>首选</th></tr>
+        <tr><td>文件有没有变</td><td>SHA-256 等安全哈希</td></tr>
+        <tr><td>密码怎么存</td><td>Argon2id / bcrypt / scrypt（带盐慢哈希）</td></tr>
+        <tr><td>字典/索引怎么快查</td><td>哈希表</td></tr>
+        <tr><td>内容要保密</td><td>加密（不是哈希）</td></tr>
+      </table>
+      <div class="box key">
+        <span class="bt">🎯 一句话收尾</span>
+        哈希函数是计算机世界里的"<b>短指纹</b>"——擅长校验、索引和链接结构，但<b>不负责替代加密</b>。
+      </div>
+      <p style="margin-top:16px">
+        <span class="pill">🔗 关联 CH4 数据完整性 / 数字签名</span>
+        <span class="pill">🔗 关联 CH5 口令加盐鉴别</span>
+      </p>
+    </section>
+
+    <!-- 10 自测 -->
+    <section id="s10">
+      <h2><span class="num">🎯</span>自测（点击展开参考要点）</h2>
+      <details>
+        <summary>一句话说清哈希函数是什么？</summary>
+        <div class="ans">把任意长度的内容压成固定长度的摘要（短指纹），通常不可逆，主要用于校验、索引、链接结构。</div>
+      </details>
+      <details>
+        <summary>哈希、加密、编码三者的核心区别？</summary>
+        <div class="ans">哈希：原文→摘要，通常不可逆，做校验/索引；加密：原文→密文，有密钥可逆，做保密；编码：换一种表示，完全可还原（如Base64/UTF-8）。</div>
+      </details>
+      <details>
+        <summary>好哈希函数有哪 5 个特性？</summary>
+        <div class="ans">任意长度输入、固定长度输出、确定性（同输入同输出）、雪崩效应（改一点摘要大变）、难逆推/难碰撞。</div>
+      </details>
+      <details>
+        <summary>密码存储为什么要"加盐 + 慢哈希"？</summary>
+        <div class="ans">慢哈希（Argon2id/bcrypt/scrypt）让暴力破解变慢；加盐让攻击者无法用预先算好的彩虹表批量破解。数据库只存 salt+hash，不存明文。</div>
+      </details>
+      <details>
+        <summary>"哈希碰撞绝不可能"对吗？</summary>
+        <div class="ans">不对。输出空间有限，碰撞理论上必然存在，安全哈希的目标是让它"极难找到"。SHA-1 已不安全，抗碰撞场景不要再用。</div>
+      </details>
+      <div class="box tip" style="margin-top:18px">
+        <span class="bt">✅ 都能答上来？</span>
+        那就掌握了哈希函数。可以继续学 <b>古典密码</b> 或回到 <b>CH4 技术体系</b> 看数字签名。
+      </div>
+    </section>
+
+    <!-- 强化题库 -->
+    <section id="bank">
+      <h2><span class="num">📝</span>强化题库（20 选择 + 20 填空 = 40 题）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">覆盖本讲全部知识点。选择题点选即时判分；填空题输入后点"检查"或"显示答案"。</p>
+      <div class="tabs">
+        <button class="tab active" data-tab="mcq">📋 选择题 (20)</button>
+        <button class="tab" data-tab="fill">✏️ 填空题 (20)</button>
+      </div>
+
+      <div class="tabpane active" id="pane-mcq">
+        <div class="score">
+          <span class="mini">已答 <b id="mcqDone">0</b>/20</span>
+          <span class="mini">答对 <b id="mcqRight">0</b></span>
+          <span class="mini">正确率 <b id="mcqRate">—</b></span>
+          <button class="resetb" id="mcqReset">↺ 重做</button>
+        </div>
+        <div id="mcqList"></div>
+      </div>
+
+      <div class="tabpane" id="pane-fill">
+        <div class="score">
+          <span class="mini">已检查 <b id="fillDone">0</b>/20</span>
+          <span class="mini">答对 <b id="fillRight">0</b></span>
+          <button class="resetb" id="fillRevealAll">👁 全部显示答案</button>
+          <button class="resetb" id="fillReset">↺ 重做</button>
+        </div>
+        <div id="fillList"></div>
+      </div>
+    </section>
+
+    <footer>
+      网络空间安全技术 · 密码学基础 · 哈希函数入门讲义<br>
+      💡 配套：古典密码-入门讲义.html ｜ 关联 CH4/CH5
+    </footer>
+  </main>
+</div>
+
+<button id="top" title="回到顶部">↑</button>
+
+<script>
+  const progress=document.getElementById('progress');
+  const topBtn=document.getElementById('top');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const scrolled=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+    progress.style.width=scrolled+'%';
+    topBtn.classList.toggle('show',h.scrollTop>400);
+  });
+  topBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+  const links=[...document.querySelectorAll('#nav a')];
+  const allSecs=[...document.querySelectorAll('main section')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const seen=new Set();
+  const learnFill=document.getElementById('learnFill');
+  const learnPct=document.getElementById('learnPct');
+  function updateLearn(){
+    const p=Math.round(seen.size/allSecs.length*100);
+    learnFill.style.width=p+'%';
+    learnPct.textContent=p+'%';
+    if(p===100){learnPct.textContent='✅100%';}
+  }
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        if(e.target.id){seen.add(e.target.id);updateLearn();}
+        const id='#'+e.target.id;
+        links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')===id));
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>s&&io.observe(s));
+  allSecs.forEach(s=>io.observe(s));
+
+  // ===== 匹配题 =====
+  (function(){
+    const box=document.getElementById('match1');
+    if(!box)return;
+    const fb=document.getElementById('match1fb');
+    let sel=null,done=0;
+    const items=[...box.querySelectorAll('.mitem')];
+    const total=box.querySelectorAll('.col')[0].querySelectorAll('.mitem').length;
+    items.forEach(it=>{
+      it.addEventListener('click',()=>{
+        if(it.classList.contains('done'))return;
+        if(!sel){sel=it;it.classList.add('sel');return;}
+        if(sel===it){it.classList.remove('sel');sel=null;return;}
+        if(sel.parentElement===it.parentElement){
+          sel.classList.remove('sel');sel=it;it.classList.add('sel');return;
+        }
+        if(sel.dataset.k===it.dataset.k){
+          sel.classList.remove('sel');sel.classList.add('done');it.classList.add('done');
+          done++;sel=null;
+          if(done===total){fb.className='feedback show ok';fb.textContent='🏆 全部连对！你已分清哈希/加密/编码的用途。';}
+        }else{
+          const a=sel,b=it;a.classList.add('shake');b.classList.add('shake');
+          setTimeout(()=>{a.classList.remove('shake','sel');b.classList.remove('shake');},420);
+          sel=null;
+          fb.className='feedback show no';fb.textContent='这两个不匹配，再试试～';
+        }
+      });
+    });
+  })();
+
+  // ===== 强化题库数据 =====
+  const MCQ=[
+    {q:'哈希函数的作用是？',o:['把任意长度内容压成固定长度摘要','把短内容拉长','加密保密内容','压缩文件体积'],a:0,e:'哈希 = 任意长输入 → 定长摘要（短指纹），通常不可逆。'},
+    {q:'哈希值又常被称为？',o:['密文','摘要 / digest','明文','密钥'],a:1,e:'日常说的"哈希值""摘要""digest"指的就是那串短结果。'},
+    {q:'哈希、加密、编码中，"通常不可逆"的是？',o:['编码','加密','哈希','三者都是'],a:2,e:'哈希通常不可逆；加密有密钥可逆；编码完全可还原。'},
+    {q:'想把内容"藏起来不让别人看"，应该用？',o:['哈希','加密','编码','哈希表'],a:1,e:'保密用加密；哈希只做校验/索引，不负责保密。'},
+    {q:'Base64、UTF-8 属于？',o:['哈希','加密','编码','签名'],a:2,e:'编码=换一种表示，完全可还原。'},
+    {q:'SHA-256 属于哪一类？',o:['编码','加密','哈希','压缩'],a:2,e:'SHA-256 是安全哈希函数，输出 256 位定长摘要。'},
+    {q:'"输入改一点，摘要大变"这个特性叫？',o:['确定性','雪崩效应','可逆性','碰撞'],a:1,e:'雪崩效应让微小改动导致摘要显著不同，便于发现篡改。'},
+    {q:'好哈希函数的"确定性"指？',o:['输出随机','同样输入得同样输出','每次输出不同','输入越长输出越长'],a:1,e:'确定性=同输入同输出，否则无法比较或定位。'},
+    {q:'下列不是好哈希函数 5 特性之一的是？',o:['固定长度输出','任意长度输入','可用密钥还原原文','难逆推/难碰撞'],a:2,e:'哈希通常不可逆，没有"用密钥还原原文"这一特性（那是加密）。'},
+    {q:'完整性校验中，发布方应公布？',o:['只给文件','文件 + 摘要','只给摘要','文件 + 密钥'],a:1,e:'发布方公布文件和摘要，接收方下载后重算并比对。'},
+    {q:'下载后两边摘要不一致，说明？',o:['内容没变','文件可能损坏或被篡改','哈希算错了','一定是网络快'],a:1,e:'不一致 → 可能损坏或被篡改；一致 → 未变。'},
+    {q:'服务器存储用户密码的正确做法是？',o:['存明文','存普通快速哈希','存带盐的慢哈希（如Argon2id）结果','存Base64编码'],a:2,e:'应存 salt + 慢哈希(Argon2id/bcrypt/scrypt) 结果，不存明文。'},
+    {q:'密码存储中"加盐(salt)"的主要作用是？',o:['加快哈希','让攻击者无法用彩虹表批量破解','压缩密码','替代加密'],a:1,e:'加盐使预计算的彩虹表失效，每个用户的盐不同。'},
+    {q:'密码存储推荐的首选算法是？',o:['MD5','SHA-1','Argon2id','Base64'],a:2,e:'推荐 Argon2id（带盐慢哈希），没有时再考虑 bcrypt/scrypt。'},
+    {q:'登录时系统如何验证密码？',o:['解密数据库中的密码比较','重新算一次哈希并比较hash是否一致','直接比对明文','发送密码给用户确认'],a:1,e:'取出该用户salt→同算法重算→只比较hash是否一致。'},
+    {q:'哈希表中两个 key 落到同一槽位称为？',o:['雪崩','碰撞','溢出','索引'],a:1,e:'碰撞需用拉链法、开放寻址等方法处理。'},
+    {q:'处理哈希表碰撞的常见方法是？',o:['拉链法 / 开放寻址','加密','重启服务器','删除数据'],a:0,e:'拉链法（链表挂在槽位上）和开放寻址是常见解决办法。'},
+    {q:'数字签名中通常先做什么再签名？',o:['先加密整条消息','先对长消息取哈希再对摘要签名','先压缩成zip','先编码成Base64'],a:1,e:'先哈希再对摘要签名，速度更快、适合大文件。'},
+    {q:'关于哈希碰撞，正确的说法是？',o:['绝不可能发生','理论上必然存在，目标是极难找到','只在MD5中存在','可以完全避免'],a:1,e:'输出空间有限，碰撞理论必然存在，安全哈希让它极难构造。'},
+    {q:'下列哪种哈希在抗碰撞安全场景已不推荐使用？',o:['SHA-256','SHA-1','SHA-3','BLAKE2'],a:1,e:'SHA-1 已不安全，新的抗碰撞设计不要继续使用。'}
+  ];
+
+  const FILL=[
+    {q:'哈希函数把任意长度内容压成 ____ 长度的摘要。',a:['固定','定']},
+    {q:'摘要可以看成内容的"短 ____"（一种比喻）。',a:['指纹']},
+    {q:'哈希、加密、编码中，需要密钥才可逆的是 ____。',a:['加密']},
+    {q:'需要保密内容时应使用 ____ 而不是哈希。',a:['加密']},
+    {q:'Base64、UTF-8 属于 ____（哈希/加密/编码）。',a:['编码']},
+    {q:'验证文件完整性优先想到 ____ 这类安全哈希。',a:['SHA-256','SHA256']},
+    {q:'"输入改一点，摘要大变"这一特性叫 ____ 效应。',a:['雪崩']},
+    {q:'"同样输入得同样输出"称为哈希的 ____ 性。',a:['确定']},
+    {q:'完整性校验时，发布方需要同时公布文件和 ____。',a:['摘要','哈希值','哈希']},
+    {q:'服务器不应保存用户的 ____ 密码。',a:['明文']},
+    {q:'密码存储时加入的随机字符串叫 ____。',a:['盐','salt']},
+    {q:'密码存储推荐使用带盐的慢哈希算法，首选 ____。',a:['Argon2id','Argon2','argon2id']},
+    {q:'加盐的主要作用是让攻击者无法使用预先算好的 ____ 表批量破解。',a:['彩虹','彩虹表']},
+    {q:'哈希表中两个 key 映射到同一槽位称为 ____。',a:['碰撞']},
+    {q:'处理哈希表碰撞常用 ____ 法（把元素挂成链表）。',a:['拉链']},
+    {q:'数字签名通常先对长消息取 ____，再对其签名。',a:['哈希','摘要']},
+    {q:'Git 用对象内容的哈希作为名字，这叫 ____ 寻址。',a:['内容']},
+    {q:'Merkle 树底层任一叶子改动，整条向上的 ____ 都会变化。',a:['哈希']},
+    {q:'碰撞在理论上 ____ 存在，安全哈希的目标是让它极难找到。',a:['必然']},
+    {q:'抗碰撞安全场景已不推荐继续使用 ____（一种旧哈希）。',a:['SHA-1','SHA1']}
+  ];
+
+  (function(){
+    const list=document.getElementById('mcqList');if(!list)return;
+    let done=0,right=0;
+    const dn=document.getElementById('mcqDone'),rt=document.getElementById('mcqRight'),ra=document.getElementById('mcqRate');
+    function render(){
+      list.innerHTML='';done=0;right=0;dn.textContent=0;rt.textContent=0;ra.textContent='—';
+      MCQ.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        let opts=item.o.map((t,j)=>`<button class="qopt" data-i="${j}">${String.fromCharCode(65+j)}. ${t}</button>`).join('');
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${item.q}</div>${opts}<div class="qexp">💡 ${item.e}</div>`;
+        const btns=[...d.querySelectorAll('.qopt')];const exp=d.querySelector('.qexp');
+        btns.forEach(b=>b.addEventListener('click',()=>{
+          btns.forEach(x=>x.classList.add('lock'));
+          const ans=item.a;
+          if(+b.dataset.i===ans){b.classList.add('correct');right++;}
+          else{b.classList.add('wrong');btns[ans].classList.add('correct');}
+          exp.classList.add('show');
+          done++;dn.textContent=done;rt.textContent=right;ra.textContent=Math.round(right/done*100)+'%';
+        }));
+        list.appendChild(d);
+      });
+    }
+    render();
+    document.getElementById('mcqReset').onclick=render;
+  })();
+
+  (function(){
+    const list=document.getElementById('fillList');if(!list)return;
+    let done=0,right=0;const checked=new Set();
+    const dn=document.getElementById('fillDone'),rt=document.getElementById('fillRight');
+    function norm(s){return (s||'').trim().replace(/\s/g,'').toLowerCase();}
+    function build(){
+      list.innerHTML='';done=0;right=0;checked.clear();dn.textContent=0;rt.textContent=0;
+      FILL.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        const qhtml=item.q.replace('____',`<input class="blank-in" data-i="${i}" placeholder="在此作答">`);
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${qhtml}</div>
+          <div class="blank-btns">
+            <button class="sbtn primary" data-act="check">检查</button>
+            <button class="sbtn" data-act="show">显示答案</button>
+          </div>
+          <div class="ansline">✅ 参考答案：${item.a[0]}</div>`;
+        const inp=d.querySelector('.blank-in');const ansl=d.querySelector('.ansline');
+        d.querySelector('[data-act="check"]').onclick=()=>{
+          const v=norm(inp.value);if(!v)return;
+          const ok=item.a.some(a=>norm(a)===v||v.includes(norm(a)));
+          inp.classList.remove('ok','bad');inp.classList.add(ok?'ok':'bad');
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;if(ok)right++;dn.textContent=done;rt.textContent=right;}
+        };
+        d.querySelector('[data-act="show"]').onclick=()=>{
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;dn.textContent=done;rt.textContent=right;}
+        };
+        list.appendChild(d);
+      });
+    }
+    build();
+    document.getElementById('fillReset').onclick=build;
+    document.getElementById('fillRevealAll').onclick=()=>{
+      list.querySelectorAll('.ansline').forEach(a=>a.classList.add('show'));
+    };
+  })();
+
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('pane-'+t.dataset.tab).classList.add('active');
+    };
+  });
+</script>
+</body>
+</html>

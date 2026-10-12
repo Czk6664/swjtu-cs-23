@@ -1,0 +1,58 @@
+[
+  {
+    "image": "edge_blocks",
+    "std_original": 60.90290701039565,
+    "std_equalized": 73.74878129577164,
+    "impulse_pixels_original": 4277.0,
+    "impulse_pixels_mean": 3893.0,
+    "impulse_pixels_median": 4245.0,
+    "gradient_original": 21.648570559203588,
+    "gradient_laplacian": 32.79671622542764,
+    "gradient_sobel": 33.04373152083491,
+    "high_frequency_ratio_original": 0.013366808532950249,
+    "high_frequency_ratio_low_pass": 0.00015621159045652085,
+    "high_frequency_ratio_high_pass": 0.2919876336789773
+  },
+  {
+    "image": "frequency_pattern",
+    "std_original": 43.19513731606327,
+    "std_equalized": 73.6797818017305,
+    "impulse_pixels_original": 0.0,
+    "impulse_pixels_mean": 0.0,
+    "impulse_pixels_median": 0.0,
+    "gradient_original": 91.38364698991438,
+    "gradient_laplacian": 129.82519598744167,
+    "gradient_sobel": 133.37355544513332,
+    "high_frequency_ratio_original": 0.04461508543693769,
+    "high_frequency_ratio_low_pass": 0.02258432524607768,
+    "high_frequency_ratio_high_pass": 0.22330856160907658
+  },
+  {
+    "image": "low_contrast_scene",
+    "std_original": 18.07401367077794,
+    "std_equalized": 73.48315368839883,
+    "impulse_pixels_original": 0.0,
+    "impulse_pixels_mean": 0.0,
+    "impulse_pixels_median": 0.0,
+    "gradient_original": 16.47999244221393,
+    "gradient_laplacian": 61.496823478483684,
+    "gradient_sobel": 30.625326642678072,
+    "high_frequency_ratio_original": 0.0013555538486528938,
+    "high_frequency_ratio_low_pass": 1.014704608717593e-05,
+    "high_frequency_ratio_high_pass": 0.33116698220789675
+  },
+  {
+    "image": "salt_pepper_texture",
+    "std_original": 46.33748889728591,
+    "std_equalized": 76.25873493505462,
+    "impulse_pixels_original": 18286.0,
+    "impulse_pixels_mean": 0.0,
+    "impulse_pixels_median": 5.0,
+    "gradient_original": 129.297236892769,
+    "gradient_laplacian": 188.39568964168456,
+    "gradient_sobel": 237.2687511589177,
+    "high_frequency_ratio_original": 0.07630078675302292,
+    "high_frequency_ratio_low_pass": 5.9568246687154375e-06,
+    "high_frequency_ratio_high_pass": 0.7929806450197813
+  }
+]

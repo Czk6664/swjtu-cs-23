@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CH3 信息安全保障与运维 · 小白教学</title>
+<style>
+  :root{
+    --bg:#0f1729;
+    --bg-soft:#16213e;
+    --card:#1b2745;
+    --card-2:#212f52;
+    --ink:#e8edf7;
+    --ink-soft:#a9b4cc;
+    --line:#2c3a5e;
+    --accent:#5b9dff;
+    --accent-2:#7c5cff;
+    --green:#36d399;
+    --amber:#fbbd23;
+    --red:#f87272;
+    --pink:#f472b6;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0f1729 0%,#131d38 100%);
+    color:var(--ink);
+    line-height:1.75;
+    font-size:16px;
+  }
+  #progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:999;transition:width .1s}
+
+  .chapnav{position:sticky;top:0;z-index:200;display:flex;gap:4px;flex-wrap:wrap;background:rgba(10,16,30,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 14px}
+  .chapnav a{color:var(--ink-soft);text-decoration:none;font-size:13px;padding:5px 11px;border-radius:8px;white-space:nowrap;transition:.15s}
+  .chapnav a:hover{background:var(--card-2);color:var(--ink)}
+  .chapnav a.cur{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;display:flex;gap:26px}
+
+  nav{
+    position:sticky;top:46px;align-self:flex-start;
+    width:230px;flex:0 0 230px;height:calc(100vh - 46px);overflow-y:auto;
+    padding:26px 8px 40px 0;
+    font-size:14px;
+  }
+  nav .nav-title{font-weight:700;color:var(--accent);letter-spacing:1px;margin:0 0 14px 10px;font-size:13px}
+  nav a{
+    display:block;color:var(--ink-soft);text-decoration:none;
+    padding:8px 12px;border-radius:10px;margin:2px 0;
+    border-left:3px solid transparent;transition:.2s;
+  }
+  nav a:hover{background:var(--card);color:var(--ink)}
+  nav a.active{background:var(--card-2);color:#fff;border-left-color:var(--accent)}
+
+  main{flex:1;min-width:0;padding:34px 0 90px}
+
+  header.hero{
+    background:radial-gradient(120% 140% at 0% 0%,#26356b 0%,#1a234a 60%,#161f3e 100%);
+    border:1px solid var(--line);border-radius:24px;
+    padding:38px 38px 32px;margin-bottom:30px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  header.hero::after{content:"🛡️";position:absolute;right:30px;top:18px;font-size:90px;opacity:.12}
+  header.hero .tag{display:inline-block;background:rgba(91,157,255,.18);color:var(--accent);
+    padding:4px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:14px}
+  header.hero h1{margin:0 0 8px;font-size:32px;letter-spacing:.5px}
+  header.hero p{margin:0;color:var(--ink-soft);font-size:15px}
+
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px 30px;margin-bottom:24px;box-shadow:var(--shadow);scroll-margin-top:20px;
+  }
+  h2{font-size:23px;margin:0 0 18px;padding-bottom:12px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:10px}
+  h2 .num{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+    width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 34px}
+  h3{font-size:18px;margin:22px 0 10px;color:#cfe0ff}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px;overflow:hidden;border-radius:12px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--card-2);color:#cfe0ff;font-weight:600}
+  tr:hover td{background:rgba(91,157,255,.06)}
+  td code,p code,li code{background:#0d1530;color:#8fd6ff;padding:2px 7px;border-radius:6px;font-size:13.5px}
+
+  .box{border-radius:12px;padding:14px 18px;margin:16px 0;border-left:4px solid;font-size:15px}
+  .box .bt{font-weight:700;display:block;margin-bottom:4px}
+  .box.tip{background:rgba(54,211,153,.08);border-color:var(--green)}
+  .box.warn{background:rgba(251,189,35,.08);border-color:var(--amber)}
+  .box.key{background:rgba(124,92,255,.10);border-color:var(--accent-2)}
+  .box.quote{background:rgba(244,114,182,.07);border-color:var(--pink);font-style:italic}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:18px 0}
+  .ccard{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s}
+  .ccard:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.35)}
+  .ccard .emoji{font-size:34px}
+  .ccard h4{margin:8px 0 6px;font-size:18px}
+  .ccard .en{color:var(--ink-soft);font-size:13px}
+  .ccard.c{border-top:3px solid var(--accent)}
+  .ccard.i{border-top:3px solid var(--green)}
+  .ccard.a{border-top:3px solid var(--amber)}
+
+  .timeline{position:relative;margin:20px 0 6px;padding-left:28px}
+  .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .tl{position:relative;margin-bottom:18px}
+  .tl::before{content:"";position:absolute;left:-24px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(91,157,255,.2)}
+  .tl .yr{color:var(--accent);font-weight:700;font-size:14px}
+
+  details{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:6px 18px;margin:12px 0}
+  details summary{cursor:pointer;font-weight:600;padding:10px 0;list-style:none}
+  details summary::before{content:"❓ ";}
+  details[open] summary{color:var(--accent)}
+  details .ans{color:var(--ink-soft);padding:6px 0 14px;border-top:1px dashed var(--line)}
+
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .pill{display:inline-block;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;margin:3px}
+
+  .fig{background:#0d1530;border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;text-align:center}
+  .fig svg{max-width:100%;height:auto}
+  .fig .cap{color:var(--ink-soft);font-size:13px;margin-top:10px}
+
+  .checkbar{position:sticky;top:46px;z-index:50;background:rgba(15,23,41,.92);backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+  .checkbar .lbl{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .checkbar .track{flex:1;height:10px;background:var(--card);border-radius:999px;overflow:hidden}
+  .checkbar .fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--accent));transition:width .4s}
+  .checkbar .pct{font-weight:700;color:var(--green);font-size:14px;min-width:42px;text-align:right}
+
+  .quiz{background:linear-gradient(135deg,#1a2547,#212f52);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0}
+  .quiz .q{font-weight:600;margin-bottom:12px}
+  .quiz .q .badge{background:var(--accent-2);color:#fff;border-radius:8px;padding:1px 9px;font-size:12px;margin-right:8px}
+  .opt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:11px 15px;border-radius:10px;margin:7px 0;cursor:pointer;transition:.15s;font-size:14.5px;font-family:inherit}
+  .opt:hover{border-color:var(--accent);background:var(--card-2)}
+  .opt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .opt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .opt.disabled{pointer-events:none;opacity:.75}
+  .feedback{font-size:14px;margin-top:8px;padding:10px 14px;border-radius:10px;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:rgba(54,211,153,.12);color:#aef5d4}
+  .feedback.no{background:rgba(248,114,114,.12);color:#ffc2c2}
+
+  footer{text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 0 10px}
+
+  #top{position:fixed;right:26px;bottom:26px;width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none;
+    font-size:20px;cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s}
+  #top.show{opacity:1;pointer-events:auto}
+
+  @media(max-width:880px){
+    nav{display:none}
+    .wrap{padding:0 14px}
+    header.hero{padding:26px 22px}
+    section{padding:20px 18px}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="chapnav">
+  <a href="index.html">🏠 目录</a>
+  <a href="CH1-信息安全概论.html">CH1 概论</a>
+  <a href="CH2-风险管理与国产化.html">CH2 风险管理</a>
+  <a class="cur" href="CH3-信息安全保障与运维.html">CH3 安全保障</a>
+  <a href="CH4-信息安全技术体系.html">CH4 技术体系</a>
+  <a href="CH5-鉴别技术.html">CH5 鉴别</a>
+  <a href="CH6-访问控制.html">CH6 访问控制</a>
+  <a href="CH7-防火墙技术.html">CH7 防火墙</a>
+  <a href="CH8-入侵检测技术.html">CH8 入侵检测</a>
+  <a href="古典密码-入门讲义.html">古典密码</a>
+  <a href="哈希函数-入门课.html">哈希函数</a>
+  <a href="牛津古典密码学-讲义.html">牛津密码练习</a>
+</div>
+
+<div class="wrap">
+  <nav id="nav">
+    <p class="nav-title">📖 本章目录</p>
+    <a href="#s0">学习目标</a>
+    <a href="#s1">① 信息的基本概念</a>
+    <a href="#s2">② 网络空间安全</a>
+    <a href="#s3">③ 发展五阶段 ⭐</a>
+    <a href="#s4">④ 安全模型 ⭐⭐</a>
+    <a href="#s5">⑤ IATF 深度防御 ⭐</a>
+    <a href="#s6">⑥ 安全保障模型</a>
+    <a href="#s7">⑦ 国内外保障实践</a>
+    <a href="#s8">⑧ 安全需求与方案</a>
+    <a href="#s9">⑨ 应急响应 ⭐</a>
+    <a href="#s10">⑩ 应急事件处置</a>
+    <a href="#s11">🎯 自测</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="tag">网络空间安全技术 · 第三章</span>
+      <h1>CH3 信息安全保障与安全运维</h1>
+      <p>从安全模型的理论推演，到应急响应的实战处置，一章打通保障全局</p>
+    </header>
+
+    <div class="checkbar">
+      <span class="lbl">📚 学习进度</span>
+      <div class="track"><div class="fill" id="learnFill"></div></div>
+      <span class="pct" id="learnPct">0%</span>
+    </div>
+
+    <!-- 学习目标 -->
+    <section id="s0">
+      <h2><span class="num">🎯</span>学习目标</h2>
+      <p>读完这一章，你应该能回答：</p>
+      <ol>
+        <li>信息有哪些基本性质？</li>
+        <li>网络空间安全发展经历了哪<b>五个阶段</b>？</li>
+        <li><b>PDR / PPDR</b> 模型的核心思想和公式是什么？</li>
+        <li><b>IATF</b> 深度防御的三要素和四个焦点领域是什么？</li>
+        <li>应急响应的<b>六阶段</b>流程是什么？</li>
+      </ol>
+    </section>
+
+    <!-- 1 信息基本概念 -->
+    <section id="s1">
+      <h2><span class="num">1</span>信息的基本概念与性质</h2>
+      <h3>三个经典定义</h3>
+      <table>
+        <tr><th>人物</th><th>定义</th></tr>
+        <tr><td><b>香农</b>（信息论创始人）</td><td>"信息是用以消除不确定性的东西"</td></tr>
+        <tr><td><b>维纳</b>（控制论创始人）</td><td>"信息是人们在适应外部世界……同外部世界进行交换的内容的名称"</td></tr>
+        <tr><td><b>钟义信</b>（中国学者）</td><td>"信息是事物运动的状态与方式，是事物的一种属性"</td></tr>
+      </table>
+
+      <h3>信息的八大性质</h3>
+      <table>
+        <tr><th>性质</th><th>通俗理解</th></tr>
+        <tr><td>依附性</td><td>信息不能脱离载体单独存在，用"符号"表示</td></tr>
+        <tr><td>可伪性</td><td>信息可以伪造（需要鉴别和完整性保护）</td></tr>
+        <tr><td>动态性</td><td>只有及时、新颖才有价值</td></tr>
+        <tr><td>可处理性</td><td>内容可识别，形式可转换</td></tr>
+        <tr><td>共享性</td><td>可以无限扩散（给别人不会减少自己的）</td></tr>
+        <tr><td>可传递性</td><td>时间和空间上都可传递</td></tr>
+        <tr><td>异步性</td><td>以存储方式接收，任何时间可用</td></tr>
+        <tr><td>可交换性</td><td>两个主体间可以交换</td></tr>
+      </table>
+
+      <div class="box tip">
+        <span class="bt">信息的功能</span>
+        基本功能：维持和强化世界的有序性。社会功能：促进人类文明进步。网络空间安全的任务就是确保信息功能的正确实现。
+      </div>
+    </section>
+
+    <!-- 2 网络空间安全 -->
+    <section id="s2">
+      <h2><span class="num">2</span>网络空间安全基本特征</h2>
+
+      <h3>四大特征</h3>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">🔗</div><h4>系统的安全</h4><p>不是单点的，是整个系统层面</p></div>
+        <div class="ccard i"><div class="emoji">⏱️</div><h4>动态的安全</h4><p>今天安全不代表明天安全</p></div>
+        <div class="ccard a"><div class="emoji">🌍</div><h4>无边界的安全</h4><p>网络空间没有物理边界</p></div>
+        <div class="ccard"><div class="emoji">🆕</div><h4>非传统的安全</h4><p>不同于传统军事安全</p></div>
+      </div>
+
+      <h3>安全范畴（四层）</h3>
+      <ol>
+        <li><b>信息技术问题</b> — 技术系统的安全</li>
+        <li><b>组织管理问题</b> — 人 + 技术 + 组织内部环境</li>
+        <li><b>社会问题</b> — 法制、舆论</li>
+        <li><b>国家安全问题</b> — 信息战、虚拟空间</li>
+      </ol>
+    </section>
+
+    <!-- 3 五阶段 -->
+    <section id="s3">
+      <h2><span class="num">3</span>网络空间安全发展五阶段 ⭐</h2>
+
+      <div class="box key">
+        <span class="bt">一句话串联</span>
+        通信安全 → 计算机安全 → 信息系统安全 → 信息安全保障 → 网络空间安全<br>
+        从"管好密码"到"管好系统"到"管好全局"到"攻防一体"。
+      </div>
+
+      <div class="timeline">
+        <div class="tl">
+          <div class="yr">阶段 1 · 通信安全（COMSEC）· 1940s-1970s</div>
+          <p>核心：通过密码技术解决通信保密。威胁：搭线窃听、密码学分析。措施：加密（如 ENIGMA 转轮密码机）。</p>
+        </div>
+        <div class="tl">
+          <div class="yr">阶段 2 · 计算机安全（COMPUSEC）· 1970s-1990s</div>
+          <p>核心：预防、检测和减小计算机系统未授权活动的后果。措施：操作系统的访问控制。标志：1985 年美国发布 TCSEC（橘皮书），划分 4 等级 7 级别。</p>
+        </div>
+        <div class="tl">
+          <div class="yr">阶段 3 · 信息系统安全（INFOSEC）· 1990s 后</div>
+          <p>核心：保护信息在存储、处理和传输全过程。措施：防火墙、防病毒、漏洞扫描、入侵检测、PKI、VPN 等。</p>
+        </div>
+        <div class="tl">
+          <div class="yr">阶段 4 · 信息安全保障（IA）· 21 世纪初</div>
+          <p>核心：从技术扩展到管理，从静态扩展到动态。措施：技术安全保障 + 安全管理 + 人员意识/培训 + 认证认可。</p>
+        </div>
+        <div class="tl">
+          <div class="yr">阶段 5 · 网络空间安全（CS）· 2010 年后</div>
+          <p>核心：从传统防御发展到"威慑"为主的攻防一体。三大能力：网络防御 Defense、网络攻击 Offense、网络利用 Exploitation。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 安全模型 -->
+    <section id="s4">
+      <h2><span class="num">4</span>安全模型 ⭐⭐</h2>
+
+      <h3>PDR 模型</h3>
+      <p>由美国 ISS 公司提出，最早体现<b>主动防御思想</b>的安全模型。出发点：任何防护措施都是基于时间的，是可以被攻破的。</p>
+      <div class="cards">
+        <div class="ccard c"><h4>P · 保护</h4><p>加密、鉴别、访问控制、防火墙</p></div>
+        <div class="ccard i"><h4>D · 检测</h4><p>入侵检测、漏洞检测、网络扫描</p></div>
+        <div class="ccard a"><h4>R · 响应</h4><p>应急响应机制</p></div>
+      </div>
+
+      <h3>PDRR 模型</h3>
+      <p>PDR 的进化版，增加了<b>恢复（Restore）</b>，强调自动故障恢复能力。四要素：保护 → 检测 → 反应 → 恢复。</p>
+
+      <h3>PPDR 模型（重点中的重点）</h3>
+      <p>在 PDR 基础上增加了<b>策略（Policy）</b>作为核心。</p>
+      <table>
+        <tr><th>要素</th><th>说明</th></tr>
+        <tr><td><b>Policy（策略）</b></td><td>模型的核心，所有防护/检测/响应都依据安全策略实施</td></tr>
+        <tr><td><b>Protection（防护）</b></td><td>访问控制、防火墙、加密、身份鉴别等</td></tr>
+        <tr><td><b>Detection（检测）</b></td><td>实时监控、检测、报警，防护从被动演进到主动</td></tr>
+        <tr><td><b>Response（响应）</b></td><td>关闭服务、跟踪、反击、消除影响</td></tr>
+      </table>
+
+      <div class="box key">
+        <span class="bt">PPDR 数学法则（必考）</span>
+        设 Pt = 防护时间，Dt = 检测时间，Rt = 反应时间，Et = 暴露时间<br><br>
+        <b>如果 Pt &gt; Dt + Rt，那么系统 S 是安全的</b><br>
+        <b>如果 Pt &lt; Dt + Rt，那么 Et = (Dt + Rt) - Pt</b><br><br>
+        通俗理解：防线能扛的时间，要超过"发现敌人 + 消灭敌人"的总时间，系统才安全。
+      </div>
+
+      <div class="box warn">
+        <span class="bt">PDR vs PPDR 的区别</span>
+        PDR 强调落实反应；PPDR 更强调<b>控制和对抗</b>、动态性。PPDR 以安全检测、漏洞监测和自适应填充"安全间隙"为循环，特别考虑人为的管理因素。
+      </div>
+
+      <h3>模型对比速查</h3>
+      <table>
+        <tr><th>模型</th><th>核心思想</th><th>要素</th></tr>
+        <tr><td>PDR</td><td>主动防御，攻防时间表</td><td>保护、检测、响应</td></tr>
+        <tr><td>PDRR</td><td>增加恢复能力</td><td>保护、检测、反应、恢复</td></tr>
+        <tr><td>PPDR</td><td>策略为核心的动态安全</td><td>策略、防护、检测、响应</td></tr>
+        <tr><td>IATF</td><td>深度防御，多层防护</td><td>人、技术、操作 + 四领域</td></tr>
+      </table>
+    </section>
+
+    <!-- 5 IATF -->
+    <section id="s5">
+      <h2><span class="num">5</span>IATF 深度防御模型 ⭐</h2>
+      <p><b>IATF</b>（Information Assurance Technical Framework）由美国 NSA 制定。核心理念：<b>深度防御（Defense-in-Depth）</b>。</p>
+
+      <h3>三个核心要素</h3>
+      <div class="cards">
+        <div class="ccard c">
+          <h4>人 People</h4>
+          <p>第一位的要素，也是最脆弱的。包括意识培训、组织管理、技术管理、操作管理。</p>
+        </div>
+        <div class="ccard i">
+          <h4>技术 Technology</h4>
+          <p>信息保障的重要手段。动态技术体系：防护 → 检测 → 响应 → 恢复。</p>
+        </div>
+        <div class="ccard a">
+          <h4>操作 Operation</h4>
+          <p>构成主动防御体系。包括风险评估、安全监控、安全审计、入侵检测、响应恢复。</p>
+        </div>
+      </div>
+
+      <h3>四个技术焦点领域（"三保护一支撑"）</h3>
+      <table>
+        <tr><th>领域</th><th>目标</th><th>主要方法</th></tr>
+        <tr><td><b>本地计算环境</b></td><td>确保数据在客户机/服务器上的 CIA</td><td>安全 OS、主机 IDS、防病毒、脆弱性扫描</td></tr>
+        <tr><td><b>区域边界</b></td><td>对进出区域的数据流进行控制与监视</td><td>防火墙、入侵检测、病毒防御、远程访问安全</td></tr>
+        <tr><td><b>网络和基础设施</b></td><td>防数据泄露、拒绝服务、传输异常</td><td>骨干网可用性、无线安全、VPN</td></tr>
+        <tr><td><b>支撑性基础设施</b></td><td>为安全服务提供基础</td><td>密钥管理、证书管理、入侵检测、审计</td></tr>
+      </table>
+
+      <div class="box warn">
+        <span class="bt">易错点</span>
+        "IATF 强调以安全检测、漏洞监测和自适应填充安全间隙为循环"——这是 PPDR 的特点，不是 IATF 的！考试常用来做干扰项。
+      </div>
+    </section>
+
+    <!-- 6 安全保障模型 -->
+    <section id="s6">
+      <h2><span class="num">6</span>信息系统安全保障模型</h2>
+      <p>国家标准 GB/T 20274.1-2006 给出的评估框架，三个维度：</p>
+      <div class="cards">
+        <div class="ccard c"><h4>安全特征</h4><p>机密性、完整性、可用性 → 保护资产 → 保障业务使命</p></div>
+        <div class="ccard i"><h4>生命周期</h4><p>计划组织 → 开发采购 → 实施交互 → 运行维护 → 废弃</p></div>
+        <div class="ccard a"><h4>保障要素</h4><p>技术、工程、管理、人员</p></div>
+      </div>
+
+      <h3>信息安全 vs 安全保障</h3>
+      <table>
+        <tr><th></th><th>信息安全</th><th>安全保障</th></tr>
+        <tr><td>重点</td><td>保护、防御</td><td>保护、检测和响应、攻击后修复</td></tr>
+        <tr><td>目的</td><td>防止攻击发生</td><td>始终保证维持特定水平的可用性、完整性、真实性、机密性和抗抵赖性</td></tr>
+      </table>
+    </section>
+
+    <!-- 7 国内外 -->
+    <section id="s7">
+      <h2><span class="num">7</span>国内外网络空间安全保障</h2>
+
+      <h3>国外（以美国为例）</h3>
+      <ul>
+        <li>四个关键文件：PDD63（1998）→ 国家计划 V1.0（2000）→ 行政令 13231（2001）→ 保护网际空间的国家战略（2003）</li>
+        <li><b>CNCI（网络"曼哈顿计划"）</b>：三道防线 + 十二项提议</li>
+        <li>重点保护对象：18 项<b>关键基础设施</b>（银行和金融被所有国家列为关键基础设施）</li>
+      </ul>
+
+      <h3>我国保障体系</h3>
+      <table>
+        <tr><th>时期</th><th>阶段</th><th>主要工作</th></tr>
+        <tr><td>2001-2002</td><td>启动</td><td>国家信息化小组重组；网络与信息安全协调小组成立</td></tr>
+        <tr><td>2003-2005</td><td>展开</td><td>出台指导政策；首次全国信息安全保障会议</td></tr>
+        <tr><td>2006 至今</td><td>深化</td><td>法律法规、标准化、等级保护和风险评估取得新进展</td></tr>
+      </table>
+
+      <div class="box tip">
+        <span class="bt">等级保护制度</span>
+        1994 年首次提出 → 2003 年中办发 27 号文明确建立 → 2007 年《信息安全等级保护管理办法》→ 《网络安全法》第 21 条：国家实行网络安全等级保护制度。
+      </div>
+    </section>
+
+    <!-- 8 安全需求 -->
+    <section id="s8">
+      <h2><span class="num">8</span>安全需求与安全方案</h2>
+
+      <h3>ISPP（信息系统保护轮廓）</h3>
+      <p>从<b>用户角度</b>规范化描述信息系统安全保障需求。定义了"某种类型信息系统的<b>与实现无关的</b>一组系统级安全保障要求"。</p>
+
+      <h3>ISST（信息系统安全目标）</h3>
+      <p>从<b>建设方（厂商）角度</b>制定的安全保障方案，根据 ISPP 编制。比 ISPP 多了"信息系统概要规范"和"ISPP 声明"。</p>
+    </section>
+
+    <!-- 9 应急响应 -->
+    <section id="s9">
+      <h2><span class="num">9</span>应急响应流程 ⭐</h2>
+      <p><b>应急响应</b>：一个组织为了应对各种安全事件所做的准备以及事后所采取的措施。</p>
+
+      <div class="box quote">
+        <span class="bt">两个维度</span>
+        未雨绸缪：风险评估、安全计划、安全意识培训、预警<br>
+        亡羊补牢：备份、病毒检测、后门清除、系统恢复、追踪取证
+      </div>
+
+      <h3>安全事件分级</h3>
+      <table>
+        <tr><th>级别</th><th>名称</th><th>标准</th></tr>
+        <tr><td>四级</td><td>一般</td><td>未造成业务中断或中断 &lt; 10 分钟，无数据损坏</td></tr>
+        <tr><td>三级</td><td>较大</td><td>中断 10-30 分钟，无数据损坏</td></tr>
+        <tr><td>二级</td><td>重大</td><td>中断 30-60 分钟，或数据部分损坏（可通过备份恢复）</td></tr>
+        <tr><td>一级</td><td>特别重大</td><td>中断 &gt; 60 分钟，或数据损坏无法恢复，或重要数据泄露</td></tr>
+      </table>
+
+      <div class="box warn">
+        <span class="bt">注意</span>
+        特殊时期（重大活动、赛事等）发生的事件<b>级别上提一级</b>。
+      </div>
+
+      <h3>六阶段流程</h3>
+      <div class="timeline">
+        <div class="tl"><div class="yr">① 准备</div><p>调研分析、确定目标和范围、制定预案和方案、组建团队、工具准备</p></div>
+        <div class="tl"><div class="yr">② 检测</div><p>确定检测对象和范围、判断是否为安全事件、确定处理方案</p></div>
+        <div class="tl"><div class="yr">③ 抑制</div><p>隔离和处理故障系统/区域，限制影响范围，保证业务连续性</p></div>
+        <div class="tl"><div class="yr">④ 根除</div><p>确定根除方案，消除安全威胁的根源</p></div>
+        <div class="tl"><div class="yr">⑤ 恢复</div><p>重建系统、数据备份/恢复、安装新 OS、配置基线、上线测试</p></div>
+        <div class="tl"><div class="yr">⑥ 跟进</div><p>吸取教训、审计抑制和根除效果、完善安全计划、发布经验总结</p></div>
+      </div>
+    </section>
+
+    <!-- 10 应急事件处置 -->
+    <section id="s10">
+      <h2><span class="num">10</span>常见应急事件处置</h2>
+
+      <h3>勒索病毒处置</h3>
+      <ol>
+        <li>了解现状：文件被加密？无法启动？桌面有勒索信息？</li>
+        <li>了解发病时间：文件加密时间、新文件出现时间</li>
+        <li>了解系统架构：IP、端口、操作系统、中间件等</li>
+        <li>确认感染者：定位被感染主机</li>
+        <li>处置：未感染 → 关闭 SSH/RDP、改密码、备份隔离；已感染 → 立即隔离（拔网线）、保留现场</li>
+      </ol>
+
+      <h3>挖矿木马处置</h3>
+      <p>特征：CPU/GPU 异常占用、有对矿池地址的 DNS 解析。处置：断网隔离 → 结束恶意进程 → 提取样本 → 删除木马 → 安装杀软、补丁更新。</p>
+
+      <h3>DDoS 事件处置</h3>
+      <table>
+        <tr><th>类型</th><th>特征</th></tr>
+        <tr><td>SYN Flood</td><td>大量虚假地址的 SYN 请求</td></tr>
+        <tr><td>ACK Flood</td><td>发送大量 ACK 标志位包</td></tr>
+        <tr><td>ICMP Flood</td><td>大量 ICMP 请求消耗资源</td></tr>
+        <tr><td>UDP Flood</td><td>向未开放端口发送大量 UDP 数据包</td></tr>
+        <tr><td>DNS Flood</td><td>短时间内大量 DNS 请求</td></tr>
+      </table>
+
+      <div class="box warn">
+        <span class="bt">部署提示</span>
+        流量大时，防火墙必须在抗 DDoS 设备后面，否则未净化流量会使防火墙过载。
+      </div>
+    </section>
+
+    <!-- 11 自测 -->
+    <section id="s11">
+      <h2><span class="num">🎯</span>本章自测</h2>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">单选</span>PPDR 模型的安全条件公式是？</div>
+        <button class="opt" data-correct>Pt &gt; Dt + Rt</button>
+        <button class="opt">Pt &lt; Dt + Rt</button>
+        <button class="opt">Pt = Dt + Rt</button>
+        <button class="opt">Pt &gt; Dt - Rt</button>
+        <div class="feedback ok">正确！防护时间必须大于检测时间加响应时间，系统才是安全的。</div>
+        <div class="feedback no">不对哦。PPDR 安全条件是 Pt &gt; Dt + Rt。</div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">单选</span>IATF 深度防御模型中，排在第一位的核心要素是？</div>
+        <button class="opt" data-correct>人（People）</button>
+        <button class="opt">技术（Technology）</button>
+        <button class="opt">操作（Operation）</button>
+        <button class="opt">策略（Policy）</button>
+        <div class="feedback ok">正确！IATF 强调人是第一位的要素，也是最脆弱的。</div>
+        <div class="feedback no">IATF 中人是第一位的，也是最脆弱的。策略是 PPDR 的核心。</div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">单选</span>应急响应的正确六阶段流程是？</div>
+        <button class="opt" data-correct>准备 → 检测 → 抑制 → 根除 → 恢复 → 跟进</button>
+        <button class="opt">检测 → 准备 → 抑制 → 根除 → 恢复 → 跟进</button>
+        <button class="opt">准备 → 检测 → 根除 → 抑制 → 恢复 → 跟进</button>
+        <button class="opt">准备 → 抑制 → 检测 → 根除 → 恢复 → 跟进</button>
+        <div class="feedback ok">正确！记住顺序：准备 → 检测 → 抑制 → 根除 → 恢复 → 跟进。</div>
+        <div class="feedback no">正确顺序是准备 → 检测 → 抑制 → 根除 → 恢复 → 跟进。</div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">单选</span>关于 IATF，以下哪个说法是错误的？</div>
+        <button class="opt">IATF 强调深度防御</button>
+        <button class="opt">IATF 有四个技术焦点领域</button>
+        <button class="opt" data-correct>IATF 强调以安全检测、漏洞监测和自适应填充安全间隙为循环</button>
+        <button class="opt">IATF 的三个核心要素是人、技术、操作</button>
+        <div class="feedback ok">正确！这个描述是 PPDR 模型的特点，不是 IATF 的。</div>
+        <div class="feedback no">"自适应填充安全间隙"是 PPDR 的特点，不是 IATF。</div>
+      </div>
+
+      <details>
+        <summary>ISPP 定义了什么？</summary>
+        <div class="ans">ISPP 定义了某种类型信息系统的<b>与实现无关的</b>一组系统级安全保障要求。它是从用户角度出发的。</div>
+      </details>
+
+      <details>
+        <summary>PDR 和 PPDR 最大的区别是什么？</summary>
+        <div class="ans">PPDR 在 PDR 基础上增加了<b>策略（Policy）</b>作为核心，更强调控制和对抗、安全的动态性，特别考虑人为的管理因素。</div>
+      </details>
+
+      <details>
+        <summary>网络空间安全发展的五个阶段分别是什么？</summary>
+        <div class="ans">① 通信安全 COMSEC → ② 计算机安全 COMPUSEC → ③ 信息系统安全 INFOSEC → ④ 信息安全保障 IA → ⑤ 网络空间安全 CS</div>
+      </details>
+    </section>
+
+    <footer>CH3 信息安全保障与安全运维 · 网络空间安全技术 · 小白教学讲义</footer>
+  </main>
+</div>
+
+<button id="top" title="回到顶部">↑</button>
+
+<script>
+  const progress=document.getElementById('progress');
+  const topBtn=document.getElementById('top');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const scrolled=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+    progress.style.width=scrolled+'%';
+    topBtn.classList.toggle('show',h.scrollTop>400);
+  });
+  topBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+  const links=[...document.querySelectorAll('#nav a')];
+  const allSecs=[...document.querySelectorAll('main section')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const seen=new Set();
+  const learnFill=document.getElementById('learnFill');
+  const learnPct=document.getElementById('learnPct');
+  function updateLearn(){
+    const p=Math.round(seen.size/allSecs.length*100);
+    learnFill.style.width=p+'%';
+    learnPct.textContent=p+'%';
+    if(p===100){learnPct.textContent='✅100%';}
+  }
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        if(e.target.id){seen.add(e.target.id);updateLearn();}
+        const id='#'+e.target.id;
+        links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')===id));
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>s&&io.observe(s));
+  allSecs.forEach(s=>io.observe(s));
+
+  document.querySelectorAll('[data-quiz]').forEach(quiz=>{
+    const opts=[...quiz.querySelectorAll('.opt')];
+    const fb=quiz.querySelector('.feedback');
+    opts.forEach((opt,idx)=>{
+      opt.addEventListener('click',()=>{
+        const correctIdx=opts.findIndex(o=>o.dataset.correct!==undefined);
+        opts.forEach(o=>o.classList.add('disabled'));
+        if(opt.dataset.correct!==undefined){
+          opt.classList.add('correct');
+          quiz.querySelectorAll('.feedback.ok').forEach(f=>f.classList.add('show'));
+        }else{
+          opt.classList.add('wrong');
+          opts[correctIdx].classList.add('correct');
+          quiz.querySelectorAll('.feedback.no').forEach(f=>f.classList.add('show'));
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CA-IMDN Channel Attention Improvement</title>
+</head>
+<body>
+  <div
+    id="main"
+    data-composition-id="ca-imdn-attention"
+    data-start="0"
+    data-duration="20"
+    data-width="1920"
+    data-height="1080"
+    data-track-index="0"
+  >
+    <main class="frame">
+      <div class="bg-grid"></div>
+      <div class="blue-ribbon"></div>
+      <header class="hero">
+        <div class="kicker">
+          <span class="kicker-top">CA-IMDN</span>
+          <span>改进部分</span>
+        </div>
+        <div>
+          <div class="insert-note">插入位置：AttentionDistillationBlock = DistillationBlock + ChannelAttention</div>
+          <h1>在蒸馏特征后，计算“哪个通道更重要”</h1>
+          <p>这一段只录新增的通道注意力计算：压缩、生成权重、逐通道加权、残差保留。</p>
+        </div>
+      </header>
+
+      <section class="pipeline">
+        <div class="panel input-panel">
+          <div class="panel-index">输入</div>
+          <div class="panel-label">蒸馏后的特征 F</div>
+          <div class="channel-stack">
+            <div class="channel c1">
+              <span>通道 1</span>
+              <div class="mini-grid">
+                <b>0.12</b><b>0.30</b><b>0.44</b><b>0.28</b>
+              </div>
+            </div>
+            <div class="channel c2">
+              <span>通道 2</span>
+              <div class="mini-grid">
+                <b>0.60</b><b>0.68</b><b>0.74</b><b>0.82</b>
+              </div>
+            </div>
+            <div class="channel c3">
+              <span>通道 3</span>
+              <div class="mini-grid">
+                <b>0.18</b><b>0.22</b><b>0.26</b><b>0.30</b>
+              </div>
+            </div>
+            <div class="channel c4">
+              <span>通道 4</span>
+              <div class="mini-grid">
+                <b>0.40</b><b>0.55</b><b>0.70</b><b>0.77</b>
+              </div>
+            </div>
+          </div>
+          <div class="caption">实际是 32 个通道；这里用 4 个通道演示。</div>
+        </div>
+
+        <div class="arrow arrow-a">→</div>
+
+        <div class="panel gap-panel">
+          <div class="panel-index">Step 1</div>
+          <div class="panel-label">1. 全局平均池化</div>
+          <div class="mean-card">
+            <div class="mean-title">对每个通道求平均</div>
+            <div class="mean-equation">(0.12 + 0.30 + 0.44 + 0.28) ÷ 4 = 0.285</div>
+          </div>
+          <div class="vector gap-vector">
+            <span>g =</span>
+            <b>0.29</b><b>0.71</b><b>0.24</b><b>0.61</b>
+          </div>
+          <div class="caption">H×W 的像素响应，被压成每个通道 1 个数。</div>
+        </div>
+
+        <div class="arrow arrow-b">→</div>
+
+        <div class="panel mlp-panel">
+          <div class="panel-index">Step 2</div>
+          <div class="panel-label">2. 生成通道权重</div>
+          <div class="mlp-row">
+            <div class="mlp-box wide">32</div>
+            <div class="mlp-op">→</div>
+            <div class="mlp-box slim">8</div>
+            <div class="mlp-op">ReLU</div>
+            <div class="mlp-box wide">32</div>
+            <div class="mlp-op">Sigmoid</div>
+          </div>
+          <div class="vector weight-vector">
+            <span>w =</span>
+            <b>0.82</b><b>0.94</b><b>0.31</b><b>0.67</b>
+          </div>
+          <div class="caption">权重越接近 1，说明这个通道的细节越值得保留。</div>
+        </div>
+
+        <div class="arrow arrow-c">→</div>
+
+        <div class="panel output-panel">
+          <div class="panel-index">Step 3</div>
+          <div class="panel-label">3. 逐通道相乘</div>
+          <div class="multiply-list">
+            <div class="multiply keep">F'1 = F1 × 0.82</div>
+            <div class="multiply keep strong">F'2 = F2 × 0.94</div>
+            <div class="multiply fade">F'3 = F3 × 0.31</div>
+            <div class="multiply keep">F'4 = F4 × 0.67</div>
+          </div>
+          <div class="caption">强纹理通道被强调，弱响应通道被压低。</div>
+        </div>
+      </section>
+
+      <section class="bottom">
+        <div class="residual">
+          <span class="formula-left">CA-IMDN Block</span>
+          <span class="eq">=</span>
+          <span class="blue">Attention(Distill(F))</span>
+          <span class="plus">+</span>
+          <span class="green">F</span>
+        </div>
+        <div class="takeaway">改进点：模型不再平均对待所有特征通道，而是自动给“更像纹理、边缘、细节”的通道更高权重。</div>
+      </section>
+    </main>
+  </div>
+
+  <style>
+    :root {
+      --blue: #0f6bc9;
+      --blue-deep: #123c69;
+      --blue-soft: #edf5ff;
+      --gold: #b97813;
+      --gold-soft: #fff4db;
+      --ink: #172033;
+      --muted: #4f5d72;
+      --line: #cfdbe8;
+      --paper: #f6f8fb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    #main {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(244, 248, 252, 0.96)),
+        linear-gradient(90deg, rgba(15, 107, 201, 0.08), transparent 28%, rgba(185, 120, 19, 0.06));
+    }
+
+    .frame {
+      width: 100%;
+      height: 100%;
+      padding: 56px 72px 58px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      opacity: 0.55;
+      background-image:
+        linear-gradient(rgba(15, 107, 201, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 107, 201, 0.08) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(90deg, transparent 0%, black 16%, black 84%, transparent 100%);
+    }
+
+    .blue-ribbon {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 16px;
+      z-index: -1;
+      background: linear-gradient(180deg, #123c69, var(--blue));
+      box-shadow: 10px 0 24px rgba(15, 107, 201, 0.13);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      column-gap: 28px;
+      align-items: start;
+    }
+
+    .kicker {
+      align-self: stretch;
+      border: 1px solid rgba(18, 60, 105, 0.22);
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 8px;
+      padding: 24px 22px;
+      font-size: 31px;
+      font-weight: 800;
+      color: var(--blue-deep);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 16px 38px rgba(18, 60, 105, 0.10);
+    }
+
+    .kicker-top {
+      font-family: Consolas, Arial, monospace;
+      font-size: 28px;
+      color: #0d3f78;
+      letter-spacing: 0;
+    }
+
+    .insert-note {
+      display: inline-flex;
+      align-items: center;
+      height: 38px;
+      padding: 0 16px;
+      margin-bottom: 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 107, 201, 0.28);
+      background: rgba(231, 241, 251, 0.92);
+      color: var(--blue-deep);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 56px;
+      line-height: 1.12;
+      letter-spacing: 0;
+      color: #111827;
+    }
+
+    .hero p {
+      margin: 14px 0 0;
+      font-size: 25px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .pipeline {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 348px 56px 378px 56px 414px 56px 362px;
+      gap: 14px;
+      align-items: stretch;
+      min-height: 0;
+      position: relative;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.965);
+      border: 1px solid rgba(176, 195, 216, 0.82);
+      border-radius: 8px;
+      padding: 18px;
+      box-shadow:
+        0 18px 38px rgba(21, 55, 90, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, var(--blue), #74aee6 72%, var(--gold));
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(15, 107, 201, 0.22), transparent);
+      pointer-events: none;
+    }
+
+    .panel-index {
+      display: inline-flex;
+      height: 30px;
+      align-items: center;
+      padding: 0 10px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(15, 107, 201, 0.30);
+      background: #eef6ff;
+      color: #0a4c93;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .panel-label {
+      font-size: 26px;
+      line-height: 1.2;
+      font-weight: 800;
+      color: #14243b;
+      margin-bottom: 12px;
+    }
+
+    .caption {
+      margin-top: 12px;
+      font-size: 18px;
+      line-height: 1.35;
+      color: var(--muted);
+    }
+
+    .channel-stack {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .channel {
+      background: #f4f9ff;
+      border: 1px solid #b7cde6;
+      border-radius: 8px;
+      padding: 7px 9px;
+      display: grid;
+      grid-template-columns: 82px 1fr;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 5px 12px rgba(15, 107, 201, 0.06);
+    }
+
+    .c2,
+    .c4 {
+      border-color: #8bb9e7;
+      background: #eff7ff;
+    }
+
+    .channel span {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--blue-deep);
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .mini-grid b {
+      height: 28px;
+      border-radius: 6px;
+      background: #ffffff;
+      border: 1px solid #b7cbe4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .arrow {
+      align-self: center;
+      justify-self: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #123c69;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      font-weight: 900;
+      box-shadow:
+        0 10px 24px rgba(18, 60, 105, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+
+    .mean-card {
+      background: #f8fbff;
+      border: 2px dashed #9fc3e8;
+      border-radius: 8px;
+      padding: 22px;
+    }
+
+    .mean-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--blue-deep);
+      margin-bottom: 16px;
+    }
+
+    .mean-equation {
+      font-family: Consolas, "Microsoft YaHei", monospace;
+      font-size: 24px;
+      line-height: 1.35;
+      color: #111827;
+    }
+
+    .vector {
+      margin-top: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .vector span {
+      font-size: 26px;
+      font-weight: 900;
+      color: #14243b;
+      margin-right: 4px;
+    }
+
+    .vector b {
+      min-width: 68px;
+      height: 52px;
+      border-radius: 8px;
+      border: 2px solid #9fc3e8;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-family: Consolas, "Microsoft YaHei", monospace;
+    }
+
+    .mlp-row {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      min-height: 150px;
+      background: #f8fbff;
+      border: 2px dashed #9fc3e8;
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .mlp-box {
+      height: 82px;
+      border-radius: 8px;
+      background: #edf5ff;
+      border: 2px solid #9fc3e8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--blue-deep);
+    }
+
+    .mlp-box.wide {
+      width: 86px;
+    }
+
+    .mlp-box.slim {
+      width: 56px;
+      background: var(--gold-soft);
+      border-color: #ddb66f;
+      color: var(--gold);
+    }
+
+    .mlp-op {
+      font-size: 22px;
+      font-weight: 800;
+      color: #35445a;
+    }
+
+    .weight-vector b:nth-child(3) {
+      border-color: #ddb66f;
+      background: var(--gold-soft);
+    }
+
+    .weight-vector b:nth-child(2),
+    .weight-vector b:nth-child(3),
+    .gap-vector b:nth-child(3) {
+      border-color: #6fa9df;
+      box-shadow: 0 0 0 4px rgba(15, 107, 201, 0.08);
+    }
+
+    .weight-vector b:nth-child(3) {
+      border-color: #ddb66f;
+      background: var(--gold-soft);
+      box-shadow: 0 0 0 4px rgba(185, 120, 19, 0.10);
+    }
+
+    .multiply-list {
+      display: grid;
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .multiply {
+      height: 62px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 24px;
+      font-family: Consolas, "Microsoft YaHei", monospace;
+      font-weight: 800;
+      border: 2px solid #abc8e8;
+      background: #ffffff;
+      color: #16243a;
+    }
+
+    .multiply.keep {
+      background: #f4f9ff;
+    }
+
+    .multiply.strong {
+      border-color: #6fa9df;
+      box-shadow:
+        inset 0 0 0 4px rgba(15, 107, 201, 0.10),
+        0 8px 22px rgba(15, 107, 201, 0.12);
+    }
+
+    .multiply.fade {
+      opacity: 0.52;
+      background: #f4f5f7;
+      border-color: #cbd3de;
+    }
+
+    .bottom {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .residual {
+      height: 110px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid rgba(149, 177, 208, 0.84);
+      box-shadow: 0 18px 44px rgba(21, 55, 90, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      font-size: 38px;
+      font-weight: 900;
+    }
+
+    .blue {
+      color: var(--blue);
+    }
+
+    .green {
+      color: var(--gold);
+    }
+
+    .eq,
+    .plus {
+      color: #45556f;
+    }
+
+    .takeaway {
+      border-left: 10px solid var(--green);
+      border-left-color: var(--gold);
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 20px 28px;
+      font-size: 28px;
+      line-height: 1.32;
+      font-weight: 800;
+      color: #172033;
+      box-shadow: 0 12px 34px rgba(21, 55, 90, 0.08);
+    }
+  </style>
+
+  <script src="node_modules/gsap/dist/gsap.min.js"></script>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+    tl.from(".kicker", { x: -48, opacity: 0, duration: 0.85, ease: "power3.out" }, 0.25);
+    tl.from("h1", { y: 34, opacity: 0, duration: 0.9, ease: "expo.out" }, 0.55);
+    tl.from(".hero p", { y: 24, opacity: 0, duration: 0.72, ease: "sine.out" }, 1.15);
+
+    tl.from(".input-panel", { y: 50, opacity: 0, duration: 0.85, ease: "power3.out" }, 2.0);
+    tl.from(".channel", {
+      x: -32,
+      opacity: 0,
+      duration: 0.42,
+      stagger: 0.28,
+      ease: "power2.out"
+    }, 2.55);
+    tl.to(".c2, .c4", {
+      scale: 1.035,
+      duration: 0.5,
+      yoyo: true,
+      repeat: 1,
+      transformOrigin: "center",
+      ease: "sine.inOut"
+    }, 4.1);
+
+    tl.from(".arrow-a", { scale: 0.35, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, 4.85);
+    tl.from(".gap-panel", { y: 50, opacity: 0, duration: 0.85, ease: "power3.out" }, 5.25);
+    tl.from(".mean-card", { y: 28, opacity: 0, duration: 0.65, ease: "power2.out" }, 6.0);
+    tl.from(".gap-vector b", {
+      y: 30,
+      opacity: 0,
+      duration: 0.38,
+      stagger: 0.22,
+      ease: "power2.out"
+    }, 6.75);
+
+    tl.from(".arrow-b", { scale: 0.35, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, 8.25);
+    tl.from(".mlp-panel", { y: 50, opacity: 0, duration: 0.85, ease: "power3.out" }, 8.65);
+    tl.from(".mlp-box, .mlp-op", {
+      y: 26,
+      opacity: 0,
+      duration: 0.35,
+      stagger: 0.18,
+      ease: "power2.out"
+    }, 9.55);
+    tl.from(".weight-vector b", {
+      y: 30,
+      opacity: 0,
+      duration: 0.38,
+      stagger: 0.22,
+      ease: "power2.out"
+    }, 11.1);
+    tl.to(".weight-vector b:nth-child(3), .weight-vector b:nth-child(5)", {
+      scale: 1.13,
+      duration: 0.5,
+      yoyo: true,
+      repeat: 1,
+      ease: "sine.inOut"
+    }, 12.25);
+
+    tl.from(".arrow-c", { scale: 0.35, opacity: 0, duration: 0.55, ease: "back.out(1.6)" }, 13.15);
+    tl.from(".output-panel", { y: 50, opacity: 0, duration: 0.85, ease: "power3.out" }, 13.55);
+    tl.from(".multiply", {
+      x: 34,
+      opacity: 0,
+      duration: 0.42,
+      stagger: 0.28,
+      ease: "power2.out"
+    }, 14.35);
+    tl.to(".multiply.strong", {
+      scale: 1.04,
+      duration: 0.5,
+      yoyo: true,
+      repeat: 1,
+      ease: "sine.inOut"
+    }, 15.75);
+    tl.to(".multiply.fade", {
+      opacity: 0.36,
+      duration: 0.8,
+      ease: "sine.inOut"
+    }, 16.1);
+
+    tl.from(".residual", { y: 42, opacity: 0, duration: 0.85, ease: "power3.out" }, 16.75);
+    tl.from(".takeaway", { y: 34, opacity: 0, duration: 0.75, ease: "power2.out" }, 17.75);
+    tl.to(".blue, .green", {
+      scale: 1.04,
+      transformOrigin: "center",
+      duration: 0.55,
+      yoyo: true,
+      repeat: 1,
+      ease: "sine.inOut"
+    }, 18.75);
+
+    window.__timelines["ca-imdn-attention"] = tl;
+  </script>
+</body>
+</html>

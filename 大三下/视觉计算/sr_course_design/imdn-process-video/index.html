@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IMDN Calculation Focus</title>
+</head>
+<body>
+  <div
+    id="main"
+    data-composition-id="imdn-process"
+    data-start="0"
+    data-duration="58"
+    data-width="1920"
+    data-height="1080"
+    data-track-index="0"
+  >
+    <section id="scene1" class="scene active">
+      <div class="scene-content">
+        <header class="section-head">
+          <span class="step">00</span>
+          <div>
+            <h2>先把整条计算链写成一个式子</h2>
+            <p>之后每一页只展开其中一个小计算，让观众跟得上。</p>
+          </div>
+        </header>
+        <div class="chain-board">
+          <div class="matrix-card">
+            <b>LR 小块 x</b>
+            <div class="matrix m3">
+              <span>0.18</span><span>0.22</span><span>0.28</span>
+              <span>0.31</span><span>0.42</span><span>0.50</span>
+              <span>0.40</span><span>0.56</span><span>0.73</span>
+            </div>
+            <em>低分辨率像素</em>
+          </div>
+          <div class="formula-node">fθ(x)</div>
+          <div class="matrix-card">
+            <b>SR 输出</b>
+            <div class="matrix m4 soft">
+              <span>0.21</span><span>0.29</span><span>0.35</span><span>0.44</span>
+              <span>0.30</span><span>0.41</span><span>0.52</span><span>0.58</span>
+              <span>0.38</span><span>0.50</span><span>0.66</span><span>0.70</span>
+              <span>0.46</span><span>0.61</span><span>0.72</span><span>0.79</span>
+            </div>
+            <em>模型预测的高分辨率</em>
+          </div>
+          <div class="formula-node compare">≈</div>
+          <div class="matrix-card">
+            <b>HR 真值 y</b>
+            <div class="matrix m4 target">
+              <span>0.20</span><span>0.30</span><span>0.36</span><span>0.46</span>
+              <span>0.31</span><span>0.44</span><span>0.56</span><span>0.60</span>
+              <span>0.40</span><span>0.55</span><span>0.74</span><span>0.76</span>
+              <span>0.48</span><span>0.63</span><span>0.78</span><span>0.82</span>
+            </div>
+            <em>训练目标</em>
+          </div>
+        </div>
+        <div class="bottom-equation">训练目标：让 fθ(x) 越来越接近 y，同时让边缘变化也接近。</div>
+      </div>
+    </section>
+
+    <section id="scene2" class="scene">
+      <div class="scene-content">
+        <header class="section-head">
+          <span class="step">01</span>
+          <div>
+            <h2>卷积不是魔法：就是“逐格相乘，再加起来”</h2>
+            <p>这一页只计算一个输出特征值。</p>
+          </div>
+        </header>
+        <div class="conv-board">
+          <div class="matrix-card">
+            <b>3×3 像素窗口</b>
+            <div class="matrix m3 input-matrix">
+              <span>0.18</span><span>0.22</span><span>0.28</span>
+              <span>0.31</span><span class="focus">0.42</span><span>0.50</span>
+              <span>0.40</span><span>0.56</span><span>0.73</span>
+            </div>
+          </div>
+          <div class="times">×</div>
+          <div class="matrix-card">
+            <b>3×3 卷积核</b>
+            <div class="matrix m3 kernel-matrix">
+              <span>-0.10</span><span>0.00</span><span>0.10</span>
+              <span>0.20</span><span class="focus">0.40</span><span>0.20</span>
+              <span>0.10</span><span>0.00</span><span>-0.10</span>
+            </div>
+          </div>
+          <div class="equals">=</div>
+          <div class="matrix-card product-card">
+            <b>对应乘积</b>
+            <div class="matrix m3 product-matrix">
+              <span>-0.018</span><span>0</span><span>0.028</span>
+              <span>0.062</span><span class="focus">0.168</span><span>0.100</span>
+              <span>0.040</span><span>0</span><span>-0.073</span>
+            </div>
+          </div>
+        </div>
+        <div class="calc-strip">
+          <span>求和：0.307</span>
+          <span>加 bias：+0.05</span>
+          <span>激活：LeakyReLU</span>
+          <strong>输出特征值 ≈ 0.36</strong>
+        </div>
+      </div>
+    </section>
+
+    <section id="scene3" class="scene">
+      <div class="scene-content">
+        <header class="section-head">
+          <span class="step">02</span>
+          <div>
+            <h2>同一个卷积核滑过去，整张特征图就算出来</h2>
+            <p>每滑到一个位置，就重复上一页的乘加计算。</p>
+          </div>
+        </header>
+        <div class="sliding-board">
+          <div class="matrix-card scan-card">
+            <b>LR patch</b>
+            <div class="scan-canvas">
+              <div class="pixel-5">
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="scan-window"></div>
+            </div>
+          </div>
+          <div class="scan-explain">
+            <div class="mini-formula active-f1">位置 (1,1)：乘加 → 0.36</div>
+            <div class="mini-formula active-f2">位置 (1,2)：乘加 → 0.48</div>
+            <div class="mini-formula active-f3">位置 (2,2)：乘加 → 0.63</div>
+            <div class="generic-formula">F[i,j] = Σ x[i+u,j+v] · k[u,v] + b</div>
+          </div>
+          <div class="matrix-card">
+            <b>Feature map</b>
+            <div class="matrix m3 feature-map">
+              <span class="fill1">0.36</span><span class="fill2">0.48</span><span>0.32</span>
+              <span>0.27</span><span class="fill3">0.63</span><span>0.52</span>
+              <span>0.24</span><span>0.48</span><span>0.71</span>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-equation">特征图的意义：数值高的位置，通常对应更明显的边缘、纹理或颜色变化。</div>
+      </div>
+    </section>
+
+    <section id="scene4" class="scene">
+      <div class="scene-content">
+        <header class="section-head">
+          <span class="step">03</span>
+          <div>
+            <h2>IMDN 的“信息蒸馏”：通道不是一起混，而是分批保留</h2>
+            <p>以 32 个特征通道为例，每次拿出 8 个有用细节，其余 24 个继续卷积。</p>
+          </div>
+        </header>
+        <div class="distill-board">
+          <div class="channel-panel">
+            <b>输入特征：32 channels</b>
+            <div class="channel-grid">
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="distill-pipeline">
+            <div class="split-row row1"><b>Step 1</b><span>D1: 8 保留</span><em>R1: 24 继续卷积</em></div>
+            <div class="split-row row2"><b>Step 2</b><span>D2: 8 保留</span><em>R2: 24 继续卷积</em></div>
+            <div class="split-row row3"><b>Step 3</b><span>D3: 8 保留</span><em>R3: 24 继续卷积</em></div>
+            <div class="split-row row4"><b>Step 4</b><span>D4: 8 输出</span><em>结束提炼</em></div>
+          </div>
+          <div class="fuse-panel">
+            <b>拼接再融合</b>
+            <div class="concat-line">
+              <span>D1</span><span>D2</span><span>D3</span><span>D4</span>
+            </div>
+            <div class="fusion-eq">8+8+8+8 = 32</div>
+            <div class="fusion-eq">1×1 Conv：32 → 32</div>
+            <div class="fusion-eq residual">输出 = Fuse + 原特征 x</div>
+          </div>
+        </div>
+        <div class="bottom-equation">这一步的好处：早期细节不会被后续卷积冲淡，模型更容易保留边缘和纹理。</div>
+      </div>
+    </section>
+
+    <section id="scene5" class="scene">
+      <div class="scene-content">
+        <header class="section-head">
+          <span class="step">04</span>
+          <div>
+            <h2>PixelShuffle 的计算：把“通道编号”换成“空间坐标”</h2>
+            <p>以放大 2 倍为例，一个 LR 位置会生成 4 个子像素位置。</p>
+          </div>
+        </header>
+        <div class="shuffle-board">
+          <div class="matrix-card">
+            <b>模型先预测 4 个子像素通道</b>
+            <div class="subpixel-list">
+              <span>A = 左上</span>
+              <span>B = 右上</span>
+              <span>C = 左下</span>
+              <span>D = 右下</span>
+            </div>
+            <em>形状：C×4, H, W</em>
+          </div>
+          <div class="mapping-panel">
+            <div class="map-title">坐标映射公式</div>
+            <div class="map-formula">out[c, 2h+a, 2w+b]</div>
+            <div class="map-formula">= in[c·4 + a·2 + b, h, w]</div>
+            <div class="map-note">a,b ∈ {0,1}</div>
+          </div>
+          <div class="matrix-card">
+            <b>一个位置变成 2×2</b>
+            <div class="matrix m2 block2">
+              <span>A</span><span>B</span>
+              <span>C</span><span>D</span>
+            </div>
+          </div>
+          <div class="matrix-card">
+            <b>整图重复重排</b>
+            <div class="matrix m4 shuffle-map">
+              <span>A</span><span>B</span><span>A</span><span>B</span>
+              <span>C</span><span>D</span><span>C</span><span>D</span>
+              <span>A</span><span>B</span><span>A</span><span>B</span>
+              <span>C</span><span>D</span><span>C</span><span>D</span>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-equation">所以 HR 新像素不是插值补出来的，而是网络预测后按坐标规则摆进去的。</div>
+      </div>
+    </section>
+
+    <section id="scene6" class="scene">
+      <div class="scene-content">
+        <header class="section-head">
+          <span class="step">05</span>
+          <div>
+            <h2>最后算误差：像素差 + 边缘差，一起指导参数更新</h2>
+            <p>这里用一个 2×2 小块示范损失怎么从数值算出来。</p>
+          </div>
+        </header>
+        <div class="loss-board">
+          <div class="matrix-card">
+            <b>SR 预测</b>
+            <div class="matrix m2 sr-m">
+              <span>0.21</span><span>0.29</span>
+              <span>0.38</span><span>0.66</span>
+            </div>
+          </div>
+          <div class="minus">−</div>
+          <div class="matrix-card">
+            <b>HR 真值</b>
+            <div class="matrix m2 hr-m">
+              <span>0.20</span><span>0.30</span>
+              <span>0.40</span><span>0.74</span>
+            </div>
+          </div>
+          <div class="equals">=</div>
+          <div class="matrix-card">
+            <b>|差值|</b>
+            <div class="matrix m2 diff-m">
+              <span>0.01</span><span>0.01</span>
+              <span>0.02</span><span>0.08</span>
+            </div>
+          </div>
+        </div>
+        <div class="loss-strip">
+          <div class="loss-item">L1 = mean(diff) = 0.03</div>
+          <div class="loss-item">边缘差：比较横向/纵向梯度</div>
+          <div class="loss-item total">Total = L1 + λ · EdgeLoss</div>
+          <div class="loss-item">反向传播：更新卷积核 θ</div>
+        </div>
+        <div class="bottom-equation">讲解重点：训练不是让模型“记住图像”，而是让所有卷积核参数逐步学会更好的像素映射。</div>
+      </div>
+    </section>
+
+    <div id="wipe1" class="wipe"></div>
+    <div id="wipe2" class="wipe"></div>
+    <div id="wipe3" class="wipe"></div>
+    <div id="wipe4" class="wipe"></div>
+    <div id="wipe5" class="wipe"></div>
+    <div class="progress"><span id="progress-bar"></span></div>
+
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #111; font-family: "SimHei", "Microsoft YaHei", Arial, sans-serif; }
+      #main { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #fff; color: #333; }
+      .scene { position: absolute; inset: 0; opacity: 0; background: #fff; }
+      .scene.active { opacity: 1; }
+      .scene-content { width: 100%; height: 100%; padding: 70px 96px 92px; display: flex; flex-direction: column; gap: 34px; }
+      .section-head { min-height: 124px; display: flex; align-items: center; gap: 28px; }
+      .step { width: 98px; height: 98px; display: grid; place-items: center; border-radius: 8px; background: #0f6bc9; color: #fff; font: 900 40px "Cascadia Mono","Consolas",monospace; }
+      h2, p { margin: 0; }
+      h2 { color: #083575; font-size: 48px; line-height: 1.22; font-weight: 900; }
+      .section-head p { margin-top: 12px; color: #4b5563; font-size: 25px; }
+      .matrix-card, .channel-panel, .fuse-panel, .mapping-panel { background: #fff; border: 2px solid #dce8f5; border-radius: 8px; box-shadow: 0 16px 44px rgba(15,107,201,.12); padding: 28px; }
+      .matrix-card b, .channel-panel b, .fuse-panel b { display: block; color: #083575; font-size: 25px; font-weight: 900; margin-bottom: 18px; }
+      .matrix-card em { display: block; margin-top: 16px; color: #4b5563; font-style: normal; font-size: 21px; }
+      .matrix { display: grid; gap: 8px; }
+      .m2 { grid-template-columns: repeat(2, 1fr); }
+      .m3 { grid-template-columns: repeat(3, 1fr); }
+      .m4 { grid-template-columns: repeat(4, 1fr); }
+      .matrix span { min-height: 76px; display: grid; place-items: center; border-radius: 6px; background: #e8f1fb; color: #083575; border: 2px solid #b9d7f8; font: 900 23px "Cascadia Mono","Consolas",monospace; }
+      .m4 span { min-height: 58px; font-size: 19px; }
+      .m2 span { min-height: 112px; font-size: 30px; }
+      .matrix .focus, .matrix .fill1, .matrix .fill2, .matrix .fill3 { background: #f8d694; color: #3b2600; border-color: #c98508; }
+      .target span, .hr-m span { background: #eaf7f1; border-color: #9bd9bc; color: #064b2d; }
+      .soft span, .sr-m span { background: #dcecff; }
+      .bottom-equation { padding: 24px 30px; background: #e8f1fb; border-left: 9px solid #0f6bc9; border-radius: 6px; color: #083575; font-size: 30px; font-weight: 900; }
+      .chain-board { flex: 1; display: grid; grid-template-columns: 330px 180px 350px 110px 350px; gap: 26px; align-items: center; }
+      .formula-node, .times, .equals, .minus { display: grid; place-items: center; min-height: 120px; color: #fff; background: #0f6bc9; border-radius: 8px; font: 900 42px "Cascadia Mono","Consolas",monospace; text-align: center; }
+      .formula-node.compare, .equals, .minus { background: #e8f1fb; color: #083575; }
+      .conv-board { flex: 1; display: grid; grid-template-columns: 360px 80px 360px 80px 510px; gap: 22px; align-items: center; }
+      .product-card .matrix span { font-size: 20px; }
+      .calc-strip, .loss-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+      .calc-strip span, .calc-strip strong, .loss-item { padding: 24px 18px; border-radius: 8px; background: #f5f7fa; border-left: 8px solid #0f6bc9; color: #083575; text-align: center; font: 900 27px "Cascadia Mono","Consolas",monospace; }
+      .calc-strip strong, .loss-item.total { background: #eaf7f1; border-left-color: #20a66a; }
+      .sliding-board { flex: 1; display: grid; grid-template-columns: 440px 1fr 430px; gap: 34px; align-items: center; }
+      .scan-canvas { position: relative; width: 100%; aspect-ratio: 1; }
+      .pixel-5 { display: grid; grid-template-columns: repeat(5, 1fr); width: 100%; height: 100%; border: 3px solid #083575; }
+      .pixel-5 span { border: 1px solid rgba(8,53,117,.22); background: #dcecff; }
+      .pixel-5 span:nth-child(3n) { background: #f8d694; }
+      .pixel-5 span:nth-child(4n) { background: #b8e3ce; }
+      .pixel-5 span:nth-child(5n) { background: #b9d7f8; }
+      .scan-window { position: absolute; left: 0; top: 0; width: 60%; height: 60%; border: 8px solid #f5a623; box-shadow: 0 0 0 6px rgba(245,166,35,.2); }
+      .scan-explain { display: flex; flex-direction: column; gap: 22px; }
+      .mini-formula, .generic-formula { padding: 24px; border-radius: 8px; background: #f5f7fa; border-left: 8px solid #0f6bc9; color: #083575; font: 900 27px "Cascadia Mono","Consolas",monospace; }
+      .generic-formula { background: #e8f1fb; font-size: 25px; }
+      .distill-board { flex: 1; display: grid; grid-template-columns: 380px 1fr 420px; gap: 30px; align-items: center; }
+      .channel-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
+      .channel-grid span { height: 54px; border-radius: 5px; background: #0f6bc9; }
+      .channel-grid span:nth-child(4n) { background: #f5a623; }
+      .channel-grid span:nth-child(5n) { background: #20a66a; }
+      .channel-grid span:nth-child(7n) { background: #b9d7f8; }
+      .distill-pipeline { display: flex; flex-direction: column; gap: 16px; }
+      .split-row { display: grid; grid-template-columns: 120px 190px 1fr; gap: 12px; align-items: center; }
+      .split-row b, .split-row span, .split-row em { padding: 18px 12px; border-radius: 6px; font-size: 23px; font-weight: 900; text-align: center; font-style: normal; }
+      .split-row b { background: #dcecff; color: #083575; }
+      .split-row span { background: #f8d694; color: #3b2600; }
+      .split-row em { background: #e8f1fb; color: #083575; }
+      .concat-line { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
+      .concat-line span, .fusion-eq { padding: 20px; border-radius: 6px; background: #f8d694; color: #3b2600; text-align: center; font: 900 24px "Cascadia Mono","Consolas",monospace; }
+      .fusion-eq { margin-top: 14px; background: #e8f1fb; color: #083575; }
+      .fusion-eq.residual { background: #eaf7f1; color: #064b2d; }
+      .shuffle-board { flex: 1; display: grid; grid-template-columns: 350px 1fr 300px 390px; gap: 26px; align-items: center; }
+      .subpixel-list { display: grid; gap: 12px; }
+      .subpixel-list span { padding: 18px; border-radius: 6px; color: #083575; background: #e8f1fb; font-size: 25px; font-weight: 900; }
+      .subpixel-list span:nth-child(2), .block2 span:nth-child(2), .shuffle-map span:nth-child(4n+2) { background: #f8d694; color: #3b2600; }
+      .subpixel-list span:nth-child(3), .block2 span:nth-child(3), .shuffle-map span:nth-child(4n+3) { background: #b8e3ce; color: #064b2d; }
+      .subpixel-list span:nth-child(4), .block2 span:nth-child(4), .shuffle-map span:nth-child(4n) { background: #b9d7f8; }
+      .map-title { color: #0f6bc9; font-size: 27px; font-weight: 900; margin-bottom: 20px; }
+      .map-formula, .map-note { padding: 22px; background: #f5f7fa; border-left: 8px solid #0f6bc9; border-radius: 6px; color: #083575; font: 900 24px "Cascadia Mono","Consolas",monospace; margin-top: 14px; }
+      .map-note { background: #e8f1fb; }
+      .loss-board { flex: 1; display: grid; grid-template-columns: 280px 80px 280px 80px 280px; gap: 22px; align-items: center; justify-content: center; }
+      .diff-m span { background: #f8d694; color: #3b2600; }
+      .wipe { position: absolute; inset: 0; z-index: 50; transform: translateX(-105%); background: #083575; }
+      .wipe::after { content: ""; position: absolute; right: -150px; top: 0; width: 150px; height: 100%; background: #0f6bc9; }
+      .progress { position: absolute; left: 96px; right: 96px; bottom: 42px; height: 8px; background: #dce8f5; border-radius: 4px; overflow: hidden; z-index: 60; }
+      .progress span { display: block; width: 0; height: 100%; background: #0f6bc9; }
+    </style>
+
+    <script src="node_modules/gsap/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const go = (wipe, fromScene, toScene, time) => {
+        tl.to(wipe, { x: "0%", duration: 0.44, ease: "power3.inOut" }, time);
+        tl.set(toScene, { opacity: 1 }, time + 0.46);
+        tl.set(fromScene, { opacity: 0 }, time + 0.46);
+        tl.to(wipe, { x: "105%", duration: 0.48, ease: "power2.inOut" }, time + 0.52);
+        tl.set(wipe, { x: "-105%" }, time + 1.04);
+      };
+
+      tl.to("#progress-bar", { width: "100%", duration: 58, ease: "none" }, 0);
+
+      tl.from("#scene1 .step", { y: 34, opacity: 0, duration: 0.55, ease: "back.out(1.4)" }, 0.25);
+      tl.from("#scene1 h2", { x: -42, opacity: 0, duration: 0.72, ease: "expo.out" }, 0.48);
+      tl.from("#scene1 .section-head p", { x: -24, opacity: 0, duration: 0.58, ease: "sine.out" }, 0.92);
+      tl.from("#scene1 .matrix-card", { y: 42, opacity: 0, duration: 0.68, stagger: 0.22, ease: "power3.out" }, 1.35);
+      tl.from("#scene1 .formula-node", { scale: 0.76, opacity: 0, duration: 0.5, stagger: 0.24, ease: "back.out(1.5)" }, 2.2);
+      tl.from("#scene1 .bottom-equation", { y: 30, opacity: 0, duration: 0.58, ease: "power2.out" }, 3.25);
+      tl.to("#scene1 .soft span", { scale: 0.86, duration: 0.24, yoyo: true, repeat: 3, stagger: 0.025, ease: "sine.inOut" }, 4.1);
+      go("#wipe1", "#scene1", "#scene2", 7.4);
+
+      tl.from("#scene2 .step", { y: 34, opacity: 0, duration: 0.55, ease: "back.out(1.4)" }, 8.35);
+      tl.from("#scene2 h2", { x: -42, opacity: 0, duration: 0.72, ease: "expo.out" }, 8.55);
+      tl.from("#scene2 .section-head p", { x: -24, opacity: 0, duration: 0.58, ease: "sine.out" }, 9.0);
+      tl.from("#scene2 .matrix-card", { y: 42, opacity: 0, duration: 0.68, stagger: 0.24, ease: "power3.out" }, 9.45);
+      tl.from("#scene2 .times, #scene2 .equals", { scale: 0.7, opacity: 0, duration: 0.48, stagger: 0.24, ease: "back.out(1.5)" }, 10.2);
+      tl.to("#scene2 .input-matrix span", { scale: 0.88, duration: 0.22, yoyo: true, repeat: 1, stagger: 0.08, ease: "sine.inOut" }, 11.2);
+      tl.to("#scene2 .kernel-matrix span", { scale: 0.88, duration: 0.22, yoyo: true, repeat: 1, stagger: 0.08, ease: "sine.inOut" }, 11.95);
+      tl.from("#scene2 .product-matrix span", { scale: 0.5, opacity: 0, duration: 0.28, stagger: 0.08, ease: "power2.out" }, 12.65);
+      tl.from("#scene2 .calc-strip > *", { y: 34, opacity: 0, duration: 0.45, stagger: 0.28, ease: "power2.out" }, 13.8);
+      go("#wipe2", "#scene2", "#scene3", 17.2);
+
+      tl.from("#scene3 .step", { y: 34, opacity: 0, duration: 0.55, ease: "back.out(1.4)" }, 18.1);
+      tl.from("#scene3 h2", { x: -42, opacity: 0, duration: 0.72, ease: "expo.out" }, 18.3);
+      tl.from("#scene3 .section-head p", { x: -24, opacity: 0, duration: 0.58, ease: "sine.out" }, 18.74);
+      tl.from("#scene3 .scan-card", { x: -64, opacity: 0, duration: 0.68, ease: "power3.out" }, 19.2);
+      tl.from("#scene3 .scan-explain > div", { y: 32, opacity: 0, duration: 0.5, stagger: 0.22, ease: "power2.out" }, 19.75);
+      tl.from("#scene3 .sliding-board .matrix-card:last-child", { x: 64, opacity: 0, duration: 0.68, ease: "power3.out" }, 20.7);
+      tl.to("#scene3 .scan-window", { x: "66.7%", duration: 0.9, ease: "power1.inOut" }, 21.4);
+      tl.to("#scene3 .fill2", { scale: 0.84, duration: 0.28, yoyo: true, repeat: 2, ease: "sine.inOut" }, 22.35);
+      tl.to("#scene3 .scan-window", { y: "66.7%", duration: 0.9, ease: "power1.inOut" }, 23.0);
+      tl.to("#scene3 .fill3", { scale: 0.84, duration: 0.28, yoyo: true, repeat: 2, ease: "sine.inOut" }, 23.9);
+      tl.from("#scene3 .bottom-equation", { y: 30, opacity: 0, duration: 0.58, ease: "power2.out" }, 24.75);
+      go("#wipe3", "#scene3", "#scene4", 27.0);
+
+      tl.from("#scene4 .step", { y: 34, opacity: 0, duration: 0.55, ease: "back.out(1.4)" }, 27.95);
+      tl.from("#scene4 h2", { x: -42, opacity: 0, duration: 0.72, ease: "expo.out" }, 28.15);
+      tl.from("#scene4 .section-head p", { x: -24, opacity: 0, duration: 0.58, ease: "sine.out" }, 28.6);
+      tl.from("#scene4 .channel-panel", { x: -64, opacity: 0, duration: 0.68, ease: "power3.out" }, 29.05);
+      tl.from("#scene4 .channel-grid span", { scaleY: 0.2, transformOrigin: "bottom center", opacity: 0, duration: 0.36, stagger: 0.025, ease: "power2.out" }, 29.5);
+      tl.from("#scene4 .split-row", { y: 34, opacity: 0, duration: 0.5, stagger: 0.32, ease: "power2.out" }, 30.55);
+      tl.from("#scene4 .fuse-panel", { x: 64, opacity: 0, duration: 0.68, ease: "power3.out" }, 32.05);
+      tl.from("#scene4 .concat-line span", { y: 28, opacity: 0, duration: 0.32, stagger: 0.12, ease: "power2.out" }, 32.75);
+      tl.from("#scene4 .fusion-eq", { y: 28, opacity: 0, duration: 0.4, stagger: 0.2, ease: "power2.out" }, 33.35);
+      tl.from("#scene4 .bottom-equation", { y: 30, opacity: 0, duration: 0.58, ease: "power2.out" }, 34.3);
+      go("#wipe4", "#scene4", "#scene5", 36.7);
+
+      tl.from("#scene5 .step", { y: 34, opacity: 0, duration: 0.55, ease: "back.out(1.4)" }, 37.65);
+      tl.from("#scene5 h2", { x: -42, opacity: 0, duration: 0.72, ease: "expo.out" }, 37.85);
+      tl.from("#scene5 .section-head p", { x: -24, opacity: 0, duration: 0.58, ease: "sine.out" }, 38.3);
+      tl.from("#scene5 .matrix-card, #scene5 .mapping-panel", { y: 42, opacity: 0, duration: 0.62, stagger: 0.2, ease: "power3.out" }, 38.8);
+      tl.from("#scene5 .subpixel-list span", { x: -28, opacity: 0, duration: 0.34, stagger: 0.14, ease: "power2.out" }, 39.65);
+      tl.from("#scene5 .map-formula, #scene5 .map-note", { y: 28, opacity: 0, duration: 0.42, stagger: 0.18, ease: "power2.out" }, 40.35);
+      tl.to("#scene5 .block2 span", { scale: 0.84, duration: 0.28, yoyo: true, repeat: 2, stagger: 0.12, ease: "sine.inOut" }, 41.55);
+      tl.to("#scene5 .shuffle-map span", { scale: 0.86, duration: 0.2, yoyo: true, repeat: 2, stagger: 0.035, ease: "sine.inOut" }, 42.4);
+      tl.from("#scene5 .bottom-equation", { y: 30, opacity: 0, duration: 0.58, ease: "power2.out" }, 43.4);
+      go("#wipe5", "#scene5", "#scene6", 46.0);
+
+      tl.from("#scene6 .step", { y: 34, opacity: 0, duration: 0.55, ease: "back.out(1.4)" }, 46.95);
+      tl.from("#scene6 h2", { x: -42, opacity: 0, duration: 0.72, ease: "expo.out" }, 47.15);
+      tl.from("#scene6 .section-head p", { x: -24, opacity: 0, duration: 0.58, ease: "sine.out" }, 47.6);
+      tl.from("#scene6 .matrix-card", { y: 42, opacity: 0, duration: 0.6, stagger: 0.2, ease: "power3.out" }, 48.05);
+      tl.from("#scene6 .minus, #scene6 .equals", { scale: 0.7, opacity: 0, duration: 0.45, stagger: 0.18, ease: "back.out(1.5)" }, 48.6);
+      tl.from("#scene6 .diff-m span", { scale: 0.5, opacity: 0, duration: 0.28, stagger: 0.12, ease: "power2.out" }, 49.55);
+      tl.from("#scene6 .loss-item", { y: 30, opacity: 0, duration: 0.45, stagger: 0.22, ease: "power2.out" }, 50.7);
+      tl.from("#scene6 .bottom-equation", { y: 30, opacity: 0, duration: 0.58, ease: "power2.out" }, 52.05);
+      tl.to("#scene6 .scene-content", { opacity: 0, duration: 0.7, ease: "sine.inOut" }, 57.05);
+
+      window.__timelines["imdn-process"] = tl;
+    </script>
+  </div>
+</body>
+</html>

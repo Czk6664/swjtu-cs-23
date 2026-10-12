@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>网络空间安全技术 · 学习系统</title>
+<style>
+  :root{
+    --bg:#0f1729;--bg-soft:#16213e;--card:#1b2745;--card-2:#212f52;
+    --ink:#e8edf7;--ink-soft:#a9b4cc;--line:#2c3a5e;
+    --accent:#5b9dff;--accent-2:#7c5cff;--green:#36d399;--amber:#fbbd23;--pink:#f472b6;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0f1729 0%,#131d38 100%);color:var(--ink);line-height:1.7;min-height:100vh}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 22px 80px}
+
+  header.hero{text-align:center;padding:64px 24px 40px;position:relative;overflow:hidden}
+  header.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 80% at 50% 0%,rgba(124,92,255,.22),transparent 70%);pointer-events:none}
+  header.hero .badge{display:inline-block;background:rgba(91,157,255,.18);color:var(--accent);padding:5px 16px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:18px}
+  header.hero h1{font-size:40px;margin:0 0 12px;letter-spacing:1px;background:linear-gradient(135deg,#fff,#9db8ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  header.hero p{color:var(--ink-soft);font-size:16px;margin:0 auto;max-width:640px}
+  .stats{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 26px;min-width:120px}
+  .stat b{display:block;font-size:26px;color:var(--accent);line-height:1.2}
+  .stat span{font-size:13px;color:var(--ink-soft)}
+
+  .group{margin-top:44px}
+  .group-title{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;margin:0 0 16px;color:#cfe0ff}
+  .group-title .tag{font-size:12px;font-weight:600;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);padding:3px 11px;border-radius:999px}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+  a.card{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);
+    border-radius:18px;padding:22px;transition:.22s;position:relative;overflow:hidden}
+  a.card::after{content:"";position:absolute;right:-30px;top:-30px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(91,157,255,.18),transparent 70%);transition:.3s}
+  a.card:hover{transform:translateY(-6px);border-color:var(--accent);box-shadow:var(--shadow)}
+  a.card:hover::after{transform:scale(1.6)}
+  .card .ico{font-size:30px}
+  .card .cno{position:absolute;right:18px;top:16px;font-size:13px;font-weight:700;color:var(--accent-2);opacity:.7}
+  .card h3{margin:10px 0 6px;font-size:19px}
+  .card p{margin:0;color:var(--ink-soft);font-size:13.5px;line-height:1.6}
+  .card .meta{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .card .meta span{font-size:11.5px;background:var(--card-2);border:1px solid var(--line);border-radius:7px;padding:2px 9px;color:var(--ink-soft)}
+  .card.crypto{border-style:dashed}
+
+  footer{text-align:center;color:var(--ink-soft);font-size:13px;margin-top:54px;padding-top:24px;border-top:1px solid var(--line)}
+  footer b{color:var(--accent)}
+  @media(max-width:600px){header.hero h1{font-size:30px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="badge">🛡️ 课程配套学习系统</span>
+    <h1>网络空间安全技术</h1>
+    <p>零基础交互式讲义 · 图表 + 翻转卡 + 连线 + 即时判分题库。点击任意章节开始学习，做到"只学网页就能掌握整门课"。</p>
+    <div class="stats">
+      <div class="stat"><b>11</b><span>章节页面</span></div>
+      <div class="stat"><b>600+</b><span>练习题</span></div>
+      <div class="stat"><b>50+</b><span>图表/互动</span></div>
+      <div class="stat"><b>3</b><span>配套作业</span></div>
+    </div>
+  </header>
+
+  <!-- 作业1 -->
+  <section class="group">
+    <h2 class="group-title">📘 模块一 · 安全概论与风险管理 <span class="tag">配套作业1</span></h2>
+    <div class="cards">
+      <a class="card" href="CH1-信息安全概论.html">
+        <span class="cno">CH1</span><div class="ico">🛡️</div>
+        <h3>信息安全概论</h3>
+        <p>CIA 三要素、发展三阶段、网络空间四要素、六种论、安全意识。</p>
+        <div class="meta"><span>40 选择</span><span>30 填空</span><span>6 图表</span></div>
+      </a>
+      <a class="card" href="CH2-风险管理与国产化.html">
+        <span class="cno">CH2</span><div class="ico">📊</div>
+        <h3>风险管理与国产化</h3>
+        <p>风险术语关系、四阶段两贯穿、四类处置、ALE 计算、定性/定量、国产化替代。</p>
+        <div class="meta"><span>60 选择</span><span>32 填空</span><span>8 图表</span></div>
+      </a>
+      <a class="card" href="CH3-信息安全保障与运维.html">
+        <span class="cno">CH3</span><div class="ico">🏗️</div>
+        <h3>信息安全保障与运维</h3>
+        <p>安全五阶段、PDR/PPDR/IATF 模型、等级保护、应急响应六阶段、勒索/挖矿/DDoS 处置。</p>
+        <div class="meta"><span>知识讲解</span><span>4 互动题</span><span>3 Q&amp;A</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 作业2 -->
+  <section class="group">
+    <h2 class="group-title">🔐 模块二 · 安全技术 / 密码 / 鉴别 / 访问控制 <span class="tag">配套作业2</span></h2>
+    <div class="cards">
+      <a class="card" href="CH4-信息安全技术体系.html">
+        <span class="cno">CH4</span><div class="ico">🧩</div>
+        <h3>信息安全技术体系</h3>
+        <p>五重屏障、OSI 5 服务 8 机制、对称/公钥、MAC、数字签名、完整性机制。</p>
+        <div class="meta"><span>32 选择</span><span>32 填空</span><span>9 图表</span></div>
+      </a>
+      <a class="card" href="CH5-鉴别技术.html">
+        <span class="cno">CH5</span><div class="ico">🪪</div>
+        <h3>鉴别机制与技术</h3>
+        <p>三种途径、0-4 级、口令/OTP/挑战应答、零知识证明、Kerberos 票据。</p>
+        <div class="meta"><span>34 选择</span><span>30 填空</span><span>7 图表</span></div>
+      </a>
+      <a class="card" href="CH6-访问控制.html">
+        <span class="cno">CH6</span><div class="ico">🚪</div>
+        <h3>访问控制机制与技术</h3>
+        <p>ACL vs 能力表、DAC、BLP/Biba 上读下写、RBAC、TCSEC 等级。</p>
+        <div class="meta"><span>35 选择</span><span>35 填空</span><span>10 图表</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 作业3 -->
+  <section class="group">
+    <h2 class="group-title">🔥 模块三 · 网络安全设备 <span class="tag">配套作业3</span></h2>
+    <div class="cards">
+      <a class="card" href="CH7-防火墙技术.html">
+        <span class="cno">CH7</span><div class="ico">🧱</div>
+        <h3>防火墙技术 / WAF / IDS</h3>
+        <p>四种防火墙、DMZ 拓扑、NAT、性能指标、WAF、异常 vs 误用检测、HIDS/NIDS。</p>
+        <div class="meta"><span>41 选择</span><span>35 填空</span><span>11 图表</span></div>
+      </a>
+      <a class="card" href="CH8-入侵检测技术.html">
+        <span class="cno">CH8</span><div class="ico">🔍</div>
+        <h3>入侵检测技术</h3>
+        <p>Denning/CIDF 模型、异常 vs 特征检测、HIDS/NIDS/NNIDS、Snort 规则语法、部署策略。</p>
+        <div class="meta"><span>知识讲解</span><span>5 互动题</span><span>3 Q&amp;A</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 密码学基础 -->
+  <section class="group">
+    <h2 class="group-title">🔑 模块四 · 密码学基础 <span class="tag">贯穿全课</span></h2>
+    <div class="cards">
+      <a class="card crypto" href="古典密码-入门讲义.html">
+        <span class="cno">基础</span><div class="ico">📜</div>
+        <h3>古典密码入门</h3>
+        <p>单向函数、凯撒/替换/维吉尼亚、频率分析。含<b>凯撒交互加密器</b>。</p>
+        <div class="meta"><span>20 选择</span><span>20 填空</span><span>交互</span></div>
+      </a>
+      <a class="card crypto" href="哈希函数-入门课.html">
+        <span class="cno">基础</span><div class="ico">🔗</div>
+        <h3>哈希函数入门</h3>
+        <p>哈希 vs 加密 vs 编码、5 特性、4 用途、加盐慢哈希、误区。</p>
+        <div class="meta"><span>20 选择</span><span>20 填空</span><span>6 图表</span></div>
+      </a>
+      <a class="card crypto" href="牛津古典密码学-讲义.html">
+        <span class="cno">练习</span><div class="ico">🎓</div>
+        <h3>牛津古典密码练习</h3>
+        <p>密钥字母、解密=26−k、卡西斯基、crib 已知明文。含<b>凯撒解密器</b>。</p>
+        <div class="meta"><span>20 选择</span><span>20 填空</span><span>交互</span></div>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    网络空间安全技术 · 零基础交互式学习系统<br>
+    建议学习顺序：<b>CH1 → CH2 → CH3 → 古典密码 → 哈希 → 牛津 → CH4 → CH5 → CH6 → CH7 → CH8</b><br>
+    💡 每章包含：知识讲解 + 图表 + 互动练习 + 重点例题 + 强化题库
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,6 @@
+*.md
+*.bat
+*.toml
+.gitignore
+.assetsignore
+_src

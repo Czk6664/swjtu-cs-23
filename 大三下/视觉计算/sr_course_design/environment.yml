@@ -1,0 +1,12 @@
+name: sr-course-design
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - numpy
+      - pillow
+      - pyyaml
+      - pytest
+      - matplotlib

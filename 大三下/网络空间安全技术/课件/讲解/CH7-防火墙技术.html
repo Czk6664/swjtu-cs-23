@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CH7 防火墙技术 · 小白教学</title>
+<style>
+  :root{
+    --bg:#0f1729;
+    --bg-soft:#16213e;
+    --card:#1b2745;
+    --card-2:#212f52;
+    --ink:#e8edf7;
+    --ink-soft:#a9b4cc;
+    --line:#2c3a5e;
+    --accent:#5b9dff;
+    --accent-2:#7c5cff;
+    --green:#36d399;
+    --amber:#fbbd23;
+    --red:#f87272;
+    --pink:#f472b6;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0f1729 0%,#131d38 100%);
+    color:var(--ink);
+    line-height:1.75;
+    font-size:16px;
+  }
+  /* 顶部进度条 */
+  #progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:999;transition:width .1s}
+
+  /* 章节切换栏 */
+  .chapnav{position:sticky;top:0;z-index:200;display:flex;gap:4px;flex-wrap:wrap;background:rgba(10,16,30,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 14px}
+  .chapnav a{color:var(--ink-soft);text-decoration:none;font-size:13px;padding:5px 11px;border-radius:8px;white-space:nowrap;transition:.15s}
+  .chapnav a:hover{background:var(--card-2);color:var(--ink)}
+  .chapnav a.cur{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;display:flex;gap:26px}
+
+  /* 侧边导航 */
+  nav{
+    position:sticky;top:0;align-self:flex-start;
+    width:230px;flex:0 0 230px;height:100vh;overflow-y:auto;
+    padding:26px 8px 40px 0;
+    font-size:14px;
+  }
+  nav .nav-title{font-weight:700;color:var(--accent);letter-spacing:1px;margin:0 0 14px 10px;font-size:13px}
+  nav a{
+    display:block;color:var(--ink-soft);text-decoration:none;
+    padding:8px 12px;border-radius:10px;margin:2px 0;
+    border-left:3px solid transparent;transition:.2s;
+  }
+  nav a:hover{background:var(--card);color:var(--ink)}
+  nav a.active{background:var(--card-2);color:#fff;border-left-color:var(--accent)}
+
+  main{flex:1;min-width:0;padding:34px 0 90px}
+
+  header.hero{
+    background:radial-gradient(120% 140% at 0% 0%,#26356b 0%,#1a234a 60%,#161f3e 100%);
+    border:1px solid var(--line);border-radius:24px;
+    padding:38px 38px 32px;margin-bottom:30px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  header.hero::after{content:"🧱";position:absolute;right:30px;top:18px;font-size:90px;opacity:.12}
+  header.hero .tag{display:inline-block;background:rgba(91,157,255,.18);color:var(--accent);
+    padding:4px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:14px}
+  header.hero h1{margin:0 0 8px;font-size:32px;letter-spacing:.5px}
+  header.hero p{margin:0;color:var(--ink-soft);font-size:15px}
+
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px 30px;margin-bottom:24px;box-shadow:var(--shadow);scroll-margin-top:60px;
+  }
+  h2{font-size:23px;margin:0 0 18px;padding-bottom:12px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:10px}
+  h2 .num{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+    width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 34px}
+  h3{font-size:18px;margin:22px 0 10px;color:#cfe0ff}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+
+  /* 表格 */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px;overflow:hidden;border-radius:12px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--card-2);color:#cfe0ff;font-weight:600}
+  tr:hover td{background:rgba(91,157,255,.06)}
+  td code,p code,li code{background:#0d1530;color:#8fd6ff;padding:2px 7px;border-radius:6px;font-size:13.5px}
+
+  /* 提示框 */
+  .box{border-radius:12px;padding:14px 18px;margin:16px 0;border-left:4px solid;font-size:15px}
+  .box .bt{font-weight:700;display:block;margin-bottom:4px}
+  .box.tip{background:rgba(54,211,153,.08);border-color:var(--green)}
+  .box.warn{background:rgba(251,189,35,.08);border-color:var(--amber)}
+  .box.key{background:rgba(124,92,255,.10);border-color:var(--accent-2)}
+  .box.quote{background:rgba(244,114,182,.07);border-color:var(--pink);font-style:italic}
+
+  /* 卡片 */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:18px 0}
+  .ccard{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s}
+  .ccard:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.35)}
+  .ccard .emoji{font-size:34px}
+  .ccard h4{margin:8px 0 6px;font-size:18px}
+  .ccard .en{color:var(--ink-soft);font-size:13px}
+  .ccard.c{border-top:3px solid var(--accent)}
+  .ccard.i{border-top:3px solid var(--green)}
+  .ccard.a{border-top:3px solid var(--amber)}
+
+  /* 时间线 */
+  .timeline{position:relative;margin:20px 0 6px;padding-left:28px}
+  .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .tl{position:relative;margin-bottom:18px}
+  .tl::before{content:"";position:absolute;left:-24px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(91,157,255,.2)}
+  .tl .yr{color:var(--accent);font-weight:700;font-size:14px}
+
+  /* 折叠自测 */
+  details{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:6px 18px;margin:12px 0}
+  details summary{cursor:pointer;font-weight:600;padding:10px 0;list-style:none}
+  details summary::before{content:"❓ ";}
+  details[open] summary{color:var(--accent)}
+  details .ans{color:var(--ink-soft);padding:6px 0 14px;border-top:1px dashed var(--line)}
+
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .pill{display:inline-block;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;margin:3px}
+
+  /* ===== 图表通用 ===== */
+  .fig{background:#0d1530;border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;text-align:center}
+  .fig svg{max-width:100%;height:auto}
+  .fig .cap{color:var(--ink-soft);font-size:13px;margin-top:10px}
+  .fig text{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+
+  /* 脑图分支 */
+  .mind{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+  .mind .root{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;padding:16px 20px;border-radius:14px;font-weight:700;font-size:16px;box-shadow:var(--shadow)}
+  .mind .branches{display:flex;flex-direction:column;gap:14px;margin-left:24px;position:relative}
+  .mind .branches::before{content:"";position:absolute;left:-24px;top:0;bottom:0;width:24px;border-left:2px solid var(--line)}
+  .branch{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-align:left;position:relative;min-width:300px}
+  .branch::before{content:"";position:absolute;left:-24px;top:50%;width:24px;height:2px;background:var(--line)}
+  .branch .bh{font-weight:700;margin-bottom:6px}
+  .branch.inner .bh{color:var(--amber)}
+  .branch.outer .bh{color:var(--red)}
+  .branch .tags span{display:inline-block;background:#0d1530;border:1px solid var(--line);border-radius:8px;padding:2px 9px;font-size:12.5px;margin:3px 3px 0 0;color:var(--ink-soft)}
+
+  /* 分层堆叠图 */
+  .layers{display:flex;flex-direction:column;gap:8px;max-width:560px;margin:0 auto}
+  .layer{display:flex;align-items:center;border-radius:12px;padding:13px 18px;color:#fff;font-weight:600;box-shadow:var(--shadow);position:relative}
+  .layer .ln{flex:0 0 84px;font-size:15px}
+  .layer .ld{font-weight:400;font-size:13.5px;opacity:.95}
+  .layer.l1{background:linear-gradient(90deg,#7c5cff,#9d7bff)}
+  .layer.l2{background:linear-gradient(90deg,#5b9dff,#7bb4ff)}
+  .layer.l3{background:linear-gradient(90deg,#36d399,#5be0b0)}
+  .layer.l4{background:linear-gradient(90deg,#fbbd23,#fccf57)}
+
+  /* 四要素网格 */
+  .four-el{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:520px;margin:0 auto;position:relative}
+  .el-card{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;transition:.2s}
+  .el-card:hover{transform:scale(1.04);border-color:var(--accent)}
+  .el-card .ei{font-size:30px}
+  .el-card h4{margin:6px 0 2px}
+  .el-card small{color:var(--ink-soft)}
+
+  /* ===== 翻转卡片 ===== */
+  .flip-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:14px 0}
+  .flip{perspective:1000px;height:195px;cursor:pointer}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+  .flip.on .flip-inner{transform:rotateY(180deg)}
+  .flip-front,.flip-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px solid var(--line)}
+  .flip-back{transform:rotateY(180deg);background:var(--card-2);font-size:13.5px;line-height:1.55}
+  .flip-front{background:var(--card-2)}
+  .flip-front .emoji{font-size:38px}
+  .flip-front h4{margin:8px 0 2px;font-size:18px}
+  .flip-front .en{color:var(--ink-soft);font-size:12px}
+  .flip-front.c,.flip-back.c{border-top:3px solid var(--accent)}
+  .flip-front.i,.flip-back.i{border-top:3px solid var(--green)}
+  .flip-front.a,.flip-back.a{border-top:3px solid var(--amber)}
+  .flip-front.p,.flip-back.p{border-top:3px solid var(--pink)}
+  .flip-back small{color:var(--ink-soft);display:block;margin-top:6px}
+
+  /* ===== 互动测验 ===== */
+  .quiz{background:linear-gradient(135deg,#1a2547,#212f52);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0}
+  .quiz .q{font-weight:600;margin-bottom:12px}
+  .quiz .q .badge{background:var(--accent-2);color:#fff;border-radius:8px;padding:1px 9px;font-size:12px;margin-right:8px}
+  .opt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:11px 15px;border-radius:10px;margin:7px 0;cursor:pointer;transition:.15s;font-size:14.5px;font-family:inherit}
+  .opt:hover{border-color:var(--accent);background:var(--card-2)}
+  .opt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .opt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .opt.disabled{pointer-events:none;opacity:.75}
+  .feedback{font-size:14px;margin-top:8px;padding:10px 14px;border-radius:10px;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:rgba(54,211,153,.12);color:#aef5d4}
+  .feedback.no{background:rgba(248,114,114,.12);color:#ffc2c2}
+
+  /* ===== 匹配题 ===== */
+  .match{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0}
+  .match .col{display:flex;flex-direction:column;gap:10px}
+  .match .col .ct{font-size:13px;color:var(--ink-soft);margin-bottom:2px}
+  .mitem{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;transition:.15s;font-size:14px}
+  .mitem:hover{border-color:var(--accent)}
+  .mitem.sel{border-color:var(--accent-2);background:var(--card-2)}
+  .mitem.done{border-color:var(--green);background:rgba(54,211,153,.12);cursor:default;color:#aef5d4}
+  .mitem.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  /* 学习打卡进度 */
+  .checkbar{position:sticky;top:46px;z-index:50;background:rgba(15,23,41,.92);backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+  .checkbar .lbl{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .checkbar .track{flex:1;height:10px;background:var(--card);border-radius:999px;overflow:hidden}
+  .checkbar .fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--accent));transition:width .4s}
+  .checkbar .pct{font-weight:700;color:var(--green);font-size:14px;min-width:42px;text-align:right}
+
+  .reveal-btn{background:var(--card-2);border:1px solid var(--accent);color:var(--accent);border-radius:10px;padding:8px 16px;cursor:pointer;font-size:14px;font-family:inherit;transition:.15s}
+  .reveal-btn:hover{background:var(--accent);color:#fff}
+
+  /* ===== 题库 ===== */
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{flex:1;min-width:140px;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    padding:11px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;transition:.15s}
+  .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent}
+  .tabpane{display:none}
+  .tabpane.active{display:block}
+
+  .score{position:sticky;top:100px;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:rgba(15,23,41,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:16px}
+  .score b{color:var(--green);font-size:18px}
+  .score .mini{font-size:13px;color:var(--ink-soft)}
+  .score .resetb{margin-left:auto;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    border-radius:8px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:13px}
+  .score .resetb:hover{border-color:var(--accent);color:var(--ink)}
+
+  .qitem{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  .qitem .qh{font-weight:600;margin-bottom:10px;line-height:1.6}
+  .qitem .qh .no{display:inline-block;background:var(--accent);color:#fff;border-radius:7px;padding:1px 9px;font-size:13px;margin-right:8px}
+  .qitem .qh .hw{display:inline-block;background:var(--amber);color:#0f1729;border-radius:7px;padding:1px 8px;font-size:11.5px;margin-left:6px;font-weight:700}
+  .qopt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:9px 14px;border-radius:9px;margin:6px 0;cursor:pointer;transition:.12s;font-size:14px;font-family:inherit}
+  .qopt:hover{border-color:var(--accent)}
+  .qopt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .qopt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .qopt.lock{pointer-events:none}
+  .qexp{font-size:13.5px;color:var(--ink-soft);margin-top:8px;padding:9px 13px;background:rgba(91,157,255,.08);border-radius:9px;border-left:3px solid var(--accent);display:none}
+  .qexp.show{display:block}
+
+  /* 填空 */
+  .blank-in{background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);
+    padding:7px 12px;font-size:14.5px;font-family:inherit;width:200px;margin:0 4px}
+  .blank-in:focus{outline:none;border-color:var(--accent)}
+  .blank-in.ok{border-color:var(--green);background:rgba(54,211,153,.12)}
+  .blank-in.bad{border-color:var(--red);background:rgba(248,114,114,.10)}
+  .blank-btns{margin-top:10px;display:flex;gap:8px}
+  .sbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:inherit;font-size:13.5px}
+  .sbtn:hover{border-color:var(--accent)}
+  .sbtn.primary{background:var(--accent);color:#fff;border-color:transparent}
+  .ansline{font-size:13.5px;color:var(--green);margin-top:8px;display:none}
+  .ansline.show{display:block}
+
+  footer{text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 0 10px}
+
+  /* 回到顶部 */
+  #top{position:fixed;right:26px;bottom:26px;width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none;
+    font-size:20px;cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s}
+  #top.show{opacity:1;pointer-events:auto}
+
+  @media(max-width:880px){
+    nav{display:none}
+    .wrap{padding:0 14px}
+    header.hero{padding:26px 22px}
+    section{padding:20px 18px}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<div class="chapnav">
+  <a href="index.html">🏠 目录</a>
+  <a href="CH1-信息安全概论.html">CH1 概论</a>
+  <a href="CH2-风险管理与国产化.html">CH2 风险管理</a>
+  <a href="CH3-信息安全保障与运维.html">CH3 安全保障</a>
+  <a href="CH4-信息安全技术体系.html">CH4 技术体系</a>
+  <a href="CH5-鉴别技术.html">CH5 鉴别</a>
+  <a href="CH6-访问控制.html">CH6 访问控制</a>
+  <a class="cur" href="CH7-防火墙技术.html">CH7 防火墙</a>
+  <a href="CH8-入侵检测技术.html">CH8 入侵检测</a>
+  <a href="古典密码-入门讲义.html">古典密码</a>
+  <a href="哈希函数-入门课.html">哈希函数</a>
+  <a href="牛津古典密码学-讲义.html">牛津密码练习</a>
+</div>
+
+<div class="wrap">
+  <!-- 侧边导航 -->
+  <nav id="nav">
+    <p class="nav-title">📖 本章目录</p>
+    <a href="#s0">学习目标</a>
+    <a href="#s1">① 基本概念</a>
+    <a href="#s2">② 发展历程5代</a>
+    <a href="#s3">③ 四种核心技术 ⭐</a>
+    <a href="#s4">④ 四种体系结构</a>
+    <a href="#s5">⑤ DMZ 重点 ⭐</a>
+    <a href="#s6">⑥ 功能与 NAT</a>
+    <a href="#s7">⑦ 接入方式</a>
+    <a href="#s8">⑧ 性能五指标</a>
+    <a href="#s9">⑨ 局限性与争议</a>
+    <a href="#s10">⑩ WAF ⭐</a>
+    <a href="#s11">⑪ IDS 入侵检测 ⭐</a>
+    <a href="#s12">⑫ 三者关系</a>
+    <a href="#s13">⑬ 本章小结</a>
+    <a href="#sex">⭐ 重点例题(作业3)</a>
+    <a href="#s14">🎯 自测</a>
+    <a href="#bank">📝 强化题库 76 题</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="tag">网络空间安全技术 · 第七章</span>
+      <h1>CH7 防火墙技术</h1>
+      <p>零基础教学讲义 · 防火墙 + WAF + 入侵检测，网络安全的"第一道防线" · 配套作业3</p>
+    </header>
+
+    <!-- 学习打卡进度 -->
+    <div class="checkbar">
+      <span class="lbl">📚 学习进度</span>
+      <div class="track"><div class="fill" id="learnFill"></div></div>
+      <span class="pct" id="learnPct">0%</span>
+    </div>
+
+    <!-- 学习目标 -->
+    <section id="s0">
+      <h2><span class="num">🎯</span>学习目标</h2>
+      <p>读完这一章，你应该能回答：</p>
+      <ol>
+        <li>防火墙是什么？为什么需要它？</li>
+        <li>四种核心技术（包过滤 / 应用代理 / 状态检测 / 完全内容检测）各自工作在哪一层、检查什么？</li>
+        <li>四种体系结构如何演进？什么是 <b>DMZ</b>？企业怎么部署三个安全区？</li>
+        <li>NAT / MAP、接入方式、五大性能指标、局限性。</li>
+        <li><b>WAF</b> 为什么能补防火墙的短板？<b>IDS</b> 的异常检测 vs 误用检测、HIDS vs NIDS。</li>
+      </ol>
+      <div class="box tip"><span class="bt">📌 一句话定位</span>防火墙挡门口（访问控制）、WAF 护 Web（防 SQL 注入/XSS）、IDS 在内部巡逻（检测告警）——三者组成<b>纵深防御</b>，全部是作业3考点。</div>
+    </section>
+
+    <!-- 1 基本概念 -->
+    <section id="s1">
+      <h2><span class="num">1</span>防火墙基本概念</h2>
+      <div class="box key">
+        <span class="bt">📖 定义</span>
+        防火墙（FireWall）是一种<b>高级访问控制设备</b>，置于<b>不同网络安全域之间</b>，通过相关安全策略来<b>控制（允许、拒绝、监视、记录）</b>进出网络的访问行为。
+      </div>
+      <p>两个关键点：① 它是两个安全域之间通信流的<b>唯一通道</b>；② 根据<b>访问控制规则</b>（源/目的 IP、协议、端口等）决定放行还是拦截。比喻：小区大门的保安，所有人进出都要查证。</p>
+
+      <div class="fig">
+        <svg viewBox="0 0 560 240" width="560">
+          <!-- 安全域1 -->
+          <rect x="20" y="60" width="130" height="120" rx="12" fill="#1b2745" stroke="#36d399" stroke-width="2"/>
+          <text x="85" y="50" text-anchor="middle" fill="#36d399" font-size="14" font-weight="700">安全域1（内网）</text>
+          <text x="85" y="110" text-anchor="middle" fill="#e8edf7" font-size="13">Host A</text>
+          <text x="85" y="140" text-anchor="middle" fill="#e8edf7" font-size="13">Host B</text>
+          <!-- 防火墙 -->
+          <rect x="235" y="55" width="90" height="130" rx="10" fill="url(#fwg)"/>
+          <text x="280" y="40" text-anchor="middle" fill="#fbbd23" font-size="14" font-weight="700">防火墙</text>
+          <text x="280" y="110" text-anchor="middle" fill="#fff" font-size="26">🧱</text>
+          <text x="280" y="150" text-anchor="middle" fill="#fff" font-size="11">唯一通道</text>
+          <text x="280" y="166" text-anchor="middle" fill="#fff" font-size="11">规则匹配</text>
+          <!-- 安全域2 -->
+          <rect x="410" y="60" width="130" height="120" rx="12" fill="#1b2745" stroke="#f87272" stroke-width="2"/>
+          <text x="475" y="50" text-anchor="middle" fill="#f87272" font-size="14" font-weight="700">安全域2（外网）</text>
+          <text x="475" y="110" text-anchor="middle" fill="#e8edf7" font-size="13">Host C</text>
+          <text x="475" y="140" text-anchor="middle" fill="#e8edf7" font-size="13">Host D</text>
+          <!-- 箭头 -->
+          <line x1="150" y1="120" x2="232" y2="120" stroke="#5b9dff" stroke-width="2" marker-end="url(#ar)"/>
+          <line x1="328" y1="120" x2="408" y2="120" stroke="#5b9dff" stroke-width="2" marker-end="url(#ar)"/>
+          <defs>
+            <linearGradient id="fwg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#5b9dff"/></linearGradient>
+            <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5b9dff"/></marker>
+          </defs>
+        </svg>
+        <div class="cap">图1 · 防火墙是两个安全域之间通信流的唯一通道，按规则表（如 TCP Pass / UDP Block）决定进出行为</div>
+      </div>
+
+      <h3>为什么需要防火墙？（三个关键原因）</h3>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">🛡️</div><h4>阻止外部攻击</h4><div class="en">最重要的原因</div><p style="font-size:14px;margin:8px 0 0">阻止来自不可信网络的攻击，网络攻击数量逐年递增。</p></div>
+        <div class="ccard i"><div class="emoji">🔒</div><h4>保护内部信息</h4><div class="en">客户资料、研发数据</div><p style="font-size:14px;margin:8px 0 0">防止内网信息被窃取、篡改或删除。</p></div>
+        <div class="ccard a"><div class="emoji">🤝</div><h4>维护信誉</h4><div class="en">银行、证券尤甚</div><p style="font-size:14px;margin:8px 0 0">减少因攻击造成的信誉受损风险。</p></div>
+      </div>
+      <div class="box quote"><span class="bt">城门失火，殃及池鱼</span>业务越依赖互联网，越需要防火墙这道边界防线。</div>
+    </section>
+
+    <!-- 2 发展历程 -->
+    <section id="s2">
+      <h2><span class="num">2</span>防火墙发展历程（五代）</h2>
+      <div class="timeline">
+        <div class="tl"><div class="yr">第一代 · 20世纪80年代 · 包过滤</div>最早几乎与路由器同时出现，依附于路由器的<b>包过滤（Packet Filter）</b>功能实现；后渐渐发展为独立设备。</div>
+        <div class="tl"><div class="yr">第二代 · 1989 · 电路层防火墙</div>贝尔实验室最早推出第二代——<b>电路层防火墙</b>。</div>
+        <div class="tl"><div class="yr">第三代 · 90年代初 · 应用层防火墙</div>即<b>应用层（代理）防火墙</b>。</div>
+        <div class="tl"><div class="yr">第四代 · 1994 · 状态检测</div>1992 年 USC 信息科学院开发动态包过滤，演变为<b>状态检测（Stateful Inspection）</b>；1994 年以色列 <b>CheckPoint</b> 推出商业化产品。</div>
+        <div class="tl"><div class="yr">第五代 · 1998 · 自适应代理</div>NAI 公司推出<b>自适应代理（Adaptive Proxy）</b>，动态设置包过滤规则，对每个连接进行跟踪。</div>
+      </div>
+      <div class="box tip"><span class="bt">📜 执行标准</span>GB/T 18019（包过滤）、GB/T 18020（应用级）、GB/T 17900（代理服务器）、GB/T 18336（评估准则）、GB/T 20281（防火墙技术要求和测试评价方法，认证依据）。</div>
+    </section>
+
+    <!-- 3 四种核心技术 -->
+    <section id="s3">
+      <h2><span class="num">3</span>四种核心技术（必考 ⭐）</h2>
+      <p>这是全章最重要的对比表。四种技术按检查深度递增：</p>
+      <table>
+        <tr><th>类型</th><th>工作层</th><th>检查什么</th><th>建状态表</th><th>还原会话</th></tr>
+        <tr><td><b>包过滤</b></td><td>网络层</td><td>只看<b>报头</b>(IP/端口/协议)</td><td style="color:var(--red)">✗</td><td style="color:var(--red)">✗</td></tr>
+        <tr><td><b>应用代理</b></td><td>应用层</td><td>只看<b>数据</b>(应用层内容)</td><td style="color:var(--red)">✗</td><td style="color:var(--red)">✗</td></tr>
+        <tr><td><b>状态检测</b></td><td>2~4 层</td><td>报头 + <b>连接状态</b></td><td style="color:var(--green)">✓</td><td style="color:var(--red)">✗</td></tr>
+        <tr><td><b>完全内容检测</b></td><td>2~7 层</td><td>报头 + 状态 + <b>应用层内容</b></td><td style="color:var(--green)">✓</td><td style="color:var(--green)">✓</td></tr>
+      </table>
+
+      <h3>🔍 四种技术的工作层 & 检查范围图解</h3>
+      <div class="fig">
+        <svg viewBox="0 0 640 320" width="640">
+          <!-- OSI 层标签 -->
+          <text x="60" y="30" text-anchor="middle" fill="#a9b4cc" font-size="12">OSI 层</text>
+          <g font-size="12" fill="#cfe0ff" text-anchor="end">
+            <text x="110" y="70">应用层(5-7)</text>
+            <text x="110" y="120">传输层(4)</text>
+            <text x="110" y="170">网络层(3)</text>
+            <text x="110" y="220">链路层(1-2)</text>
+          </g>
+          <!-- 横向层带 -->
+          <g>
+            <rect x="120" y="52" width="500" height="32" fill="#212f52" stroke="#2c3a5e"/>
+            <rect x="120" y="102" width="500" height="32" fill="#212f52" stroke="#2c3a5e"/>
+            <rect x="120" y="152" width="500" height="32" fill="#212f52" stroke="#2c3a5e"/>
+            <rect x="120" y="202" width="500" height="32" fill="#212f52" stroke="#2c3a5e"/>
+          </g>
+          <!-- 列标题 -->
+          <g font-size="11.5" text-anchor="middle" font-weight="700">
+            <text x="180" y="270" fill="#5b9dff">包过滤</text>
+            <text x="300" y="270" fill="#f472b6">应用代理</text>
+            <text x="420" y="270" fill="#36d399">状态检测</text>
+            <text x="540" y="270" fill="#fbbd23">完全内容</text>
+          </g>
+          <!-- 各技术覆盖范围（竖条覆盖到的层=它检查的层） -->
+          <rect x="150" y="152" width="60" height="82" rx="6" fill="#5b9dff" opacity="0.55"/>
+          <rect x="270" y="52" width="60" height="32" rx="6" fill="#f472b6" opacity="0.55"/>
+          <rect x="390" y="102" width="60" height="132" rx="6" fill="#36d399" opacity="0.55"/>
+          <rect x="510" y="52" width="60" height="182" rx="6" fill="#fbbd23" opacity="0.55"/>
+          <text x="180" y="298" text-anchor="middle" fill="#a9b4cc" font-size="11">网络层报头</text>
+          <text x="300" y="298" text-anchor="middle" fill="#a9b4cc" font-size="11">应用层数据</text>
+          <text x="420" y="298" text-anchor="middle" fill="#a9b4cc" font-size="11">2~4层+状态</text>
+          <text x="540" y="298" text-anchor="middle" fill="#a9b4cc" font-size="11">2~7层全还原</text>
+        </svg>
+        <div class="cap">图2 · 四种技术覆盖的层次（彩色竖条 = 该技术检查到的协议层）</div>
+      </div>
+
+      <h3>📦 三种工作原理对比（报文穿过防火墙时检查什么）</h3>
+      <div class="fig">
+        <svg viewBox="0 0 640 220" width="640">
+          <g font-size="12" fill="#cfe0ff" font-weight="700" text-anchor="middle">
+            <text x="120" y="24">包过滤</text>
+            <text x="320" y="24">应用代理</text>
+            <text x="520" y="24">状态检测</text>
+          </g>
+          <!-- 三个协议栈小图 -->
+          <g font-size="10" fill="#e8edf7" text-anchor="middle">
+            <!-- 包过滤：只检查报头(IP/TCP) -->
+            <rect x="70" y="40" width="100" height="26" fill="#212f52" stroke="#2c3a5e"/><text x="120" y="57">应用层 数据</text>
+            <rect x="70" y="68" width="100" height="26" fill="#5b9dff" opacity=".6" stroke="#2c3a5e"/><text x="120" y="85">TCP 报头 ✓</text>
+            <rect x="70" y="96" width="100" height="26" fill="#5b9dff" opacity=".6" stroke="#2c3a5e"/><text x="120" y="113">IP 报头 ✓</text>
+            <rect x="70" y="124" width="100" height="26" fill="#212f52" stroke="#2c3a5e"/><text x="120" y="141">网络接口</text>
+            <text x="120" y="170" fill="#a9b4cc">只检查报头</text>
+            <text x="120" y="186" fill="#f87272">不建状态表·前后无关</text>
+            <!-- 应用代理：只检查数据 -->
+            <rect x="270" y="40" width="100" height="26" fill="#f472b6" opacity=".6" stroke="#2c3a5e"/><text x="320" y="57">应用层 数据 ✓</text>
+            <rect x="270" y="68" width="100" height="26" fill="#212f52" stroke="#2c3a5e"/><text x="320" y="85">TCP 报头</text>
+            <rect x="270" y="96" width="100" height="26" fill="#212f52" stroke="#2c3a5e"/><text x="320" y="113">IP 报头</text>
+            <rect x="270" y="124" width="100" height="26" fill="#212f52" stroke="#2c3a5e"/><text x="320" y="141">网络接口</text>
+            <text x="320" y="170" fill="#a9b4cc">只检查数据</text>
+            <text x="320" y="186" fill="#f87272">不查IP/TCP·网络层弱</text>
+            <!-- 状态检测：检查报头+建表 -->
+            <rect x="470" y="40" width="100" height="26" fill="#212f52" stroke="#2c3a5e"/><text x="520" y="57">应用层 数据</text>
+            <rect x="470" y="68" width="100" height="26" fill="#36d399" opacity=".55" stroke="#2c3a5e"/><text x="520" y="85">TCP 报头 ✓</text>
+            <rect x="470" y="96" width="100" height="26" fill="#36d399" opacity=".55" stroke="#2c3a5e"/><text x="520" y="113">IP 报头 ✓</text>
+            <rect x="470" y="124" width="100" height="26" fill="#212f52" stroke="#2c3a5e"/><text x="520" y="141">网络接口</text>
+            <text x="520" y="170" fill="#36d399">建立连接状态表</text>
+            <text x="520" y="186" fill="#a9b4cc">前后报文相关</text>
+          </g>
+        </svg>
+        <div class="cap">图3 · 包过滤"只看报头"、应用代理"只看数据"、状态检测"看报头+建状态表"</div>
+      </div>
+
+      <h3>逐个看（点卡片翻转）</h3>
+      <div class="flip-row">
+        <div class="flip" onclick="this.classList.toggle('on')"><div class="flip-inner">
+          <div class="flip-front c"><div class="emoji">📦</div><h4>包过滤</h4><span class="en">网络层</span></div>
+          <div class="flip-back c"><b>只看报头</b>(IP/端口/协议)<br>优：快、易配、对用户透明<br><small>缺：不识别应用层、不维持状态、防不住 IP 欺骗</small></div>
+        </div></div>
+        <div class="flip" onclick="this.classList.toggle('on')"><div class="flip-inner">
+          <div class="flip-front p"><div class="emoji">🔁</div><h4>应用代理</h4><span class="en">应用层</span></div>
+          <div class="flip-back p"><b>检查应用内容</b>(如禁 FTP put)<br>优：安全性好，负载在应用层检查<br><small>缺：支持应用少、对用户不透明、性能差</small></div>
+        </div></div>
+        <div class="flip" onclick="this.classList.toggle('on')"><div class="flip-inner">
+          <div class="flip-front i"><div class="emoji">🔗</div><h4>状态检测</h4><span class="en">2~4 层</span></div>
+          <div class="flip-back i"><b>建状态表跟踪会话</b><br>内置 TCP/IP 状态机，检查包是否符合会话状态<br><small>优：性能高、支持大量应用、内核级实现</small></div>
+        </div></div>
+        <div class="flip" onclick="this.classList.toggle('on')"><div class="flip-inner">
+          <div class="flip-front a"><div class="emoji">🔬</div><h4>完全内容检测</h4><span class="en">2~7 层</span></div>
+          <div class="flip-back a"><b>还原会话+内容分析</b><br>网络层/应用层/会话保护都强<br><small>能防混合型安全威胁</small></div>
+        </div></div>
+      </div>
+      <div class="box tip"><span class="bt">💡 自适应代理</span>结合代理防火墙的<b>安全性</b> + 包过滤的<b>高速度</b>，在不损失安全性的基础上大大提升代理防火墙性能（第五代）。</div>
+
+      <h3>🎮 小练习：把技术和它的特征连起来</h3>
+      <p style="color:var(--ink-soft);font-size:14px">先点左边一个技术，再点右边对应特征。连对会变绿。</p>
+      <div class="match" id="match1">
+        <div class="col">
+          <div class="ct">🔧 防火墙技术</div>
+          <div class="mitem" data-k="P">包过滤</div>
+          <div class="mitem" data-k="A">应用代理</div>
+          <div class="mitem" data-k="S">状态检测</div>
+        </div>
+        <div class="col">
+          <div class="ct">🎯 核心特征</div>
+          <div class="mitem" data-k="S">建状态表、跟踪会话（2~4层）</div>
+          <div class="mitem" data-k="P">网络层只看报头、前后报文无关</div>
+          <div class="mitem" data-k="A">应用层检查内容、对用户不透明</div>
+        </div>
+      </div>
+      <div class="feedback" id="match1fb"></div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">随堂测</span>状态检测防火墙相对简单包过滤的最重要改进是？</div>
+        <button class="opt" data-correct="1">建立状态表并跟踪会话连接上下文</button>
+        <button class="opt">只检查硬盘文件</button>
+        <button class="opt">放弃所有访问控制规则</button>
+        <button class="opt">不再处理 TCP/UDP</button>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- 4 体系结构 -->
+    <section id="s4">
+      <h2><span class="num">4</span>四种体系结构（安全性递增）</h2>
+      <table>
+        <tr><th>结构</th><th>组成</th><th>特点 / 弱点</th></tr>
+        <tr><td><b>过滤路由器</b></td><td>1 个路由器(ACL)</td><td>唯一通道；缺点：被攻陷难发现、无日志、不能识别用户</td></tr>
+        <tr><td><b>双宿主主机</b></td><td>1 台双网卡堡垒主机</td><td>能维护日志；致命弱点：堡垒主机被入侵则内网全暴露</td></tr>
+        <tr><td><b>被屏蔽主机</b></td><td>屏蔽路由器 + 堡垒主机</td><td>两道屏障；弱点：进入堡垒主机后内网仍受威胁</td></tr>
+        <tr><td style="color:var(--green)"><b>被屏蔽子网(DMZ)</b></td><td>2 个路由器 + 堡垒主机 + 周边网络</td><td><b>最安全</b>；缺点：成本高、配置复杂</td></tr>
+      </table>
+
+      <div class="fig">
+        <svg viewBox="0 0 600 230" width="600">
+          <!-- 演进箭头 -->
+          <line x1="40" y1="120" x2="560" y2="120" stroke="#2c3a5e" stroke-width="2"/>
+          <text x="300" y="20" text-anchor="middle" fill="#36d399" font-size="13" font-weight="700">安全性递增 →</text>
+          <g text-anchor="middle">
+            <circle cx="90" cy="120" r="30" fill="#5b9dff" opacity=".7"/><text x="90" y="116" fill="#fff" font-size="11">过滤</text><text x="90" y="130" fill="#fff" font-size="11">路由器</text>
+            <circle cx="240" cy="120" r="34" fill="#7c5cff" opacity=".7"/><text x="240" y="116" fill="#fff" font-size="11">双宿主</text><text x="240" y="130" fill="#fff" font-size="11">主机</text>
+            <circle cx="390" cy="120" r="38" fill="#fbbd23" opacity=".75"/><text x="390" y="116" fill="#0f1729" font-size="11">被屏蔽</text><text x="390" y="130" fill="#0f1729" font-size="11">主机</text>
+            <circle cx="530" cy="120" r="44" fill="#36d399"/><text x="530" y="115" fill="#0f1729" font-size="11" font-weight="700">被屏蔽</text><text x="530" y="130" fill="#0f1729" font-size="11" font-weight="700">子网DMZ</text>
+          </g>
+          <text x="90" y="185" text-anchor="middle" fill="#a9b4cc" font-size="10.5">无日志</text>
+          <text x="240" y="185" text-anchor="middle" fill="#a9b4cc" font-size="10.5">有日志</text>
+          <text x="390" y="195" text-anchor="middle" fill="#a9b4cc" font-size="10.5">两道屏障</text>
+          <text x="530" y="200" text-anchor="middle" fill="#a9b4cc" font-size="10.5">双路由器+周边网络</text>
+        </svg>
+        <div class="cap">图4 · 四种体系结构演进：圆越大越安全，主机是双宿主/被屏蔽主机的最大缺陷</div>
+      </div>
+      <div class="box warn"><span class="bt">⚠️ 易考点</span>双宿主主机和被屏蔽主机的共同弱点：<b>主机是最主要的安全缺陷</b>，一旦堡垒主机被入侵，整个内网受威胁。DMZ 正是为解决这个隐患而生。</div>
+    </section>
+
+    <!-- 5 DMZ -->
+    <section id="s5">
+      <h2><span class="num">5</span>被屏蔽子网 / DMZ（重点 ⭐）</h2>
+      <p>在内外网之间建一个<b>被隔离的子网（周边网络）</b>，用<b>两台路由器</b>夹起来，堡垒主机放中间。外部用户必须穿越<b>两道屏蔽路由器</b>才能访问内网。</p>
+
+      <h3>四个部件</h3>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">🌐</div><h4>周边网络</h4><p style="font-size:14px;margin:8px 0 0">位于内外网之间的附加网络，堡垒主机置于此。内网通信不经过它，外部即使入侵堡垒主机也监听不到内网信息。</p></div>
+        <div class="ccard a"><div class="emoji">🚧</div><h4>外部路由器</h4><div class="en">第一道屏障</div><p style="font-size:14px;margin:8px 0 0">过滤外网对周边/内网的访问，限制外网用户只能访问周边网络。</p></div>
+        <div class="ccard i"><div class="emoji">🛡️</div><h4>内部路由器</h4><div class="en">第二道屏障</div><p style="font-size:14px;margin:8px 0 0"><b>复制</b>外部路由器的内网过滤规则（防失效），并限制堡垒主机访问内网。</p></div>
+        <div class="ccard c"><div class="emoji">🏰</div><h4>堡垒主机</h4><p style="font-size:14px;margin:8px 0 0">放在周边网络，对外提供 WWW/FTP，对内提供 DNS/WWW代理/FTP代理。</p></div>
+      </div>
+
+      <h3>🗺️ DMZ 网络拓扑（企业三区典型部署）</h3>
+      <div class="fig">
+        <svg viewBox="0 0 680 250" width="680">
+          <!-- Internet -->
+          <ellipse cx="55" cy="120" rx="45" ry="38" fill="#1b2745" stroke="#f87272" stroke-width="2"/>
+          <text x="55" y="116" text-anchor="middle" fill="#f87272" font-size="13" font-weight="700">Internet</text>
+          <text x="55" y="134" text-anchor="middle" fill="#a9b4cc" font-size="11">外网(不可信)</text>
+          <!-- 外部路由器 -->
+          <rect x="135" y="95" width="62" height="50" rx="8" fill="#fbbd23"/>
+          <text x="166" y="118" text-anchor="middle" fill="#0f1729" font-size="11" font-weight="700">外部</text>
+          <text x="166" y="133" text-anchor="middle" fill="#0f1729" font-size="11" font-weight="700">路由器</text>
+          <!-- DMZ 周边网络 -->
+          <rect x="225" y="55" width="160" height="130" rx="12" fill="rgba(91,157,255,.10)" stroke="#5b9dff" stroke-width="2" stroke-dasharray="6 4"/>
+          <text x="305" y="46" text-anchor="middle" fill="#5b9dff" font-size="13" font-weight="700">DMZ 周边网络</text>
+          <rect x="245" y="75" width="120" height="40" rx="8" fill="#212f52" stroke="#2c3a5e"/>
+          <text x="305" y="92" text-anchor="middle" fill="#e8edf7" font-size="12" font-weight="700">🏰 堡垒主机</text>
+          <text x="305" y="108" text-anchor="middle" fill="#a9b4cc" font-size="10.5">Web/FTP/Mail/DNS</text>
+          <text x="305" y="150" text-anchor="middle" fill="#a9b4cc" font-size="11">公开可访问服务</text>
+          <text x="305" y="168" text-anchor="middle" fill="#a9b4cc" font-size="11">可用公网/私有地址</text>
+          <!-- 内部路由器 -->
+          <rect x="413" y="95" width="62" height="50" rx="8" fill="#36d399"/>
+          <text x="444" y="118" text-anchor="middle" fill="#0f1729" font-size="11" font-weight="700">内部</text>
+          <text x="444" y="133" text-anchor="middle" fill="#0f1729" font-size="11" font-weight="700">路由器</text>
+          <!-- 内网 -->
+          <rect x="505" y="65" width="150" height="110" rx="12" fill="#1b2745" stroke="#36d399" stroke-width="2"/>
+          <text x="580" y="56" text-anchor="middle" fill="#36d399" font-size="13" font-weight="700">内部网络(可信)</text>
+          <text x="580" y="105" text-anchor="middle" fill="#e8edf7" font-size="12">OA / 财务 / 研发</text>
+          <text x="580" y="128" text-anchor="middle" fill="#a9b4cc" font-size="11">私有 IP 地址</text>
+          <!-- 连线 -->
+          <g stroke="#5b9dff" stroke-width="2">
+            <line x1="100" y1="120" x2="135" y2="120"/>
+            <line x1="197" y1="120" x2="225" y2="120"/>
+            <line x1="385" y1="120" x2="413" y2="120"/>
+            <line x1="475" y1="120" x2="505" y2="120"/>
+          </g>
+          <text x="340" y="225" text-anchor="middle" fill="#fbbd23" font-size="12">外部用户须穿越「外部路由器 + 内部路由器」两道屏障才能触及内网</text>
+        </svg>
+        <div class="cap">图5 · DMZ 网络拓扑：内网 ─ 内部路由器 ─ DMZ堡垒主机 ─ 外部路由器 ─ Internet</div>
+      </div>
+
+      <div class="box key">
+        <span class="bt">⭐ 核心价值</span>
+        即使攻击者攻破 DMZ 里的堡垒主机，由于<b>内部路由器</b>将内网与周边网络隔离，他<b>无法监听到内部网络信息</b>。双层路由器构成双重防护，过滤规则互相复制防失效。
+      </div>
+      <div class="box tip">
+        <span class="bt">📋 典型访问策略</span>
+        ① 外网<b>不允许</b>访问内网；② 内网用户可按权限访问 Internet；③ 内、外用户<b>只允许访问 DMZ 指定服务器的指定服务</b>。内网用私有 IP，DMZ 服务器若用私有地址需在防火墙做 NAT/MAP。
+      </div>
+    </section>
+
+    <!-- 6 功能与NAT -->
+    <section id="s6">
+      <h2><span class="num">6</span>防火墙功能与 NAT</h2>
+      <h3>五个基本功能（必背）</h3>
+      <ol>
+        <li>过滤进、出网络的<b>数据</b>。</li>
+        <li>管理进、出网络的<b>访问行为</b>。</li>
+        <li><b>封堵</b>某些禁止的业务。</li>
+        <li><b>记录</b>通过防火墙的信息内容和活动（日志）。</li>
+        <li>对网络攻击的<b>检测和告警</b>。</li>
+      </ol>
+      <div class="box tip"><span class="bt">其他/扩展功能</span>NAT、隐藏内部 IP 与结构、流量日志审计、连单独网段对外提供 Web/FTP、集中安全管理、<b>VPN</b>（IPSEC/PPTP/L2TP）；扩展：防病毒、IP/MAC 绑定、用户认证、带宽管理(QoS)、双机热备(高可用)、负载均衡、与 <b>IDS 联动</b>等。</div>
+
+      <h3>NAT（网络地址转换）</h3>
+      <div class="fig">
+        <svg viewBox="0 0 620 180" width="620">
+          <rect x="20" y="55" width="150" height="80" rx="10" fill="#1b2745" stroke="#36d399" stroke-width="2"/>
+          <text x="95" y="46" text-anchor="middle" fill="#36d399" font-size="12" font-weight="700">内网(私有IP)</text>
+          <text x="95" y="100" text-anchor="middle" fill="#e8edf7" font-size="12">Host C 192.168.1.21</text>
+          <rect x="245" y="60" width="100" height="70" rx="10" fill="url(#fwg2)"/>
+          <text x="295" y="50" text-anchor="middle" fill="#fbbd23" font-size="12" font-weight="700">防火墙 NAT</text>
+          <text x="295" y="100" text-anchor="middle" fill="#fff" font-size="22">🧱</text>
+          <ellipse cx="540" cy="95" rx="55" ry="42" fill="#1b2745" stroke="#f87272" stroke-width="2"/>
+          <text x="540" y="92" text-anchor="middle" fill="#f87272" font-size="12" font-weight="700">Internet</text>
+          <line x1="170" y1="95" x2="243" y2="95" stroke="#5b9dff" stroke-width="2" marker-end="url(#ar2)"/>
+          <line x1="345" y1="95" x2="483" y2="95" stroke="#5b9dff" stroke-width="2" marker-end="url(#ar2)"/>
+          <text x="207" y="85" text-anchor="middle" fill="#a9b4cc" font-size="10">源:192.168.1.21</text>
+          <text x="414" y="85" text-anchor="middle" fill="#a9b4cc" font-size="10">源→101.211.23.1</text>
+          <text x="295" y="148" text-anchor="middle" fill="#36d399" font-size="11">私有地址 ⇄ 公网地址</text>
+          <defs>
+            <linearGradient id="fwg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#5b9dff"/></linearGradient>
+            <marker id="ar2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5b9dff"/></marker>
+          </defs>
+        </svg>
+        <div class="cap">图6 · NAT：把内网私有源地址改写为公网地址（类似邮局/快递重新封装）</div>
+      </div>
+      <ul>
+        <li><b>作用</b>：内部私有地址 ↔ 公网地址转换。</li>
+        <li><b>三大好处</b>：① <b>隐藏内部网络结构</b>；② 内网可用私有 IP；③ 解决公网地址不足（<b>IP 复用</b>）。</li>
+        <li><b>MAP（地址/端口映射）</b>：把公网"地址+端口"映射到内部服务器，如 <code>MAP 199.168.1.2:80 TO 202.102.1.3:80</code>，让公开服务器用私有地址对外提供服务，同时隐藏内部结构。</li>
+      </ul>
+    </section>
+
+    <!-- 7 接入方式 -->
+    <section id="s7">
+      <h2><span class="num">7</span>三种接入方式</h2>
+      <table>
+        <tr><th>方式</th><th>相当于</th><th>特点</th></tr>
+        <tr><td><b>路由接入</b></td><td>路由器</td><td>连接<b>不同网段</b>，需要配置 IP，提供简单路由功能</td></tr>
+        <tr><td><b>透明接入</b></td><td>网桥</td><td>内部主机配置<b>不用改</b>、不用配 IP，原网络结构不变</td></tr>
+        <tr><td><b>混合接入</b></td><td>路由 + 透明</td><td>大多数防火墙同时保留两种模式，按用户网络情况选择</td></tr>
+      </table>
+      <div class="box warn"><span class="bt">⚠️ 注意</span>路由接入模式的优点和透明接入模式的优点<b>不能同时并存</b>；混合模式下，不同子网走静态路由通信，同一网段走透明模式通信。</div>
+    </section>
+
+    <!-- 8 性能 -->
+    <section id="s8">
+      <h2><span class="num">8</span>性能五大指标（必背）</h2>
+      <table>
+        <tr><th>指标</th><th>含义</th><th>衡量标准</th></tr>
+        <tr><td><b>吞吐量</b></td><td>不丢包情况下能达到的最大速率</td><td>越<b>大</b>越好（小则成网络瓶颈）</td></tr>
+        <tr><td><b>时延</b></td><td>输入帧最后1比特到达 → 输出帧第1比特输出的时间间隔</td><td>越<b>小</b>越好</td></tr>
+        <tr><td><b>丢包率</b></td><td>因资源不足该转发却没转发的帧百分比</td><td>越<b>小</b>越好</td></tr>
+        <tr><td><b>背靠背</b></td><td>全速发包出现第一个丢包时发送的帧数</td><td>体现<b>缓冲</b>能力（抗突发）</td></tr>
+        <tr><td><b>并发连接数</b></td><td>穿越防火墙同时建立的最大连接数</td><td>越<b>大</b>越好</td></tr>
+      </table>
+      <div class="fig">
+        <div class="four-el" style="max-width:600px;grid-template-columns:repeat(3,1fr)">
+          <div class="el-card"><div class="ei">🚀</div><h4>吞吐量↑</h4><small>最大速率</small></div>
+          <div class="el-card"><div class="ei">⏱️</div><h4>时延↓</h4><small>越小越快</small></div>
+          <div class="el-card"><div class="ei">📉</div><h4>丢包率↓</h4><small>越小越稳</small></div>
+          <div class="el-card"><div class="ei">💥</div><h4>背靠背</h4><small>抗突发缓冲</small></div>
+          <div class="el-card"><div class="ei">🔗</div><h4>并发连接数↑</h4><small>同时连接数</small></div>
+        </div>
+        <div class="cap">图7 · 五大性能指标记忆图（吞吐量/并发越大越好，时延/丢包越小越好）</div>
+      </div>
+    </section>
+
+    <!-- 9 局限性 -->
+    <section id="s9">
+      <h2><span class="num">9</span>局限性与两个争议</h2>
+      <h3>局限性（必考）</h3>
+      <ol>
+        <li><b>防外不防内</b>——难防内部攻击或滥用。</li>
+        <li>不能防<b>绕过/未经过</b>防火墙的攻击（如内部私自拨号上网）。</li>
+        <li>只实现<b>粗粒度</b>访问控制。</li>
+        <li>难管理配置，易造成漏洞；很难提供内外一致的安全策略。</li>
+        <li>基于报头检测，<b>无法阻断通过开放端口流入的有害流量</b>（不是蠕虫/黑客攻击的解决方案）。</li>
+        <li>对 <b>0day 攻击</b>无能为力。</li>
+      </ol>
+      <div class="box warn"><span class="bt">⚠️ 正因如此</span>需要 <b>IDS、WAF</b> 来补充，组成纵深防御。</div>
+
+      <h3>争议一：胖 vs 瘦</h3>
+      <table>
+        <tr><th></th><th>胖防火墙</th><th>瘦防火墙</th></tr>
+        <tr><td>定义</td><td>功能大而全，集成安全平台</td><td>功能少而精，只做访问控制，靠多厂商<b>联动</b></td></tr>
+        <tr><td>优势</td><td>功能全、控制细、协作强、降成本</td><td>性能高、专业性强、整体安全高、配置简单</td></tr>
+        <tr><td>不足</td><td>性能降低、自身安全弱、功能拼凑、稳定性差、配置复杂</td><td>功能单一、整体防护不足、采购成本高</td></tr>
+      </table>
+      <div class="box tip"><span class="bt">结论</span>趋势是构建<b>联动、统一的动态安全防护体系</b>，通过安全管理中心监控协调各产品。</div>
+
+      <h3>争议二：硬件架构</h3>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">🖥️</div><h4>X86 通用 CPU</h4><p style="font-size:14px;margin:8px 0 0">高灵活、易开发新功能；受 CPU/PCI 总线制约，高千兆环境性能不足。</p></div>
+        <div class="ccard i"><div class="emoji">⚡</div><h4>NPU 网络处理器</h4><p style="font-size:14px;margin:8px 0 0">专为处理数据包设计、可编程、I/O 强；但微引擎编程难、成本高、成熟度不及 ASIC。</p></div>
+        <div class="ccard a"><div class="emoji">🔩</div><h4>ASIC 专用芯片</h4><p style="font-size:14px;margin:8px 0 0">千兆线速，适合高端；传统缺乏灵活性、开发难，现代增加可编程性。</p></div>
+      </div>
+      <div class="box key"><span class="bt">最佳组合</span>通用 CPU（系统控制管理）+ 可编程 ASIC（数据高速处理转发）各司其职。</div>
+    </section>
+
+    <!-- 10 WAF -->
+    <section id="s10">
+      <h2><span class="num">10</span>WAF：Web 应用防火墙（重点 ⭐）</h2>
+      <div class="box key"><span class="bt">WAF 是什么</span>专门保护 <b>Web 应用</b> 的防火墙，防护 <b>SQL 注入、XSS、XML 注入、Web 层 DDoS</b> 等。因重点防 SQL 注入，也叫"SQL 防火墙"。本质是防应用层攻击，技术上更应叫 <b>Web IPS</b>。</div>
+
+      <h3>❓ 为什么传统防火墙防不住 Web 攻击？</h3>
+      <div class="fig">
+        <svg viewBox="0 0 620 200" width="620">
+          <!-- 传统防火墙 -->
+          <rect x="30" y="40" width="250" height="130" rx="12" fill="rgba(248,114,114,.07)" stroke="#f87272" stroke-width="1.5"/>
+          <text x="155" y="34" text-anchor="middle" fill="#f87272" font-size="13" font-weight="700">传统防火墙：看不懂</text>
+          <rect x="55" y="60" width="200" height="26" fill="#212f52" stroke="#2c3a5e"/><text x="155" y="77" fill="#a9b4cc" font-size="11" text-anchor="middle">应用层 HTTP 内容(不分析)</text>
+          <rect x="55" y="90" width="200" height="26" fill="#5b9dff" opacity=".5" stroke="#2c3a5e"/><text x="155" y="107" fill="#e8edf7" font-size="11" text-anchor="middle">端口 80/443 ✓ 放行</text>
+          <rect x="55" y="120" width="200" height="26" fill="#5b9dff" opacity=".5" stroke="#2c3a5e"/><text x="155" y="137" fill="#e8edf7" font-size="11" text-anchor="middle">IP/协议 ✓ 合法</text>
+          <text x="155" y="162" text-anchor="middle" fill="#f87272" font-size="11">SQL注入藏在正常请求里 → 漏过</text>
+          <!-- WAF -->
+          <rect x="340" y="40" width="250" height="130" rx="12" fill="rgba(54,211,153,.07)" stroke="#36d399" stroke-width="1.5"/>
+          <text x="465" y="34" text-anchor="middle" fill="#36d399" font-size="13" font-weight="700">WAF：解析应用层</text>
+          <rect x="365" y="60" width="200" height="56" fill="#36d399" opacity=".4" stroke="#2c3a5e"/><text x="465" y="84" fill="#e8edf7" font-size="11" text-anchor="middle">解析 HTTP 请求体/参数</text>
+          <text x="465" y="102" fill="#aef5d4" font-size="11" text-anchor="middle">检出 1=1 / &lt;script&gt; / union</text>
+          <rect x="365" y="120" width="200" height="26" fill="#212f52" stroke="#2c3a5e"/><text x="465" y="137" fill="#a9b4cc" font-size="11" text-anchor="middle">网络层</text>
+          <text x="465" y="162" text-anchor="middle" fill="#36d399" font-size="11">识别攻击特征 → 拦截/告警</text>
+        </svg>
+        <div class="cap">图8 · 传统防火墙工作在网络/传输层，不分析应用层；SQL 注入/XSS 藏在正常 HTTP/HTTPS 请求里（80/443 本就开放），所以漏过</div>
+      </div>
+
+      <h3>部署</h3>
+      <p>串行接入在 <b>Web 服务器前面</b>，对性能要求高，必须具备 <b>HA、Bypass</b> 功能，还要与负载均衡、Web Cache 协调部署。</p>
+
+      <h3>检测技术（五种）</h3>
+      <table>
+        <tr><th>技术</th><th>原理</th></tr>
+        <tr><td><b>代理服务</b></td><td>基于会话的双向代理，中断用户与服务器直连，适用各种加密协议，能抑制 DDoS</td></tr>
+        <tr><td><b>特征识别</b></td><td>靠攻击"指纹"（如 SQL 注入 <code>1=1</code>、溢出 Shellcode）。难点：特征库庞大、易误报、对 0day 无效</td></tr>
+        <tr><td><b>算法识别</b></td><td>对攻击类型归类做模式化，进行<b>语义理解</b>（而非靠"长相"识别）</td></tr>
+        <tr><td><b>模式匹配</b></td><td>IDS 传统技术，把攻击归纳成模式（协议模式简单、行为模式难）</td></tr>
+        <tr><td><b>自学习技术</b></td><td>学习正常访问模式（如账号无特殊字符、密码不超 20 位），偏离就预警/阻断</td></tr>
+      </table>
+      <div class="box warn"><span class="bt">⚠️ 最大挑战：识别率</span>对已知攻击能给出识别率，对未知攻击识别率可用性不大；且不易测量（入侵成功者一般不张扬）。</div>
+
+      <h3>🤖 基于机器学习的 Web 异常检测</h3>
+      <p>传统规则集难应对 <b>0day</b>。新思路：不识别"入侵行为"，而是建模"<b>正常流量</b>(Profile)"，不符合的就是异常——"以不变应万变"，更难被绕过。最大困难是<b>标签数据缺乏</b>（入侵黑样本稀少），故多用<b>无监督</b>学习。</p>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">📊</div><h4>统计学习</h4><p style="font-size:13.5px;margin:6px 0 0">参数长度/字符分布/访问频率；切比雪夫不等式、卡方检验。</p></div>
+        <div class="ccard i"><div class="emoji">🔤</div><h4>文本分析</h4><p style="font-size:13.5px;margin:6px 0 0">借鉴 NLP，<b>HMM 隐马尔科夫模型</b>对参数序列建模。</p></div>
+        <div class="ccard a"><div class="emoji">🎯</div><h4>单分类</h4><p style="font-size:13.5px;margin:6px 0 0"><b>one-class SVM</b>（McPAD 用 N-Gram 向量化找最小边界）。</p></div>
+        <div class="ccard c"><div class="emoji">🧩</div><h4>聚类</h4><p style="font-size:13.5px;margin:6px 0 0">正常流量大量重复，异常稀少；聚类外的小簇判为入侵。</p></div>
+      </div>
+    </section>
+
+    <!-- 11 IDS -->
+    <section id="s11">
+      <h2><span class="num">11</span>IDS：入侵检测系统（重点 ⭐）</h2>
+      <div class="box key"><span class="bt">IDS 是什么</span>监控系统/网络，识别<b>违反安全策略的行为和攻击迹象</b>，是<b>防火墙的补充</b>——防火墙挡门口，IDS 在里面巡逻，发现内部和绕过防火墙的攻击。主要做<b>检测和告警</b>（能主动阻断的叫 IPS）。</div>
+
+      <h3>Denning 模型 & CIDF 四组件</h3>
+      <p><b>Denning 模型</b>是入侵检测奠基模型，核心：通过<b>审计记录</b>识别异常和攻击。<b>CIDF 通用框架</b>分四组件：</p>
+      <div class="fig">
+        <svg viewBox="0 0 640 130" width="640">
+          <g text-anchor="middle">
+            <rect x="20" y="40" width="130" height="50" rx="10" fill="#5b9dff" opacity=".75"/><text x="85" y="62" fill="#fff" font-size="12" font-weight="700">事件产生器</text><text x="85" y="80" fill="#fff" font-size="10">采集数据·产生事件</text>
+            <rect x="190" y="40" width="130" height="50" rx="10" fill="#36d399" opacity=".75"/><text x="255" y="62" fill="#0f1729" font-size="12" font-weight="700">事件分析器</text><text x="255" y="80" fill="#0f1729" font-size="10">分析·发现攻击</text>
+            <rect x="360" y="40" width="130" height="50" rx="10" fill="#fbbd23" opacity=".8"/><text x="425" y="62" fill="#0f1729" font-size="12" font-weight="700">事件数据库</text><text x="425" y="80" fill="#0f1729" font-size="10">存储事件</text>
+            <rect x="500" y="40" width="120" height="50" rx="10" fill="#f472b6" opacity=".75"/><text x="560" y="62" fill="#fff" font-size="12" font-weight="700">响应单元</text><text x="560" y="80" fill="#fff" font-size="10">做出反应</text>
+          </g>
+          <g stroke="#a9b4cc" stroke-width="1.5">
+            <line x1="150" y1="65" x2="188" y2="65" marker-end="url(#ar3)"/>
+            <line x1="320" y1="65" x2="358" y2="65" marker-end="url(#ar3)"/>
+            <line x1="490" y1="65" x2="498" y2="65" marker-end="url(#ar3)"/>
+          </g>
+          <defs><marker id="ar3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#a9b4cc"/></marker></defs>
+        </svg>
+        <div class="cap">图9 · CIDF 四组件：事件产生器 → 事件分析器 → 事件数据库 / 响应单元</div>
+      </div>
+
+      <h3>异常检测 vs 误用检测（核心对比）</h3>
+      <table>
+        <tr><th></th><th>异常检测</th><th>误用 / 特征检测</th></tr>
+        <tr><td>思想</td><td>建<b>正常行为模型</b>，识别偏离</td><td>匹配<b>已知攻击特征</b>(签名)</td></tr>
+        <tr><td>检测未知攻击(0day)</td><td style="color:var(--green)"><b>能</b></td><td style="color:var(--red)"><b>不能</b></td></tr>
+        <tr><td>主要缺点</td><td><b>误报率高</b>、正常模型难建</td><td>漏报未知、需持续更新特征库</td></tr>
+      </table>
+      <div class="box tip"><span class="bt">💡 记忆</span>异常检测"你不正常我报警"（能抓新攻击但易误伤）；误用检测"你像通缉犯我抓"（准但只抓已知）。</div>
+
+      <h3>HIDS vs NIDS（核心对比）</h3>
+      <div class="fig">
+        <svg viewBox="0 0 640 220" width="640">
+          <!-- 网络主干 -->
+          <line x1="60" y1="110" x2="580" y2="110" stroke="#5b9dff" stroke-width="3"/>
+          <ellipse cx="60" cy="110" rx="34" ry="26" fill="#1b2745" stroke="#f87272" stroke-width="2"/><text x="60" y="114" text-anchor="middle" fill="#f87272" font-size="11">Internet</text>
+          <!-- NIDS 挂在网段 -->
+          <rect x="240" y="40" width="120" height="40" rx="8" fill="#36d399"/><text x="300" y="58" text-anchor="middle" fill="#0f1729" font-size="12" font-weight="700">NIDS</text><text x="300" y="73" text-anchor="middle" fill="#0f1729" font-size="10">监听整个网段</text>
+          <line x1="300" y1="80" x2="300" y2="108" stroke="#36d399" stroke-width="2" stroke-dasharray="4 3"/>
+          <text x="300" y="96" text-anchor="middle" fill="#a9b4cc" font-size="9"></text>
+          <!-- 主机+HIDS -->
+          <g>
+            <rect x="170" y="150" width="90" height="45" rx="8" fill="#212f52" stroke="#2c3a5e"/><text x="215" y="170" text-anchor="middle" fill="#e8edf7" font-size="11">主机A</text><text x="215" y="186" text-anchor="middle" fill="#fbbd23" font-size="10" font-weight="700">+HIDS</text>
+            <rect x="350" y="150" width="90" height="45" rx="8" fill="#212f52" stroke="#2c3a5e"/><text x="395" y="170" text-anchor="middle" fill="#e8edf7" font-size="11">服务器</text><text x="395" y="186" text-anchor="middle" fill="#fbbd23" font-size="10" font-weight="700">+HIDS(加密OK)</text>
+            <line x1="215" y1="150" x2="215" y2="110" stroke="#5b9dff" stroke-width="2"/>
+            <line x1="395" y1="150" x2="395" y2="110" stroke="#5b9dff" stroke-width="2"/>
+          </g>
+          <text x="500" y="160" fill="#36d399" font-size="11">NIDS：看网段，但</text>
+          <text x="500" y="178" fill="#f87272" font-size="11">看不懂加密通信</text>
+        </svg>
+        <div class="cap">图10 · HIDS 装在主机上、NIDS 监听网段</div>
+      </div>
+      <table>
+        <tr><th></th><th>HIDS（基于主机）</th><th>NIDS（基于网络）</th></tr>
+        <tr><td>部署</td><td>单台主机上（装代理）</td><td>网络节点，监听整个网段</td></tr>
+        <tr><td>能否看加密通信</td><td style="color:var(--green)"><b>能</b>（主机上已解密）</td><td style="color:var(--red)"><b>不能</b>（看不懂密文）</td></tr>
+        <tr><td>特点</td><td>能映射到具体用户/主机；<b>占主机资源</b></td><td>监控整个网段、不占主机资源；交换环境需镜像</td></tr>
+      </table>
+      <div class="box tip"><span class="bt">📌 还有</span><b>网络节点 IDS</b> 和<b>混合型/分布式</b>入侵检测。实战常 HIDS + NIDS 组合。</div>
+
+      <h3>Snort（著名开源 NIDS）</h3>
+      <ul>
+        <li>通过<b>规则</b>检测，<b>规则 = 规则头 + 规则选项</b>。</li>
+        <li>三个子系统：数据包<b>解码器</b>（嗅探/预处理）→ <b>检测引擎</b> → <b>日志/告警</b>系统。</li>
+      </ul>
+    </section>
+
+    <!-- 12 三者关系 -->
+    <section id="s12">
+      <h2><span class="num">12</span>防火墙 / WAF / IDS 三者关系</h2>
+      <table>
+        <tr><th>设备</th><th>位置</th><th>作用</th><th>防什么</th></tr>
+        <tr><td><b>防火墙</b></td><td>网络边界</td><td>访问控制</td><td>控制进出流量</td></tr>
+        <tr><td><b>WAF</b></td><td>Web 服务器前(串行)</td><td>防应用层攻击</td><td>SQL 注入、XSS</td></tr>
+        <tr><td><b>IDS</b></td><td>网络/主机内部</td><td>检测告警</td><td>内部/绕过攻击</td></tr>
+      </table>
+      <div class="fig">
+        <svg viewBox="0 0 640 220" width="640">
+          <ellipse cx="55" cy="110" rx="42" ry="34" fill="#1b2745" stroke="#f87272" stroke-width="2"/><text x="55" y="114" text-anchor="middle" fill="#f87272" font-size="12" font-weight="700">Internet</text>
+          <!-- 防火墙 -->
+          <rect x="135" y="80" width="80" height="60" rx="10" fill="url(#fwg3)"/><text x="175" y="70" text-anchor="middle" fill="#fbbd23" font-size="12" font-weight="700">防火墙</text><text x="175" y="116" text-anchor="middle" fill="#fff" font-size="20">🧱</text>
+          <!-- WAF -->
+          <rect x="265" y="40" width="80" height="50" rx="10" fill="#36d399" opacity=".8"/><text x="305" y="62" text-anchor="middle" fill="#0f1729" font-size="12" font-weight="700">WAF</text><text x="305" y="78" text-anchor="middle" fill="#0f1729" font-size="10">护Web</text>
+          <rect x="265" y="105" width="80" height="50" rx="10" fill="#212f52" stroke="#2c3a5e"/><text x="305" y="127" text-anchor="middle" fill="#e8edf7" font-size="11">Web服务器</text><text x="305" y="143" text-anchor="middle" fill="#a9b4cc" font-size="10">(DMZ)</text>
+          <line x1="305" y1="90" x2="305" y2="105" stroke="#36d399" stroke-width="2"/>
+          <!-- 内网 -->
+          <rect x="420" y="65" width="180" height="100" rx="12" fill="#1b2745" stroke="#5b9dff" stroke-width="2"/><text x="510" y="56" text-anchor="middle" fill="#5b9dff" font-size="12" font-weight="700">内部网络</text>
+          <rect x="445" y="90" width="130" height="40" rx="8" fill="#7c5cff" opacity=".7"/><text x="510" y="108" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">IDS 巡逻</text><text x="510" y="124" text-anchor="middle" fill="#fff" font-size="10">检测内部/绕过攻击</text>
+          <g stroke="#5b9dff" stroke-width="2">
+            <line x1="97" y1="110" x2="135" y2="110"/>
+            <line x1="215" y1="110" x2="265" y2="110"/>
+            <line x1="345" y1="130" x2="420" y2="115"/>
+          </g>
+          <defs><linearGradient id="fwg3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#5b9dff"/></linearGradient></defs>
+        </svg>
+        <div class="cap">图11 · 纵深防御：防火墙挡门、WAF 护 Web、IDS 内部巡逻，三者互补</div>
+      </div>
+    </section>
+
+    <!-- 13 小结 -->
+    <section id="s13">
+      <h2><span class="num">13</span>本章小结</h2>
+      <ul>
+        <li>防火墙 = 安全域之间的<b>唯一通道 + 访问控制设备</b>，五大功能、五大性能指标。</li>
+        <li>四种核心技术：<b>包过滤(网络层)、应用代理(应用层)、状态检测(2-4层,建状态表)、完全内容检测(2-7层,还原会话)</b>。</li>
+        <li>四种结构：过滤路由器 &lt; 双宿主 &lt; 被屏蔽主机 &lt; <b>被屏蔽子网(DMZ,最安全)</b>；DMZ 四部件、双路由器双屏障。</li>
+        <li><b>NAT</b> 隐藏内部结构 + IP 复用；接入方式：路由/透明/混合。</li>
+        <li>局限性：<b>防外不防内</b>、防不住绕过/0day → 需 IDS、WAF 补充。</li>
+        <li><b>WAF</b> 补应用层短板（防 SQL 注入/XSS，传统防火墙不分析应用层）。</li>
+        <li><b>IDS</b> 补内部检测短板：<b>异常检测 vs 误用检测</b>、<b>HIDS vs NIDS</b>、Snort（规则头+规则选项）。</li>
+      </ul>
+      <p style="margin-top:16px"><span class="pill">📄 配套作业3</span><span class="pill">🔥 防火墙 + WAF + IDS</span></p>
+    </section>
+
+    <!-- 重点例题 -->
+    <section id="sex">
+      <h2><span class="num">⭐</span>重点例题（作业3精讲）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">作业3整章对应 CH7，下面把核心题目做成例题详细讲解，掌握了它们考试就稳了。</p>
+
+      <details open>
+        <summary>例1【简答】比较包过滤、应用代理、状态检测、完全内容检测的工作层次、优缺点</summary>
+        <div class="ans">
+          <b>包过滤</b>（网络层）：只看报头(IP/端口/协议)。优——快、易配、对用户透明；缺——不识别应用层、不维持状态、防不住 IP 欺骗。<br>
+          <b>应用代理</b>（应用层）：检查应用层内容。优——安全性好；缺——支持应用少、对用户不透明、性能差。<br>
+          <b>状态检测</b>（2~4层）：建状态表跟踪会话，检查包是否符合会话状态。优——性能高、支持大量应用、内核级；克服了包过滤"只看单包"的缺点。<br>
+          <b>完全内容检测</b>（2~7层）：还原会话并分析应用内容，能防混合型威胁，三层保护都强。
+        </div>
+      </details>
+
+      <details>
+        <summary>例2【案例】企业边界防火墙与 DMZ 规划（案例1）</summary>
+        <div class="ans">
+          <b>(1) 逻辑关系：</b>Internet ─ 外部路由器 ─ 防火墙 ─ DMZ(官网/邮件/文件下载，堡垒主机) ─ 内部路由器 ─ 内网(OA/财务/研发，私有IP)。对外服务放 DMZ，内网与 DMZ、外网逻辑隔离。<br>
+          <b>(2) 访问策略：</b>① 外部用户访问官网——<b>只允许</b>访问 DMZ 指定服务器的指定服务(如 80/443)，不能进内网；② 内部用户访问互联网——按权限<b>允许</b>出站；③ 外部用户访问内网——<b>一律拒绝</b>。<br>
+          <b>(3) NAT/MAP 作用：</b>内网私有地址经 NAT 转公网出网(隐藏结构+IP复用)；DMZ 服务器用私有地址时，用 MAP 把公网"地址:端口"映射到服务器对外发布。<b>补充措施：</b>在 Web 服务器前加 WAF 防 SQL 注入/XSS，部署 IDS 检测内部/绕过攻击，开启日志审计。
+        </div>
+      </details>
+
+      <details>
+        <summary>例3【案例】为什么传统防火墙挡不住校园门户的 SQL 注入/XSS？（案例2）</summary>
+        <div class="ans">
+          <b>(1)</b> 包过滤/状态检测工作在网络层/传输层，<b>不分析应用层内容</b>；SQL 注入和 XSS 藏在正常 HTTP/HTTPS 请求里，而 80/443 端口本就开放、IP 与协议都合法，所以防火墙看不出异常、不告警。<br>
+          <b>(2) WAF 检测思路：</b>特征识别(匹配 <code>1=1</code>、<code>&lt;script&gt;</code> 等指纹)、算法识别(对攻击归类做语义理解)、模式匹配(协议/行为模式)、自学习(学正常访问模式，如账号无特殊字符、密码不超20位，偏离即拦截)。<br>
+          <b>(3) 降误报保连续性：</b>先用<b>观察/学习模式</b>建正常 Profile 再上线拦截、结合机器学习异常检测降低误报、配置 <b>Bypass/HA</b> 保证业务不中断、对高风险规则才阻断、其余告警。
+        </div>
+      </details>
+
+      <details>
+        <summary>例4【案例】入侵检测部署与告警处置（案例3）</summary>
+        <div class="ans">
+          <b>(1) 组合部署：</b>在网络出入口/核心交换镜像口部署 <b>NIDS</b> 监控整体流量(发现端口扫描、异常外联)；在加密通信的关键服务器上装 <b>HIDS</b>(NIDS 看不懂密文，HIDS 在主机上已解密、能审计登录)；交换式环境用网络节点 IDS 补盲。<br>
+          <b>(2) 检测方法选择：</b>端口扫描——<b>特征检测</b>(扫描行为模式明确)；失败登录暴破——可<b>特征</b>(阈值规则)；异常外联(连陌生IP/异常时段)——<b>异常检测</b>(偏离正常基线)。<br>
+          <b>(3) 响应处置：</b>告警→<b>归并</b>去重关联→<b>联动</b>防火墙阻断可疑连接/隔离主机→保存日志与流量做<b>取证</b>→复盘更新规则与基线。
+        </div>
+      </details>
+
+      <details>
+        <summary>例5【判断辨析】课件易错判断题</summary>
+        <div class="ans">
+          ✗ "包过滤防火墙能理解所有应用层语义、识别所有 Web 攻击"——错，它只看报头。<br>
+          ✗ "透明模式接入需大规模修改主机 IP 配置"——错，透明模式像网桥，主机配置<b>不用改</b>。<br>
+          ✗ "网络型 IDS 能直接分析加密通信明文"——错，NIDS 看不懂密文，需 HIDS 或端点配合。<br>
+          ✓ "防火墙可作为可信与不可信网络之间的缓冲区"——对。<br>
+          ✓ "异常检测能检测未知攻击，但正常模型难建、误报较高"——对。
+        </div>
+      </details>
+    </section>
+
+    <!-- 自测 -->
+    <section id="s14">
+      <h2><span class="num">🎯</span>自测（点击展开参考要点）</h2>
+      <details>
+        <summary>四种核心技术分别工作在哪一层？哪两种建状态表？</summary>
+        <div class="ans">包过滤=网络层；应用代理=应用层；状态检测=2~4层；完全内容检测=2~7层。<b>状态检测和完全内容检测</b>会建状态表；完全内容检测还会<b>还原会话</b>。</div>
+      </details>
+      <details>
+        <summary>DMZ 的四个部件是什么？核心价值是什么？</summary>
+        <div class="ans">周边网络、外部路由器、内部路由器、堡垒主机。核心价值：即使攻破 DMZ 堡垒主机，内部路由器隔离内网，攻击者无法监听到内网信息；双层路由器构成双重防护、规则互相复制防失效。</div>
+      </details>
+      <details>
+        <summary>防火墙性能五大指标？各自越大/越小越好？</summary>
+        <div class="ans">吞吐量(↑大)、时延(↓小)、丢包率(↓小)、背靠背(缓冲/抗突发)、并发连接数(↑大)。</div>
+      </details>
+      <details>
+        <summary>为什么传统防火墙防不住 SQL 注入/XSS？</summary>
+        <div class="ans">它工作在网络层/传输层，不分析应用层内容；攻击藏在正常 HTTP/HTTPS 请求里(80/443 本就开放)，所以需要工作在应用层的 WAF 来防护。</div>
+      </details>
+      <details>
+        <summary>异常检测 vs 误用检测，HIDS vs NIDS 各自关键差异？</summary>
+        <div class="ans">异常检测建正常模型、<b>能</b>测未知攻击但<b>误报高</b>；误用检测匹配已知特征、准但<b>测不到未知</b>。HIDS 装主机上、能看加密(已解密)内容、占资源；NIDS 监听网段、<b>看不懂加密</b>通信。</div>
+      </details>
+      <div class="box tip" style="margin-top:18px"><span class="bt">✅ 都能答上来？</span>那 CH7 的知识点你就掌握了，可以去做<b>作业3</b>了。下面还有 76 道强化题库巩固。</div>
+    </section>
+
+    <!-- 强化题库 -->
+    <section id="bank">
+      <h2><span class="num">📝</span>强化题库（41 选择 + 35 填空 = 76 题）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">覆盖本章全部知识点，含 <span style="color:var(--amber);font-weight:700">作业举一反三</span> 变体题。选择题点选即时判分；填空题输入后点"检查"或"显示答案"。</p>
+      <div class="tabs">
+        <button class="tab active" data-tab="mcq">📋 选择题 (41)</button>
+        <button class="tab" data-tab="fill">✏️ 填空题 (35)</button>
+      </div>
+
+      <div class="tabpane active" id="pane-mcq">
+        <div class="score">
+          <span class="mini">已答 <b id="mcqDone">0</b>/41</span>
+          <span class="mini">答对 <b id="mcqRight">0</b></span>
+          <span class="mini">正确率 <b id="mcqRate">—</b></span>
+          <button class="resetb" id="mcqReset">↺ 重做</button>
+        </div>
+        <div id="mcqList"></div>
+      </div>
+
+      <div class="tabpane" id="pane-fill">
+        <div class="score">
+          <span class="mini">已检查 <b id="fillDone">0</b>/35</span>
+          <span class="mini">答对 <b id="fillRight">0</b></span>
+          <button class="resetb" id="fillRevealAll">👁 全部显示答案</button>
+          <button class="resetb" id="fillReset">↺ 重做</button>
+        </div>
+        <div id="fillList"></div>
+      </div>
+    </section>
+
+    <footer>
+      网络空间安全技术 · CH7 防火墙技术 · 零基础教学讲义<br>
+      💡 配套 Markdown 版：CH7-防火墙技术.md ｜ 配套作业：作业3（防火墙、WAF 与入侵检测）
+    </footer>
+  </main>
+</div>
+
+<button id="top" title="回到顶部">↑</button>
+
+<script>
+  // 进度条
+  const progress=document.getElementById('progress');
+  const topBtn=document.getElementById('top');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const scrolled=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+    progress.style.width=scrolled+'%';
+    topBtn.classList.toggle('show',h.scrollTop>400);
+  });
+  topBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+  // 导航高亮 + 学习进度
+  const links=[...document.querySelectorAll('#nav a')];
+  const allSecs=[...document.querySelectorAll('main section')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const seen=new Set();
+  const learnFill=document.getElementById('learnFill');
+  const learnPct=document.getElementById('learnPct');
+  function updateLearn(){
+    const p=Math.round(seen.size/allSecs.length*100);
+    learnFill.style.width=p+'%';
+    learnPct.textContent=p+'%';
+    if(p===100){learnPct.textContent='✅100%';}
+  }
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        if(e.target.id){seen.add(e.target.id);updateLearn();}
+        const id='#'+e.target.id;
+        links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')===id));
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>s&&io.observe(s));
+  allSecs.forEach(s=>io.observe(s));
+
+  // ===== 随堂选择题 =====
+  document.querySelectorAll('[data-quiz]').forEach(quiz=>{
+    const opts=[...quiz.querySelectorAll('.opt')];
+    const fb=quiz.querySelector('.feedback');
+    opts.forEach((opt,idx)=>{
+      opt.addEventListener('click',()=>{
+        const correctIdx=opts.findIndex(o=>o.dataset.correct!==undefined);
+        opts.forEach(o=>o.classList.add('disabled'));
+        if(opt.dataset.correct!==undefined){
+          opt.classList.add('correct');
+          fb.className='feedback show ok';
+          fb.textContent='🎉 答对了！理解到位。';
+        }else{
+          opt.classList.add('wrong');
+          opts[correctIdx].classList.add('correct');
+          fb.className='feedback show no';
+          fb.textContent='再想想～ 正确答案已用绿色标出。';
+        }
+      });
+    });
+  });
+
+  // ===== 匹配题 =====
+  (function(){
+    const box=document.getElementById('match1');
+    if(!box)return;
+    const fb=document.getElementById('match1fb');
+    let sel=null,done=0;
+    const items=[...box.querySelectorAll('.mitem')];
+    const total=box.querySelectorAll('.col')[0].querySelectorAll('.mitem').length;
+    items.forEach(it=>{
+      it.addEventListener('click',()=>{
+        if(it.classList.contains('done'))return;
+        if(!sel){sel=it;it.classList.add('sel');return;}
+        if(sel===it){it.classList.remove('sel');sel=null;return;}
+        if(sel.parentElement===it.parentElement){
+          sel.classList.remove('sel');sel=it;it.classList.add('sel');return;
+        }
+        if(sel.dataset.k===it.dataset.k){
+          sel.classList.remove('sel');sel.classList.add('done');it.classList.add('done');
+          done++;sel=null;
+          if(done===total){fb.className='feedback show ok';fb.textContent='🏆 全部连对！四种技术的特征你分清了。';}
+        }else{
+          const a=sel,b=it;a.classList.add('shake');b.classList.add('shake');
+          setTimeout(()=>{a.classList.remove('shake','sel');b.classList.remove('shake');},420);
+          sel=null;
+          fb.className='feedback show no';fb.textContent='这两个不匹配，再试试～';
+        }
+      });
+    });
+  })();
+
+  // ===== 强化题库数据 =====
+  const MCQ=[
+    {q:'防火墙通常部署在？',o:['不同网络安全域之间','显示器与键盘之间','数据库表与字段之间','用户与考试卷之间'],a:0,hw:1,e:'【作业3·选择1】防火墙置于不同网络安全域之间，控制进出网络的访问行为。'},
+    {q:'防火墙在两个安全域之间扮演的角色是？',o:['可选的旁路监听点','通信流的唯一通道','内容缓存服务器','域名解析服务器'],a:1,e:'防火墙是两个安全域之间通信流的唯一通道，所有报文必须经过它检查。'},
+    {q:'防火墙的基本功能不包括？',o:['过滤进出网络的数据','管理访问行为并记录日志','封堵禁止的业务','自动修复所有业务代码漏洞'],a:3,hw:1,e:'【作业3·选择2】五大功能不含"修复代码漏洞"；是过滤数据、管理访问、封堵业务、记录日志、检测告警。'},
+    {q:'第一代防火墙主要基于什么技术？',o:['状态检测','包过滤','自适应代理','完全内容检测'],a:1,e:'第一代(20世纪80年代)基于包过滤技术，依附于路由器实现。'},
+    {q:'1994年以色列 CheckPoint 公司推出的商业化防火墙基于哪种技术？',o:['包过滤','电路层','状态检测','应用代理'],a:2,e:'第四代防火墙=状态检测(动态包过滤)，1994年 CheckPoint 推出商业产品。'},
+    {q:'第五代防火墙采用的技术是？',o:['静态包过滤','自适应代理','电路层网关','简单代理'],a:1,e:'1998年 NAI 推出自适应代理(Adaptive Proxy)，动态设置包过滤规则。'},
+    {q:'包过滤防火墙主要依据数据包的哪些信息进行判断？',o:['IP地址、端口号、协议类型等报头字段','用户心理状态','磁盘序列号','显卡型号'],a:0,hw:1,e:'【作业3·选择3】包过滤工作在网络层，只看报头(IP/端口/协议)。'},
+    {q:'应用代理防火墙工作在哪一层？',o:['网络层','传输层','应用层','数据链路层'],a:2,e:'应用代理工作在应用层，能对应用内容过滤(如禁 FTP 的 put)。'},
+    {q:'状态检测防火墙工作的层次范围是？',o:['仅网络层','2~4 层','仅应用层','2~7 层'],a:1,e:'状态检测工作在 2~4 层，建状态表跟踪会话。'},
+    {q:'完全内容检测防火墙的特点是？',o:['可对报头、状态、应用层协议和内容进行更深入分析','只检查源MAC地址','只记录日志不做控制','只能工作在物理层'],a:0,hw:1,e:'【作业3·选择6】完全内容检测工作在 2~7 层，还原会话并分析应用层内容，防混合型威胁。'},
+    {q:'下列哪种技术会建立连接状态表？',o:['简单包过滤','应用代理','状态检测','以上都不会'],a:2,e:'状态检测和完全内容检测建状态表；简单包过滤和应用代理不建。'},
+    {q:'包过滤防火墙的缺点不包括？',o:['不能识别应用层协议','不能维持连接状态','不能防 IP 欺骗','处理速度慢、配置复杂'],a:3,e:'包过滤优点恰恰是快、易配；缺点是不识别应用层、不维持状态、防不住 IP 欺骗。'},
+    {q:'应用代理防火墙的主要缺点是？',o:['处理速度快','支持应用有限、对用户不透明、性能差','不能检查应用层','规则过于简单'],a:1,e:'应用代理安全性好但支持应用少、对用户不透明、性能差。'},
+    {q:'自适应代理技术的优点是？',o:['只保留代理的低速度','结合代理的安全性和包过滤的高速度','放弃安全性换性能','只能用于网络层'],a:1,e:'自适应代理结合代理安全性+包过滤高速度，在不损失安全性下提升性能。'},
+    {q:'四种体系结构中安全性最高的是？',o:['过滤路由器','双宿主主机','被屏蔽主机','被屏蔽子网(DMZ)'],a:3,e:'安全性递增：过滤路由器<双宿主<被屏蔽主机<被屏蔽子网(DMZ)。'},
+    {q:'双宿主主机体系结构的致命弱点是？',o:['没有任何日志','一旦堡垒主机被入侵，内网无法保证安全','无法转发应用','成本极高'],a:1,e:'双宿主主机优于过滤路由器(能维护日志)，但堡垒主机被入侵则内网全暴露。'},
+    {q:'被屏蔽子网体系结构通常也被称为？',o:['DMZ结构','单机结构','口令结构','进程结构'],a:0,hw:1,e:'【作业3·选择7】被屏蔽子网=DMZ(DeMilitarized Zone)。四部件：周边网络、外部路由器、内部路由器、堡垒主机。'},
+    {q:'DMZ 中"第二道屏障"是指？',o:['外部路由器','内部路由器','堡垒主机','周边网络'],a:1,e:'外部路由器是第一道屏障，内部路由器是第二道屏障(复制内网过滤规则)。'},
+    {q:'DMZ 结构的核心安全价值是？',o:['即使攻破堡垒主机也监听不到内网信息','彻底杜绝一切攻击','降低部署成本','简化配置'],a:0,e:'内部路由器隔离内网与周边网络，攻破堡垒主机也无法监听内网信息。'},
+    {q:'堡垒主机在 DMZ 中的位置是？',o:['内部网络','外部网络','周边网络','路由器内部'],a:2,e:'堡垒主机放在周边网络，对外提供 WWW/FTP，对内提供代理服务。'},
+    {q:'防火墙的五个基本功能不包括？',o:['过滤进出数据','管理访问行为','记录日志并告警','自动编写业务代码'],a:3,e:'五大功能：过滤数据、管理访问行为、封堵业务、记录日志、攻击检测告警。'},
+    {q:'NAT 在防火墙中的常见作用是？',o:['隐藏内部网络地址并实现地址转换','生成生物特征模板','替代所有日志审计','提高显示刷新率'],a:0,hw:1,e:'【作业3·选择8】NAT 隐藏内部结构、内网用私有 IP、IP 复用。'},
+    {q:'MAP(地址/端口映射)的作用是？',o:['把公网地址端口映射到内部服务器对外发布','加密所有流量','替代日志审计','提高屏幕刷新率'],a:0,e:'MAP 把公网"地址:端口"映射到内部服务器，让其用私有地址对外提供服务。'},
+    {q:'透明接入模式下，防火墙相当于？',o:['路由器','网桥','数据库','邮件客户端'],a:1,e:'透明模式像网桥，内部主机配置不用改、不用配 IP，原网络结构不变。'},
+    {q:'路由接入模式下，防火墙相当于？',o:['网桥','简单的路由器','交换机','集线器'],a:1,e:'路由接入相当于简单路由器，连接不同网段，需要配置 IP。'},
+    {q:'"不丢包情况下能达到的最大速率"是哪个性能指标？',o:['时延','吞吐量','丢包率','并发连接数'],a:1,e:'吞吐量越大性能越高，太小会成网络瓶颈。'},
+    {q:'体现防火墙缓冲容量、抗突发数据能力的指标是？',o:['吞吐量','时延','背靠背','并发连接数'],a:2,e:'背靠背：全速发包出现第一个丢包时发送的帧数，体现缓冲能力。'},
+    {q:'衡量防火墙性能的指标不包括？',o:['吞吐量','时延','并发连接数','屏幕亮度'],a:3,hw:1,e:'【作业3·选择10】五大指标：吞吐量、时延、丢包率、背靠背、并发连接数。'},
+    {q:'下列关于防火墙局限性的说法正确的是？',o:['防火墙通常难以防范绕过它的通信路径','防火墙能够识别所有0day攻击','防火墙不需要配置管理','防火墙能完全替代入侵检测系统'],a:0,hw:1,e:'【作业3·选择11】防火墙防外不防内、防不住绕过/0day，需要 IDS、WAF 补充。'},
+    {q:'防火墙的"胖瘦之争"中，瘦防火墙的特点是？',o:['功能大而全','功能少而精，靠多厂商联动','放弃访问控制','只做防病毒'],a:1,e:'瘦防火墙功能少而精，只做访问控制，综合方案靠多厂商联动。'},
+    {q:'下列哪种硬件架构被公认为千兆线速、适合高端环境？',o:['X86 通用 CPU','NPU','ASIC 专用芯片','软件模拟'],a:2,e:'ASIC 专用芯片是公认的千兆线速防火墙，但传统缺乏灵活性。'},
+    {q:'WAF 主要面向的保护对象是？',o:['Web 应用','磁带库','物理门禁','显示器接口'],a:0,hw:1,e:'【作业3·选择12】WAF=Web Application Firewall，专门保护 Web 应用。'},
+    {q:'WAF 常用于防护的攻击类型是？',o:['SQL 注入、XSS、Web 层 DDoS','磁盘碎片','电源波动','机房温度升高'],a:0,e:'WAF 防 SQL 注入、XSS、XML 注入、Web DDoS，重点防 SQL 注入。'},
+    {q:'为什么传统防火墙难以防住 SQL 注入/XSS？',o:['传统防火墙不分析应用层内容，攻击藏在正常HTTP请求里','传统防火墙速度太快','SQL 注入只走 UDP','XSS 不经过网络'],a:0,e:'传统防火墙工作在网络/传输层不分析应用层，攻击藏在合法的80/443请求里。'},
+    {q:'WAF 通常如何部署？',o:['旁路镜像在核心交换机','串行接入在 Web 服务器前面','部署在数据库内部','装在客户端浏览器'],a:1,e:'WAF 串行接入在 Web 服务器前，需 HA、Bypass 功能。'},
+    {q:'WAF 检测技术中"靠攻击指纹(如1=1、Shellcode)"的是？',o:['代理服务','特征识别','算法识别','自学习'],a:1,e:'特征识别靠攻击"指纹"，难点是特征库庞大、易误报、对 0day 无效。'},
+    {q:'基于机器学习的 Web 异常检测的核心思路是？',o:['只匹配已知入侵规则','建模正常流量(Profile)，不符合的判为异常','放弃所有检测','只看 IP 白名单'],a:1,e:'建模正常流量(Profile)，"以不变应万变"，更难绕过，能应对 0day。'},
+    {q:'入侵检测系统 IDS 的主要作用是？',o:['发现网络或系统中违反安全策略的行为和攻击迹象','完全替代业务系统','只负责打印报表','只提供机房电力保障'],a:0,hw:1,e:'【作业3·选择14】IDS 检测告警，是防火墙的补充，发现内部和绕过防火墙的攻击。'},
+    {q:'异常检测的基本思想是？',o:['建立正常行为模型，识别偏离正常模式的行为','只匹配已知攻击签名','只依据IP地址白名单','不需要任何数据采集'],a:0,hw:1,e:'【作业3·选择17】异常检测建正常模型能测未知攻击，但误报率高；误用检测测不到未知。'},
+    {q:'基于主机的入侵检测系统 HIDS 的优势之一是？',o:['可将问题映射到具体主机或用户行为，并适用于加密环境中的主机审计','能直接观察所有未镜像交换流量','不占用任何主机资源','不需要安装代理'],a:0,hw:1,e:'【作业3·选择19】HIDS 装在主机上，能映射到具体用户、能审计加密通信(主机上已解密)，但占主机资源。'},
+    {q:'Snort 规则通常由哪两部分组成？',o:['规则头和规则选项','用户名和密码','主体和客体','资产和威胁'],a:0,hw:1,e:'【作业3·选择20】Snort 是开源 NIDS，规则=规则头+规则选项。'}
+  ];
+
+  const FILL=[
+    {q:'防火墙是一种高级 ____ 设备，置于不同网络安全域之间。',a:['访问控制'],hw:1},
+    {q:'防火墙是两个安全域之间通信流的 ____ 通道。',a:['唯一']},
+    {q:'防火墙常见访问控制动作包括允许、拒绝、监视和 ____。',a:['记录'],hw:1},
+    {q:'第一代防火墙主要基于 ____ 技术。',a:['包过滤']},
+    {q:'1994年以色列 ____ 公司推出基于状态检测的商业化防火墙。',a:['CheckPoint','Check Point','checkpoint']},
+    {q:'包过滤防火墙工作在网络层，只检查 IP 地址、端口号和 ____ 等报头特征。',a:['协议类型','协议','协议号']},
+    {q:'应用代理防火墙工作在 ____ 层。',a:['应用']},
+    {q:'状态检测防火墙工作在 ____ 层(用数字范围作答)。',a:['2~4','2-4','2~4层','2-4层']},
+    {q:'完全内容检测防火墙工作在 ____ 层(用数字范围作答)。',a:['2~7','2-7','2~7层','2-7层']},
+    {q:'状态检测防火墙在核心部分建立 ____，用于跟踪会话状态。',a:['状态连接表','状态表','连接状态表'],hw:1},
+    {q:'完全内容检测防火墙能对应用层协议进行 ____ 和内容分析。',a:['还原']},
+    {q:'结合代理安全性和包过滤高速度的是 ____ 代理技术。',a:['自适应']},
+    {q:'四种体系结构中安全性最高的是被屏蔽 ____ 结构。',a:['子网']},
+    {q:'被屏蔽子网结构在内外网之间设置的隔离子网，也称 ____ 网络。',a:['周边']},
+    {q:'被屏蔽子网体系结构通常也被称为 ____ 结构(英文缩写)。',a:['DMZ','dmz'],hw:1},
+    {q:'DMZ 四个部件：周边网络、外部路由器、内部路由器和 ____。',a:['堡垒主机','堡垒']},
+    {q:'DMZ 中外部路由器是第一道屏障，____ 路由器是第二道屏障。',a:['内部']},
+    {q:'堡垒主机在被屏蔽子网结构中位于 ____ 网络。',a:['周边']},
+    {q:'防火墙的五个基本功能包括过滤数据、管理访问行为、封堵业务、记录日志和攻击 ____ 告警。',a:['检测']},
+    {q:'NAT 的英文全称缩写中文是网络 ____ 转换。',a:['地址']},
+    {q:'NAT 能解决公网地址不足问题，实现 IP ____。',a:['复用']},
+    {q:'把公网地址端口映射到内部服务器的功能称为 ____。',a:['MAP','地址端口映射','地址/端口映射','map']},
+    {q:'透明接入模式下，防火墙相当于 ____。',a:['网桥']},
+    {q:'防火墙的接入方式包括路由接入、透明接入和 ____ 接入。',a:['混合'],hw:1},
+    {q:'衡量防火墙性能的五个指标：吞吐量、时延、丢包率、背靠背和 ____。',a:['并发连接数','并发连接'],hw:1},
+    {q:'"不丢包情况下能达到的最大速率"是指 ____。',a:['吞吐量']},
+    {q:'体现防火墙缓冲能力、抗突发数据的指标是 ____。',a:['背靠背']},
+    {q:'防火墙的最大局限之一是防外不防 ____。',a:['内']},
+    {q:'WAF 的中文是 ____ 防火墙(保护对象)。',a:['Web应用','Web 应用','网页应用','Web']},
+    {q:'WAF 重点防护的注入类攻击是 ____ 注入。',a:['SQL','sql']},
+    {q:'传统防火墙工作在网络/传输层，不分析 ____ 层内容，所以防不住 SQL 注入。',a:['应用']},
+    {q:'IDS 是 ____ 的补充，用于发现内部和绕过的攻击。',a:['防火墙']},
+    {q:'CIDF 通用模型四组件：事件产生器、事件分析器、事件数据库和 ____ 单元。',a:['响应'],hw:1},
+    {q:'入侵检测按检测范围可分为基于主机(HIDS)、基于网络(NIDS)和基于 ____ 的入侵检测。',a:['网络节点','节点']},
+    {q:'Snort 规则由规则头和规则 ____ 两部分组成。',a:['选项'],hw:1}
+  ];
+
+  // 渲染选择题
+  (function(){
+    const list=document.getElementById('mcqList');if(!list)return;
+    let done=0,right=0;
+    const dn=document.getElementById('mcqDone'),rt=document.getElementById('mcqRight'),ra=document.getElementById('mcqRate');
+    function render(){
+      list.innerHTML='';done=0;right=0;dn.textContent=0;rt.textContent=0;ra.textContent='—';
+      MCQ.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        const hw=item.hw?'<span class="hw">作业举一反三</span>':'';
+        let opts=item.o.map((t,j)=>`<button class="qopt" data-i="${j}">${String.fromCharCode(65+j)}. ${t}</button>`).join('');
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${item.q}${hw}</div>${opts}<div class="qexp">💡 ${item.e}</div>`;
+        const btns=[...d.querySelectorAll('.qopt')];const exp=d.querySelector('.qexp');
+        btns.forEach(b=>b.addEventListener('click',()=>{
+          btns.forEach(x=>x.classList.add('lock'));
+          const ans=item.a;
+          if(+b.dataset.i===ans){b.classList.add('correct');right++;}
+          else{b.classList.add('wrong');btns[ans].classList.add('correct');}
+          exp.classList.add('show');
+          done++;dn.textContent=done;rt.textContent=right;ra.textContent=Math.round(right/done*100)+'%';
+        }));
+        list.appendChild(d);
+      });
+    }
+    render();
+    document.getElementById('mcqReset').onclick=render;
+  })();
+
+  // 渲染填空题
+  (function(){
+    const list=document.getElementById('fillList');if(!list)return;
+    let done=0,right=0;const checked=new Set();
+    const dn=document.getElementById('fillDone'),rt=document.getElementById('fillRight');
+    function norm(s){return (s||'').trim().replace(/\s/g,'').toLowerCase();}
+    function build(){
+      list.innerHTML='';done=0;right=0;checked.clear();dn.textContent=0;rt.textContent=0;
+      FILL.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        const hw=item.hw?'<span class="hw">作业举一反三</span>':'';
+        const qhtml=item.q.replace('____',`<input class="blank-in" data-i="${i}" placeholder="在此作答">`);
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${qhtml}${hw}</div>
+          <div class="blank-btns">
+            <button class="sbtn primary" data-act="check">检查</button>
+            <button class="sbtn" data-act="show">显示答案</button>
+          </div>
+          <div class="ansline">✅ 参考答案：${item.a[0]}</div>`;
+        const inp=d.querySelector('.blank-in');const ansl=d.querySelector('.ansline');
+        d.querySelector('[data-act="check"]').onclick=()=>{
+          const v=norm(inp.value);if(!v)return;
+          const ok=item.a.some(a=>norm(a)===v||v.includes(norm(a)));
+          inp.classList.remove('ok','bad');inp.classList.add(ok?'ok':'bad');
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;if(ok)right++;dn.textContent=done;rt.textContent=right;}
+        };
+        d.querySelector('[data-act="show"]').onclick=()=>{
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;dn.textContent=done;rt.textContent=right;}
+        };
+        list.appendChild(d);
+      });
+    }
+    build();
+    document.getElementById('fillReset').onclick=build;
+    document.getElementById('fillRevealAll').onclick=()=>{
+      list.querySelectorAll('.ansline').forEach(a=>a.classList.add('show'));
+    };
+  })();
+
+  // Tab 切换
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('pane-'+t.dataset.tab).classList.add('active');
+    };
+  });
+</script>
+</body>
+</html>

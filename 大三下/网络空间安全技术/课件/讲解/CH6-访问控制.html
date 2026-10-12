@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CH6 访问控制机制与技术 · 小白教学</title>
+<style>
+  :root{
+    --bg:#0f1729;
+    --bg-soft:#16213e;
+    --card:#1b2745;
+    --card-2:#212f52;
+    --ink:#e8edf7;
+    --ink-soft:#a9b4cc;
+    --line:#2c3a5e;
+    --accent:#5b9dff;
+    --accent-2:#7c5cff;
+    --green:#36d399;
+    --amber:#fbbd23;
+    --red:#f87272;
+    --pink:#f472b6;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0f1729 0%,#131d38 100%);
+    color:var(--ink);
+    line-height:1.75;
+    font-size:16px;
+  }
+  /* 顶部进度条 */
+  #progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:999;transition:width .1s}
+
+  /* 章节切换栏 */
+  .chapnav{position:sticky;top:0;z-index:200;display:flex;gap:4px;flex-wrap:wrap;background:rgba(10,16,30,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 14px}
+  .chapnav a{color:var(--ink-soft);text-decoration:none;font-size:13px;padding:5px 11px;border-radius:8px;white-space:nowrap;transition:.15s}
+  .chapnav a:hover{background:var(--card-2);color:var(--ink)}
+  .chapnav a.cur{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;display:flex;gap:26px}
+
+  /* 侧边导航 */
+  nav{
+    position:sticky;top:0;align-self:flex-start;
+    width:230px;flex:0 0 230px;height:100vh;overflow-y:auto;
+    padding:26px 8px 40px 0;
+    font-size:14px;
+  }
+  nav .nav-title{font-weight:700;color:var(--accent);letter-spacing:1px;margin:0 0 14px 10px;font-size:13px}
+  nav a{
+    display:block;color:var(--ink-soft);text-decoration:none;
+    padding:8px 12px;border-radius:10px;margin:2px 0;
+    border-left:3px solid transparent;transition:.2s;
+  }
+  nav a:hover{background:var(--card);color:var(--ink)}
+  nav a.active{background:var(--card-2);color:#fff;border-left-color:var(--accent)}
+
+  main{flex:1;min-width:0;padding:34px 0 90px}
+
+  header.hero{
+    background:radial-gradient(120% 140% at 0% 0%,#26356b 0%,#1a234a 60%,#161f3e 100%);
+    border:1px solid var(--line);border-radius:24px;
+    padding:38px 38px 32px;margin-bottom:30px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  header.hero::after{content:"🔐";position:absolute;right:30px;top:18px;font-size:90px;opacity:.12}
+  header.hero .tag{display:inline-block;background:rgba(91,157,255,.18);color:var(--accent);
+    padding:4px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:14px}
+  header.hero h1{margin:0 0 8px;font-size:32px;letter-spacing:.5px}
+  header.hero p{margin:0;color:var(--ink-soft);font-size:15px}
+
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px 30px;margin-bottom:24px;box-shadow:var(--shadow);scroll-margin-top:60px;
+  }
+  h2{font-size:23px;margin:0 0 18px;padding-bottom:12px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:10px}
+  h2 .num{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+    width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 34px}
+  h3{font-size:18px;margin:22px 0 10px;color:#cfe0ff}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+
+  /* 表格 */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px;overflow:hidden;border-radius:12px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--card-2);color:#cfe0ff;font-weight:600}
+  tr:hover td{background:rgba(91,157,255,.06)}
+  td code,p code,li code{background:#0d1530;color:#8fd6ff;padding:2px 7px;border-radius:6px;font-size:13.5px}
+
+  /* 提示框 */
+  .box{border-radius:12px;padding:14px 18px;margin:16px 0;border-left:4px solid;font-size:15px}
+  .box .bt{font-weight:700;display:block;margin-bottom:4px}
+  .box.tip{background:rgba(54,211,153,.08);border-color:var(--green)}
+  .box.warn{background:rgba(251,189,35,.08);border-color:var(--amber)}
+  .box.key{background:rgba(124,92,255,.10);border-color:var(--accent-2)}
+  .box.quote{background:rgba(244,114,182,.07);border-color:var(--pink);font-style:italic}
+
+  /* 卡片 */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:18px 0}
+  .ccard{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s}
+  .ccard:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.35)}
+  .ccard .emoji{font-size:34px}
+  .ccard h4{margin:8px 0 6px;font-size:18px}
+  .ccard .en{color:var(--ink-soft);font-size:13px}
+  .ccard.c{border-top:3px solid var(--accent)}
+  .ccard.i{border-top:3px solid var(--green)}
+  .ccard.a{border-top:3px solid var(--amber)}
+
+  /* 时间线 */
+  .timeline{position:relative;margin:20px 0 6px;padding-left:28px}
+  .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .tl{position:relative;margin-bottom:18px}
+  .tl::before{content:"";position:absolute;left:-24px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(91,157,255,.2)}
+  .tl .yr{color:var(--accent);font-weight:700;font-size:14px}
+
+  /* 折叠自测 */
+  details{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:6px 18px;margin:12px 0}
+  details summary{cursor:pointer;font-weight:600;padding:10px 0;list-style:none}
+  details summary::before{content:"❓ ";}
+  details[open] summary{color:var(--accent)}
+  details .ans{color:var(--ink-soft);padding:6px 0 14px;border-top:1px dashed var(--line)}
+
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .pill{display:inline-block;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;margin:3px}
+
+  /* ===== 图表通用 ===== */
+  .fig{background:#0d1530;border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;text-align:center}
+  .fig svg{max-width:100%;height:auto}
+  .fig .cap{color:var(--ink-soft);font-size:13px;margin-top:10px}
+  .fig text{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+
+  /* 脑图分支 */
+  .mind{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+  .mind .root{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;padding:16px 20px;border-radius:14px;font-weight:700;font-size:16px;box-shadow:var(--shadow)}
+  .mind .branches{display:flex;flex-direction:column;gap:14px;margin-left:24px;position:relative}
+  .mind .branches::before{content:"";position:absolute;left:-24px;top:0;bottom:0;width:24px;border-left:2px solid var(--line)}
+  .branch{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-align:left;position:relative;min-width:300px}
+  .branch::before{content:"";position:absolute;left:-24px;top:50%;width:24px;height:2px;background:var(--line)}
+  .branch .bh{font-weight:700;margin-bottom:6px}
+  .branch.inner .bh{color:var(--amber)}
+  .branch.outer .bh{color:var(--red)}
+  .branch .tags span{display:inline-block;background:#0d1530;border:1px solid var(--line);border-radius:8px;padding:2px 9px;font-size:12.5px;margin:3px 3px 0 0;color:var(--ink-soft)}
+
+  /* 分层堆叠图 */
+  .layers{display:flex;flex-direction:column;gap:8px;max-width:560px;margin:0 auto}
+  .layer{display:flex;align-items:center;border-radius:12px;padding:13px 18px;color:#fff;font-weight:600;box-shadow:var(--shadow);position:relative}
+  .layer .ln{flex:0 0 84px;font-size:15px}
+  .layer .ld{font-weight:400;font-size:13.5px;opacity:.95}
+  .layer.l1{background:linear-gradient(90deg,#7c5cff,#9d7bff)}
+  .layer.l2{background:linear-gradient(90deg,#5b9dff,#7bb4ff)}
+  .layer.l3{background:linear-gradient(90deg,#36d399,#5be0b0)}
+  .layer.l4{background:linear-gradient(90deg,#fbbd23,#fccf57)}
+
+  /* 四要素 / 网格卡 */
+  .four-el{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:520px;margin:0 auto;position:relative}
+  .el-card{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;transition:.2s}
+  .el-card:hover{transform:scale(1.04);border-color:var(--accent)}
+  .el-card .ei{font-size:30px}
+  .el-card h4{margin:6px 0 2px}
+  .el-card small{color:var(--ink-soft)}
+
+  /* ===== 翻转卡片 ===== */
+  .flip-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:14px 0}
+  .flip{perspective:1000px;height:185px;cursor:pointer}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+  .flip.on .flip-inner{transform:rotateY(180deg)}
+  .flip-front,.flip-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px solid var(--line)}
+  .flip-back{transform:rotateY(180deg);background:var(--card-2);font-size:14px;line-height:1.6}
+  .flip-front{background:var(--card-2)}
+  .flip-front .emoji{font-size:38px}
+  .flip-front h4{margin:8px 0 2px;font-size:19px}
+  .flip-front .en{color:var(--ink-soft);font-size:12px}
+  .flip-front.c,.flip-back.c{border-top:3px solid var(--accent)}
+  .flip-front.i,.flip-back.i{border-top:3px solid var(--green)}
+  .flip-front.a,.flip-back.a{border-top:3px solid var(--amber)}
+  .flip-back small{color:var(--ink-soft);display:block;margin-top:6px}
+
+  /* ===== 互动测验 ===== */
+  .quiz{background:linear-gradient(135deg,#1a2547,#212f52);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0}
+  .quiz .q{font-weight:600;margin-bottom:12px}
+  .quiz .q .badge{background:var(--accent-2);color:#fff;border-radius:8px;padding:1px 9px;font-size:12px;margin-right:8px}
+  .opt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:11px 15px;border-radius:10px;margin:7px 0;cursor:pointer;transition:.15s;font-size:14.5px;font-family:inherit}
+  .opt:hover{border-color:var(--accent);background:var(--card-2)}
+  .opt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .opt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .opt.disabled{pointer-events:none;opacity:.75}
+  .feedback{font-size:14px;margin-top:8px;padding:10px 14px;border-radius:10px;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:rgba(54,211,153,.12);color:#aef5d4}
+  .feedback.no{background:rgba(248,114,114,.12);color:#ffc2c2}
+
+  /* ===== 匹配题 ===== */
+  .match{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0}
+  .match .col{display:flex;flex-direction:column;gap:10px}
+  .match .col .ct{font-size:13px;color:var(--ink-soft);margin-bottom:2px}
+  .mitem{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;transition:.15s;font-size:14px}
+  .mitem:hover{border-color:var(--accent)}
+  .mitem.sel{border-color:var(--accent-2);background:var(--card-2)}
+  .mitem.done{border-color:var(--green);background:rgba(54,211,153,.12);cursor:default;color:#aef5d4}
+  .mitem.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  /* 学习打卡进度 */
+  .checkbar{position:sticky;top:46px;z-index:50;background:rgba(15,23,41,.92);backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+  .checkbar .lbl{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .checkbar .track{flex:1;height:10px;background:var(--card);border-radius:999px;overflow:hidden}
+  .checkbar .fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--accent));transition:width .4s}
+  .checkbar .pct{font-weight:700;color:var(--green);font-size:14px;min-width:42px;text-align:right}
+
+  .reveal-btn{background:var(--card-2);border:1px solid var(--accent);color:var(--accent);border-radius:10px;padding:8px 16px;cursor:pointer;font-size:14px;font-family:inherit;transition:.15s}
+  .reveal-btn:hover{background:var(--accent);color:#fff}
+
+  /* ===== 题库 ===== */
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{flex:1;min-width:140px;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    padding:11px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;transition:.15s}
+  .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent}
+  .tabpane{display:none}
+  .tabpane.active{display:block}
+
+  .score{position:sticky;top:46px;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:rgba(15,23,41,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:16px}
+  .score b{color:var(--green);font-size:18px}
+  .score .mini{font-size:13px;color:var(--ink-soft)}
+  .score .resetb{margin-left:auto;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    border-radius:8px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:13px}
+  .score .resetb:hover{border-color:var(--accent);color:var(--ink)}
+
+  .qitem{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  .qitem .qh{font-weight:600;margin-bottom:10px;line-height:1.6}
+  .qitem .qh .no{display:inline-block;background:var(--accent);color:#fff;border-radius:7px;padding:1px 9px;font-size:13px;margin-right:8px}
+  .qopt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:9px 14px;border-radius:9px;margin:6px 0;cursor:pointer;transition:.12s;font-size:14px;font-family:inherit}
+  .qopt:hover{border-color:var(--accent)}
+  .qopt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .qopt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .qopt.lock{pointer-events:none}
+  .qexp{font-size:13.5px;color:var(--ink-soft);margin-top:8px;padding:9px 13px;background:rgba(91,157,255,.08);border-radius:9px;border-left:3px solid var(--accent);display:none}
+  .qexp.show{display:block}
+
+  /* 填空 */
+  .blank-in{background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);
+    padding:7px 12px;font-size:14.5px;font-family:inherit;width:200px;margin:0 4px}
+  .blank-in:focus{outline:none;border-color:var(--accent)}
+  .blank-in.ok{border-color:var(--green);background:rgba(54,211,153,.12)}
+  .blank-in.bad{border-color:var(--red);background:rgba(248,114,114,.10)}
+  .blank-btns{margin-top:10px;display:flex;gap:8px}
+  .sbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:inherit;font-size:13.5px}
+  .sbtn:hover{border-color:var(--accent)}
+  .sbtn.primary{background:var(--accent);color:#fff;border-color:transparent}
+  .ansline{font-size:13.5px;color:var(--green);margin-top:8px;display:none}
+  .ansline.show{display:block}
+
+  /* 重点例题 */
+  .exam{background:var(--card-2);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:12px;padding:16px 20px;margin:16px 0}
+  .exam .et{font-weight:700;color:var(--amber);margin-bottom:6px}
+  .exam .sol{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);color:var(--ink-soft);font-size:14.5px}
+
+  footer{text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 0 10px}
+
+  /* 回到顶部 */
+  #top{position:fixed;right:26px;bottom:26px;width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none;
+    font-size:20px;cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s}
+  #top.show{opacity:1;pointer-events:auto}
+
+  @media(max-width:880px){
+    nav{display:none}
+    .wrap{padding:0 14px}
+    header.hero{padding:26px 22px}
+    section{padding:20px 18px}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<div class="chapnav">
+  <a href="index.html">🏠 目录</a>
+  <a href="CH1-信息安全概论.html">CH1 概论</a>
+  <a href="CH2-风险管理与国产化.html">CH2 风险管理</a>
+  <a href="CH3-信息安全保障与运维.html">CH3 安全保障</a>
+  <a href="CH4-信息安全技术体系.html">CH4 技术体系</a>
+  <a href="CH5-鉴别技术.html">CH5 鉴别</a>
+  <a class="cur" href="CH6-访问控制.html">CH6 访问控制</a>
+  <a href="CH7-防火墙技术.html">CH7 防火墙</a>
+  <a href="CH8-入侵检测技术.html">CH8 入侵检测</a>
+  <a href="古典密码-入门讲义.html">古典密码</a>
+  <a href="哈希函数-入门课.html">哈希函数</a>
+  <a href="牛津古典密码学-讲义.html">牛津密码练习</a>
+</div>
+
+<div class="wrap">
+  <!-- 侧边导航 -->
+  <nav id="nav">
+    <p class="nav-title">📖 本章目录</p>
+    <a href="#s0">学习目标</a>
+    <a href="#s1">① 访问控制基本概念</a>
+    <a href="#s2">② 标识·授权·AAA</a>
+    <a href="#s3">③ 实现机制 ⭐</a>
+    <a href="#s4">④ ACL vs 能力表 ⭐</a>
+    <a href="#s5">⑤ 模型分类总览</a>
+    <a href="#s6">⑥ 自主访问控制 DAC</a>
+    <a href="#s7">⑦ 强制访问控制 MAC</a>
+    <a href="#s8">⑧ BLP vs Biba ⭐</a>
+    <a href="#s9">⑨ RBAC ⭐</a>
+    <a href="#s10">⑩ 操作系统与评估标准</a>
+    <a href="#s11">⑪ 本章小结</a>
+    <a href="#s12">⭐ 重点例题（作业2）</a>
+    <a href="#s13">🎯 自测</a>
+    <a href="#bank">📝 强化题库 70 题</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="tag">网络空间安全技术 · 第六章</span>
+      <h1>CH6 访问控制机制与技术</h1>
+      <p>鉴别解决"你是谁"，访问控制解决"你能干什么" · 按「概念 → 机制 → 模型」讲透 · 配套<b>作业2</b>（含 ACL/能力表、BLP/Biba、RBAC 等重点）</p>
+    </header>
+
+    <!-- 学习打卡进度 -->
+    <div class="checkbar">
+      <span class="lbl">📚 学习进度</span>
+      <div class="track"><div class="fill" id="learnFill"></div></div>
+      <span class="pct" id="learnPct">0%</span>
+    </div>
+
+    <!-- 学习目标 -->
+    <section id="s0">
+      <h2><span class="num">🎯</span>学习目标</h2>
+      <p>读完这一章，你应该能回答：</p>
+      <ol>
+        <li>什么是标识、鉴别、授权？访问控制的三元组 <b>(S, A, O)</b> 是什么？</li>
+        <li>访问控制有哪些实现机制？<b>ACL 和能力表</b>有什么区别？（必考）</li>
+        <li>三大类访问控制模型 <b>DAC / MAC / RBAC</b> 各是什么、各有何特点？</li>
+        <li><b>BLP</b> 和 <b>Biba</b> 模型分别保护什么、规则是"上读下写"还是"下读上写"？（必考）</li>
+        <li>RBAC 的用户→角色→权限思想，以及 TCSEC/CC 评估标准。</li>
+      </ol>
+    </section>
+
+    <!-- 1 -->
+    <section id="s1">
+      <h2><span class="num">1</span>访问控制的基本概念</h2>
+      <p>鉴别（CH5）解决的是"<b>你是谁</b>"；访问控制解决的是"<b>你能干什么</b>"。它是针对<b>越权使用资源</b>的防御措施。</p>
+
+      <h3>🎯 目标</h3>
+      <div class="box key">
+        <span class="bt">访问控制的目标</span>
+        防止对任何资源（计算资源、通信资源、信息资源）进行<b>未授权访问</b>，从而使资源在<b>授权范围内</b>使用——既决定用户能做什么，也决定代表用户利益的<b>程序</b>能做什么。
+      </div>
+
+      <h3>🛡️ 防的是两种"非法"</h3>
+      <div class="cards">
+        <div class="ccard c">
+          <div class="emoji">🚫</div>
+          <h4>非法用户用资源</h4>
+          <p style="font-size:14px;color:var(--ink-soft);margin:6px 0 0">没有权限的人/程序，根本不该进来用系统资源。</p>
+        </div>
+        <div class="ccard i">
+          <div class="emoji">⚠️</div>
+          <h4>合法用户非法使用</h4>
+          <p style="font-size:14px;color:var(--ink-soft);margin:6px 0 0"><b>越权</b>：合法用户做了不该做的事（如出纳员偷改别人余额）。</p>
+        </div>
+      </div>
+      <p>未授权访问包括：未经授权的<b>使用、泄露、修改、销毁</b>信息以及颁发指令等。访问控制对 <b>机密性、完整性、可用性（CIA）</b> 都有支撑作用。</p>
+
+      <h3>🔺 访问三元组 (S, A, O)</h3>
+      <div class="fig">
+        <svg viewBox="0 0 460 170" width="460">
+          <!-- 主体 S -->
+          <rect x="20" y="55" width="120" height="60" rx="12" fill="#5b9dff"/>
+          <text x="80" y="82" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">S 主体</text>
+          <text x="80" y="102" text-anchor="middle" fill="#eaf2ff" font-size="11">Subject 发起者·主动</text>
+          <!-- 箭头 A -->
+          <line x1="142" y1="85" x2="318" y2="85" stroke="#fbbd23" stroke-width="3" marker-end="url(#ah)"/>
+          <text x="230" y="74" text-anchor="middle" fill="#fbbd23" font-size="14" font-weight="700">A 访问操作</text>
+          <text x="230" y="104" text-anchor="middle" fill="#a9b4cc" font-size="11">读 / 写 / 执行 / 删除</text>
+          <!-- 客体 O -->
+          <rect x="320" y="55" width="120" height="60" rx="12" fill="#36d399"/>
+          <text x="380" y="82" text-anchor="middle" fill="#0f1729" font-size="16" font-weight="700">O 客体</text>
+          <text x="380" y="102" text-anchor="middle" fill="#0f1729" font-size="11">Object 被操作·被动</text>
+          <defs>
+            <marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6 Z" fill="#fbbd23"/>
+            </marker>
+          </defs>
+        </svg>
+        <div class="cap">图1 · 访问三元组 (S, A, O)：主体通过访问操作作用于客体</div>
+      </div>
+      <table>
+        <tr><th>元素</th><th>名称</th><th>说明</th><th>例子</th></tr>
+        <tr><td><b>S</b></td><td>主体 Subject（发起者）</td><td><b>主动</b>实体，操作被动实体的信息/数据</td><td>用户、程序、进程</td></tr>
+        <tr><td><b>O</b></td><td>客体 Object（目标）</td><td><b>被动</b>实体，被操作对象、需保护的资源</td><td>文件、目录、数据库、外设、进程</td></tr>
+        <tr><td><b>A</b></td><td>访问 Access</td><td>对资源的使用操作</td><td>读、写、修改、删除、执行</td></tr>
+      </table>
+      <div class="box tip">
+        <span class="bt">📌 主客体关系是相对的</span>
+        主体可以接收客体信息、也可能改变客体信息；一个主体为完成任务可<b>创建另外的主体</b>（运行在不同计算机上、由父主体控制）。<b>主体和客体的角色可以互换</b>——同一个进程，相对用户它是客体，相对文件它又是主体。
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <h2><span class="num">2</span>标识、授权、两个过程与 AAA</h2>
+
+      <h3>🪪 标识（Identification）</h3>
+      <p>标识是实体身份的一种<b>计算机表达</b>，每个实体与计算机内部的一个身份表达绑定。</p>
+      <div class="box key">
+        <span class="bt">标识的两大作用（易考）</span>
+        ① <b>访问控制</b>：用于控制是否允许特定操作；② <b>审计</b>：跟踪所有操作的参与者，任何操作都能被明确标识出来（追责）。
+      </div>
+      <table>
+        <tr><th>类型</th><th>实例</th></tr>
+        <tr><td>主体标识</td><td>UNIX 中用户身份号 <b>UID</b>（0~65535 的整数）；用户名、卡、令牌；指纹、虹膜等生物特征</td></tr>
+        <tr><td>客体标识</td><td>文件名、文件描述符/句柄、文件分配表条目；UNIX 四种文件标识：<b>inode、文件描述符、绝对路径名、相对路径名</b></td></tr>
+      </table>
+
+      <h3>🔑 授权（Authorization）</h3>
+      <p>规定主体可以对客体执行的操作：<span class="pill">读</span><span class="pill">写</span><span class="pill">执行</span><span class="pill">拒绝访问</span></p>
+
+      <h3>📶 访问控制的两个重要过程（顺序很重要）</h3>
+      <div class="fig">
+        <svg viewBox="0 0 460 110" width="460">
+          <rect x="20" y="30" width="170" height="55" rx="12" fill="#5b9dff"/>
+          <text x="105" y="53" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">第一步：鉴别</text>
+          <text x="105" y="72" text-anchor="middle" fill="#eaf2ff" font-size="11">检验主体合法身份（你是谁）</text>
+          <line x1="192" y1="57" x2="266" y2="57" stroke="#7c5cff" stroke-width="3" marker-end="url(#ah2)"/>
+          <rect x="270" y="30" width="170" height="55" rx="12" fill="#7c5cff"/>
+          <text x="355" y="53" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">第二步：授权</text>
+          <text x="355" y="72" text-anchor="middle" fill="#eaf2ff" font-size="11">限制访问权限（你能干什么）</text>
+          <defs><marker id="ah2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#7c5cff"/></marker></defs>
+        </svg>
+        <div class="cap">图2 · 先鉴别（身份是访问控制的前提）→ 后授权</div>
+      </div>
+
+      <h3>⬇️ 最小特权原则（Least Privilege）</h3>
+      <div class="box warn">
+        <span class="bt">最小特权原则</span>
+        用户和进程只拥有完成职责所需的<b>最小权限集合</b>，多一分都不给。这是访问控制最核心的设计原则之一（作业2选择题考点：访问控制遵循<b>最小特权原则</b>，而非"最大授权"）。
+      </div>
+
+      <h3>🔗 AAA 与其他安全机制的关系</h3>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">🪪</div><h4>Authentication 鉴别</h4><span class="en">身份鉴别是访问控制的<b>前提</b></span></div>
+        <div class="ccard i"><div class="emoji">🔑</div><h4>Authorization 授权</h4><span class="en">决定主体能对客体做什么</span></div>
+        <div class="ccard a"><div class="emoji">📜</div><h4>Audit 审计</h4><span class="en">记录追踪，常与入侵检测联系</span></div>
+      </div>
+      <ul>
+        <li><b>机密性</b>：限制读取 → 实现数据机密。</li>
+        <li><b>完整性</b>：限制修改 → 实现数据完整性保护。</li>
+        <li><b>可用性</b>：限制资源使用量 → 保证系统可用。</li>
+      </ul>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <h2><span class="num">3</span>访问控制的实现机制 ⭐</h2>
+      <p>访问控制信息（ACI）包括：主体属性、客体属性、政策规则。常见实现方法有：访问控制矩阵、<b>ACL</b>、<b>能力表</b>、授权关系表、安全标签、锁与钥匙等。</p>
+      <p>两类一般实现机制：① 基于<b>访问控制属性</b>（访问控制表/矩阵）；② 基于<b>用户和资源分级</b>（"安全标签"，多级访问控制）。</p>
+
+      <h3>📊 访问控制矩阵</h3>
+      <p>用三元组表示：主体集合 <code>S</code>、客体集合 <code>O</code>、操作集合 <code>A</code>，矩阵 <code>M = S × O → 2^A</code>。<b>行=主体，列=客体，元素=权限</b>。</p>
+      <div class="fig">
+        <table style="margin:0">
+          <tr><th></th><th>客体 x</th><th>客体 y</th><th>客体 z</th></tr>
+          <tr><td><b>主体 a</b></td><td>R、W、Own</td><td></td><td>R、W</td></tr>
+          <tr><td><b>主体 b</b></td><td>R</td><td>R、W、Own</td><td></td></tr>
+          <tr><td><b>主体 c</b></td><td></td><td></td><td>R</td></tr>
+          <tr><td><b>主体 d</b></td><td>R、W</td><td>R、W</td><td></td></tr>
+        </table>
+        <div class="cap">图3 · 访问控制矩阵（O=Owner 属主，R=读，W=写）。矩阵又大又稀疏，实际按行/列拆分存储</div>
+      </div>
+
+      <h3>✂️ 矩阵的两种拆分方式</h3>
+      <div class="fig">
+        <svg viewBox="0 0 500 230" width="500">
+          <!-- 中间矩阵 -->
+          <rect x="190" y="80" width="120" height="80" rx="8" fill="#1b2745" stroke="#7c5cff" stroke-width="2"/>
+          <text x="250" y="116" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">访问控制</text>
+          <text x="250" y="136" text-anchor="middle" fill="#a9b4cc" font-size="12">矩阵</text>
+          <!-- 按行拆 -> 能力表 -->
+          <text x="250" y="40" text-anchor="middle" fill="#36d399" font-size="13" font-weight="700">↑ 按行拆（按主体）</text>
+          <rect x="170" y="10" width="160" height="22" rx="6" fill="none" stroke="#36d399" stroke-width="1.5"/>
+          <text x="250" y="200" text-anchor="middle" fill="#36d399" font-size="14" font-weight="700">能力表 Capability List</text>
+          <text x="250" y="218" text-anchor="middle" fill="#a9b4cc" font-size="11">贴在主体上 → 这个"人"能访问哪些"东西"</text>
+          <!-- 按列拆 -> ACL -->
+          <line x1="190" y1="120" x2="60" y2="120" stroke="#5b9dff" stroke-width="2" marker-end="url(#aa)"/>
+          <text x="95" y="105" text-anchor="middle" fill="#5b9dff" font-size="13" font-weight="700">← 按列拆</text>
+          <text x="95" y="150" text-anchor="middle" fill="#5b9dff" font-size="13" font-weight="700">ACL</text>
+          <text x="95" y="168" text-anchor="middle" fill="#a9b4cc" font-size="11">（按客体）</text>
+          <text x="95" y="186" text-anchor="middle" fill="#a9b4cc" font-size="11">贴在客体上</text>
+          <!-- 向上箭头到能力表 -->
+          <line x1="310" y1="120" x2="440" y2="120" stroke="#36d399" stroke-width="2" marker-end="url(#ab)"/>
+          <text x="395" y="150" text-anchor="middle" fill="#36d399" font-size="11">→ 按行(主体)</text>
+          <defs>
+            <marker id="aa" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5b9dff"/></marker>
+            <marker id="ab" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#36d399"/></marker>
+          </defs>
+        </svg>
+        <div class="cap">图4 · 矩阵的第 i 行 = 主体 si 的<b>能力表</b>；第 j 列 = 客体 oj 的<b>访问控制表 ACL</b></div>
+      </div>
+
+      <h3>🏷️ 其他实现</h3>
+      <ul>
+        <li><b>授权关系表</b>：把矩阵中非空的 (主体, 权限, 客体) 三元组逐条列出。</li>
+        <li><b>访问控制安全标签</b>：给主体和客体分别打安全级别标签（绝密/机密/秘密/未分类），用于多级访问控制。</li>
+        <li><b>锁与钥匙</b>：客体用密钥加密（锁），主体拥有解密钥匙（钥匙）。<b>同时具有 ACL 与能力表特征，并具有动态性</b>。</li>
+      </ul>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <h2><span class="num">4</span>ACL vs 能力表（核心对比 · 必考）⭐</h2>
+      <p>这是作业2的高频考点。一句话记忆：</p>
+      <div class="box key">
+        <span class="bt">💡 记忆口诀</span>
+        <b>ACL 贴在"东西"上（客体），能力表揣在"人"身上（主体）。</b>
+      </div>
+
+      <div class="cards">
+        <div class="ccard c">
+          <div class="emoji">📋</div>
+          <h4>访问控制表 ACL</h4>
+          <span class="en">Access Control List · 与<b>客体</b>关联</span>
+          <p style="font-size:14px;color:var(--ink-soft);margin:8px 0 0">每个客体附加一个"<b>能访问它的主体明细表</b>"。<br>例：<code>oj: s0.r | s1.e | s2.rw</code></p>
+        </div>
+        <div class="ccard i">
+          <div class="emoji">🎫</div>
+          <h4>能力表 Capability List</h4>
+          <span class="en">Capability List · 与<b>主体</b>关联</span>
+          <p style="font-size:14px;color:var(--ink-soft);margin:8px 0 0">每个主体附加一个"<b>它能访问的客体明细表</b>"。<br>表示形式：用户 Profile、授权/属性证书。</p>
+        </div>
+      </div>
+
+      <table>
+        <tr><th>对比项</th><th>访问控制表 ACL</th><th>能力表 CL</th></tr>
+        <tr><td>拆分方式</td><td>按<b>列</b>（客体）</td><td>按<b>行</b>（主体）</td></tr>
+        <tr><td>关联 / 保存位置</td><td><b>客体</b></td><td><b>主体</b></td></tr>
+        <tr><td>记录内容</td><td>谁能访问这个客体</td><td>这个主体能访问什么</td></tr>
+        <tr><td>得到某客体所有权限</td><td><b>容易</b></td><td>困难</td></tr>
+        <tr><td>得到某主体所有权限（浏览）</td><td>困难</td><td><b>容易</b></td></tr>
+        <tr><td>访问权限传递</td><td>困难</td><td><b>容易</b></td></tr>
+        <tr><td>访问权限回收</td><td><b>容易</b></td><td>困难</td></tr>
+        <tr><td>适用系统</td><td><b>集中式</b>系统</td><td><b>分布式</b>系统</td></tr>
+      </table>
+
+      <div class="box tip">
+        <span class="bt">📌 ACL 的问题与解决</span>
+        <b>问题</b>：主体/客体数量大时表很庞大，人员变动（升迁/换岗/招聘/离职）或职能变化时修改困难。<br>
+        <b>解决</b>：引入<b>用户组</b>（用户可属于多个组），主体标识=主体.组名。如 <code>Fang.INFO.rw</code>（INFO 组的 Fang 有读写），<code>*.INFO.e</code>（INFO 组所有用户可执行），<code>*.*.r</code>（所有用户可读）。
+      </div>
+
+      <h3>🎮 小练习：把"特征"和"它属于谁"连起来</h3>
+      <p style="color:var(--ink-soft);font-size:14px">先点左边一个特征，再点右边对应的机制。连对会变绿。</p>
+      <div class="match" id="match1">
+        <div class="col">
+          <div class="ct">📌 特征描述</div>
+          <div class="mitem" data-k="ACL">与客体关联，浏览客体权限容易</div>
+          <div class="mitem" data-k="CL">与主体关联，权限传递容易</div>
+          <div class="mitem" data-k="ACL">权限回收容易，用于集中式系统</div>
+        </div>
+        <div class="col">
+          <div class="ct">🎯 对应机制</div>
+          <div class="mitem" data-k="CL">能力表（Capability List）</div>
+          <div class="mitem" data-k="ACL">访问控制表（ACL）</div>
+          <div class="mitem" data-k="ACL">访问控制表（ACL）·回收</div>
+        </div>
+      </div>
+      <div class="feedback" id="match1fb"></div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">随堂测</span>"显示一个主体对多个客体的访问能力列表"，对应下列哪种机制？</div>
+        <button class="opt">访问控制表 ACL</button>
+        <button class="opt" data-correct="1">能力表 / 访问控制矩阵的行</button>
+        <button class="opt">Biba 模型</button>
+        <button class="opt">职责分离</button>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <h2><span class="num">5</span>访问控制模型分类总览</h2>
+      <p>访问控制模型 = 对一系列<b>访问控制规则集合</b>的描述（可形式化或非形式化）。三大类：</p>
+      <div class="fig">
+        <div class="mind">
+          <div class="root">访问控制<br>模型</div>
+          <div class="branches">
+            <div class="branch inner">
+              <div class="bh" style="color:var(--accent)">🟦 自主访问控制 DAC</div>
+              <div class="tags"><span>访问矩阵</span><span>ACL</span><span>能力表</span><span>属主自定</span></div>
+            </div>
+            <div class="branch outer">
+              <div class="bh" style="color:var(--amber)">🟨 强制访问控制 MAC</div>
+              <div class="tags"><span>BLP（保密）</span><span>Biba（完整）</span><span>Clark-Wilson</span><span>Chinese Wall</span><span>安全级别</span></div>
+            </div>
+            <div class="branch">
+              <div class="bh" style="color:var(--green)">🟩 基于角色 RBAC</div>
+              <div class="tags"><span>用户→角色→权限</span><span>RBAC0-3</span><span>继承/互斥</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="cap">图5 · 三大类访问控制模型一览</div>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <h2><span class="num">6</span>自主访问控制 DAC</h2>
+      <div class="box key">
+        <span class="bt">DAC 含义（Discretionary Access Control）</span>
+        允许客体的<b>属主（创建者）自己决定</b>主体对该客体的访问权限。是一种<b>分布式授权管理</b>模式。
+      </div>
+
+      <h3>✅ 特点</h3>
+      <table>
+        <tr><th>优点</th><th>缺点</th></tr>
+        <tr><td>灵活、易用、可扩展；根据主体身份与权限决策；具备某种能力的主体可<b>自主</b>把权限子集授予其他主体；被大量采用，常用于<b>商业系统</b></td><td><b>安全性不高</b>；信息传递过程中访问权限关系会被改变</td></tr>
+      </table>
+
+      <h3>⚠️ 两大安全隐患（必考）</h3>
+      <div class="cards">
+        <div class="ccard a">
+          <div class="emoji">💧</div>
+          <h4>无法控制信息流动</h4>
+          <p style="font-size:14px;color:var(--ink-soft);margin:6px 0 0">用户 A 可把对客体 O 的访问权<b>传递</b>给用户 B，使本来无权的 B 也能访问 O——信息流不可控。</p>
+        </div>
+        <div class="ccard c">
+          <div class="emoji">🐴</div>
+          <h4>特洛伊木马威胁</h4>
+          <p style="font-size:14px;color:var(--ink-soft);margin:6px 0 0">木马附在合法程序中，以<b>你的权限</b>偷偷做坏事而不被发现（如把 <code>/etc/passwd</code> 邮件发给黑客）。</p>
+        </div>
+      </div>
+      <div class="box warn">
+        <span class="bt">🐴 特洛伊木马实例（理解即可）</span>
+        攻击者在 <code>/tmp/ls</code> 里写：先把 <code>/etc/passwd</code> 邮件发给黑客，再调用真正的 <code>/bin/ls</code>。如果用户的 <code>PATH</code> 不安全（把 <code>./</code> 放最前），在 <code>/tmp</code> 下敲 <code>ls</code> 就会运行木马，<b>而用户毫无察觉</b>。DAC 管不住这种"借合法用户之手"的攻击。
+      </div>
+
+      <h3>🧩 访问许可 vs 访问模式</h3>
+      <table>
+        <tr><th>概念</th><th>含义</th></tr>
+        <tr><td><b>访问许可</b></td><td>主体对客体的<b>控制权</b>——改变访问模式、或把这种能力传给别人。类型：等级型 / 有主型（Owner，属主唯一有权改 ACL）/ 自由型</td></tr>
+        <tr><td><b>访问模式</b></td><td>主体对客体的<b>访问权</b>——读-拷贝 / 写-删除更改 / 运行 / 无效</td></tr>
+      </table>
+
+      <h3>🐧 实例</h3>
+      <div class="box tip">
+        <span class="bt">Linux 文件权限（典型 DAC）</span>
+        三种权限 <b>r(读)/w(写)/x(执行)</b>，设备和目录也看作文件。四类用户：<b>root（超级用户）、所有者、所属组、其他用户</b>。<br>
+        例：<code>drwxr-x--x 2 Fang work 1024 ... text</code>——后 9 位 <code>rwxr-x--x</code> 规定所有者/所属组/其他用户各 3 位权限。用 <code>chmod</code>（改权限）、<code>chown</code>（改属主）修改。<br>
+        权限也可用 8 进制表示：<code>rwx=111=7</code>。
+      </div>
+      <div class="box tip">
+        <span class="bt">Windows（也是 DAC）</span>
+        通过<b>安全标识(SID)、访问令牌、安全描述符、自主访问控制表(DACL)</b>实现。进程访问对象时，<b>SRM</b> 把进程访问令牌与对象的 DACL 比较，决定是否放行。NTFS 文件访问同理。
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <h2><span class="num">7</span>强制访问控制 MAC</h2>
+      <div class="box key">
+        <span class="bt">MAC 含义（Mandatory Access Control）</span>
+        所有访问请求按<b>强制策略</b>控制，<b>客体属主无权</b>控制访问权限。主体和客体都分配一个<b>固定的安全级别</b>，<b>只有系统管理员</b>才能修改。应用于<b>军事</b>等高安全要求系统，可与 DAC 结合使用。
+      </div>
+
+      <h3>🏷️ 安全级别</h3>
+      <p style="text-align:center"><span class="pill">未分类 Unclassified</span> &lt; <span class="pill">秘密 Confidential</span> &lt; <span class="pill">机密 Secret</span> &lt; <span class="pill">绝密 Top Secret</span></p>
+      <p style="text-align:center;color:var(--ink-soft);font-size:14px">（中文军用对照：普密 &lt; 秘密 &lt; 机密 &lt; 绝密）。只有主客体安全级别满足规则时才允许访问。</p>
+
+      <h3>🔀 四种访问方式（关键）</h3>
+      <p>把主体、客体分级，<b>"写"代表信息流动方向</b>，通过梯度安全标签实现<b>单向信息流</b>：</p>
+      <table>
+        <tr><th>方式</th><th>定义（主体 vs 客体级别）</th></tr>
+        <tr><td><b>下读 Read Down</b></td><td>主体级别 <b>高于</b> 客体，允许读（低级别用户不能读高敏感信息）</td></tr>
+        <tr><td><b>上读 Read Up</b></td><td>主体级别 <b>低于</b> 客体，允许读</td></tr>
+        <tr><td><b>下写 Write Down</b></td><td>主体级别 <b>高于</b> 客体，允许写</td></tr>
+        <tr><td><b>上写 Write Up</b></td><td>主体级别 <b>低于</b> 客体，允许写（不允许高敏感信息写入低敏感区）</td></tr>
+      </table>
+      <div class="box key">
+        <span class="bt">两种组合 → 两个目标</span>
+        ① <b>下读 / 上写</b> → 信息从低流向高 → 保证<b>机密性</b>（BLP）。<br>
+        ② <b>上读 / 下写</b> → 实现<b>完整性</b>（Biba）。
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <h2><span class="num">8</span>BLP 模型 vs Biba 模型（核心 · 必考）⭐</h2>
+      <p>这两个模型在数学上是<b>对偶</b>关系，箭头方向正好相反。务必记牢规则和应用。</p>
+
+      <div class="flip-row">
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front c"><div class="emoji">🔒</div><h4>BLP 模型</h4><span class="en">Bell-LaPadula · 1973</span></div>
+            <div class="flip-back c"><b>保机密性</b><br>规则：<b>下读 / 上写</b><br>（不上读、不下写）<br><small>应用：防火墙</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front i"><div class="emoji">✅</div><h4>Biba 模型</h4><span class="en">Biba · 1977</span></div>
+            <div class="flip-back i"><b>保完整性</b><br>规则：<b>上读 / 下写</b><br>（不下读、不上写）<br><small>应用：Web 服务器</small></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="box key">
+        <span class="bt">💡 记忆口诀</span>
+        <b>BLP 保密——下读上写；Biba 完整——上读下写。</b>（两个模型规则完全相反）
+      </div>
+
+      <h3>🔒 BLP 模型（保密性）—— 下读 / 上写</h3>
+      <div class="fig">
+        <svg viewBox="0 0 440 230" width="440">
+          <!-- 级别梯度 -->
+          <rect x="150" y="20" width="140" height="40" rx="8" fill="#f87272"/><text x="220" y="45" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">高 · 绝密</text>
+          <rect x="150" y="95" width="140" height="40" rx="8" fill="#fbbd23"/><text x="220" y="120" text-anchor="middle" fill="#0f1729" font-size="13" font-weight="700">中 · 机密</text>
+          <rect x="150" y="170" width="140" height="40" rx="8" fill="#36d399"/><text x="220" y="195" text-anchor="middle" fill="#0f1729" font-size="13" font-weight="700">低 · 公开</text>
+          <!-- 下读：高主体读低客体 (允许) 从下往上箭头读 -->
+          <line x1="120" y1="115" x2="120" y2="190" stroke="#5b9dff" stroke-width="3" marker-end="url(#bd)"/>
+          <text x="60" y="155" text-anchor="middle" fill="#5b9dff" font-size="12" font-weight="700">✔ 下读</text>
+          <text x="60" y="170" text-anchor="middle" fill="#a9b4cc" font-size="10">高读低</text>
+          <!-- 上写：低主体写高客体 (允许) 从下往上 -->
+          <line x1="330" y1="190" x2="330" y2="115" stroke="#7c5cff" stroke-width="3" marker-end="url(#bu)"/>
+          <text x="385" y="155" text-anchor="middle" fill="#7c5cff" font-size="12" font-weight="700">✔ 上写</text>
+          <text x="385" y="170" text-anchor="middle" fill="#a9b4cc" font-size="10">低写高</text>
+          <text x="220" y="228" text-anchor="middle" fill="#36d399" font-size="12" font-weight="700">信息只能从低 → 高流动（保机密）</text>
+          <defs>
+            <marker id="bd" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5b9dff"/></marker>
+            <marker id="bu" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#7c5cff"/></marker>
+          </defs>
+        </svg>
+        <div class="cap">图6 · BLP：<b>不上读</b>（低级别读不到高密级）+ <b>不下写</b>（高密级不能写进低密级区）→ 防泄密</div>
+      </div>
+      <div class="box tip">
+        <span class="bt">BLP 应用：防火墙</span>
+        内网=机密、外网 Internet=公开。<b>不上读</b>：阻止 Internet 访问内部网络（仅允许由内向外发起的数据流）；<b>不下写</b>：不允许敏感数据从内网流向 Internet。——单向访问机制。
+      </div>
+
+      <h3>✅ Biba 模型（完整性）—— 上读 / 下写</h3>
+      <div class="fig">
+        <svg viewBox="0 0 440 230" width="440">
+          <rect x="150" y="20" width="140" height="40" rx="8" fill="#36d399"/><text x="220" y="45" text-anchor="middle" fill="#0f1729" font-size="13" font-weight="700">高完整性</text>
+          <rect x="150" y="95" width="140" height="40" rx="8" fill="#fbbd23"/><text x="220" y="120" text-anchor="middle" fill="#0f1729" font-size="13" font-weight="700">中完整性</text>
+          <rect x="150" y="170" width="140" height="40" rx="8" fill="#f87272"/><text x="220" y="195" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">低完整性</text>
+          <!-- 上读：低主体读高客体 从下往上 -->
+          <line x1="120" y1="190" x2="120" y2="115" stroke="#5b9dff" stroke-width="3" marker-end="url(#bu2)"/>
+          <text x="60" y="155" text-anchor="middle" fill="#5b9dff" font-size="12" font-weight="700">✔ 上读</text>
+          <text x="60" y="170" text-anchor="middle" fill="#a9b4cc" font-size="10">低读高</text>
+          <!-- 下写：高主体写低客体 从上往下 -->
+          <line x1="330" y1="115" x2="330" y2="190" stroke="#7c5cff" stroke-width="3" marker-end="url(#bd2)"/>
+          <text x="385" y="155" text-anchor="middle" fill="#7c5cff" font-size="12" font-weight="700">✔ 下写</text>
+          <text x="385" y="170" text-anchor="middle" fill="#a9b4cc" font-size="10">高写低</text>
+          <text x="220" y="228" text-anchor="middle" fill="#36d399" font-size="12" font-weight="700">阻止低完整性数据污染高完整性数据</text>
+          <defs>
+            <marker id="bu2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5b9dff"/></marker>
+            <marker id="bd2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#7c5cff"/></marker>
+          </defs>
+        </svg>
+        <div class="cap">图7 · Biba：<b>不下读</b>（不读低完整性脏数据）+ <b>不上写</b>（低完整性不能改高完整性数据）→ 防篡改</div>
+      </div>
+      <div class="box tip">
+        <span class="bt">Biba 应用：Web 服务器</span>
+        Web 服务器资源=秘密，Internet 用户=公开。<b>上读 / 不上写</b>：Internet 用户只能<b>读</b>服务器数据，<b>不能更改</b>它——保障 Web 数据完整性。
+      </div>
+
+      <table>
+        <tr><th>模型</th><th>时间</th><th>保护目标</th><th>规则</th><th>典型应用</th></tr>
+        <tr><td><b>Bell-LaPadula (BLP)</b></td><td>1973</td><td><b>机密性</b></td><td>下读 / 上写（不上读、不下写）</td><td>防火墙</td></tr>
+        <tr><td><b>Biba</b></td><td>1977</td><td><b>完整性</b></td><td>上读 / 下写（不下读、不上写）</td><td>Web 服务器</td></tr>
+      </table>
+
+      <h3>🧩 其他强制模型</h3>
+      <table>
+        <tr><th>模型</th><th>时间</th><th>说明</th></tr>
+        <tr><td><b>Clark-Wilson</b></td><td>1987</td><td>以<b>事务处理</b>为基本操作的<b>完整性</b>模型，应用于多种商业系统</td></tr>
+        <tr><td><b>Chinese Wall</b>（Brewer-Nash）</td><td>1989</td><td>同等考虑保密性与完整性，主要解决<b>商业利益冲突</b></td></tr>
+        <tr><td>Lattice（格）模型</td><td>—</td><td>主体安全级别高于客体才能访问（下读、下写）</td></tr>
+      </table>
+
+      <h3>⚖️ DAC vs MAC 对比</h3>
+      <table>
+        <tr><th></th><th>自主访问控制 DAC</th><th>强制访问控制 MAC</th></tr>
+        <tr><td>控制粒度</td><td>细</td><td>大</td></tr>
+        <tr><td>灵活性</td><td>高</td><td>不高</td></tr>
+        <tr><td>配置效率</td><td>低</td><td>—</td></tr>
+        <tr><td>安全性</td><td>低</td><td><b>强</b></td></tr>
+        <tr><td>谁控制权限</td><td>客体属主</td><td>系统管理员（强制）</td></tr>
+      </table>
+    </section>
+
+    <!-- 9 -->
+    <section id="s9">
+      <h2><span class="num">9</span>基于角色的访问控制 RBAC（重点 · 必考）⭐</h2>
+      <p>由 NIST 的 Ferraiolo 等人于上世纪 90 年代提出，1996 年提出较完善的参考模型 <b>RBAC96</b>。</p>
+
+      <h3>💡 核心思想</h3>
+      <div class="box key">
+        <span class="bt">用户 → 角色 → 权限</span>
+        不直接给用户分配权限，而是通过<b>角色</b>这个中间层。一个用户必须<b>扮演</b>某种角色、并<b>激活</b>它，才能对对象进行访问或操作。
+      </div>
+
+      <h3>🔗 用户-角色-权限三层连线图</h3>
+      <div class="fig">
+        <svg viewBox="0 0 500 240" width="500">
+          <!-- 用户列 -->
+          <text x="70" y="20" text-anchor="middle" fill="#5b9dff" font-size="13" font-weight="700">用户 User</text>
+          <rect x="20" y="35" width="100" height="34" rx="8" fill="#5b9dff"/><text x="70" y="57" text-anchor="middle" fill="#fff" font-size="13">用户1</text>
+          <rect x="20" y="100" width="100" height="34" rx="8" fill="#5b9dff"/><text x="70" y="122" text-anchor="middle" fill="#fff" font-size="13">用户2</text>
+          <rect x="20" y="165" width="100" height="34" rx="8" fill="#5b9dff"/><text x="70" y="187" text-anchor="middle" fill="#fff" font-size="13">用户3</text>
+          <!-- 角色列 -->
+          <text x="250" y="20" text-anchor="middle" fill="#fbbd23" font-size="13" font-weight="700">角色 Role</text>
+          <rect x="200" y="68" width="100" height="34" rx="8" fill="#fbbd23"/><text x="250" y="90" text-anchor="middle" fill="#0f1729" font-size="13">角色1</text>
+          <rect x="200" y="135" width="100" height="34" rx="8" fill="#fbbd23"/><text x="250" y="157" text-anchor="middle" fill="#0f1729" font-size="13">角色2</text>
+          <!-- 权限列 -->
+          <text x="430" y="20" text-anchor="middle" fill="#36d399" font-size="13" font-weight="700">权限 Permission</text>
+          <rect x="380" y="40" width="100" height="30" rx="8" fill="#36d399"/><text x="430" y="60" text-anchor="middle" fill="#0f1729" font-size="12">权限1</text>
+          <rect x="380" y="100" width="100" height="30" rx="8" fill="#36d399"/><text x="430" y="120" text-anchor="middle" fill="#0f1729" font-size="12">权限2</text>
+          <rect x="380" y="160" width="100" height="30" rx="8" fill="#36d399"/><text x="430" y="180" text-anchor="middle" fill="#0f1729" font-size="12">权限3</text>
+          <!-- UA 连线 用户-角色 -->
+          <line x1="120" y1="52" x2="200" y2="85" stroke="#7c5cff" stroke-width="2"/>
+          <line x1="120" y1="117" x2="200" y2="85" stroke="#7c5cff" stroke-width="2"/>
+          <line x1="120" y1="182" x2="200" y2="152" stroke="#7c5cff" stroke-width="2"/>
+          <line x1="120" y1="117" x2="200" y2="152" stroke="#7c5cff" stroke-width="2"/>
+          <!-- PA 连线 角色-权限 -->
+          <line x1="300" y1="85" x2="380" y2="55" stroke="#36d399" stroke-width="2"/>
+          <line x1="300" y1="85" x2="380" y2="115" stroke="#36d399" stroke-width="2"/>
+          <line x1="300" y1="152" x2="380" y2="115" stroke="#36d399" stroke-width="2"/>
+          <line x1="300" y1="152" x2="380" y2="175" stroke="#36d399" stroke-width="2"/>
+          <text x="160" y="225" text-anchor="middle" fill="#7c5cff" font-size="12" font-weight="700">用户分配 UA（多对多）</text>
+          <text x="350" y="225" text-anchor="middle" fill="#36d399" font-size="12" font-weight="700">权限分配 PA（多对多）</text>
+        </svg>
+        <div class="cap">图8 · RBAC：用户↔角色（UA）、角色↔权限（PA），都是<b>多对多</b>关系</div>
+      </div>
+
+      <h3>🧱 核心元素</h3>
+      <table>
+        <tr><th>元素</th><th>说明</th></tr>
+        <tr><td><b>用户 User</b></td><td>访问计算机资源的主体，集合 U</td></tr>
+        <tr><td><b>角色 Role</b></td><td>一种岗位，代表资格、权利和责任，集合 R</td></tr>
+        <tr><td><b>权限 Permission</b></td><td>对客体的操作权力（<b>权限 = 操作 + 客体</b>），集合 P</td></tr>
+        <tr><td><b>会话 Session</b></td><td>用户访问时必须先建立的会话；一次会话仅对应<b>一个用户</b>，但可激活<b>多个角色</b></td></tr>
+      </table>
+      <div class="box key">
+        <span class="bt">两个关键关联</span>
+        <b>用户分配 UA（User Assignment）</b>：用户 ↔ 角色（用户与 r 关联后拥有 r 的权限）。<br>
+        <b>权限分配 PA（Permission Assignment）</b>：角色 ↔ 权限（权限 p 与 r 关联后 r 拥有 p）。<br>
+        <b>激活角色</b>：角色只有通过会话<b>激活</b>才起作用。
+      </div>
+
+      <h3>🔀 多对多关系</h3>
+      <ul>
+        <li>用户↔角色：一个用户可有多个角色，一个角色可给多个用户。</li>
+        <li>角色↔权限：一个角色可有多个权限，一个权限可给多个角色。</li>
+        <li>权限内部：每个操作可施加于多个客体，每个客体也可接受多个操作。</li>
+      </ul>
+
+      <h3>🏦 银行实例</h3>
+      <table>
+        <tr><th>角色</th><th>核心权限</th></tr>
+        <tr><td>出纳员</td><td>允许修改顾客账号记录</td></tr>
+        <tr><td>分行管理者</td><td>修改记录 + 创建/终止账号</td></tr>
+        <tr><td>顾客</td><td>只允许查询自己的账号</td></tr>
+        <tr><td>系统管理者</td><td>开关系统，但<b>不能读/改</b>用户账号信息</td></tr>
+        <tr><td>审计员</td><td>读系统中任何数据，但<b>不能修改</b>任何事</td></tr>
+      </table>
+      <div class="box tip">
+        <span class="bt">👍 好处</span>
+        来个新出纳员，直接分配"出纳员"角色即可，不用一项项设权限；员工换岗只改角色分配。
+      </div>
+
+      <h3>⚙️ 高级特性</h3>
+      <div class="cards">
+        <div class="ccard i"><div class="emoji">🧬</div><h4>角色继承</h4><span class="en">子角色继承父角色许可，避免重复设置（类似面向对象的类）</span></div>
+        <div class="ccard a"><div class="emoji">🚧</div><h4>角色互斥</h4><span class="en">某些操作一个用户不能同时做（静态/动态互斥）→ 实现<b>职责分离</b></span></div>
+        <div class="ccard c"><div class="emoji">🔢</div><h4>角色基数限制</h4><span class="en">某角色在某时段只能由<b>一定人数</b>的用户占用</span></div>
+      </div>
+
+      <h3>📦 RBAC96 系列模型</h3>
+      <div class="fig">
+        <svg viewBox="0 0 460 170" width="460">
+          <rect x="30" y="60" width="90" height="50" rx="10" fill="#5b9dff"/><text x="75" y="82" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">RBAC0</text><text x="75" y="99" text-anchor="middle" fill="#eaf2ff" font-size="10">核心</text>
+          <rect x="150" y="20" width="120" height="44" rx="10" fill="#36d399"/><text x="210" y="40" text-anchor="middle" fill="#0f1729" font-size="12" font-weight="700">RBAC1</text><text x="210" y="56" text-anchor="middle" fill="#0f1729" font-size="10">+角色继承RH</text>
+          <rect x="150" y="106" width="120" height="44" rx="10" fill="#fbbd23"/><text x="210" y="126" text-anchor="middle" fill="#0f1729" font-size="12" font-weight="700">RBAC2</text><text x="210" y="142" text-anchor="middle" fill="#0f1729" font-size="10">+约束(责任分离)</text>
+          <rect x="320" y="60" width="120" height="50" rx="10" fill="#7c5cff"/><text x="380" y="82" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">RBAC3</text><text x="380" y="99" text-anchor="middle" fill="#eaf2ff" font-size="10">完整(1+2)</text>
+          <line x1="120" y1="78" x2="150" y2="45" stroke="#a9b4cc" stroke-width="2"/>
+          <line x1="120" y1="92" x2="150" y2="125" stroke="#a9b4cc" stroke-width="2"/>
+          <line x1="270" y1="42" x2="320" y2="78" stroke="#a9b4cc" stroke-width="2"/>
+          <line x1="270" y1="128" x2="320" y2="92" stroke="#a9b4cc" stroke-width="2"/>
+        </svg>
+        <div class="cap">图9 · RBAC0（核心）→ RBAC1（+继承）/ RBAC2（+约束）→ RBAC3（完整）</div>
+      </div>
+
+      <h3>🎮 小练习：把模型与规则连起来</h3>
+      <p style="color:var(--ink-soft);font-size:14px">先点左边一个模型，再点右边对应的描述。</p>
+      <div class="match" id="match2">
+        <div class="col">
+          <div class="ct">📌 模型</div>
+          <div class="mitem" data-k="BLP">BLP 模型</div>
+          <div class="mitem" data-k="BIBA">Biba 模型</div>
+          <div class="mitem" data-k="RBAC">RBAC 模型</div>
+        </div>
+        <div class="col">
+          <div class="ct">🎯 规则 / 思想</div>
+          <div class="mitem" data-k="RBAC">用户→角色→权限</div>
+          <div class="mitem" data-k="BLP">下读上写·保机密性</div>
+          <div class="mitem" data-k="BIBA">上读下写·保完整性</div>
+        </div>
+      </div>
+      <div class="feedback" id="match2fb"></div>
+
+      <h3>👍 RBAC 的优点</h3>
+      <ul>
+        <li>便于<b>授权管理</b>（人员变动只改角色分配，甚至要几个角色到场才能改系统设置，增强安全）。</li>
+        <li>便于处理<b>工作分级</b>（资源分级管理）。</li>
+        <li>容易实现各种安全策略，如<b>最小特权、职责分离</b>。</li>
+        <li>便于<b>任务分担</b>（不同角色完成不同任务）。</li>
+      </ul>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10">
+      <h2><span class="num">10</span>操作系统中的访问控制 & 评估标准</h2>
+
+      <h3>📕 TCSEC 橘皮书</h3>
+      <div class="box key">
+        <span class="bt">TCSEC（可信计算机系统评估标准）</span>
+        1985 年由美国国防部/NCSC 发布（封面橙色，故称"<b>橘皮书</b>"）。采用等级评估法，将安全分为 <b>A、B、C、D 四类八级</b>，<b>D 最低、A 最高</b>。把功能性与保证组合在一起。
+      </div>
+      <div class="fig">
+        <div class="layers" style="max-width:560px">
+          <div class="layer l1"><span class="ln">A 类</span><span class="ld">已验证保护 · 最高级别安全性</span></div>
+          <div class="layer l2"><span class="ln">B 类</span><span class="ld">强制保护（MAC）</span></div>
+          <div class="layer l3"><span class="ln">C 类</span><span class="ld">自主保护（DAC）· 通用 OS 多为 <b>C2</b> 控制访问保护级</span></div>
+          <div class="layer l4"><span class="ln">D 类</span><span class="ld">最小保护 · 最低</span></div>
+        </div>
+        <div class="cap">图10 · TCSEC 四大类（A&gt;B&gt;C&gt;D）。<b>大多数通用操作系统（Windows、Linux）= C2 级</b></div>
+      </div>
+      <div class="box warn">
+        <span class="bt">⚠️ 易考点</span>
+        现在大多数<b>通用操作系统</b>（Windows 系列、Linux 等）的安全级别是 <b>C2 级（控制访问保护级）</b>。Windows 和 Linux 都采用<b>自主访问控制 DAC</b>。
+      </div>
+
+      <h3>🌈 彩虹系列 & CC 通用准则</h3>
+      <div class="timeline">
+        <div class="tl"><div class="yr">1985 · TCSEC 橘皮书</div>美国国防部第一套计算机系统安全评估标准。</div>
+        <div class="tl"><div class="yr">1990s 中期 · 彩虹系列</div>橘皮书的一系列补充/阐述标准（封面颜色各异，统称彩虹系列，近 30 个书目）。</div>
+        <div class="tl"><div class="yr">1990-1998 · ITSEC</div>欧洲信息技术安全评估标准。</div>
+        <div class="tl"><div class="yr">1998 · CC 通用准则</div>美、加、法、德、英采用，"IT 安全领域通用准则认证认可协议"。<b>2005 年正式取代 TCSEC</b>。</div>
+      </div>
+
+      <h3>🌐 集中式 vs 非集中式访问控制</h3>
+      <div class="cards">
+        <div class="ccard c">
+          <div class="emoji">🏢</div>
+          <h4>集中式</h4>
+          <p style="font-size:14px;color:var(--ink-soft);margin:6px 0 0"><b>RADIUS、TACACS、TACACS+、Diameter</b> 等协议，由中心统一鉴别授权。</p>
+        </div>
+        <div class="ccard i">
+          <div class="emoji">🗂️</div>
+          <h4>非集中式</h4>
+          <p style="font-size:14px;color:var(--ink-soft);margin:6px 0 0"><b>域（Domain）</b>：一个信任范围/共享安全策略的主客体集合。各域独立，<b>跨域访问需建立信任关系</b>（可单向或双向）。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 小结 -->
+    <section id="s11">
+      <h2><span class="num">11</span>本章小结</h2>
+      <ul>
+        <li>访问控制解决"<b>你能干什么</b>"，三元组 <b>(S, A, O)</b>，<b>先鉴别后授权</b>，遵循<b>最小特权</b>原则；防"非法用户用资源"和"合法用户非法使用"。</li>
+        <li>标识作用：<b>访问控制 + 审计</b>；AAA = 鉴别 / 授权 / 审计。</li>
+        <li>实现机制：访问矩阵 → 按列拆=<b>ACL（贴客体）</b>、按行拆=<b>能力表（贴主体）</b>；还有安全标签、锁与钥匙。</li>
+        <li>三大模型：
+          <ul>
+            <li><b>DAC</b>：属主自定，灵活但安全性低，怕信息流不可控和木马。</li>
+            <li><b>MAC</b>：管理员强制定，安全性强。<b>BLP 保密性（下读上写，应用防火墙）、Biba 完整性（上读下写，应用 Web 服务器）</b>。</li>
+            <li><b>RBAC</b>：用户→角色→权限，UA/PA 多对多，支持继承/互斥/职责分离。</li>
+          </ul>
+        </li>
+        <li>评估标准：TCSEC 橘皮书（A/B/C/D 四类八级，通用 OS 为 <b>C2 级</b>）→ 彩虹系列 → <b>CC 通用准则</b>。</li>
+      </ul>
+      <p style="margin-top:16px">
+        <span class="pill">📄 配套作业2</span>
+        <span class="pill">📘 关联 CH5 鉴别技术</span>
+        <span class="pill">📗 关联 CH4 技术体系</span>
+      </p>
+    </section>
+
+    <!-- 12 重点例题 -->
+    <section id="s12">
+      <h2><span class="num">⭐</span>重点例题（作业2 本章相关 · 详解）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">下面把作业2中与访问控制相关的题目（含选择/填空/判断/简答/案例）逐题讲透。</p>
+
+      <div class="exam">
+        <div class="et">例1（作业2 单选5）访问控制应遵循的基本原则是？</div>
+        A. 最大授权原则　B. <b>最小特权原则</b>　C. 默认完全开放原则　D. 只审计不限制原则
+        <div class="sol">✅ 答案：<b>B</b>。最小特权 = 只给完成职责所需的最小权限集合。"最大授权""默认全开"都会扩大攻击面，违背安全原则。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例2（作业2 单选18）自主访问控制 DAC 的典型特点是？</div>
+        A. <b>客体属主可决定主体对该客体的访问权限</b>　B. 权限只能由国家安全管理员统一指定　C. 只按安全标签单向流动控制　D. 不允许权限转授
+        <div class="sol">✅ 答案：<b>A</b>。DAC 的核心就是"属主自主决定"。B、C 描述的是 <b>MAC</b>（强制访问控制）；D 错，DAC 恰恰<b>允许</b>权限转授（这也是它信息流不可控的根源）。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例3（作业2 单选19）访问控制表 ACL 是与哪个对象关联的访问控制信息？</div>
+        A. <b>客体</b>　B. 电源　C. 路由协议　D. 交换机端口镜像
+        <div class="sol">✅ 答案：<b>A</b>。ACL 贴在<b>客体</b>上，记录"谁能访问这个客体"。与之相对的能力表贴在<b>主体</b>上。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例4（作业2 单选20）Bell-LaPadula 模型主要用于保障？</div>
+        A. <b>机密性</b>　B. 完整性　C. 可用性　D. 负载均衡
+        <div class="sol">✅ 答案：<b>A</b>。BLP=保<b>机密性</b>（下读上写）。注意对偶的 Biba 保<b>完整性</b>（上读下写）。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例5（作业2 填空9）访问控制三元组 (S, A, O) 分别表示主体、访问操作和 ____。</div>
+        <div class="sol">✅ 答案：<b>客体</b>。S=主体、A=访问操作、O=客体（Object）。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例6（作业2 填空10）RBAC 模型的核心元素包括用户、角色、权限和 ____。</div>
+        <div class="sol">✅ 答案：<b>会话（Session）</b>。用户、角色、权限、会话四大元素，会话负责激活角色。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例7（作业2 判断8）DAC 灵活性较高，但可能存在信息流动难以控制和特洛伊木马威胁。</div>
+        <div class="sol">✅ 答案：<b>正确</b>。这正是 DAC 的两大安全隐患。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例8（作业2 判断9）Biba 模型主要强调完整性，典型规则可概括为上读/下写。</div>
+        <div class="sol">✅ 答案：<b>正确</b>。Biba=完整性=上读/下写（不下读、不上写）。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例9（作业2 判断10）RBAC 通过"角色"这一中间层提高了大规模权限管理的便利性。</div>
+        <div class="sol">✅ 答案：<b>正确</b>。角色作为用户与权限之间的间接层，增加灵活性、便于授权管理。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例10（作业2 简答4）比较 ACL、能力表和访问控制矩阵三种实现方式。</div>
+        <div class="sol">✅ 要点：<b>访问控制矩阵</b>是完整描述（行=主体、列=客体、元素=权限），但又大又稀疏、存储浪费。<b>ACL</b> 是矩阵<b>按列</b>拆分、与<b>客体</b>关联——浏览客体权限/回收容易、适合集中式，但浏览主体权限/传递困难、人员变动时维护难（可用<b>用户组</b>缓解）。<b>能力表</b>是矩阵<b>按行</b>拆分、与<b>主体</b>关联——浏览主体权限/传递容易、适合分布式，但浏览客体权限/回收困难。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例11（作业2 简答5）用"下读/上写"和"上读/下写"解释 BLP 与 Biba 的目标差异。</div>
+        <div class="sol">✅ 要点：BLP 用 <b>下读 + 上写</b>（不上读、不下写），使信息只能<b>从低密级流向高密级</b>，防止机密泄露 → 保<b>机密性</b>（应用：防火墙）。Biba 用 <b>上读 + 下写</b>（不下读、不上写），阻止低完整性数据污染高完整性数据 → 保<b>完整性</b>（应用：Web 服务器）。两者数学上对偶、规则相反。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例12（作业2 案例2）医院信息系统访问控制设计（RBAC + MAC）</div>
+        <div class="sol">
+          ✅ 要点：<br>
+          <b>(1) 为何用 RBAC</b>：医院角色固定、人员多且流动大，用角色管理权限便于授权、便于人员换岗。至少五类角色：<b>医生</b>（读写本科室病历、开处方）、<b>护士</b>（读病历、录入护理记录，不能开处方）、<b>收费人员</b>（读费用相关、不能看完整病历）、<b>系统管理员</b>（管系统配置，不能读病历内容）、<b>审计员</b>（只读全部操作日志、不能改）。<br>
+          <b>(2) 最小特权 & 职责分离</b>：每个角色只给职责所需权限（如收费看不到诊断细节）；用<b>角色互斥</b>实现职责分离（如审计员与医生角色互斥，开方与审计不能同人）。<br>
+          <b>(3) 高敏感病历是否结合 MAC</b>：<b>需要</b>。对特别敏感的病历（如传染病/名人病历）打<b>安全标签</b>，用强制访问控制保证即使属主也不能私自放权，按 BLP 的"不上读/不下写"防止泄密，RBAC+MAC 结合兼顾灵活与强安全。
+        </div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例13（思考题 改编）下列哪个模型解决数据<b>保密性</b>问题？</div>
+        A. <b>Bell-LaPadula</b>　B. Biba　C. Clark-Wilson　D. Brewer-Nash（Chinese Wall）
+        <div class="sol">✅ 答案：<b>A</b>。只有 BLP 是纯保密性模型；Biba、Clark-Wilson 是完整性模型；Chinese Wall 同时考虑保密性与完整性、解决利益冲突。</div>
+      </div>
+    </section>
+
+    <!-- 13 自测 -->
+    <section id="s13">
+      <h2><span class="num">🎯</span>自测（点击展开参考要点）</h2>
+      <details>
+        <summary>访问控制的三元组是什么？先做什么后做什么？</summary>
+        <div class="ans">三元组 (S, A, O)：主体 Subject、访问操作 Access、客体 Object。两个过程：先<b>鉴别</b>（验身份）后<b>授权</b>（限权限）。</div>
+      </details>
+      <details>
+        <summary>ACL 和能力表分别贴在谁身上？浏览/传递/回收哪个容易？</summary>
+        <div class="ans">ACL 贴客体（浏览客体权限易、回收易、传递难、用于集中式）；能力表贴主体（浏览主体权限易、传递易、回收难、用于分布式）。</div>
+      </details>
+      <details>
+        <summary>DAC 的两大安全隐患是什么？</summary>
+        <div class="ans">① 无法控制信息流动（权限可被合法用户私自传递）；② 特洛伊木马威胁（木马借合法用户权限作恶）。</div>
+      </details>
+      <details>
+        <summary>BLP 和 Biba 各保护什么？规则和应用分别是什么？</summary>
+        <div class="ans">BLP=机密性，下读/上写（不上读、不下写），应用防火墙；Biba=完整性，上读/下写（不下读、不上写），应用 Web 服务器。两者对偶。</div>
+      </details>
+      <details>
+        <summary>某 Web 服务器希望"公网用户只能读、不能改"内容，应选哪个模型？</summary>
+        <div class="ans"><b>Biba</b>（完整性）。公开级用户对秘密级资源执行"上读、不上写"，能读不能改，保障数据完整性。</div>
+      </details>
+      <details>
+        <summary>RBAC 的四个核心元素？两个关联叫什么？</summary>
+        <div class="ans">用户、角色、权限、会话。用户分配 UA（用户↔角色）、权限分配 PA（角色↔权限），均为多对多。</div>
+      </details>
+      <details>
+        <summary>大多数通用操作系统（Windows/Linux）的 TCSEC 安全级别是？用什么访问控制？</summary>
+        <div class="ans"><b>C2 级</b>（控制访问保护级）；都采用<b>自主访问控制 DAC</b>。</div>
+      </details>
+      <div class="box tip" style="margin-top:18px">
+        <span class="bt">✅ 都能答上来？</span>
+        那 CH6 的知识点你就掌握了，可以去做<b>作业2</b>访问控制部分了。配套 Markdown：<code>CH6-访问控制.md</code>。
+      </div>
+    </section>
+
+    <!-- 强化题库 -->
+    <section id="bank">
+      <h2><span class="num">📝</span>强化题库（35 选择 + 35 填空 = 70 题）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">覆盖本章全部知识点，含 <b>【作业举一反三】</b> 变体题（给场景判断用 BLP 还是 Biba、判断上读下写等）。选择题点选即时判分；填空题输入后点"检查"或"显示答案"。</p>
+      <div class="tabs">
+        <button class="tab active" data-tab="mcq">📋 选择题 (35)</button>
+        <button class="tab" data-tab="fill">✏️ 填空题 (35)</button>
+      </div>
+
+      <div class="tabpane active" id="pane-mcq">
+        <div class="score">
+          <span class="mini">已答 <b id="mcqDone">0</b>/35</span>
+          <span class="mini">答对 <b id="mcqRight">0</b></span>
+          <span class="mini">正确率 <b id="mcqRate">—</b></span>
+          <button class="resetb" id="mcqReset">↺ 重做</button>
+        </div>
+        <div id="mcqList"></div>
+      </div>
+
+      <div class="tabpane" id="pane-fill">
+        <div class="score">
+          <span class="mini">已检查 <b id="fillDone">0</b>/35</span>
+          <span class="mini">答对 <b id="fillRight">0</b></span>
+          <button class="resetb" id="fillRevealAll">👁 全部显示答案</button>
+          <button class="resetb" id="fillReset">↺ 重做</button>
+        </div>
+        <div id="fillList"></div>
+      </div>
+    </section>
+
+    <footer>
+      网络空间安全技术 · CH6 访问控制机制与技术 · 零基础教学讲义<br>
+      💡 配套 Markdown 版：CH6-访问控制.md ｜ 配套作业：作业2（安全机制·鉴别·访问控制）
+    </footer>
+  </main>
+</div>
+
+<button id="top" title="回到顶部">↑</button>
+
+<script>
+  // 进度条
+  const progress=document.getElementById('progress');
+  const topBtn=document.getElementById('top');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const scrolled=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+    progress.style.width=scrolled+'%';
+    topBtn.classList.toggle('show',h.scrollTop>400);
+  });
+  topBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+  // 导航高亮 + 学习进度（读过的章节计数）
+  const links=[...document.querySelectorAll('#nav a')];
+  const allSecs=[...document.querySelectorAll('main section')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const seen=new Set();
+  const learnFill=document.getElementById('learnFill');
+  const learnPct=document.getElementById('learnPct');
+  function updateLearn(){
+    const p=Math.round(seen.size/allSecs.length*100);
+    learnFill.style.width=p+'%';
+    learnPct.textContent=p+'%';
+    if(p===100){learnPct.textContent='✅100%';}
+  }
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        if(e.target.id){seen.add(e.target.id);updateLearn();}
+        const id='#'+e.target.id;
+        links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')===id));
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>s&&io.observe(s));
+  allSecs.forEach(s=>io.observe(s));
+
+  // ===== 选择题测验 =====
+  document.querySelectorAll('[data-quiz]').forEach(quiz=>{
+    const opts=[...quiz.querySelectorAll('.opt')];
+    const fb=quiz.querySelector('.feedback');
+    opts.forEach((opt,idx)=>{
+      opt.addEventListener('click',()=>{
+        const correctIdx=opts.findIndex(o=>o.dataset.correct!==undefined);
+        opts.forEach(o=>o.classList.add('disabled'));
+        if(opt.dataset.correct!==undefined){
+          opt.classList.add('correct');
+          fb.className='feedback show ok';
+          fb.textContent='🎉 答对了！理解到位。';
+        }else{
+          opt.classList.add('wrong');
+          opts[correctIdx].classList.add('correct');
+          fb.className='feedback show no';
+          fb.textContent='再想想～ 正确答案已用绿色标出。';
+        }
+      });
+    });
+  });
+
+  // ===== 匹配题（通用化，支持多个） =====
+  document.querySelectorAll('.match').forEach(box=>{
+    const fb=document.getElementById(box.id+'fb');
+    let sel=null,done=0;
+    const items=[...box.querySelectorAll('.mitem')];
+    const total=box.querySelectorAll('.col')[0].querySelectorAll('.mitem').length;
+    items.forEach(it=>{
+      it.addEventListener('click',()=>{
+        if(it.classList.contains('done'))return;
+        if(!sel){sel=it;it.classList.add('sel');return;}
+        if(sel===it){it.classList.remove('sel');sel=null;return;}
+        if(sel.parentElement===it.parentElement){
+          sel.classList.remove('sel');sel=it;it.classList.add('sel');return;
+        }
+        if(sel.dataset.k===it.dataset.k){
+          sel.classList.remove('sel');sel.classList.add('done');it.classList.add('done');
+          done++;sel=null;
+          if(fb&&done===total){fb.className='feedback show ok';fb.textContent='🏆 全部连对！这个知识点你掌握了。';}
+        }else{
+          const a=sel,b=it;a.classList.add('shake');b.classList.add('shake');
+          setTimeout(()=>{a.classList.remove('shake','sel');b.classList.remove('shake');},420);
+          sel=null;
+          if(fb){fb.className='feedback show no';fb.textContent='这两个不匹配，再试试～';}
+        }
+      });
+    });
+  });
+
+  // ===== 强化题库数据 =====
+  const MCQ=[
+    {q:'鉴别解决"你是谁"，那么访问控制解决的是？',o:['你是谁','你能干什么','你在哪里','你何时来'],a:1,e:'访问控制决定主体能对客体做什么，是针对越权使用资源的防御措施。'},
+    {q:'访问控制要防止的两种"非法"是？',o:['物理破坏和逻辑破坏','非法用户用资源 + 合法用户非法使用','内部攻击和外部攻击','病毒和木马'],a:1,e:'既防非法用户使用资源，也防合法用户越权使用资源。'},
+    {q:'访问控制三元组 (S, A, O) 中 S、O 分别是？',o:['信号和操作','主体和客体','服务器和对象','源和目的'],a:1,e:'S=主体Subject(发起者/主动)，O=客体Object(被操作/被动)，A=访问操作。'},
+    {q:'关于主体和客体的关系，正确的是？',o:['永远固定不变','主体永远是用户','二者关系是相对的、角色可以互换','客体永远是文件'],a:2,e:'主客体关系相对，同一进程相对用户是客体、相对文件又是主体。'},
+    {q:'访问控制的两个重要过程的正确顺序是？',o:['先授权后鉴别','先鉴别后授权','只需鉴别','只需授权'],a:1,e:'第一步鉴别(验身份，是访问控制前提)，第二步授权(限权限)。'},
+    {q:'标识的两大主要作用是？',o:['加密和解密','访问控制和审计','备份和恢复','压缩和传输'],a:1,e:'标识用于访问控制(控制是否允许操作)和审计(追踪谁做的)。'},
+    {q:'访问控制应遵循的基本原则是？',o:['最大授权原则','最小特权原则','默认全开原则','只审计不限制'],a:1,e:'最小特权：只给完成职责所需的最小权限集合。(作业2单选5)'},
+    {q:'UNIX 中主体(用户)的身份标识 UID 是？',o:['一个字符串','0~65535之间的整数','MAC地址','IP地址'],a:1,e:'UID 是 0~65535 之间的整数。'},
+    {q:'AAA 指的是？',o:['鉴别、授权、审计','认证、加密、备份','访问、分析、应用','可用、可控、可信'],a:0,e:'Authentication 鉴别 / Authorization 授权 / Audit 审计。'},
+    {q:'访问控制矩阵中，行、列、元素分别表示？',o:['客体、主体、操作','主体、客体、权限','权限、主体、客体','操作、权限、主体'],a:1,e:'行=主体，列=客体，元素=该主体对该客体被准予的权限。'},
+    {q:'访问控制矩阵按"列"拆分得到的是？',o:['能力表','访问控制表ACL','授权关系表','安全标签'],a:1,e:'按列(客体)拆=ACL；按行(主体)拆=能力表。'},
+    {q:'访问控制矩阵按"行"拆分得到的是？',o:['访问控制表ACL','能力表Capability List','安全标签','锁与钥匙'],a:1,e:'矩阵第i行=主体si的能力表。'},
+    {q:'访问控制表 ACL 与谁关联？',o:['主体','客体','网络','协议'],a:1,e:'ACL 贴在客体上，记录"谁能访问这个客体"。(作业2单选19)'},
+    {q:'能力表 Capability List 与谁关联？',o:['客体','主体','文件','端口'],a:1,e:'能力表贴在主体上，记录"这个主体能访问什么"。'},
+    {q:'下列关于 ACL 的描述错误的是？',o:['浏览某客体的权限容易','权限回收容易','适用于集中式系统','权限传递容易'],a:3,e:'ACL 权限传递困难(能力表才是传递容易)。'},
+    {q:'从能力表看，下列哪项是"容易"的？',o:['浏览某客体允许的所有权限','得到某主体的所有访问权限','权限回收','集中管理'],a:1,e:'能力表浏览主体权限/传递容易，浏览客体权限/回收困难。'},
+    {q:'ACL 在主体数量很多时会很庞大，常用什么缓解？',o:['引入用户组','取消ACL','改用明文','增加CPU'],a:0,e:'引入用户组，如 *.INFO.rw 表示INFO组所有用户有读写权限。'},
+    {q:'"客体用密钥加密(锁)、主体持解密钥匙"且兼具ACL与能力表特征、具动态性的机制是？',o:['安全标签','锁与钥匙','授权关系表','访问矩阵'],a:1,e:'锁与钥匙机制同时具备ACL和能力表特征，具有动态性。'},
+    {q:'自主访问控制 DAC 的核心特点是？',o:['由系统管理员强制统一指定','客体属主自己决定访问权限','只按安全标签控制','不允许任何授权'],a:1,e:'DAC=属主自主决定，是分布式授权管理模式。(作业2单选18)'},
+    {q:'DAC 的两大安全隐患是？',o:['速度慢和占内存','无法控制信息流动 + 特洛伊木马威胁','不能联网和不能加密','无法审计和无法备份'],a:1,e:'权限可被合法用户私自传递(信息流不可控)、木马借合法权限作恶。'},
+    {q:'Linux 文件权限 rwx 分别代表？',o:['读、写、执行','根、写、执行','读、等待、退出','远程、写、扩展'],a:0,e:'r=read读, w=write写, x=execute执行。'},
+    {q:'Windows 和 Linux 采用的访问控制类型是？',o:['强制访问控制MAC','自主访问控制DAC','基于角色RBAC','无访问控制'],a:1,e:'通用操作系统 Windows/Linux 都采用 DAC。'},
+    {q:'强制访问控制 MAC 中，谁有权修改安全级别？',o:['客体属主','任何合法用户','只有系统管理员','所有主体'],a:2,e:'MAC 中主客体安全级别固定，只有系统管理员能修改，属主无权。'},
+    {q:'MAC 的安全级别由低到高正确的是？',o:['绝密<机密<秘密<未分类','未分类<秘密<机密<绝密','机密<绝密<秘密<未分类','秘密<未分类<机密<绝密'],a:1,e:'未分类<秘密<机密<绝密 (普密<秘密<机密<绝密)。'},
+    {q:'在 MAC 四种访问方式中，"主体级别高于客体允许读"称为？',o:['上读','下读','上写','下写'],a:1,e:'下读(Read Down)：主体高于客体允许读。'},
+    {q:'"下读 + 上写"组合保证的是？',o:['完整性','机密性','可用性','可控性'],a:1,e:'下读上写使信息从低流向高，保证机密性(BLP)。'},
+    {q:'"上读 + 下写"组合实现的是？',o:['机密性','完整性','可用性','抗抵赖'],a:1,e:'上读下写实现完整性(Biba)。'},
+    {q:'Bell-LaPadula(BLP)模型保护的目标和规则是？',o:['完整性 / 上读下写','机密性 / 下读上写','可用性 / 任意读写','可控性 / 不读不写'],a:1,e:'BLP=机密性，下读上写(不上读、不下写)。(作业2单选20)'},
+    {q:'Biba 模型保护的目标和规则是？',o:['机密性 / 下读上写','完整性 / 上读下写','可用性 / 上读上写','机密性 / 下读下写'],a:1,e:'Biba=完整性，上读下写(不下读、不上写)。'},
+    {q:'BLP 模型的典型应用是？',o:['Web服务器','防火墙','打印机','数据库索引'],a:1,e:'BLP 应用于防火墙：不上读(阻Internet访问内网)、不下写(敏感数据不外流)。'},
+    {q:'Biba 模型的典型应用是？',o:['防火墙','Web服务器','VPN','负载均衡器'],a:1,e:'Biba 应用于Web服务器：Internet用户只能读不能改服务器数据。'},
+    {q:'同时考虑保密性与完整性、用于解决商业利益冲突的模型是？',o:['BLP模型','Biba模型','Chinese Wall模型','Clark-Wilson模型'],a:2,e:'Chinese Wall(Brewer-Nash,1989)解决商业利益冲突。'},
+    {q:'RBAC 的核心思想是？',o:['用户直接绑定权限','用户→角色→权限','权限随机分配','按IP分配权限'],a:1,e:'通过角色这个中间层间接分配权限。'},
+    {q:'RBAC 的核心元素不包括下列哪项？',o:['用户','角色','权限','防火墙规则'],a:3,e:'RBAC四元素：用户、角色、权限、会话。'},
+    {q:'大多数通用操作系统的 TCSEC 安全级别是？',o:['A1级','B2级','C2级','D级'],a:2,e:'通用OS(Windows/Linux)多为C2级(控制访问保护级)。'}
+  ];
+
+  const FILL=[
+    {q:'访问控制解决的是"你能 ____ 什么"的问题。',a:['干','做']},
+    {q:'访问控制三元组 (S, A, O) 中 S 表示 ____。',a:['主体']},
+    {q:'访问控制三元组 (S, A, O) 中 O 表示 ____。',a:['客体']},
+    {q:'主体是主动实体，客体是 ____ 实体。',a:['被动']},
+    {q:'访问控制的两个过程：先 ____，后授权。',a:['鉴别']},
+    {q:'标识的两大作用是访问控制和 ____。',a:['审计']},
+    {q:'访问控制应遵循的基本原则是 ____ 原则。',a:['最小特权','最小权限']},
+    {q:'AAA 指鉴别(Authentication)、授权(Authorization)和 ____。',a:['审计','Audit','audit']},
+    {q:'访问控制矩阵中，行表示主体，列表示 ____。',a:['客体']},
+    {q:'访问控制矩阵按列(客体)拆分得到 ____。',a:['访问控制表','ACL','访问控制表ACL']},
+    {q:'访问控制矩阵按行(主体)拆分得到 ____。',a:['能力表','访问能力表','Capability List']},
+    {q:'访问控制表 ACL 与 ____ 关联。',a:['客体']},
+    {q:'能力表 Capability List 与 ____ 关联。',a:['主体']},
+    {q:'ACL 浏览客体权限容易，但浏览主体权限 ____。',a:['困难']},
+    {q:'能力表权限传递容易，但权限回收 ____。',a:['困难']},
+    {q:'ACL 适用于集中式系统，能力表适用于 ____ 系统。',a:['分布式']},
+    {q:'ACL 表很庞大时，常引入 ____ 来简化管理。',a:['用户组','组']},
+    {q:'自主访问控制由客体的 ____ 决定访问权限。',a:['属主','创建者','所有者']},
+    {q:'DAC 的两大隐患：无法控制信息流动和 ____ 威胁。',a:['特洛伊木马','木马']},
+    {q:'Linux 文件三种权限 r、w、x 中 x 表示 ____。',a:['执行']},
+    {q:'强制访问控制中安全级别只有 ____ 才能修改。',a:['系统管理员','管理员']},
+    {q:'MAC 安全级别由低到高：未分类 < 秘密 < 机密 < ____。',a:['绝密']},
+    {q:'"主体级别低于客体允许读"称为 ____。',a:['上读']},
+    {q:'"主体级别高于客体允许写"称为 ____。',a:['下写']},
+    {q:'下读 + 上写组合保证信息的 ____ 性。',a:['机密']},
+    {q:'上读 + 下写组合实现信息的 ____ 性。',a:['完整']},
+    {q:'Bell-LaPadula 模型保护 ____ 性。',a:['机密']},
+    {q:'Biba 模型保护 ____ 性。',a:['完整']},
+    {q:'BLP 模型的典型应用是 ____。',a:['防火墙']},
+    {q:'Biba 模型的典型应用是 ____。',a:['Web服务器','web服务器','Web 服务器']},
+    {q:'RBAC 核心思想：用户 → ____ → 权限。',a:['角色']},
+    {q:'RBAC 四个核心元素：用户、角色、权限和 ____。',a:['会话','Session','session']},
+    {q:'RBAC 中"用户↔角色"的关联称为 ____ 分配(UA)。',a:['用户']},
+    {q:'RBAC3 = RBAC1(继承) + RBAC2( ____ )。',a:['约束','责任分离','限制']},
+    {q:'大多数通用操作系统的 TCSEC 安全级别是 ____ 级。',a:['C2','c2']}
+  ];
+
+  // 渲染选择题
+  (function(){
+    const list=document.getElementById('mcqList');if(!list)return;
+    let done=0,right=0;
+    const dn=document.getElementById('mcqDone'),rt=document.getElementById('mcqRight'),ra=document.getElementById('mcqRate');
+    function render(){
+      list.innerHTML='';done=0;right=0;dn.textContent=0;rt.textContent=0;ra.textContent='—';
+      MCQ.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        let opts=item.o.map((t,j)=>`<button class="qopt" data-i="${j}">${String.fromCharCode(65+j)}. ${t}</button>`).join('');
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${item.q}</div>${opts}<div class="qexp">💡 ${item.e}</div>`;
+        const btns=[...d.querySelectorAll('.qopt')];const exp=d.querySelector('.qexp');
+        btns.forEach(b=>b.addEventListener('click',()=>{
+          btns.forEach(x=>x.classList.add('lock'));
+          const ans=item.a;
+          if(+b.dataset.i===ans){b.classList.add('correct');right++;}
+          else{b.classList.add('wrong');btns[ans].classList.add('correct');}
+          exp.classList.add('show');
+          done++;dn.textContent=done;rt.textContent=right;ra.textContent=Math.round(right/done*100)+'%';
+        }));
+        list.appendChild(d);
+      });
+    }
+    render();
+    document.getElementById('mcqReset').onclick=render;
+  })();
+
+  // 渲染填空题
+  (function(){
+    const list=document.getElementById('fillList');if(!list)return;
+    let done=0,right=0;const checked=new Set();
+    const dn=document.getElementById('fillDone'),rt=document.getElementById('fillRight');
+    function norm(s){return (s||'').trim().replace(/\s/g,'').toLowerCase();}
+    function build(){
+      list.innerHTML='';done=0;right=0;checked.clear();dn.textContent=0;rt.textContent=0;
+      FILL.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        const qhtml=item.q.replace('____',`<input class="blank-in" data-i="${i}" placeholder="在此作答">`);
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${qhtml}</div>
+          <div class="blank-btns">
+            <button class="sbtn primary" data-act="check">检查</button>
+            <button class="sbtn" data-act="show">显示答案</button>
+          </div>
+          <div class="ansline">✅ 参考答案：${item.a[0]}</div>`;
+        const inp=d.querySelector('.blank-in');const ansl=d.querySelector('.ansline');
+        d.querySelector('[data-act="check"]').onclick=()=>{
+          const v=norm(inp.value);if(!v)return;
+          const ok=item.a.some(a=>norm(a)===v||v.includes(norm(a)));
+          inp.classList.remove('ok','bad');inp.classList.add(ok?'ok':'bad');
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;if(ok)right++;dn.textContent=done;rt.textContent=right;}
+        };
+        d.querySelector('[data-act="show"]').onclick=()=>{
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;dn.textContent=done;rt.textContent=right;}
+        };
+        list.appendChild(d);
+      });
+    }
+    build();
+    document.getElementById('fillReset').onclick=build;
+    document.getElementById('fillRevealAll').onclick=()=>{
+      list.querySelectorAll('.ansline').forEach(a=>a.classList.add('show'));
+    };
+  })();
+
+  // Tab 切换
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('pane-'+t.dataset.tab).classList.add('active');
+    };
+  });
+</script>
+</body>
+</html>

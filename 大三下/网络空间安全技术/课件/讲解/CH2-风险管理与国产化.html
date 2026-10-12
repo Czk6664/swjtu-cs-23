@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CH2 风险管理与国产化 · 小白教学</title>
+<style>
+  :root{
+    --bg:#0f1729;
+    --bg-soft:#16213e;
+    --card:#1b2745;
+    --card-2:#212f52;
+    --ink:#e8edf7;
+    --ink-soft:#a9b4cc;
+    --line:#2c3a5e;
+    --accent:#5b9dff;
+    --accent-2:#7c5cff;
+    --green:#36d399;
+    --amber:#fbbd23;
+    --red:#f87272;
+    --pink:#f472b6;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0f1729 0%,#131d38 100%);
+    color:var(--ink);
+    line-height:1.75;
+    font-size:16px;
+  }
+  /* 顶部进度条 */
+  #progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:999;transition:width .1s}
+
+  /* 章节切换栏 */
+  .chapnav{position:sticky;top:0;z-index:200;display:flex;gap:4px;flex-wrap:wrap;background:rgba(10,16,30,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 14px}
+  .chapnav a{color:var(--ink-soft);text-decoration:none;font-size:13px;padding:5px 11px;border-radius:8px;white-space:nowrap;transition:.15s}
+  .chapnav a:hover{background:var(--card-2);color:var(--ink)}
+  .chapnav a.cur{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;display:flex;gap:26px}
+
+  /* 侧边导航 */
+  nav{
+    position:sticky;top:46px;align-self:flex-start;
+    width:230px;flex:0 0 230px;height:calc(100vh - 46px);overflow-y:auto;
+    padding:26px 8px 40px 0;
+    font-size:14px;
+  }
+  nav .nav-title{font-weight:700;color:var(--accent);letter-spacing:1px;margin:0 0 14px 10px;font-size:13px}
+  nav a{
+    display:block;color:var(--ink-soft);text-decoration:none;
+    padding:8px 12px;border-radius:10px;margin:2px 0;
+    border-left:3px solid transparent;transition:.2s;
+  }
+  nav a:hover{background:var(--card);color:var(--ink)}
+  nav a.active{background:var(--card-2);color:#fff;border-left-color:var(--accent)}
+
+  main{flex:1;min-width:0;padding:34px 0 90px}
+
+  header.hero{
+    background:radial-gradient(120% 140% at 0% 0%,#26356b 0%,#1a234a 60%,#161f3e 100%);
+    border:1px solid var(--line);border-radius:24px;
+    padding:38px 38px 32px;margin-bottom:30px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  header.hero::after{content:"⚖️";position:absolute;right:30px;top:18px;font-size:90px;opacity:.12}
+  header.hero .tag{display:inline-block;background:rgba(91,157,255,.18);color:var(--accent);
+    padding:4px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:14px}
+  header.hero h1{margin:0 0 8px;font-size:32px;letter-spacing:.5px}
+  header.hero p{margin:0;color:var(--ink-soft);font-size:15px}
+
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px 30px;margin-bottom:24px;box-shadow:var(--shadow);scroll-margin-top:60px;
+  }
+  h2{font-size:23px;margin:0 0 18px;padding-bottom:12px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:10px}
+  h2 .num{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+    width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 34px}
+  h3{font-size:18px;margin:22px 0 10px;color:#cfe0ff}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+
+  /* 表格 */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px;overflow:hidden;border-radius:12px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--card-2);color:#cfe0ff;font-weight:600}
+  tr:hover td{background:rgba(91,157,255,.06)}
+  td code,p code,li code{background:#0d1530;color:#8fd6ff;padding:2px 7px;border-radius:6px;font-size:13.5px}
+
+  /* 提示框 */
+  .box{border-radius:12px;padding:14px 18px;margin:16px 0;border-left:4px solid;font-size:15px}
+  .box .bt{font-weight:700;display:block;margin-bottom:4px}
+  .box.tip{background:rgba(54,211,153,.08);border-color:var(--green)}
+  .box.warn{background:rgba(251,189,35,.08);border-color:var(--amber)}
+  .box.key{background:rgba(124,92,255,.10);border-color:var(--accent-2)}
+  .box.quote{background:rgba(244,114,182,.07);border-color:var(--pink);font-style:italic}
+
+  /* 卡片 */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:18px 0}
+  .ccard{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s}
+  .ccard:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.35)}
+  .ccard .emoji{font-size:34px}
+  .ccard h4{margin:8px 0 6px;font-size:18px}
+  .ccard .en{color:var(--ink-soft);font-size:13px}
+  .ccard.c{border-top:3px solid var(--accent)}
+  .ccard.i{border-top:3px solid var(--green)}
+  .ccard.a{border-top:3px solid var(--amber)}
+  .ccard.r{border-top:3px solid var(--red)}
+
+  /* 时间线 */
+  .timeline{position:relative;margin:20px 0 6px;padding-left:28px}
+  .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .tl{position:relative;margin-bottom:18px}
+  .tl::before{content:"";position:absolute;left:-24px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(91,157,255,.2)}
+  .tl .yr{color:var(--accent);font-weight:700;font-size:14px}
+
+  /* 折叠自测 */
+  details{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:6px 18px;margin:12px 0}
+  details summary{cursor:pointer;font-weight:600;padding:10px 0;list-style:none}
+  details summary::before{content:"❓ ";}
+  details[open] summary{color:var(--accent)}
+  details .ans{color:var(--ink-soft);padding:6px 0 14px;border-top:1px dashed var(--line)}
+
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .pill{display:inline-block;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;margin:3px}
+
+  /* ===== 图表通用 ===== */
+  .fig{background:#0d1530;border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;text-align:center}
+  .fig svg{max-width:100%;height:auto}
+  .fig .cap{color:var(--ink-soft);font-size:13px;margin-top:10px}
+  .fig text{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+
+  /* 脑图分支 */
+  .mind{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+  .mind .root{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;padding:16px 20px;border-radius:14px;font-weight:700;font-size:16px;box-shadow:var(--shadow)}
+  .mind .branches{display:flex;flex-direction:column;gap:14px;margin-left:24px;position:relative}
+  .mind .branches::before{content:"";position:absolute;left:-24px;top:0;bottom:0;width:24px;border-left:2px solid var(--line)}
+  .branch{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-align:left;position:relative;min-width:300px}
+  .branch::before{content:"";position:absolute;left:-24px;top:50%;width:24px;height:2px;background:var(--line)}
+  .branch .bh{font-weight:700;margin-bottom:6px}
+  .branch.inner .bh{color:var(--amber)}
+  .branch.outer .bh{color:var(--red)}
+  .branch .tags span{display:inline-block;background:#0d1530;border:1px solid var(--line);border-radius:8px;padding:2px 9px;font-size:12.5px;margin:3px 3px 0 0;color:var(--ink-soft)}
+
+  /* 分层堆叠图 */
+  .layers{display:flex;flex-direction:column;gap:8px;max-width:560px;margin:0 auto}
+  .layer{display:flex;align-items:center;border-radius:12px;padding:13px 18px;color:#fff;font-weight:600;box-shadow:var(--shadow);position:relative}
+  .layer .ln{flex:0 0 84px;font-size:15px}
+  .layer .ld{font-weight:400;font-size:13.5px;opacity:.95}
+  .layer.l1{background:linear-gradient(90deg,#7c5cff,#9d7bff)}
+  .layer.l2{background:linear-gradient(90deg,#5b9dff,#7bb4ff)}
+  .layer.l3{background:linear-gradient(90deg,#36d399,#5be0b0)}
+  .layer.l4{background:linear-gradient(90deg,#fbbd23,#fccf57)}
+  .layer.l5{background:linear-gradient(90deg,#f472b6,#f99bd0)}
+
+  /* 四要素 / 网格卡 */
+  .four-el{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:520px;margin:0 auto;position:relative}
+  .el-card{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;transition:.2s}
+  .el-card:hover{transform:scale(1.04);border-color:var(--accent)}
+  .el-card .ei{font-size:30px}
+  .el-card h4{margin:6px 0 2px}
+  .el-card small{color:var(--ink-soft)}
+
+  /* 生命周期五阶段 */
+  .lifecycle{display:flex;flex-wrap:wrap;justify-content:center;align-items:stretch;gap:0;margin:18px 0}
+  .lc-step{flex:1;min-width:120px;background:var(--card-2);border:1px solid var(--line);padding:14px 12px;text-align:center;position:relative;margin:4px}
+  .lc-step .lc-i{font-size:26px}
+  .lc-step h4{margin:6px 0 4px;font-size:16px}
+  .lc-step small{color:var(--ink-soft);font-size:12.5px}
+  .lc-step:nth-child(1){border-top:3px solid #7c5cff}
+  .lc-step:nth-child(2){border-top:3px solid #5b9dff}
+  .lc-step:nth-child(3){border-top:3px solid #36d399}
+  .lc-step:nth-child(4){border-top:3px solid #fbbd23}
+  .lc-step:nth-child(5){border-top:3px solid #f472b6}
+
+  /* 处置四卡 */
+  .disp{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:18px 0}
+  .dcard{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s}
+  .dcard:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.35)}
+  .dcard .di{font-size:32px}
+  .dcard h4{margin:6px 0 6px;font-size:18px}
+  .dcard p{font-size:13.8px;color:var(--ink-soft);margin:6px 0}
+  .dcard.d1{border-top:3px solid var(--green)}
+  .dcard.d2{border-top:3px solid var(--accent)}
+  .dcard.d3{border-top:3px solid var(--amber)}
+  .dcard.d4{border-top:3px solid var(--red)}
+
+  /* 风险矩阵热力图 */
+  .matrix{border-collapse:collapse;margin:14px auto;font-size:14px}
+  .matrix th,.matrix td{border:1px solid var(--line);text-align:center;padding:10px 12px;min-width:54px}
+  .matrix th{background:var(--card-2);color:#cfe0ff}
+  .matrix td.L{background:rgba(54,211,153,.25);color:#aef5d4;font-weight:700}
+  .matrix td.M{background:rgba(251,189,35,.28);color:#ffe28a;font-weight:700}
+  .matrix td.H{background:rgba(248,148,114,.30);color:#ffd0bd;font-weight:700}
+  .matrix td.E{background:rgba(248,114,114,.34);color:#ffc2c2;font-weight:700}
+  .matrix td.n{background:rgba(91,157,255,.20);color:#cfe0ff;font-weight:700}
+
+  /* ===== 翻转卡片 ===== */
+  .flip-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:14px 0}
+  .flip{perspective:1000px;height:185px;cursor:pointer}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+  .flip.on .flip-inner{transform:rotateY(180deg)}
+  .flip-front,.flip-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px solid var(--line)}
+  .flip-back{transform:rotateY(180deg);background:var(--card-2);font-size:14px;line-height:1.6}
+  .flip-front{background:var(--card-2)}
+  .flip-front .emoji{font-size:38px}
+  .flip-front h4{margin:8px 0 2px;font-size:19px}
+  .flip-front .en{color:var(--ink-soft);font-size:12px}
+  .flip-front.c,.flip-back.c{border-top:3px solid var(--accent)}
+  .flip-front.i,.flip-back.i{border-top:3px solid var(--green)}
+  .flip-front.a,.flip-back.a{border-top:3px solid var(--amber)}
+  .flip-front.r,.flip-back.r{border-top:3px solid var(--red)}
+  .flip-back small{color:var(--ink-soft);display:block;margin-top:6px}
+
+  /* ===== 互动测验 ===== */
+  .quiz{background:linear-gradient(135deg,#1a2547,#212f52);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0}
+  .quiz .q{font-weight:600;margin-bottom:12px}
+  .quiz .q .badge{background:var(--accent-2);color:#fff;border-radius:8px;padding:1px 9px;font-size:12px;margin-right:8px}
+  .opt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:11px 15px;border-radius:10px;margin:7px 0;cursor:pointer;transition:.15s;font-size:14.5px;font-family:inherit}
+  .opt:hover{border-color:var(--accent);background:var(--card-2)}
+  .opt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .opt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .opt.disabled{pointer-events:none;opacity:.75}
+  .feedback{font-size:14px;margin-top:8px;padding:10px 14px;border-radius:10px;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:rgba(54,211,153,.12);color:#aef5d4}
+  .feedback.no{background:rgba(248,114,114,.12);color:#ffc2c2}
+
+  /* ===== 匹配题 ===== */
+  .match{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0}
+  .match .col{display:flex;flex-direction:column;gap:10px}
+  .match .col .ct{font-size:13px;color:var(--ink-soft);margin-bottom:2px}
+  .mitem{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;transition:.15s;font-size:14px}
+  .mitem:hover{border-color:var(--accent)}
+  .mitem.sel{border-color:var(--accent-2);background:var(--card-2)}
+  .mitem.done{border-color:var(--green);background:rgba(54,211,153,.12);cursor:default;color:#aef5d4}
+  .mitem.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  /* 学习打卡进度 */
+  .checkbar{position:sticky;top:46px;z-index:50;background:rgba(15,23,41,.92);backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+  .checkbar .lbl{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .checkbar .track{flex:1;height:10px;background:var(--card);border-radius:999px;overflow:hidden}
+  .checkbar .fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--accent));transition:width .4s}
+  .checkbar .pct{font-weight:700;color:var(--green);font-size:14px;min-width:42px;text-align:right}
+
+  .reveal-btn{background:var(--card-2);border:1px solid var(--accent);color:var(--accent);border-radius:10px;padding:8px 16px;cursor:pointer;font-size:14px;font-family:inherit;transition:.15s}
+  .reveal-btn:hover{background:var(--accent);color:#fff}
+
+  /* 重点例题 */
+  .exam{background:var(--card-2);border:1px solid var(--line);border-left:4px solid var(--accent-2);border-radius:12px;padding:16px 20px;margin:16px 0}
+  .exam .et{font-weight:700;color:#cfe0ff;margin-bottom:6px}
+  .exam .badge2{display:inline-block;background:linear-gradient(135deg,var(--amber),#f99b2e);color:#1a1206;border-radius:8px;padding:1px 10px;font-size:12px;font-weight:700;margin-right:8px}
+  .exam .ans2{margin-top:10px;padding:10px 14px;background:rgba(54,211,153,.10);border-radius:9px;border-left:3px solid var(--green);font-size:14.5px}
+  .exam .ans2 b{color:#aef5d4}
+
+  /* ===== 题库 ===== */
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{flex:1;min-width:140px;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    padding:11px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;transition:.15s}
+  .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent}
+  .tabpane{display:none}
+  .tabpane.active{display:block}
+
+  .score{position:sticky;top:46px;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:rgba(15,23,41,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:16px}
+  .score b{color:var(--green);font-size:18px}
+  .score .mini{font-size:13px;color:var(--ink-soft)}
+  .score .resetb{margin-left:auto;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    border-radius:8px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:13px}
+  .score .resetb:hover{border-color:var(--accent);color:var(--ink)}
+
+  .qitem{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  .qitem .qh{font-weight:600;margin-bottom:10px;line-height:1.6}
+  .qitem .qh .no{display:inline-block;background:var(--accent);color:#fff;border-radius:7px;padding:1px 9px;font-size:13px;margin-right:8px}
+  .qitem .qh .hw{display:inline-block;background:linear-gradient(135deg,var(--amber),#f99b2e);color:#1a1206;border-radius:7px;padding:1px 8px;font-size:11.5px;font-weight:700;margin-right:6px}
+  .qopt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:9px 14px;border-radius:9px;margin:6px 0;cursor:pointer;transition:.12s;font-size:14px;font-family:inherit}
+  .qopt:hover{border-color:var(--accent)}
+  .qopt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .qopt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .qopt.lock{pointer-events:none}
+  .qexp{font-size:13.5px;color:var(--ink-soft);margin-top:8px;padding:9px 13px;background:rgba(91,157,255,.08);border-radius:9px;border-left:3px solid var(--accent);display:none}
+  .qexp.show{display:block}
+
+  /* 填空 */
+  .blank-in{background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);
+    padding:7px 12px;font-size:14.5px;font-family:inherit;width:200px;margin:0 4px}
+  .blank-in:focus{outline:none;border-color:var(--accent)}
+  .blank-in.ok{border-color:var(--green);background:rgba(54,211,153,.12)}
+  .blank-in.bad{border-color:var(--red);background:rgba(248,114,114,.10)}
+  .blank-btns{margin-top:10px;display:flex;gap:8px}
+  .sbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:inherit;font-size:13.5px}
+  .sbtn:hover{border-color:var(--accent)}
+  .sbtn.primary{background:var(--accent);color:#fff;border-color:transparent}
+  .ansline{font-size:13.5px;color:var(--green);margin-top:8px;display:none}
+  .ansline.show{display:block}
+
+  footer{text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 0 10px}
+
+  /* 回到顶部 */
+  #top{position:fixed;right:26px;bottom:26px;width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none;
+    font-size:20px;cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s}
+  #top.show{opacity:1;pointer-events:auto}
+
+  @media(max-width:880px){
+    nav{display:none}
+    .wrap{padding:0 14px}
+    header.hero{padding:26px 22px}
+    section{padding:20px 18px}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<div class="chapnav">
+  <a href="index.html">🏠 目录</a>
+  <a href="CH1-信息安全概论.html">CH1 概论</a>
+  <a class="cur" href="CH2-风险管理与国产化.html">CH2 风险管理</a>
+  <a href="CH3-信息安全保障与运维.html">CH3 安全保障</a>
+  <a href="CH4-信息安全技术体系.html">CH4 技术体系</a>
+  <a href="CH5-鉴别技术.html">CH5 鉴别</a>
+  <a href="CH6-访问控制.html">CH6 访问控制</a>
+  <a href="CH7-防火墙技术.html">CH7 防火墙</a>
+  <a href="CH8-入侵检测技术.html">CH8 入侵检测</a>
+  <a href="古典密码-入门讲义.html">古典密码</a>
+  <a href="哈希函数-入门课.html">哈希函数</a>
+  <a href="牛津古典密码学-讲义.html">牛津密码练习</a>
+</div>
+
+<div class="wrap">
+  <!-- 侧边导航 -->
+  <nav id="nav">
+    <p class="nav-title">📖 本章目录</p>
+    <a href="#s0">学习目标</a>
+    <a href="#s1">① 为什么做风险管理</a>
+    <a href="#s2">② 九大核心术语 ⭐</a>
+    <a href="#s3">③ 术语关系链 ⭐</a>
+    <a href="#s4">④ 评估vs管理</a>
+    <a href="#s5">⑤ 四阶段两贯穿 ⭐</a>
+    <a href="#s6">⑥ 四类风险处置 ⭐</a>
+    <a href="#s7">⑦ 系统生命周期</a>
+    <a href="#s8">⑧ 风险评估流程</a>
+    <a href="#s9">⑨ 赋值与计算公式</a>
+    <a href="#s10">⑩ 定性/定量/半定量 ⭐</a>
+    <a href="#s11">⑪ 风险评估工具</a>
+    <a href="#s12">⑫ 国产化替代</a>
+    <a href="#s13">⑬ 本章小结</a>
+    <a href="#sexam">⭐ 重点例题</a>
+    <a href="#s14">🎯 自测</a>
+    <a href="#bank">📝 强化题库 92 题</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="tag">网络空间安全技术 · 第二章</span>
+      <h1>CH2 风险管理与国产化</h1>
+      <p>零基础教学讲义 · 按「为什么 → 是什么 → 怎么做」重新讲一遍 · 配套作业1（风险管理为本章重点）</p>
+    </header>
+
+    <!-- 学习打卡进度 -->
+    <div class="checkbar">
+      <span class="lbl">📚 学习进度</span>
+      <div class="track"><div class="fill" id="learnFill"></div></div>
+      <span class="pct" id="learnPct">0%</span>
+    </div>
+
+    <!-- 学习目标 -->
+    <section id="s0">
+      <h2><span class="num">🎯</span>学习目标</h2>
+      <p>读完这一章，你应该能回答：</p>
+      <ol>
+        <li>什么是风险管理？为什么要做？（PDCA 持续循环）</li>
+        <li>风险的 9 个核心术语，以及它们怎么连成一条<b>风险链</b>。</li>
+        <li>风险管理的工作流程：<b>四阶段 + 两贯穿</b>。</li>
+        <li>四类风险处置：<b>降低 / 转移 / 规避 / 接受</b>。</li>
+        <li>风险评估流程、定性/定量分析（<b>ALE = AV×EF×ARO</b>）。</li>
+        <li>系统生命周期五阶段的风险管理。</li>
+        <li>为什么做国产化替代，替什么（CPU/操作系统/数据库）。</li>
+      </ol>
+    </section>
+
+    <!-- 1 为什么 -->
+    <section id="s1">
+      <h2><span class="num">1</span>为什么要做风险管理？</h2>
+      <p>很多企业都有这样的困惑（课件原话）：</p>
+      <table>
+        <tr><th>常见问题</th><th>问题根源</th></tr>
+        <tr><td>安全投资逐年增加，但看不到收益</td><td>没按风险优先级规划，没抓主要矛盾，有限资金利用率低</td></tr>
+        <tr><td>按国家/行业要求做了安全工作，但安全事件仍出现</td><td>没按自身需求部署控制措施，没突出控制<b>高风险</b></td></tr>
+        <tr><td>有限资金应优先投向哪个领域</td><td>决策者没看到安全投资收益报告，划拨无依据</td></tr>
+        <tr><td>当了 CIO，时刻担心系统出事</td><td>没有<b>残余风险清单</b>，不知道在什么条件下会触发</td></tr>
+      </table>
+
+      <div class="box key">
+        <span class="bt">💡 风险管理定义</span>
+        风险管理是<b>在一个肯定有风险的环境里，把风险减至最低</b>的管理过程，包括对风险的<b>量度、评估和应变策略</b>。理想的风险管理是把<b>最大损失、最可能发生</b>的事优先处理，相对风险低的押后处理。
+      </div>
+
+      <p><b>结论</b>：好的风险管理能让机构以<b>最具成本效益</b>的方式，把已知风险维持在<b>可接受水平</b>。它不是要消灭所有风险（做不到也不划算），而是<b>抓主要矛盾</b>。</p>
+
+      <div class="box quote">
+        <span class="bt">🤒 类比：得流感怎么办？</span>
+        你可以等病发再吃药（事后处置），也可以提前打疫苗（事前预防）。<b>二者结合</b>才是最佳风险管理方法。
+      </div>
+
+      <h3>风险管理是一个持续的 PDCA 循环</h3>
+      <div class="fig">
+        <svg viewBox="0 0 320 320" width="300">
+          <circle cx="160" cy="160" r="110" fill="none" stroke="#2c3a5e" stroke-width="2" stroke-dasharray="6 6"/>
+          <!-- 四个象限块 -->
+          <g>
+            <circle cx="160" cy="50" r="40" fill="#7c5cff"/>
+            <text x="160" y="46" text-anchor="middle" fill="#fff" font-size="22" font-weight="700">P</text>
+            <text x="160" y="64" text-anchor="middle" fill="#fff" font-size="11">计划 Plan</text>
+          </g>
+          <g>
+            <circle cx="270" cy="160" r="40" fill="#5b9dff"/>
+            <text x="270" y="156" text-anchor="middle" fill="#fff" font-size="22" font-weight="700">D</text>
+            <text x="270" y="174" text-anchor="middle" fill="#fff" font-size="11">执行 Do</text>
+          </g>
+          <g>
+            <circle cx="160" cy="270" r="40" fill="#36d399"/>
+            <text x="160" y="266" text-anchor="middle" fill="#0f1729" font-size="22" font-weight="700">C</text>
+            <text x="160" y="284" text-anchor="middle" fill="#0f1729" font-size="11">检查 Check</text>
+          </g>
+          <g>
+            <circle cx="50" cy="160" r="40" fill="#fbbd23"/>
+            <text x="50" y="156" text-anchor="middle" fill="#0f1729" font-size="22" font-weight="700">A</text>
+            <text x="50" y="174" text-anchor="middle" fill="#0f1729" font-size="11">处理 Act</text>
+          </g>
+          <!-- 箭头方向 -->
+          <path d="M198 70 A110 110 0 0 1 250 122" fill="none" stroke="#a9b4cc" stroke-width="2" marker-end="url(#arr)"/>
+          <path d="M250 198 A110 110 0 0 1 198 250" fill="none" stroke="#a9b4cc" stroke-width="2" marker-end="url(#arr)"/>
+          <path d="M122 250 A110 110 0 0 1 70 198" fill="none" stroke="#a9b4cc" stroke-width="2" marker-end="url(#arr)"/>
+          <path d="M70 122 A110 110 0 0 1 122 70" fill="none" stroke="#a9b4cc" stroke-width="2" marker-end="url(#arr)"/>
+          <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="5" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#a9b4cc"/></marker></defs>
+        </svg>
+        <div class="cap">图1 · PDCA 循环：风险管理是<b>持续滚动</b>的过程，不是一次性活动</div>
+      </div>
+      <div class="box tip">
+        <span class="bt">📌 风险管理的两个定义（要会区分）</span>
+        定义一（GB/Z 24364）：识别、控制、消除或最小化可能影响系统资源的<b>不确定因素</b>的过程。<br>
+        定义二：在组织内部识别、优化、管理风险，使风险降到<b>可接受水平</b>的过程。
+      </div>
+    </section>
+
+    <!-- 2 九大术语 -->
+    <section id="s2">
+      <h2><span class="num">2</span>九大核心术语（本章地基）⭐</h2>
+      <p>这是整章的基础，必须背熟。先看一览表，再点卡片翻转记忆。</p>
+      <table>
+        <tr><th>术语</th><th>英文</th><th>一句话定义</th></tr>
+        <tr><td><b>资产</b></td><td>Asset</td><td>任何对组织<b>有价值、要保护</b>的东西</td></tr>
+        <tr><td><b>威胁源</b></td><td>Threat Agent</td><td>发起威胁的主体（黑客、间谍、自然灾害）</td></tr>
+        <tr><td><b>威胁</b></td><td>Threat</td><td>可能导致安全事故、资产损失的活动</td></tr>
+        <tr><td><b>脆弱性</b></td><td>Vulnerability</td><td>资产的弱点/隐患（造成风险的<b>内因</b>）</td></tr>
+        <tr><td><b>控制措施</b></td><td>Countermeasure</td><td>防范威胁、降低风险的手段</td></tr>
+        <tr><td><b>可能性</b></td><td>Likelihood</td><td>威胁源利用脆弱性造成后果的<b>可能性</b></td></tr>
+        <tr><td><b>影响</b></td><td>Impact</td><td>造成后果的<b>程度大小</b></td></tr>
+        <tr><td><b>风险</b></td><td>Risk</td><td>威胁源利用脆弱性对资产造成不良后果的可能性</td></tr>
+        <tr><td><b>残余风险</b></td><td>Residual Risk</td><td>采取措施后<b>仍存在</b>的风险</td></tr>
+      </table>
+
+      <p style="text-align:center;color:var(--ink-soft);font-size:14px">👇 点击卡片翻转，看"举例 / 关键点"</p>
+      <div class="flip-row">
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front c"><div class="emoji">💎</div><h4>资产</h4><span class="en">Asset</span></div>
+            <div class="flip-back c">有价值、要保护的东西<br><small>不只是设备/数据，<b>品牌、名誉、人员</b>也是资产</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front r"><div class="emoji">😈</div><h4>威胁源</h4><span class="en">Threat Agent</span></div>
+            <div class="flip-back r">发起威胁的主体<br><small>黑客、间谍、犯罪团伙、内部人员、自然灾害</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front a"><div class="emoji">⚔️</div><h4>威胁</h4><span class="en">Threat</span></div>
+            <div class="flip-back a">可能造成损失的活动<br><small>口令攻击、漏洞利用、拒绝服务、窃取数据、社会工程…</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front i"><div class="emoji">🕳️</div><h4>脆弱性</h4><span class="en">Vulnerability</span></div>
+            <div class="flip-back i">资产的弱点/隐患<br><small>代码缺陷、配置错误、流程缺陷、<b>人员意识不足</b>；本身不构成危害</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front c"><div class="emoji">🛡️</div><h4>控制措施</h4><span class="en">Countermeasure</span></div>
+            <div class="flip-back c">降低风险的手段<br><small>防火墙、入侵检测、审计、应急体系、U盘管理制度</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front a"><div class="emoji">🎲</div><h4>可能性</h4><span class="en">Likelihood</span></div>
+            <div class="flip-back a">后果发生的可能性<br><small>互联网公开漏洞+有工具→可能性大；物理隔离局域网→可能性小</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front i"><div class="emoji">💥</div><h4>影响</h4><span class="en">Impact</span></div>
+            <div class="flip-back i">后果的程度大小<br><small>国家级网站比省市网站损失大；核心系统比门户损失大</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front r"><div class="emoji">⚠️</div><h4>风险</h4><span class="en">Risk</span></div>
+            <div class="flip-back r">CIA 遭破坏的可能性<br><small>威胁源利用脆弱性造成资产损失的可能性，<b>只考虑负面影响</b></small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front a"><div class="emoji">♻️</div><h4>残余风险</h4><span class="en">Residual Risk</span></div>
+            <div class="flip-back a">采取措施后仍存在的风险<br><small>有些是权衡成本效益后<b>故意不控制</b>的，但要持续监控</small></div>
+          </div>
+        </div>
+      </div>
+
+      <h3>💎 资产的多种分类（重点：有形/无形）</h3>
+      <p>资产以多种形式存在，可以从多个维度分类：</p>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">🧱 / 🧩</div><h4>物理的 / 逻辑的</h4><span class="en">计算/网络/存储设备 ↔ 体系结构、协议、程序、数据文件</span></div>
+        <div class="ccard i"><div class="emoji">💻 / 📀</div><h4>硬件的 / 软件的</h4><span class="en">主板机箱键鼠 ↔ 操作系统、数据库、工具与应用软件</span></div>
+        <div class="ccard a"><div class="emoji">🏢 / 🏆</div><h4>有形的 / 无形的</h4><span class="en">机房/设备/人员 ↔ <b>品牌、信心、名誉</b></span></div>
+        <div class="ccard r"><div class="emoji">📐 / 🔄</div><h4>静态的 / 动态的</h4><span class="en">设施、规程 ↔ 人员、过程</span></div>
+        <div class="ccard c"><div class="emoji">🔧 / 📋</div><h4>技术的 / 管理的</h4><span class="en">硬件软件固件 ↔ 业务目标、战略、策略、规程、人员</span></div>
+      </div>
+      <div class="box warn">
+        <span class="bt">⚠️ 易考点</span>
+        资产<b>不只是设备和数据</b>——品牌、名誉、人员、制度规程都是资产。判断题常出"资产既可以是有形资产，也可以是品牌信誉等无形资产"（正确）。
+      </div>
+
+      <h3>♻️ 残余风险（举例）</h3>
+      <div class="box tip">
+        <span class="bt">举例</span>
+        风险列表中有 <b>10 类</b>风险，根据成本效益分析，只有前 <b>8 项</b>需要控制，则另 <b>2 项</b>就是残余风险。一段时间内系统处于"风险可接受水平"。<b>但残余风险要密切监视</b>，它可能将来诱发新的安全事件。
+      </div>
+    </section>
+
+    <!-- 3 关系链 -->
+    <section id="s3">
+      <h2><span class="num">3</span>术语关系链（必考图）⭐</h2>
+      <p>这些术语不是孤立的，它们串成一条"<b>风险链</b>"。理解这条链，整章就通了。</p>
+
+      <div class="fig">
+        <svg viewBox="0 0 900 250" width="900">
+          <defs><marker id="a2" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8 Z" fill="#5b9dff"/></marker></defs>
+          <!-- 节点 -->
+          <g font-size="14" font-weight="700" text-anchor="middle">
+            <rect x="10" y="90" width="120" height="56" rx="12" fill="#f87272"/>
+            <text x="70" y="115" fill="#1a0606">威胁源</text><text x="70" y="134" fill="#1a0606" font-size="11" font-weight="400">Threat Agent</text>
+            <rect x="180" y="90" width="120" height="56" rx="12" fill="#fbbd23"/>
+            <text x="240" y="115" fill="#1a1206">威胁方式</text><text x="240" y="134" fill="#1a1206" font-size="11" font-weight="400">Threat</text>
+            <rect x="350" y="90" width="120" height="56" rx="12" fill="#36d399"/>
+            <text x="410" y="115" fill="#06170f">脆弱性</text><text x="410" y="134" fill="#06170f" font-size="11" font-weight="400">Vulnerability</text>
+            <rect x="520" y="90" width="120" height="56" rx="12" fill="#5b9dff"/>
+            <text x="580" y="115" fill="#fff">资产</text><text x="580" y="134" fill="#fff" font-size="11" font-weight="400">Asset</text>
+            <rect x="690" y="90" width="120" height="56" rx="12" fill="#7c5cff"/>
+            <text x="750" y="115" fill="#fff">不良影响</text><text x="750" y="134" fill="#fff" font-size="11" font-weight="400">Impact = 风险</text>
+          </g>
+          <!-- 箭头 -->
+          <g stroke="#5b9dff" stroke-width="2" fill="none">
+            <line x1="130" y1="118" x2="172" y2="118" marker-end="url(#a2)"/>
+            <line x1="300" y1="118" x2="342" y2="118" marker-end="url(#a2)"/>
+            <line x1="470" y1="118" x2="512" y2="118" marker-end="url(#a2)"/>
+            <line x1="640" y1="118" x2="682" y2="118" marker-end="url(#a2)"/>
+          </g>
+          <g font-size="11" fill="#a9b4cc" text-anchor="middle">
+            <text x="151" y="110">采用</text>
+            <text x="321" y="110">利用</text>
+            <text x="491" y="110">作用于</text>
+            <text x="661" y="110">产生</text>
+          </g>
+          <!-- 控制措施切断 -->
+          <g>
+            <rect x="320" y="10" width="180" height="40" rx="10" fill="#1b2745" stroke="#36d399" stroke-width="2"/>
+            <text x="410" y="35" text-anchor="middle" fill="#36d399" font-size="13" font-weight="700">🛡️ 控制措施（在此切断链条）</text>
+            <line x1="410" y1="50" x2="410" y2="86" stroke="#36d399" stroke-width="2" stroke-dasharray="4 3"/>
+          </g>
+          <text x="450" y="205" text-anchor="middle" fill="#f472b6" font-size="13" font-weight="700">威胁源 → 威胁方式 → 利用脆弱性 → 作用于资产 → 产生影响 = 风险</text>
+        </svg>
+        <div class="cap">图2 · 风险术语关系链：控制措施的作用就是<b style="color:#36d399">切断这条链</b>（常用方法：减少脆弱性）</div>
+      </div>
+
+      <div class="box quote">
+        <span class="bt">📝 一句话例子（背下来）</span>
+        网站存在 <b>SQL 注入漏洞（脆弱性）</b>，普通<b>攻击者（威胁源）</b>用<b>自动化攻击工具（威胁方式）</b>很容易控制<b>网站（资产）</b>，修改内容，从而损害<b>政府部门声誉（影响）</b>——这整件事就是<b>风险</b>。
+      </div>
+
+      <div class="box key">
+        <span class="bt">⭐ 风险的"五个方面"</span>
+        理解风险要抓住五要素：<b>威胁源、威胁行为、脆弱性、资产、影响</b>。后面"降低风险"也正是从这五个方面下手。
+      </div>
+
+      <h3>🎮 小练习：把术语和它的定义连起来</h3>
+      <p style="color:var(--ink-soft);font-size:14px">先点左边一个术语，再点右边对应的定义，连对会变绿。</p>
+      <div class="match" id="match1">
+        <div class="col">
+          <div class="ct">📌 术语</div>
+          <div class="mitem" data-k="A">脆弱性</div>
+          <div class="mitem" data-k="B">威胁源</div>
+          <div class="mitem" data-k="C">控制措施</div>
+          <div class="mitem" data-k="D">残余风险</div>
+        </div>
+        <div class="col">
+          <div class="ct">🎯 定义</div>
+          <div class="mitem" data-k="C">防范威胁、降低风险的手段</div>
+          <div class="mitem" data-k="D">采取措施后仍存在、需持续监视的风险</div>
+          <div class="mitem" data-k="A">资产的弱点/隐患，造成风险的内因</div>
+          <div class="mitem" data-k="B">发起威胁的主体</div>
+        </div>
+      </div>
+      <div class="feedback" id="match1fb"></div>
+    </section>
+
+    <!-- 4 评估vs管理 -->
+    <section id="s4">
+      <h2><span class="num">4</span>风险评估 vs 风险管理（容易混）</h2>
+      <p>这两个概念很像，但范围不同，是常考点。</p>
+      <table>
+        <tr><th></th><th>风险管理</th><th>风险评估</th></tr>
+        <tr><td><b>目标</b></td><td>将风险降低到可接受水平</td><td>确定面临的风险并确定其优先级</td></tr>
+        <tr><td><b>范围/周期</b></td><td>包括风险评估、风险决策、风险控制等<b>所有阶段</b></td><td>风险管理中的<b>单个阶段</b></td></tr>
+        <tr><td><b>计划</b></td><td>持续（PDCA）</td><td>按需要</td></tr>
+      </table>
+      <div class="box key">
+        <span class="bt">⭐ 必记结论</span>
+        <b>风险评估是风险管理的起点和基础环节</b>；风险评估的目的是<b>控制风险</b>；风险管理倡导<b>适度安全</b>。信息系统的安全风险是动态变化的，通常应<b>每隔 1~3 年</b>做一次全面风险评估。
+      </div>
+      <div class="box tip">
+        <span class="bt">📖 风险评估定义</span>
+        从风险管理角度，运用科学方法系统分析信息系统面临的<b>威胁</b>及存在的<b>脆弱性</b>，评估安全事件一旦发生可能造成的<b>危害程度</b>，提出有针对性的防护对策和整改措施，将风险控制在可接受水平。
+      </div>
+    </section>
+
+    <!-- 5 四阶段两贯穿 -->
+    <section id="s5">
+      <h2><span class="num">5</span>风险管理工作流程：四阶段 + 两贯穿 ⭐</h2>
+      <p>依据国标 <b>GB/Z 24364《信息安全风险管理指南》</b>：<b>四个阶段（按顺序），两个贯穿（全程）</b>。</p>
+
+      <div class="fig">
+        <svg viewBox="0 0 760 320" width="720">
+          <defs><marker id="a3" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8 Z" fill="#5b9dff"/></marker></defs>
+          <!-- 四阶段主轴 -->
+          <g text-anchor="middle">
+            <rect x="40" y="120" width="130" height="58" rx="12" fill="#7c5cff"/>
+            <text x="105" y="146" fill="#fff" font-size="15" font-weight="700">① 建立背景</text>
+            <text x="105" y="166" fill="#fff" font-size="11">定对象/范围</text>
+            <rect x="220" y="120" width="130" height="58" rx="12" fill="#5b9dff"/>
+            <text x="285" y="146" fill="#fff" font-size="15" font-weight="700">② 风险评估</text>
+            <text x="285" y="166" fill="#fff" font-size="11">识别+分析风险</text>
+            <rect x="400" y="120" width="130" height="58" rx="12" fill="#36d399"/>
+            <text x="465" y="146" fill="#06170f" font-size="15" font-weight="700">③ 风险处理</text>
+            <text x="465" y="166" fill="#06170f" font-size="11">控制到可接受</text>
+            <rect x="580" y="120" width="130" height="58" rx="12" fill="#fbbd23"/>
+            <text x="645" y="146" fill="#1a1206" font-size="15" font-weight="700">④ 批准监督</text>
+            <text x="645" y="166" fill="#1a1206" font-size="11">决策层批准</text>
+          </g>
+          <g stroke="#5b9dff" stroke-width="2" fill="none">
+            <line x1="170" y1="149" x2="216" y2="149" marker-end="url(#a3)"/>
+            <line x1="350" y1="149" x2="396" y2="149" marker-end="url(#a3)"/>
+            <line x1="530" y1="149" x2="576" y2="149" marker-end="url(#a3)"/>
+          </g>
+          <!-- 两贯穿 -->
+          <rect x="40" y="40" width="670" height="40" rx="10" fill="#1b2745" stroke="#f472b6" stroke-width="2"/>
+          <text x="375" y="65" text-anchor="middle" fill="#f472b6" font-size="14" font-weight="700">🔄 监控审查（贯穿全程：发现变化、偏差、延误）</text>
+          <rect x="40" y="220" width="670" height="40" rx="10" fill="#1b2745" stroke="#f472b6" stroke-width="2"/>
+          <text x="375" y="245" text-anchor="middle" fill="#f472b6" font-size="14" font-weight="700">💬 沟通咨询（贯穿全程：沟通协调 + 培训咨询）</text>
+          <text x="375" y="295" text-anchor="middle" fill="#a9b4cc" font-size="12">四阶段是主循环，两贯穿在全程同步进行，保障主循环有效</text>
+        </svg>
+        <div class="cap">图3 · 风险管理"四阶段两贯穿"（GB/Z 24364）</div>
+      </div>
+
+      <h3>四个阶段</h3>
+      <table>
+        <tr><th>阶段</th><th>主要工作内容</th></tr>
+        <tr><td><b>① 建立背景</b><br><small>第一步</small></td><td>确定对象和范围、组建团队、制定计划、获得支持（<b>需决策人参与</b>）；信息系统调查、分析；信息安全分析（安全要求/安全环境）</td></tr>
+        <tr><td><b>② 风险评估</b></td><td>制定方案、选评估方法；识别威胁/脆弱性/控制措施；分析可能性和影响；<b>判定风险等级</b>。后续处理和监督都<b>依靠评估结果</b></td></tr>
+        <tr><td><b>③ 风险处理</b></td><td>判断哪些风险可接受/不可接受；确认处理目标（控制到什么程度）；选择处理方式；制定方案、部署控制措施</td></tr>
+        <tr><td><b>④ 批准监督</b></td><td><b>批准</b>：决策层依据评估和处理结果，决定是否认可风险管理活动；<b>监督</b>：检查环境有无变化、是否引入新风险</td></tr>
+      </table>
+
+      <h3>两个贯穿（全程进行）</h3>
+      <div class="cards">
+        <div class="ccard r"><div class="emoji">🔄</div><h4>监控审查</h4><span class="en">及时发现已出现/即将出现的变化、偏差、延误，采取措施纠正，保证主循环有效</span></div>
+        <div class="ccard c"><div class="emoji">💬</div><h4>沟通咨询</h4><span class="en">与领导/各部门/用户充分沟通取得协作；提供培训和咨询，提高人员安全意识、知识和技能</span></div>
+      </div>
+    </section>
+
+    <!-- 6 四类处置 -->
+    <section id="s6">
+      <h2><span class="num">6</span>四类风险处置方法 ⭐</h2>
+      <p>风险处理是为了把风险始终控制在<b>可接受范围</b>内。常用四类方法：</p>
+
+      <div class="disp">
+        <div class="dcard d1"><div class="di">🛡️</div><h4>降低风险</h4><p>对资产采取保护措施减小风险。</p><p><b>首选</b>，通常在安全投入 <b>&lt;</b> 负面影响价值时采用。</p></div>
+        <div class="dcard d2"><div class="di">🔁</div><h4>转移风险</h4><p>把资产或其价值转给第三方（如<b>买保险、外包</b>）。</p><p>用于<b>低概率但高影响</b>、自己难降低的风险。</p></div>
+        <div class="dcard d3"><div class="di">🚫</div><h4>规避风险</h4><p>干脆<b>不使用</b>这个面临风险的资产。</p><p>用于损失无法接受、又难以通过控制措施降低时。</p></div>
+        <div class="dcard d4"><div class="di">✅</div><h4>接受风险</h4><p>不做进一步处理，<b>承担</b>后果。</p><p>用于采取措施后仍必须接受的残余风险；但要<b>持续监控</b>。</p></div>
+      </div>
+
+      <h3>🛡️ 降低风险：从风险的五个方面入手</h3>
+      <table>
+        <tr><th>从哪入手</th><th>具体办法</th></tr>
+        <tr><td><b>减少威胁源</b></td><td>用<b>法律手段</b>制裁计算机犯罪，发挥威慑作用，遏制威胁源动机</td></tr>
+        <tr><td><b>降低威胁能力</b></td><td>采取<b>身份鉴别</b>措施，抵御身份假冒这类威胁行为</td></tr>
+        <tr><td><b>减少脆弱性</b></td><td>及时<b>打补丁</b>、关闭无用网络服务端口，降低被利用的可能性</td></tr>
+        <tr><td><b>防护资产</b></td><td>各种防护措施、建立资产<b>安全域</b>，保证资产价值得到保持</td></tr>
+        <tr><td><b>降低负面影响</b></td><td><b>容灾备份、应急响应、业务连续计划</b>，减少安全事件造成的影响程度</td></tr>
+      </table>
+
+      <div class="box tip">
+        <span class="bt">💡 记忆：处置方法对应"链条"位置</span>
+        <b>降低</b>=切断/削弱风险链上的任一环节；<b>转移</b>=把损失甩给第三方；<b>规避</b>=直接拿掉资产、不让链条成立；<b>接受</b>=明知有链条但承受它。
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">随堂测</span>给昂贵设备买保险、把信息系统外包给有资质的第三方，属于哪类风险处置？</div>
+        <button class="opt">降低风险</button>
+        <button class="opt" data-correct="1">转移风险</button>
+        <button class="opt">规避风险</button>
+        <button class="opt">接受风险</button>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- 7 生命周期 -->
+    <section id="s7">
+      <h2><span class="num">7</span>系统生命周期中的风险管理</h2>
+      <p>风险管理要<b>贯穿整个系统生命周期</b>，五个阶段每个都要做，<b>越早做，后期处理同类问题成本越低</b>。</p>
+
+      <div class="lifecycle">
+        <div class="lc-step"><div class="lc-i">📝</div><h4>规划</h4><small>明确安全方针、需求分析、安全实现论证</small></div>
+        <div class="lc-step"><div class="lc-i">📐</div><h4>设计</h4><small>设计方案论证、安全技术选择、安全产品选择</small></div>
+        <div class="lc-step"><div class="lc-i">🔨</div><h4>实施</h4><small>安全测试、检查配置、人员培训、授权运行</small></div>
+        <div class="lc-step"><div class="lc-i">⚙️</div><h4>运维</h4><small>安全运行管理、变更管理、风险再评估、定期重审批</small></div>
+        <div class="lc-step"><div class="lc-i">🗑️</div><h4>废弃</h4><small>安全报废处理，防报废设备泄密</small></div>
+      </div>
+
+      <h3>各阶段风险管理活动对应的工作内容</h3>
+      <table>
+        <tr><th>阶段</th><th>典型活动 → 对应的风险管理工作内容</th></tr>
+        <tr><td><b>规划</b></td><td>明确安全总体方针/需求分析(<b>背景建立</b>)、风险评估准则达成一致(<b>风险评估</b>)、安全实现论证(<b>风险处理/批准监督</b>)</td></tr>
+        <tr><td><b>设计</b></td><td>设计方案论证(<b>背景建立/风险评估</b>)、安全技术与产品选择/自开发软件设计(<b>风险处理</b>)</td></tr>
+        <tr><td><b>实施</b></td><td>安全测试(<b>风险评估</b>)、检查配置/人员培训(<b>风险处理</b>)、授权系统运行(<b>批准监督</b>)</td></tr>
+        <tr><td><b>运维</b></td><td>安全运行管理/变更管理/风险再评估(<b>风险评估+风险处理</b>)、定期重新审批(<b>批准监督</b>)</td></tr>
+        <tr><td><b>废弃</b></td><td>确定废弃对象(<b>背景建立</b>)、废弃对象风险评估(<b>风险评估</b>)、废弃过程处理(<b>风险处理</b>)、废弃后评审(<b>批准监督</b>)</td></tr>
+      </table>
+      <div class="box warn">
+        <span class="bt">⚠️ 易考点</span>
+        判断题"风险管理是一次性活动，系统上线后无需再开展风险再评估"是<b>错误</b>的——运维阶段必须做<b>风险再评估</b>，废弃阶段要防设备泄密。
+      </div>
+    </section>
+
+    <!-- 8 评估流程 -->
+    <section id="s8">
+      <h2><span class="num">8</span>风险评估实施流程</h2>
+
+      <h3>📜 国家政策要求</h3>
+      <div class="timeline">
+        <div class="tl"><div class="yr">2003年 · 中办发27号文</div>明确提出要重视信息安全风险评估工作，按重要性、涉密程度和风险做相应等级的安全建设和管理。</div>
+        <div class="tl"><div class="yr">2006年 · 国信办5号文</div>明确规定风险评估的基本内容和原则、基本要求和有关安排。</div>
+        <div class="tl"><div class="yr">2008年 · 发改高技2071号文</div>电子政务工程项目应在<b>试运行期间</b>开展风险评估，作为<b>验收依据</b>；评估内容含资产、威胁、脆弱性、已有措施和残余风险影响（相当于"信息安全审计"）。</div>
+      </div>
+
+      <h3>🔍 风险评估、检查评估、等级保护测评的关系</h3>
+      <table>
+        <tr><th>类型</th><th>依据的安全基线</th><th>性质</th></tr>
+        <tr><td><b>等保测评</b></td><td>符合<b>国家</b>安全要求</td><td>符合性测评（既定基线）</td></tr>
+        <tr><td><b>安全检查</b></td><td>符合<b>行业主管</b>安全要求</td><td>符合性测评（既定基线）</td></tr>
+        <tr><td><b>风险评估</b></td><td>以被评估系统的<b>特定安全需求</b>为目标</td><td>风险识别、风险分析、风险评价</td></tr>
+      </table>
+      <div class="box tip">
+        <span class="bt">💡 一句话区分</span>
+        等保/检查是"<b>合不合规</b>"（对照基线打钩）；风险评估是"<b>有多大风险、先治哪个</b>"（针对自身需求找风险、排优先级）。
+      </div>
+
+      <h3>🩺 类比：风险评估 =「健康体检 + 专项检查」</h3>
+      <table>
+        <tr><th>风险评估</th><th>对应"健康体检"</th></tr>
+        <tr><td>资产</td><td>身体（要保护的对象）</td></tr>
+        <tr><td>威胁</td><td>病毒/外部致病因素</td></tr>
+        <tr><td>脆弱性</td><td>身体情况（弱点）</td></tr>
+        <tr><td>已有控制措施</td><td>已采取的预防措施</td></tr>
+        <tr><td>评估结果（风险优先级 + 控制建议）</td><td>病情诊断 + 药方</td></tr>
+      </table>
+
+      <h3>🔁 评估流程：四阶段 / 简化版 4R</h3>
+      <div class="fig">
+        <svg viewBox="0 0 720 130" width="700">
+          <defs><marker id="a4" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8 Z" fill="#36d399"/></marker></defs>
+          <g text-anchor="middle">
+            <rect x="20" y="40" width="140" height="56" rx="12" fill="#7c5cff"/>
+            <text x="90" y="65" fill="#fff" font-size="14" font-weight="700">① 评估准备</text>
+            <text x="90" y="84" fill="#fff" font-size="11">Readiness</text>
+            <rect x="200" y="40" width="140" height="56" rx="12" fill="#5b9dff"/>
+            <text x="270" y="65" fill="#fff" font-size="14" font-weight="700">② 风险识别</text>
+            <text x="270" y="84" fill="#fff" font-size="11">Realization</text>
+            <rect x="380" y="40" width="140" height="56" rx="12" fill="#36d399"/>
+            <text x="450" y="65" fill="#06170f" font-size="14" font-weight="700">③ 风险计算</text>
+            <text x="450" y="84" fill="#06170f" font-size="11">Calculation</text>
+            <rect x="560" y="40" width="140" height="56" rx="12" fill="#fbbd23"/>
+            <text x="630" y="65" fill="#1a1206" font-size="14" font-weight="700">④ 报告/处理</text>
+            <text x="630" y="84" fill="#1a1206" font-size="11">Report</text>
+          </g>
+          <g stroke="#36d399" stroke-width="2" fill="none">
+            <line x1="160" y1="68" x2="196" y2="68" marker-end="url(#a4)"/>
+            <line x1="340" y1="68" x2="376" y2="68" marker-end="url(#a4)"/>
+            <line x1="520" y1="68" x2="556" y2="68" marker-end="url(#a4)"/>
+          </g>
+          <text x="270" y="120" text-anchor="middle" fill="#a9b4cc" font-size="12">风险识别阶段含：资产识别 → 威胁识别 → 脆弱性识别 → 已有安全措施确认</text>
+        </svg>
+        <div class="cap">图4 · 风险评估流程（准备/识别/计算/报告 = 4R），完整版含资产/威胁/脆弱性识别</div>
+      </div>
+
+      <h3>识别阶段三大要素</h3>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">💎</div><h4>资产识别</h4><span class="en">整个评估的<b>起点和终点</b>；用<b>树状法</b>分类（自然形态/信息形态）</span></div>
+        <div class="ccard a"><div class="emoji">⚔️</div><h4>威胁识别</h4><span class="en">分人为故意/人为非故意/自然威胁；方法：日志分析、历史事件、专家经验、互联网检索</span></div>
+        <div class="ccard i"><div class="emoji">🕳️</div><h4>脆弱性识别</h4><span class="en">管理/结构/操作/技术/物理脆弱性；方法：配置核查、漏洞扫描、渗透测试、访谈</span></div>
+      </div>
+    </section>
+
+    <!-- 9 赋值与公式 -->
+    <section id="s9">
+      <h2><span class="num">9</span>资产/威胁/脆弱性赋值与风险计算公式</h2>
+      <p>国标 <b>GB/T 20984《信息安全风险评估规范》</b>推荐用 <b>1~5 级</b>赋值。</p>
+
+      <h3>三类要素的 1~5 级赋值</h3>
+      <table>
+        <tr><th>赋值</th><th>资产（按机密性/完整性/可用性）</th><th>威胁（按出现频率）</th><th>脆弱性（按损害严重程度）</th></tr>
+        <tr><td><b>5</b></td><td>很高（泄露/破坏造成灾难性损害）</td><td>很高（≥1次/周，几乎不可避免）</td><td>很高（被利用将造成<b>完全</b>损害）</td></tr>
+        <tr><td><b>4</b></td><td>高（严重损害）</td><td>高（≥1次/月）</td><td>高（重大损害）</td></tr>
+        <tr><td><b>3</b></td><td>中等（一般损害）</td><td>中（&gt;1次/半年）</td><td>中等（一般损害）</td></tr>
+        <tr><td><b>2</b></td><td>低（轻微损害）</td><td>低（不太可能）</td><td>低（较小损害）</td></tr>
+        <tr><td><b>1</b></td><td>很低（可忽略）</td><td>很低（几乎不可能）</td><td>很低（损害可忽略）</td></tr>
+      </table>
+
+      <div class="box tip">
+        <span class="bt">💡 资产价值如何综合？</span>
+        资产要分别对<b>机密性、完整性、可用性</b>（及可审计性、不可抵赖性）赋值，再综合：<br>
+        ·<b>最大原则</b>：VA = Max(VAc, VAi, VAa, …)，取最大的属性赋值（常用）；<br>
+        ·<b>加权原则</b>：VA = ΣVAx·Wx（按属性对业务的重要性赋权重，权重之和=1）。
+      </div>
+
+      <h3>📐 风险计算公式（GB/T 20984）</h3>
+      <div class="fig">
+        <div style="font-size:22px;font-weight:700;color:#8fd6ff;letter-spacing:1px;padding:10px 0">
+          风险值 = R(A, T, V) = R( L(T,V), F(Ia, Va) )
+        </div>
+        <table style="margin:10px auto 0;max-width:560px;text-align:left">
+          <tr><td><code>A</code> 资产</td><td><code>T</code> 威胁</td><td><code>V</code> 脆弱性</td></tr>
+          <tr><td><code>L</code> 威胁利用脆弱性导致安全事件的<b>可能性</b></td><td colspan="2"><code>F</code> 安全事件发生后造成的<b>损失</b></td></tr>
+          <tr><td><code>Ia</code> 安全事件所作用的<b>资产价值</b></td><td colspan="2"><code>Va</code> <b>脆弱性</b>严重程度</td></tr>
+        </table>
+        <div class="cap">图5 · 风险 = f(可能性 L, 影响 F)；可能性由威胁与脆弱性决定，影响由资产价值与脆弱性决定</div>
+      </div>
+    </section>
+
+    <!-- 10 定性定量 -->
+    <section id="s10">
+      <h2><span class="num">10</span>定性 / 定量 / 半定量分析 ⭐</h2>
+
+      <h3>🔵 定性分析（矩阵法）</h3>
+      <p>用"<b>高/中/低</b>"等文字等级描述影响和可能性，靠分析者经验判断，<b>更具主观性</b>。典型方法：因素分析法、逻辑分析法、历史比较法、<b>德尔斐法</b>、<b>矩阵法</b>。</p>
+      <p style="color:var(--ink-soft);font-size:14px">矩阵法：用"可能性等级 × 影响等级"查表，得到风险等级（L 低 / M 中 / H 高 / E 极高）。</p>
+      <div class="fig">
+        <table class="matrix">
+          <tr><th>可能性＼影响</th><th>1 可忽略</th><th>2 较小</th><th>3 中等</th><th>4 较大</th><th>5 灾难性</th></tr>
+          <tr><th>A 几乎肯定</th><td class="H">H</td><td class="H">H</td><td class="E">E</td><td class="E">E</td><td class="E">E</td></tr>
+          <tr><th>B 很可能</th><td class="M">M</td><td class="H">H</td><td class="H">H</td><td class="E">E</td><td class="E">E</td></tr>
+          <tr><th>C 可能</th><td class="L">L</td><td class="M">M</td><td class="H">H</td><td class="E">E</td><td class="E">E</td></tr>
+          <tr><th>D 不太可能</th><td class="L">L</td><td class="L">L</td><td class="M">M</td><td class="H">H</td><td class="E">E</td></tr>
+          <tr><th>E 罕见</th><td class="L">L</td><td class="L">L</td><td class="M">M</td><td class="H">H</td><td class="H">H</td></tr>
+        </table>
+        <div class="cap">图6 · 定性风险矩阵热力图（可能性 A~E × 影响 1~5 → 风险等级）</div>
+      </div>
+
+      <h3>🟢 定量分析（ALE 期望年度损失法）</h3>
+      <p>用<b>具体金额、数字</b>描述后果和可能性，<b>更具客观性</b>，必须有公式。经典方法是<b>期望年度损失法 ALE</b>。</p>
+      <div class="fig">
+        <svg viewBox="0 0 720 220" width="700">
+          <g text-anchor="middle" font-size="13">
+            <rect x="20" y="20" width="120" height="50" rx="10" fill="#5b9dff"/>
+            <text x="80" y="40" fill="#fff" font-weight="700">AV</text><text x="80" y="58" fill="#fff" font-size="11">资产价值</text>
+            <text x="155" y="50" fill="#a9b4cc" font-size="20">×</text>
+            <rect x="170" y="20" width="120" height="50" rx="10" fill="#5b9dff"/>
+            <text x="230" y="40" fill="#fff" font-weight="700">EF</text><text x="230" y="58" fill="#fff" font-size="11">暴露系数(%)</text>
+            <text x="305" y="50" fill="#a9b4cc" font-size="20">=</text>
+            <rect x="320" y="20" width="130" height="50" rx="10" fill="#36d399"/>
+            <text x="385" y="40" fill="#06170f" font-weight="700">SLE</text><text x="385" y="58" fill="#06170f" font-size="11">单次预期损失</text>
+          </g>
+          <g text-anchor="middle" font-size="13">
+            <rect x="320" y="100" width="130" height="50" rx="10" fill="#36d399"/>
+            <text x="385" y="120" fill="#06170f" font-weight="700">SLE</text>
+            <text x="465" y="130" fill="#a9b4cc" font-size="20">×</text>
+            <rect x="480" y="100" width="120" height="50" rx="10" fill="#5b9dff"/>
+            <text x="540" y="120" fill="#fff" font-weight="700">ARO</text><text x="540" y="138" fill="#fff" font-size="11">年发生率</text>
+            <text x="615" y="130" fill="#a9b4cc" font-size="20">=</text>
+            <rect x="630" y="100" width="80" height="50" rx="10" fill="#fbbd23"/>
+            <text x="670" y="120" fill="#1a1206" font-weight="700">ALE</text><text x="670" y="138" fill="#1a1206" font-size="10">年度损失</text>
+          </g>
+          <line x1="385" y1="70" x2="385" y2="100" stroke="#a9b4cc" stroke-width="2"/>
+          <text x="360" y="195" text-anchor="middle" fill="#8fd6ff" font-size="16" font-weight="700">ALE = SLE × ARO = AV × EF × ARO</text>
+        </svg>
+        <div class="cap">图7 · ALE 计算链：<b>资产价值 × 暴露系数 = 单次损失</b>，<b>单次损失 × 年发生率 = 年度损失</b></div>
+      </div>
+      <table>
+        <tr><th>符号</th><th>含义</th><th>说明</th></tr>
+        <tr><td><b>AV</b></td><td>资产价值</td><td>资产的真实价值（替换成本、生产率损失、品牌成本等）</td></tr>
+        <tr><td><b>EF</b></td><td>暴露系数</td><td>一次威胁对资产造成的损失<b>百分比</b></td></tr>
+        <tr><td><b>SLE</b></td><td>单一预期损失</td><td><b>SLE = AV × EF</b>，发生一次风险的损失总额</td></tr>
+        <tr><td><b>ARO</b></td><td>年发生率</td><td>一年中风险发生的次数</td></tr>
+        <tr><td><b>ALE</b></td><td>年度预期损失</td><td><b>ALE = SLE × ARO</b>，不采取措施一年可能损失总额</td></tr>
+        <tr><td><b>ROSI</b></td><td>安全投资收益</td><td><b>ROSI = 控制前ALE − 控制后ALE − 年控制成本</b></td></tr>
+      </table>
+
+      <div class="box key">
+        <span class="bt">🧮 算一遍（例）</span>
+        某服务器 AV=100万，一次攻击损失 50%（EF=0.5），每年发生 2 次（ARO=2）。<br>
+        SLE = 100万 × 0.5 = <b>50万</b>；ALE = 50万 × 2 = <b>100万/年</b>。<br>
+        若部署控制措施后 ALE 降到 20万，年控制成本 30万，则 ROSI = 100 − 20 − 30 = <b>+50万</b>（值得投资）。
+      </div>
+
+      <h3>🟡 半定量分析（相乘法）</h3>
+      <p>把定性和定量结合，对要素赋数值再相乘。<b>相乘法</b>：可能性数值 × 影响数值 = 风险值，再按等级表判定。</p>
+      <div class="fig">
+        <table class="matrix">
+          <tr><th>可能性＼影响</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+          <tr><th>5 几乎肯定</th><td class="n">5</td><td class="n">10</td><td class="n">15</td><td class="n">20</td><td class="n">25</td></tr>
+          <tr><th>4 很可能</th><td class="n">4</td><td class="n">8</td><td class="n">12</td><td class="n">16</td><td class="n">20</td></tr>
+          <tr><th>3 可能</th><td class="n">3</td><td class="n">6</td><td class="n">9</td><td class="n">12</td><td class="n">15</td></tr>
+          <tr><th>2 不太可能</th><td class="n">2</td><td class="n">4</td><td class="n">6</td><td class="n">8</td><td class="n">10</td></tr>
+          <tr><th>1 罕见</th><td class="n">1</td><td class="n">2</td><td class="n">3</td><td class="n">4</td><td class="n">5</td></tr>
+        </table>
+        <div class="cap">图8 · 半定量"相乘法"：风险值 = 可能性 × 影响（1~25），再按阈值划分等级</div>
+      </div>
+
+      <h3>⚖️ 定性 vs 定量 优缺点对比（必考）</h3>
+      <table>
+        <tr><th></th><th>优点</th><th>缺点</th></tr>
+        <tr><td><b>定量</b></td><td>结果用货币/数据表达；可按财务影响排优先级；可做<b>投资收益(ROSI)分析</b>；精度随历史数据积累提高</td><td>计算复杂耗时；专业技术性强，未经指导难执行；使复杂事物简单化、可能失真</td></tr>
+        <tr><td><b>定性</b></td><td>可对处置排优先级；<b>更易达成一致</b>；无需量化威胁频率/资产财务价值；便于非专业人员参与</td><td>重要风险之间区别不足；难做成本效益分析、难证明投资正确；结果<b>主观性强</b>，取决于团队素质</td></tr>
+      </table>
+
+      <h3>🟣 综合评估方法</h3>
+      <p>定量是定性的基础前提，定性是灵魂（做判断、得结论）。把两者融合就是综合评估。典型：<b>层次分析法 AHP</b>（20 世纪 70 年代美国运筹学专家<b>萨蒂</b>提出），以及基于模糊综合评价、灰色理论、D-S 证据理论、机器学习的方法。</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">随堂测</span>某资产价值 200 万，一次事件损失 25%（EF=0.25），每年发生 4 次。其 ALE 是多少？</div>
+        <button class="opt">50 万</button>
+        <button class="opt" data-correct="1">200 万</button>
+        <button class="opt">800 万</button>
+        <button class="opt">12.5 万</button>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- 11 工具 -->
+    <section id="s11">
+      <h2><span class="num">11</span>风险评估工具分类</h2>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">📊</div><h4>风险评估与管理工具</h4><span class="en"><b>基于标准</b>（NIST SP 800-30、ISO 27005）、<b>基于知识</b>（知识库综合评估）、<b>基于模型</b>（资产/威胁/脆弱性量化模型）</span></div>
+        <div class="ccard a"><div class="emoji">🔬</div><h4>系统基础平台工具</h4><span class="en"><b>脆弱性扫描工具</b>（网络/主机/分布式/数据库扫描器）、<b>渗透测试工具</b>（黑客工具、脚本）</span></div>
+        <div class="ccard i"><div class="emoji">🧰</div><h4>风险评估辅助工具</h4><span class="en">检查列表、IDS、安全审计工具、拓扑发现、资产收集；评估指标库/知识库/漏洞库/算法库/模型库</span></div>
+      </div>
+      <div class="box tip">
+        <span class="bt">🎯 渗透测试</span>
+        完全模拟黑客的攻击技术，对<b>重点目标</b>深入探测，发现系统最脆弱的环节。目的<b>不是</b>找出所有问题，而是从侧面直观反映系统安全状况、提高单位的重视程度。是否采用根据用户需求决定。
+      </div>
+    </section>
+
+    <!-- 12 国产化 -->
+    <section id="s12">
+      <h2><span class="num">12</span>国产化替代</h2>
+
+      <h3>❓ 什么是国产化替代？</h3>
+      <p>就是<b>替代被国外垄断的产品</b>，做"<b>自主可控</b>"。2016 年习总书记强调要牵住<b>核心技术自主创新</b>这个"牛鼻子"，加快推进国产自主可控替代计划。CPU、操作系统、数据库等基础软硬件是自主可控的"<b>正面战场</b>"。</p>
+
+      <h3>❓ 为什么要做？</h3>
+      <div class="cards">
+        <div class="ccard r"><div class="emoji">📱</div><h4>受制于人</h4><span class="en">华为、中兴事件说明：核心技术受制于人，产业可能<b>一天之内瘫痪</b>（倪光南院士）</span></div>
+        <div class="ccard a"><div class="emoji">🕵️</div><h4>数据泄密</h4><span class="en"><b>棱镜门</b>说明：机密数据放在国外数据库有很大泄露风险</span></div>
+        <div class="ccard c"><div class="emoji">🏳️</div><h4>打破垄断</h4><span class="en">芯片、基础软件、中间件长期被美国企业垄断，自主可控关乎国家战略</span></div>
+      </div>
+
+      <h3>❓ 替什么？（"正面战场"对照表）</h3>
+      <table>
+        <tr><th>领域</th><th>国外垄断</th><th>国产替代</th></tr>
+        <tr><td><b>CPU（心脏）</b></td><td>Intel、AMD、IBM</td><td><b>龙芯、飞腾、申威</b></td></tr>
+        <tr><td><b>操作系统（大脑）</b></td><td>Windows（PC）、安卓/iOS（移动）</td><td>国产 <b>Linux</b>：银河麒麟、中标麒麟、优麒麟、深度、中科方德等</td></tr>
+        <tr><td><b>数据库 / 存储</b></td><td>"<b>IOE</b>"= IBM 服务器、Oracle 数据库、EMC 存储</td><td><b>达梦、金仓、南大通用、神通</b></td></tr>
+        <tr><td><b>应用软件</b></td><td>Office、Adobe</td><td>金蝶等（ERP/CRM/OA/MES），国产化程度相对较高</td></tr>
+      </table>
+      <div class="box key">
+        <span class="bt">💡 两个要替的"体系"</span>
+        ① 国产桌面计算机技术体系替代 <b>Wintel</b>（Windows+Intel）体系；② 高端服务器和数据库替代 <b>"IOE"</b>。<br>
+        为什么 Linux 受青睐？因为<b>源代码公开</b>，发现漏洞可直接从源码层修补，二次开发还能节省研发费用。
+      </div>
+
+      <h3>🏭 信创产业</h3>
+      <p><b>信创 = 信息技术应用创新行业</b>。在"微软停更""棱镜门""中兴华为"等事件敲响警钟后乘势而起，旨在通过重构 IT 软硬件各环节，建立我国自主可控的 IT 产业标准和生态，逐步实现"<b>去美化</b>"。从<b>云计算、软件、硬件、安全</b>四方面推进，是一项<b>国家战略</b>。</p>
+      <div class="box tip">
+        <span class="bt">🔗 延伸：可信计算</span>
+        从"自主"到"可控"，沈昌祥院士倡导<b>可信计算</b>——不仅要用自己的产品，还要保证产品行为可信、可控。
+      </div>
+    </section>
+
+    <!-- 13 小结 -->
+    <section id="s13">
+      <h2><span class="num">13</span>本章小结</h2>
+      <ul>
+        <li>风险管理是<b>持续的 PDCA</b> 过程，目标是把风险维持在<b>可接受水平</b>、抓主要矛盾，倡导<b>适度安全</b>。</li>
+        <li>九大术语连成<b>风险链</b>：威胁源→威胁方式→利用脆弱性→作用于资产→产生影响=风险；<b>控制措施切断链条</b>。</li>
+        <li>流程：<b>建立背景 → 风险评估 → 风险处理 → 批准监督</b>（四阶段）+ <b>监控审查、沟通咨询</b>（两贯穿）。</li>
+        <li>四类处置：<b>降低、转移、规避、接受</b>；降低风险从<b>五个方面</b>入手。</li>
+        <li>风险评估流程 <b>4R</b>；风险计算 <b>R=R(L(T,V), F(Ia,Va))</b>；要素 1~5 级赋值。</li>
+        <li>分析方法：定性（高中低/矩阵法）、定量（<b>ALE = AV×EF×ARO</b>、ROSI）、半定量（相乘法）、综合（<b>AHP</b>）。</li>
+        <li>风险管理贯穿<b>生命周期五阶段</b>（规划/设计/实施/运维/废弃）。</li>
+        <li><b>国产化替代</b>：CPU（龙芯/飞腾/申威）、操作系统（国产 Linux/麒麟）、数据库（IOE→达梦/金仓）；<b>信创</b>产业。</li>
+      </ul>
+      <p style="margin-top:16px">
+        <span class="pill">📄 配套作业1（风险管理为本章重点）</span>
+        <span class="pill">📘 上一章 CH1 信息安全概论</span>
+      </p>
+    </section>
+
+    <!-- 重点例题 -->
+    <section id="sexam">
+      <h2><span class="num">⭐</span>重点例题（作业1 风险管理考点精讲）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">下面把作业1中与风险管理相关的题目挑出来，讲<b>思路</b>、讲<b>为什么</b>，学会一道就能举一反三。</p>
+
+      <div class="exam">
+        <div class="et"><span class="badge2">例1 · 风险术语</span>"任何对组织有价值、需要保护的东西"是？</div>
+        <p>选项里有威胁源、资产、脆弱性、残余风险。关键词是"<b>有价值、要保护</b>"——这正是<b>资产</b>的定义。威胁源是"发起攻击的主体"，脆弱性是"弱点"，残余风险是"采取措施后剩下的风险"，都不沾边。</p>
+        <div class="ans2">✅ 答案：<b>资产</b>。记忆：资产=要保护的对象，是风险评估的起点和终点。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et"><span class="badge2">例2 · 脆弱性识别</span>下列哪项属于脆弱性的例子？</div>
+        <p>要分清三个角色：<b>威胁源</b>（黑客组织实施攻击）、<b>威胁/影响</b>（洪水断电、业务中断）、<b>脆弱性</b>（系统自身的弱点）。"系统口令策略过弱且未及时打补丁"描述的是<b>系统自身的弱点</b>，所以是脆弱性。</p>
+        <div class="ans2">✅ 答案：<b>系统口令策略过弱且未及时打补丁</b>。脆弱性 = 资产的内在弱点，本身不构成危害，但会被威胁利用。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et"><span class="badge2">例3 · 四类处置</span>常见的四类风险处置方法不包括？</div>
+        <p>四类处置是固定的：<b>降低、转移、规避、接受</b>。选项里出现"隐藏风险"——没有这一类，属于干扰项。</p>
+        <div class="ans2">✅ 答案：<b>隐藏风险</b>（不属于四类）。口诀：降低(首选)、转移(保险/外包)、规避(不用)、接受(承受残余)。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et"><span class="badge2">例4 · ALE 公式</span>年度预期损失 ALE 的经典计算公式是？</div>
+        <p>必背公式：<b>SLE = AV × EF</b>（单次损失=资产价值×暴露系数），<b>ALE = SLE × ARO = AV × EF × ARO</b>（年度损失=单次损失×年发生率）。注意都是<b>相乘</b>，不是相加，也不是相除。</p>
+        <div class="ans2">✅ 答案：<b>ALE = SLE × ARO = AV × EF × ARO</b>。举一反三：给你 AV、EF、ARO 三个数，先乘出 SLE 再乘 ARO。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et"><span class="badge2">例5 · 定性分析特点</span>下列哪项更符合定性风险分析的特点？</div>
+        <p>定性=用"<b>高/中/低</b>"等级描述，靠经验，不需要量化金额；定量才用货币金额。"不需要评估者经验"是错的（定性恰恰<b>依赖</b>经验），"只能用于资产定价"也错。</p>
+        <div class="ans2">✅ 答案：<b>使用高、中、低等等级描述影响和可能性</b>。定性优点是易达成一致、便于非专业人员参与。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et"><span class="badge2">例6 · 评估流程</span>风险评估的典型实施流程顺序是？</div>
+        <p>正确顺序：<b>评估准备 → 风险要素识别 → 风险分析 → 风险结果判定</b>（对应 4R：准备/识别/计算/报告）。把"风险处理放最前面"或"先验收后评估"都是错的。</p>
+        <div class="ans2">✅ 答案：<b>评估准备、风险要素识别、风险分析、风险结果判定</b>。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et"><span class="badge2">例7 · 评估vs管理</span>关于风险评估与风险管理的关系，正确的说法是？</div>
+        <p>核心结论：<b>风险评估是风险管理中的一个阶段</b>（起点和基础环节）；风险管理是包含评估、决策、控制的<b>持续 PDCA</b> 过程。"只包含一次评估""不需要持续改进"都错。</p>
+        <div class="ans2">✅ 答案：<b>风险评估是风险管理中的一个阶段</b>。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et"><span class="badge2">例8 · PPDR 模型</span>PPDR 中 Pt &gt; Dt + Rt 表达什么？（作业易混点）</div>
+        <p>PPDR = 策略(Policy)、防护(Protection)、检测(Detection)、响应(Response)。核心不等式 <b>Pt &gt; Dt + Rt</b>：<b>防护时间</b>要大于<b>检测时间 + 响应时间</b>之和，系统才安全；否则就存在"暴露时间"(Et = Dt+Rt−Pt)。</p>
+        <div class="ans2">✅ 答案：<b>防护时间应大于检测时间与响应时间之和</b>。启示：要么增强防护拖延攻击，要么缩短检测+响应。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et"><span class="badge2">例9 · 案例题思路</span>高校学生信息泄露（含表格在微信群传播）如何分析？</div>
+        <p>套用<b>四要素</b>：资产=学生个人信息表；威胁=信息泄露/内部人员滥用；脆弱性=<b>数据权限长期未梳理、多部门共享同一导出账号</b>；影响=个人隐私泄露、学校声誉受损。处置：梳理权限+收回共享账号(<b>降低</b>)、敏感数据脱敏后才允许导出(<b>降低</b>)、对极敏感数据干脆不外发(<b>规避</b>)。最后用沟通咨询(培训意识)+监控审查(审计导出日志)+批准监督(决策层审批整改)形成闭环。</p>
+        <div class="ans2">✅ 思路：先按"资产/威胁/脆弱性/影响"拆解，再用"降低/转移/规避/接受"开处方，最后用四阶段两贯穿收尾。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et"><span class="badge2">例10 · 案例题思路</span>勒索病毒应急处置（3389开放、口令多年未改、备份同机）</div>
+        <p>威胁方式=<b>远程桌面爆破/弱口令登录 + 勒索软件加密</b>；脆弱性=<b>3389暴露公网、口令多年未改、备份与数据同机（无离线备份）</b>。应急按<b>检测→抑制→根除→恢复→跟进</b>：断网隔离(抑制)、清除木马(根除)、用离线备份恢复(恢复)、复盘整改(跟进)。长期措施(风险管理)：关闭/限制3389、强口令+定期改、<b>3-2-1异地离线备份</b>、补丁管理、最小权限。</p>
+        <div class="ans2">✅ 思路：先定位脆弱性，再走应急五步，最后从风险管理角度给长期措施（减少脆弱性+降低影响）。</div>
+      </div>
+    </section>
+
+    <!-- 自测 -->
+    <section id="s14">
+      <h2><span class="num">🎯</span>自测（点击展开参考要点）</h2>
+      <details>
+        <summary>风险评估和风险管理有什么区别与联系？</summary>
+        <div class="ans">风险评估是确定风险并排优先级，是风险管理中的<b>一个阶段</b>（起点和基础）；风险管理是把风险降到可接受水平、包含评估/决策/控制全过程、持续(PDCA)进行。联系：风险管理依靠风险评估结果来做后续处理和监督。</div>
+      </details>
+      <details>
+        <summary>画出风险术语的关系链，并说明控制措施的作用。</summary>
+        <div class="ans">威胁源 →(采用) 威胁方式 →(利用) 脆弱性 →(作用于) 资产 →(产生) 影响 = 风险。控制措施的作用是<b>切断这条链</b>（如打补丁减少脆弱性、身份鉴别降低威胁能力、容灾备份降低影响）。</div>
+      </details>
+      <details>
+        <summary>四类风险处置方法分别适用什么场景？</summary>
+        <div class="ans">降低=首选，安全投入小于损失时；转移=低概率高影响（买保险/外包）；规避=损失无法接受又难降低（干脆不用资产）；接受=采取措施后必须承受的残余风险（但要持续监控）。</div>
+      </details>
+      <details>
+        <summary>写出 ALE 的完整计算公式，并解释每个符号。</summary>
+        <div class="ans">SLE = AV×EF；ALE = SLE×ARO = AV×EF×ARO；ROSI = 控制前ALE − 控制后ALE − 年控制成本。AV资产价值、EF暴露系数(损失百分比)、SLE单次预期损失、ARO年发生率、ALE年度预期损失。</div>
+      </details>
+      <details>
+        <summary>定性、定量、半定量分析的核心区别？</summary>
+        <div class="ans">定性=用高/中/低等级、靠经验(主观)、矩阵法；定量=用具体金额数字(客观)、ALE法、可做ROSI；半定量=两者结合，对要素赋数值再相乘(相乘法)。综合方法如AHP层次分析法。</div>
+      </details>
+      <details>
+        <summary>风险管理的四阶段两贯穿是什么？</summary>
+        <div class="ans">四阶段：建立背景→风险评估→风险处理→批准监督；两贯穿：监控审查、沟通咨询（全程进行）。依据 GB/Z 24364。</div>
+      </details>
+      <details>
+        <summary>国产化替代主要替代哪些核心软硬件？</summary>
+        <div class="ans">CPU（龙芯/飞腾/申威 替代 Intel）、操作系统（国产 Linux/麒麟 替代 Windows）、数据库与存储（达梦/金仓 替代 IOE）、应用软件（金蝶等）。本质是自主可控、打破垄断。</div>
+      </details>
+      <details>
+        <summary>系统生命周期五阶段各做什么风险管理？</summary>
+        <div class="ans">规划(安全方针/需求分析)→设计(安全技术与产品选择)→实施(安全测试/培训/授权运行)→运维(运行管理/变更/风险再评估)→废弃(安全报废防泄密)。越早做成本越低。</div>
+      </details>
+      <div class="box tip" style="margin-top:18px">
+        <span class="bt">✅ 都能答上来？</span>
+        那 CH2 风险管理的核心你就掌握了，可以去做<b>作业1</b>的风险管理部分了。下面的题库再巩固一遍。
+      </div>
+    </section>
+
+    <!-- 强化题库 -->
+    <section id="bank">
+      <h2><span class="num">📝</span>强化题库（60 选择 + 32 填空 = 92 题）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">覆盖本章全部知识点，含 <span style="color:var(--amber);font-weight:700">【作业举一反三】</span> 变体题。选择题点选即时判分；填空题输入后点"检查"或"显示答案"。</p>
+      <div class="tabs">
+        <button class="tab active" data-tab="mcq">📋 选择题 (60)</button>
+        <button class="tab" data-tab="fill">✏️ 填空题 (32)</button>
+      </div>
+
+      <div class="tabpane active" id="pane-mcq">
+        <div class="score">
+          <span class="mini">已答 <b id="mcqDone">0</b>/60</span>
+          <span class="mini">答对 <b id="mcqRight">0</b></span>
+          <span class="mini">正确率 <b id="mcqRate">—</b></span>
+          <button class="resetb" id="mcqReset">↺ 重做</button>
+        </div>
+        <div id="mcqList"></div>
+      </div>
+
+      <div class="tabpane" id="pane-fill">
+        <div class="score">
+          <span class="mini">已检查 <b id="fillDone">0</b>/32</span>
+          <span class="mini">答对 <b id="fillRight">0</b></span>
+          <button class="resetb" id="fillRevealAll">👁 全部显示答案</button>
+          <button class="resetb" id="fillReset">↺ 重做</button>
+        </div>
+        <div id="fillList"></div>
+      </div>
+    </section>
+
+    <footer>
+      网络空间安全技术 · CH2 风险管理与国产化 · 零基础教学讲义<br>
+      💡 配套 Markdown 版：CH2-风险管理与国产化.md ｜ 配套作业：作业1（风险管理为本章重点）
+    </footer>
+  </main>
+</div>
+
+<button id="top" title="回到顶部">↑</button>
+
+<script>
+  // 进度条
+  const progress=document.getElementById('progress');
+  const topBtn=document.getElementById('top');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const scrolled=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+    progress.style.width=scrolled+'%';
+    topBtn.classList.toggle('show',h.scrollTop>400);
+  });
+  topBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+  // 导航高亮 + 学习进度
+  const links=[...document.querySelectorAll('#nav a')];
+  const allSecs=[...document.querySelectorAll('main section')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const seen=new Set();
+  const learnFill=document.getElementById('learnFill');
+  const learnPct=document.getElementById('learnPct');
+  function updateLearn(){
+    const p=Math.round(seen.size/allSecs.length*100);
+    learnFill.style.width=p+'%';
+    learnPct.textContent=p+'%';
+    if(p===100){learnPct.textContent='✅100%';}
+  }
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        if(e.target.id){seen.add(e.target.id);updateLearn();}
+        const id='#'+e.target.id;
+        links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')===id));
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>s&&io.observe(s));
+  allSecs.forEach(s=>io.observe(s));
+
+  // ===== 内嵌随堂测 =====
+  document.querySelectorAll('[data-quiz]').forEach(quiz=>{
+    const opts=[...quiz.querySelectorAll('.opt')];
+    const fb=quiz.querySelector('.feedback');
+    opts.forEach((opt,idx)=>{
+      opt.addEventListener('click',()=>{
+        const correctIdx=opts.findIndex(o=>o.dataset.correct!==undefined);
+        opts.forEach(o=>o.classList.add('disabled'));
+        if(opt.dataset.correct!==undefined){
+          opt.classList.add('correct');
+          fb.className='feedback show ok';
+          fb.textContent='🎉 答对了！理解到位。';
+        }else{
+          opt.classList.add('wrong');
+          opts[correctIdx].classList.add('correct');
+          fb.className='feedback show no';
+          fb.textContent='再想想～ 正确答案已用绿色标出。';
+        }
+      });
+    });
+  });
+
+  // ===== 匹配题 =====
+  (function(){
+    const box=document.getElementById('match1');
+    if(!box)return;
+    const fb=document.getElementById('match1fb');
+    let sel=null,done=0;
+    const items=[...box.querySelectorAll('.mitem')];
+    const total=box.querySelectorAll('.col')[0].querySelectorAll('.mitem').length;
+    items.forEach(it=>{
+      it.addEventListener('click',()=>{
+        if(it.classList.contains('done'))return;
+        if(!sel){sel=it;it.classList.add('sel');return;}
+        if(sel===it){it.classList.remove('sel');sel=null;return;}
+        if(sel.parentElement===it.parentElement){
+          sel.classList.remove('sel');sel=it;it.classList.add('sel');return;
+        }
+        if(sel.dataset.k===it.dataset.k){
+          sel.classList.remove('sel');sel.classList.add('done');it.classList.add('done');
+          done++;sel=null;
+          if(done===total){fb.className='feedback show ok';fb.textContent='🏆 全部连对！风险术语你已经分清了。';}
+        }else{
+          const a=sel,b=it;a.classList.add('shake');b.classList.add('shake');
+          setTimeout(()=>{a.classList.remove('shake','sel');b.classList.remove('shake');},420);
+          sel=null;
+          fb.className='feedback show no';fb.textContent='这两个不匹配，再试试～';
+        }
+      });
+    });
+  })();
+
+  // ===== 强化题库数据 =====
+  const MCQ=[
+    {q:'风险管理的本质是？',o:['消除所有风险','在有风险的环境里把风险减至最低、维持在可接受水平','只在事故后处理','只买安全设备'],a:1,e:'风险管理是在肯定有风险的环境里把风险减至最低、维持在可接受水平的过程，抓主要矛盾。'},
+    {q:'风险管理是一个持续的什么循环？',o:['OODA','PDCA','MAPE','SDLC'],a:1,e:'PDCA = Plan计划、Do执行、Check检查、Act处理，是持续滚动的管理循环。'},
+    {q:'"任何对组织有价值、需要保护的东西"在风险术语中称为？',o:['威胁源','资产','脆弱性','残余风险'],a:1,e:'资产=有价值、要保护的对象，是风险评估的起点和终点。'},
+    {q:'下列哪项属于无形资产？',o:['服务器','机房','品牌和名誉','网络设备'],a:2,e:'资产分有形(机房/设备/人员)和无形(品牌、信心、名誉)，无形资产同样要保护。'},
+    {q:'发起威胁的主体（如黑客、间谍、自然灾害）称为？',o:['威胁源','脆弱性','控制措施','残余风险'],a:0,e:'威胁源(Threat Agent)=发起威胁的主体。'},
+    {q:'"资产的弱点或安全隐患，是造成风险的内因"指的是？',o:['威胁','脆弱性','影响','可能性'],a:1,e:'脆弱性(Vulnerability)是资产的弱点，本身不构成危害，但会被威胁源利用。'},
+    {q:'下列哪项属于脆弱性的例子？【作业举一反三】',o:['黑客组织实施攻击','系统口令策略过弱且未及时打补丁','洪水导致机房断电','攻击造成业务中断'],a:1,e:'脆弱性=系统自身弱点。口令弱+未打补丁是弱点；黑客是威胁源；洪水/业务中断是威胁/影响。'},
+    {q:'部署防火墙、入侵检测、应急体系、U盘管理制度，属于？',o:['脆弱性','威胁','控制措施','残余风险'],a:2,e:'控制措施=根据安全需求部署、用来防范威胁、降低风险的措施。'},
+    {q:'"威胁源利用脆弱性造成不良后果的可能性"指的是？',o:['影响','可能性','残余风险','资产价值'],a:1,e:'可能性(Likelihood)。互联网公开漏洞+有工具→可能性大；物理隔离→可能性小。'},
+    {q:'国家级网站被黑比省市网站损失大，体现的是风险术语中的？',o:['可能性','影响','脆弱性','控制措施'],a:1,e:'影响(Impact)=造成后果的程度大小，与资产重要性相关。'},
+    {q:'网络空间安全风险只考虑？',o:['正面影响','负面影响的事件','所有不确定性','收益'],a:1,e:'风险只考虑那些对组织有负面影响的事件，即CIA遭破坏的可能性。'},
+    {q:'"采取安全措施后信息系统仍可能存在的风险"称为？',o:['固有风险','残余风险','操作风险','战略风险'],a:1,e:'残余风险(Residual Risk)，有些是权衡成本效益后故意不控制的，但要持续监控。'},
+    {q:'风险术语的关系链正确顺序是？',o:['资产→威胁→脆弱性→威胁源→影响','威胁源→威胁方式→脆弱性→资产→影响','脆弱性→资产→威胁源→影响→威胁','影响→资产→脆弱性→威胁→威胁源'],a:1,e:'威胁源采用威胁方式，利用脆弱性，作用于资产，产生影响=风险。'},
+    {q:'控制措施在风险链中的作用是？',o:['增加风险','切断风险链条','提高威胁能力','扩大脆弱性'],a:1,e:'控制措施用来切断风险链（常用减少脆弱性、降低威胁能力、降低影响等）。'},
+    {q:'关于风险评估与风险管理的关系，正确的是？【作业举一反三】',o:['风险评估是风险管理中的一个阶段','风险管理只包含一次风险评估','风险评估的目标是直接采购所有安全设备','风险管理不需要持续改进'],a:0,e:'风险评估是风险管理的起点和基础环节，是其中一个阶段；风险管理是持续PDCA过程。'},
+    {q:'风险评估通常多久做一次全面评估？',o:['每天','每1-3年','十年一次','从不重复'],a:1,e:'信息安全风险是动态变化的，通常每隔1-3年做一次全面风险评估。'},
+    {q:'风险管理的依据国标是？',o:['GB/Z 24364《信息安全风险管理指南》','GB 2312','RFC 791','ISO 9001'],a:0,e:'GB/Z 24364《信息安全风险管理指南》规定四阶段两贯穿。'},
+    {q:'风险管理"四阶段"的正确顺序是？',o:['风险评估→建立背景→批准监督→风险处理','建立背景→风险评估→风险处理→批准监督','风险处理→风险评估→建立背景→批准监督','批准监督→风险处理→风险评估→建立背景'],a:1,e:'建立背景→风险评估→风险处理→批准监督。'},
+    {q:'风险管理的"两个贯穿"是指？',o:['监控审查、沟通咨询','建立背景、风险评估','规划、设计','检测、响应'],a:0,e:'监控审查和沟通咨询贯穿风险管理全程。'},
+    {q:'风险管理第一步"建立背景"的主要工作不包括？',o:['确定对象和范围','组建团队、获得支持','部署防火墙','信息系统调查与分析'],a:2,e:'建立背景是确定对象范围、组建团队、制定计划、调研分析；部署防火墙是处理阶段的事。'},
+    {q:'决策层依据评估和处理结果决定是否认可风险管理活动，属于哪个阶段？',o:['建立背景','风险评估','风险处理','批准监督'],a:3,e:'批准监督阶段：批准=决策层认可；监督=检查环境变化是否引入新风险。'},
+    {q:'常见的四类风险处置方法不包括？【作业举一反三】',o:['减低风险','转移风险','规避风险','隐藏风险'],a:3,e:'四类处置是降低、转移、规避、接受；"隐藏风险"不属于。'},
+    {q:'给昂贵设备买保险、把信息系统外包给有资质第三方，属于？',o:['降低风险','转移风险','规避风险','接受风险'],a:1,e:'转移风险=把资产或其价值转给第三方，用于低概率高影响的风险。'},
+    {q:'四类处置中通常"首先应考虑、安全投入小于损失时采用"的是？',o:['降低风险','转移风险','规避风险','接受风险'],a:0,e:'降低风险是首选，在安全投入小于负面影响价值时采用。'},
+    {q:'"在没有足够安全保障的系统中不处理敏感信息、不接互联网"属于？',o:['降低风险','转移风险','规避风险','接受风险'],a:2,e:'规避风险=通过不使用面临风险的资产来避免风险。'},
+    {q:'对采取措施后仍必须承受的残余风险不再进一步处理，属于？',o:['降低风险','转移风险','规避风险','接受风险'],a:3,e:'接受风险=不进一步处理、承担后果，但仍需持续监控。'},
+    {q:'降低风险可以从风险的几个方面入手？',o:['两个','三个','五个','八个'],a:2,e:'五个方面：减少威胁源、降低威胁能力、减少脆弱性、防护资产、降低负面影响。'},
+    {q:'"及时打补丁、关闭无用端口"属于降低风险的哪个方面？',o:['减少威胁源','减少脆弱性','防护资产','降低负面影响'],a:1,e:'打补丁、关端口=减少脆弱性，降低被利用的可能性。'},
+    {q:'"容灾备份、应急响应、业务连续计划"属于降低风险的哪个方面？',o:['减少威胁源','降低威胁能力','降低负面影响','减少脆弱性'],a:2,e:'容灾备份/应急响应/业务连续计划=降低安全事件造成的负面影响。'},
+    {q:'风险管理应贯穿系统生命周期，其五个阶段顺序是？',o:['设计→规划→实施→废弃→运维','规划→设计→实施→运维→废弃','实施→规划→设计→运维→废弃','规划→实施→设计→运维→废弃'],a:1,e:'规划→设计→实施→运维→废弃，越早做风险管理后期成本越低。'},
+    {q:'信息系统"废弃"阶段风险管理的核心目标是？',o:['采购新设备','安全报废处理，防止报废设备泄密','上线运行','需求分析'],a:1,e:'废弃阶段确保过时部分安全报废，防止安全要求和功能遭破坏（如硬盘泄密）。'},
+    {q:'关于风险管理，下列说法错误的是？【作业举一反三】',o:['是持续的PDCA过程','系统上线后无需再做风险再评估','要贯穿系统生命周期','倡导适度安全'],a:1,e:'运维阶段必须做风险再评估，风险管理不是一次性活动。'},
+    {q:'符合"国家"安全要求的符合性测评是？',o:['等保测评','风险评估','渗透测试','安全检查'],a:0,e:'等保测评=符合国家安全要求；安全检查=符合行业主管要求；风险评估以特定需求为目标。'},
+    {q:'风险评估简化流程"4R"的正确顺序是？【作业举一反三】',o:['报告→识别→准备→计算','准备→识别→计算→报告','识别→准备→报告→计算','计算→报告→准备→识别'],a:1,e:'准备(Readiness)→识别(Realization)→计算(Calculation)→报告(Report)。'},
+    {q:'把风险评估比作"健康体检"，其中"脆弱性"对应？',o:['病毒','身体情况','药方','医生'],a:1,e:'资产=身体，威胁=病毒，脆弱性=身体情况，控制措施=预防措施，结果=诊断+药方。'},
+    {q:'年度预期损失ALE的经典计算公式是？【作业举一反三】',o:['ALE = AV + EF + ARO','ALE = SLE × ARO = AV × EF × ARO','ALE = ARO ÷ SLE','ALE = 控制成本 × 威胁频率'],a:1,e:'SLE=AV×EF；ALE=SLE×ARO=AV×EF×ARO，都是相乘。'},
+    {q:'某资产AV=100万，EF=0.4，ARO=3，其ALE为？【作业举一反三】',o:['40万','120万','300万','14.3万'],a:1,e:'SLE=100×0.4=40万，ALE=40×3=120万/年。'},
+    {q:'安全投资收益ROSI的计算公式是？',o:['控制前ALE − 控制后ALE − 年控制成本','控制后ALE + 年控制成本','AV × EF','SLE × ARO'],a:0,e:'ROSI=(实施控制前ALE)−(实施控制后ALE)−(年控制成本)。'},
+    {q:'下列哪项更符合定性风险分析的特点？【作业举一反三】',o:['一定以货币金额表示结果','使用高、中、低等等级描述影响和可能性','不需要评估者经验','只能用于资产定价'],a:1,e:'定性用高/中/低等级、依赖经验、主观性强；定量才用货币金额。'},
+    {q:'下列关于定量分析优点的描述，正确的是？',o:['无需任何数据','可做安全投资收益(ROSI)分析、按财务影响排优先级','结果完全主观','不需要公式'],a:1,e:'定量优点：用货币/数据表达、可做ROSI、精度随历史数据提高；缺点是计算复杂。'},
+    {q:'半定量风险分析的"相乘法"中，风险值 = ？',o:['可能性 + 影响','可能性 × 影响','可能性 ÷ 影响','资产 − 威胁'],a:1,e:'相乘法：风险值=可能性数值×影响数值（如1~5×1~5=1~25），再按等级表判定。'},
+    {q:'综合评估方法中典型的层次分析法(AHP)由谁提出？',o:['图灵','萨蒂(Saaty)','香农','倪光南'],a:1,e:'AHP由20世纪70年代美国运筹学专家萨蒂提出。'},
+    {q:'GB/T 20984风险计算公式 R=R(L(T,V),F(Ia,Va)) 中，L表示？',o:['资产价值','威胁利用脆弱性导致安全事件的可能性','控制成本','脆弱性数量'],a:1,e:'L=可能性(由威胁T和脆弱性V决定)，F=损失(由资产价值Ia和脆弱性严重程度Va决定)。'},
+    {q:'国标 GB/T 20984 推荐对资产/威胁/脆弱性赋值采用几级？',o:['2级','3级','5级','10级'],a:2,e:'统一采用1~5级赋值，等级数值越大程度越高。'},
+    {q:'资产价值综合评定的"最大原则"是指？',o:['取各属性赋值的平均值','取机密性、完整性、可用性等属性中最大的赋值','取最小值','只看可用性'],a:1,e:'最大原则：VA=Max(VAc,VAi,VAa,…)，取最大的属性赋值作为综合价值。'},
+    {q:'"完全模拟黑客攻击、对重点目标深入探测、发现最脆弱环节"的工具是？',o:['漏洞扫描器','渗透测试','防火墙','日志审计'],a:1,e:'渗透测试目的不是找出所有问题，而是直观反映安全状况、提高重视程度。'},
+    {q:'风险评估工具中"基于NIST SP 800-30、ISO 27005开发"属于？',o:['基于标准的工具','基于知识的工具','基于模型的工具','辅助工具'],a:0,e:'风险评估与管理工具分基于标准、基于知识、基于模型三类。'},
+    {q:'国产化替代重点替代的对象主要是？【作业举一反三】',o:['所有非信息化业务流程','被国外垄断或受制于人的关键软硬件产品','所有开源软件','所有国产应用软件'],a:1,e:'国产化替代=替代被国外垄断、受制于人的关键软硬件，做自主可控。'},
+    {q:'下列属于国产CPU厂商的是？',o:['Intel、AMD','龙芯、飞腾、申威','微软、苹果','甲骨文、IBM'],a:1,e:'国产CPU：龙芯、飞腾、申威，替代以Intel架构为代表的CPU。'},
+    {q:'"IOE"指的是？',o:['Intel、Oracle、EMC','IBM服务器、Oracle数据库、EMC存储','IBM、Office、Excel','Internet、OS、Edge'],a:1,e:'IOE=IBM服务器+Oracle数据库+EMC存储，国产替代如达梦、金仓。'},
+    {q:'替代Windows的国产操作系统主要基于什么？',o:['国产Linux（如麒麟）','国产Windows','国产iOS','纯自研无内核'],a:0,e:'呼声最高的是国产Linux，因源代码公开可从源码层修补漏洞、二次开发省费用。'},
+    {q:'下列属于国产数据库的是？',o:['Oracle、MySQL','SQL Server、DB2','达梦、金仓、南大通用、神通','Access、Excel'],a:2,e:'国产数据库主要四家：达梦、金仓、南大通用、神通，替代IOE。'},
+    {q:'"信创"行业指的是？',o:['信息消费创业','信息技术应用创新行业','信用创造','信息检索创新'],a:1,e:'信创=信息技术应用创新行业，从云计算/软件/硬件/安全推进自主可控，是国家战略。'},
+    {q:'倪光南院士强调国产化替代的原因是？',o:['国产更便宜','若非自主可控，产业可能一天之内瘫痪','国外产品性能差','纯粹为了情怀'],a:1,e:'中兴、华为事件说明：核心技术受制于人，不自主可控产业可能瞬间瘫痪。'},
+    {q:'威胁评估主要评估威胁的什么？',o:['出现频率及强度/破坏能力','颜色','价格','品牌'],a:0,e:'威胁评估=对威胁出现的频率及强度/破坏能力进行评估，是风险评估重要环节。'},
+    {q:'脆弱性分类中，"缺少管理制度"属于？',o:['技术脆弱性','管理脆弱性','物理脆弱性','结构脆弱性'],a:1,e:'脆弱性分管理/结构/操作/技术/物理；缺少制度=管理脆弱性。'},
+    {q:'确认已有安全控制时，"防火墙、加密"等属于哪类措施？',o:['预防性措施','检测性措施','纠正性措施','威慑性措施'],a:0,e:'安全控制分预防性、检测性、纠正性、威慑性；防火墙/加密属预防性。'},
+    {q:'电子政务工程项目应在什么时候开展风险评估作为验收依据？',o:['立项前','试运行期间','废弃后','永不'],a:1,e:'发改高技2071号文要求在试运行期间开展风险评估，作为项目验收的重要依据。'},
+    {q:'PPDR模型中核心约束 Pt > Dt + Rt 表达的是？【作业举一反三】',o:['防护时间应大于检测时间与响应时间之和','响应时间应大于防护时间','检测时间越长越安全','暴露时间与响应无关'],a:0,e:'防护时间Pt要大于检测时间Dt+响应时间Rt之和，否则存在暴露时间Et。'},
+    {q:'威胁评估中为简化风险计算，通常仅采用？',o:['全部威胁','TOP5或TOP10威胁','随机一个威胁','不考虑威胁'],a:1,e:'为简化计算、避免不必要工作，仅采用TOP5或TOP10威胁参与风险计算。'}
+  ];
+
+  const FILL=[
+    {q:'风险管理是一个持续的 ____ 循环（计划-执行-检查-处理）。',a:['PDCA','pdca']},
+    {q:'风险管理的目标是把风险降低到 ____ 水平。',a:['可接受']},
+    {q:'"任何对组织有价值、需要保护的东西"称为 ____。',a:['资产']},
+    {q:'发起威胁的主体（黑客、间谍、自然灾害）称为 ____。',a:['威胁源']},
+    {q:'资产的弱点或安全隐患、造成风险的内因称为 ____。',a:['脆弱性']},
+    {q:'防范威胁、降低风险的手段称为 ____。',a:['控制措施']},
+    {q:'采取安全措施后信息系统仍可能存在的风险称为 ____。',a:['残余风险']},
+    {q:'风险术语关系链：威胁源采用威胁方式，利用 ____ 作用于资产产生影响。',a:['脆弱性']},
+    {q:'风险只考虑那些对组织有 ____ 影响的事件。',a:['负面']},
+    {q:'风险评估是风险管理的 ____ 和基础环节。',a:['起点']},
+    {q:'风险评估通常应每隔 ____ 年做一次全面评估。',a:['1-3','1~3','一到三']},
+    {q:'风险管理依据国标 GB/Z ____《信息安全风险管理指南》。',a:['24364']},
+    {q:'风险管理四阶段：建立背景、风险评估、____、批准监督。',a:['风险处理']},
+    {q:'风险管理两个贯穿：监控审查和 ____。',a:['沟通咨询']},
+    {q:'四类风险处置方法：降低、转移、____、接受。',a:['规避']},
+    {q:'四类处置中通常首先考虑、作为首选的是 ____ 风险。',a:['降低','减低']},
+    {q:'买保险、外包给第三方属于 ____ 风险。',a:['转移']},
+    {q:'降低风险可从风险的 ____ 个方面入手。',a:['五','5']},
+    {q:'打补丁、关闭无用端口属于降低风险中的"减少 ____"。',a:['脆弱性']},
+    {q:'容灾备份、应急响应属于降低风险中的"降低 ____"。',a:['负面影响','影响']},
+    {q:'风险管理要贯穿系统生命周期：规划、设计、实施、运维、____。',a:['废弃']},
+    {q:'符合"国家"安全要求的符合性测评是 ____ 测评。',a:['等保','等级保护']},
+    {q:'风险评估简化流程4R：准备、识别、计算、____。',a:['报告']},
+    {q:'定量分析中，单一预期损失 SLE = ____ × EF。',a:['AV','资产价值']},
+    {q:'年度预期损失公式：ALE = SLE × ____ = AV × EF × ARO。',a:['ARO','年发生率']},
+    {q:'安全投资收益 ROSI = 控制前ALE − 控制后ALE − ____。',a:['年控制成本','控制成本']},
+    {q:'定性风险分析用高、中、____ 等等级描述影响和可能性。',a:['低']},
+    {q:'半定量分析的相乘法：风险值 = 可能性 × ____。',a:['影响']},
+    {q:'综合评估方法中典型的层次分析法简称 ____。',a:['AHP','ahp']},
+    {q:'国产化替代中，国产CPU厂商有龙芯、飞腾、____。',a:['申威']},
+    {q:'"IOE"中的O指的是 ____ 数据库。',a:['Oracle','oracle','甲骨文']},
+    {q:'信息技术应用创新行业简称 ____ 行业。',a:['信创']}
+  ];
+
+  // 渲染选择题
+  (function(){
+    const list=document.getElementById('mcqList');if(!list)return;
+    let done=0,right=0;
+    const dn=document.getElementById('mcqDone'),rt=document.getElementById('mcqRight'),ra=document.getElementById('mcqRate');
+    function render(){
+      list.innerHTML='';done=0;right=0;dn.textContent=0;rt.textContent=0;ra.textContent='—';
+      MCQ.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        const hw=/举一反三/.test(item.q)?'<span class="hw">作业举一反三</span>':'';
+        const qtext=item.q.replace('【作业举一反三】','');
+        let opts=item.o.map((t,j)=>`<button class="qopt" data-i="${j}">${String.fromCharCode(65+j)}. ${t}</button>`).join('');
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${hw}${qtext}</div>${opts}<div class="qexp">💡 ${item.e}</div>`;
+        const btns=[...d.querySelectorAll('.qopt')];const exp=d.querySelector('.qexp');
+        btns.forEach(b=>b.addEventListener('click',()=>{
+          btns.forEach(x=>x.classList.add('lock'));
+          const ans=item.a;
+          if(+b.dataset.i===ans){b.classList.add('correct');right++;}
+          else{b.classList.add('wrong');btns[ans].classList.add('correct');}
+          exp.classList.add('show');
+          done++;dn.textContent=done;rt.textContent=right;ra.textContent=Math.round(right/done*100)+'%';
+        }));
+        list.appendChild(d);
+      });
+    }
+    render();
+    document.getElementById('mcqReset').onclick=render;
+  })();
+
+  // 渲染填空题
+  (function(){
+    const list=document.getElementById('fillList');if(!list)return;
+    let done=0,right=0;const checked=new Set();
+    const dn=document.getElementById('fillDone'),rt=document.getElementById('fillRight');
+    function norm(s){return (s||'').trim().replace(/\s/g,'').toLowerCase();}
+    function build(){
+      list.innerHTML='';done=0;right=0;checked.clear();dn.textContent=0;rt.textContent=0;
+      FILL.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        const qhtml=item.q.replace('____',`<input class="blank-in" data-i="${i}" placeholder="在此作答">`);
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${qhtml}</div>
+          <div class="blank-btns">
+            <button class="sbtn primary" data-act="check">检查</button>
+            <button class="sbtn" data-act="show">显示答案</button>
+          </div>
+          <div class="ansline">✅ 参考答案：${item.a[0]}</div>`;
+        const inp=d.querySelector('.blank-in');const ansl=d.querySelector('.ansline');
+        d.querySelector('[data-act="check"]').onclick=()=>{
+          const v=norm(inp.value);if(!v)return;
+          const ok=item.a.some(a=>norm(a)===v||v.includes(norm(a)));
+          inp.classList.remove('ok','bad');inp.classList.add(ok?'ok':'bad');
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;if(ok)right++;dn.textContent=done;rt.textContent=right;}
+        };
+        d.querySelector('[data-act="show"]').onclick=()=>{
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;dn.textContent=done;rt.textContent=right;}
+        };
+        list.appendChild(d);
+      });
+    }
+    build();
+    document.getElementById('fillReset').onclick=build;
+    document.getElementById('fillRevealAll').onclick=()=>{
+      list.querySelectorAll('.ansline').forEach(a=>a.classList.add('show'));
+    };
+  })();
+
+  // Tab 切换
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('pane-'+t.dataset.tab).classList.add('active');
+    };
+  });
+</script>
+</body>
+</html>

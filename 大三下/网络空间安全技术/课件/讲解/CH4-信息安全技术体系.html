@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CH4 信息安全技术体系与技术 · 小白教学</title>
+<style>
+  :root{
+    --bg:#0f1729;
+    --bg-soft:#16213e;
+    --card:#1b2745;
+    --card-2:#212f52;
+    --ink:#e8edf7;
+    --ink-soft:#a9b4cc;
+    --line:#2c3a5e;
+    --accent:#5b9dff;
+    --accent-2:#7c5cff;
+    --green:#36d399;
+    --amber:#fbbd23;
+    --red:#f87272;
+    --pink:#f472b6;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0f1729 0%,#131d38 100%);
+    color:var(--ink);
+    line-height:1.75;
+    font-size:16px;
+  }
+  /* 顶部进度条 */
+  #progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:999;transition:width .1s}
+
+  /* 章节切换栏 */
+  .chapnav{position:sticky;top:0;z-index:200;display:flex;gap:4px;flex-wrap:wrap;background:rgba(10,16,30,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 14px}
+  .chapnav a{color:var(--ink-soft);text-decoration:none;font-size:13px;padding:5px 11px;border-radius:8px;white-space:nowrap;transition:.15s}
+  .chapnav a:hover{background:var(--card-2);color:var(--ink)}
+  .chapnav a.cur{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;display:flex;gap:26px}
+
+  /* 侧边导航 */
+  nav{
+    position:sticky;top:46px;align-self:flex-start;
+    width:230px;flex:0 0 230px;height:calc(100vh - 46px);overflow-y:auto;
+    padding:26px 8px 40px 0;
+    font-size:14px;
+  }
+  nav .nav-title{font-weight:700;color:var(--accent);letter-spacing:1px;margin:0 0 14px 10px;font-size:13px}
+  nav a{
+    display:block;color:var(--ink-soft);text-decoration:none;
+    padding:8px 12px;border-radius:10px;margin:2px 0;
+    border-left:3px solid transparent;transition:.2s;
+  }
+  nav a:hover{background:var(--card);color:var(--ink)}
+  nav a.active{background:var(--card-2);color:#fff;border-left-color:var(--accent)}
+
+  main{flex:1;min-width:0;padding:34px 0 90px}
+
+  header.hero{
+    background:radial-gradient(120% 140% at 0% 0%,#26356b 0%,#1a234a 60%,#161f3e 100%);
+    border:1px solid var(--line);border-radius:24px;
+    padding:38px 38px 32px;margin-bottom:30px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  header.hero::after{content:"🧱";position:absolute;right:30px;top:18px;font-size:90px;opacity:.12}
+  header.hero .tag{display:inline-block;background:rgba(91,157,255,.18);color:var(--accent);
+    padding:4px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:14px}
+  header.hero h1{margin:0 0 8px;font-size:32px;letter-spacing:.5px}
+  header.hero p{margin:0;color:var(--ink-soft);font-size:15px}
+
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px 30px;margin-bottom:24px;box-shadow:var(--shadow);scroll-margin-top:56px;
+  }
+  h2{font-size:23px;margin:0 0 18px;padding-bottom:12px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:10px}
+  h2 .num{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+    width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 34px}
+  h3{font-size:18px;margin:22px 0 10px;color:#cfe0ff}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+
+  /* 表格 */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px;overflow:hidden;border-radius:12px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--card-2);color:#cfe0ff;font-weight:600}
+  tr:hover td{background:rgba(91,157,255,.06)}
+  td code,p code,li code{background:#0d1530;color:#8fd6ff;padding:2px 7px;border-radius:6px;font-size:13.5px}
+
+  /* 提示框 */
+  .box{border-radius:12px;padding:14px 18px;margin:16px 0;border-left:4px solid;font-size:15px}
+  .box .bt{font-weight:700;display:block;margin-bottom:4px}
+  .box.tip{background:rgba(54,211,153,.08);border-color:var(--green)}
+  .box.warn{background:rgba(251,189,35,.08);border-color:var(--amber)}
+  .box.key{background:rgba(124,92,255,.10);border-color:var(--accent-2)}
+  .box.quote{background:rgba(244,114,182,.07);border-color:var(--pink);font-style:italic}
+
+  /* 卡片 */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:18px 0}
+  .ccard{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s}
+  .ccard:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.35)}
+  .ccard .emoji{font-size:34px}
+  .ccard h4{margin:8px 0 6px;font-size:18px}
+  .ccard .en{color:var(--ink-soft);font-size:13px}
+  .ccard.c{border-top:3px solid var(--accent)}
+  .ccard.i{border-top:3px solid var(--green)}
+  .ccard.a{border-top:3px solid var(--amber)}
+
+  /* 时间线 */
+  .timeline{position:relative;margin:20px 0 6px;padding-left:28px}
+  .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .tl{position:relative;margin-bottom:18px}
+  .tl::before{content:"";position:absolute;left:-24px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(91,157,255,.2)}
+  .tl .yr{color:var(--accent);font-weight:700;font-size:14px}
+
+  /* 折叠自测 */
+  details{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:6px 18px;margin:12px 0}
+  details summary{cursor:pointer;font-weight:600;padding:10px 0;list-style:none}
+  details summary::before{content:"❓ ";}
+  details[open] summary{color:var(--accent)}
+  details .ans{color:var(--ink-soft);padding:6px 0 14px;border-top:1px dashed var(--line)}
+
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .pill{display:inline-block;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;margin:3px}
+
+  /* ===== 图表通用 ===== */
+  .fig{background:#0d1530;border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;text-align:center}
+  .fig svg{max-width:100%;height:auto}
+  .fig .cap{color:var(--ink-soft);font-size:13px;margin-top:10px}
+  .fig text{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+
+  /* 脑图分支 */
+  .mind{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+  .mind .root{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;padding:16px 20px;border-radius:14px;font-weight:700;font-size:16px;box-shadow:var(--shadow)}
+  .mind .branches{display:flex;flex-direction:column;gap:14px;margin-left:24px;position:relative}
+  .mind .branches::before{content:"";position:absolute;left:-24px;top:0;bottom:0;width:24px;border-left:2px solid var(--line)}
+  .branch{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-align:left;position:relative;min-width:300px}
+  .branch::before{content:"";position:absolute;left:-24px;top:50%;width:24px;height:2px;background:var(--line)}
+  .branch .bh{font-weight:700;margin-bottom:6px}
+  .branch.inner .bh{color:var(--amber)}
+  .branch.outer .bh{color:var(--red)}
+  .branch .tags span{display:inline-block;background:#0d1530;border:1px solid var(--line);border-radius:8px;padding:2px 9px;font-size:12.5px;margin:3px 3px 0 0;color:var(--ink-soft)}
+
+  /* 分层堆叠图 */
+  .layers{display:flex;flex-direction:column;gap:8px;max-width:560px;margin:0 auto}
+  .layer{display:flex;align-items:center;border-radius:12px;padding:13px 18px;color:#fff;font-weight:600;box-shadow:var(--shadow);position:relative}
+  .layer .ln{flex:0 0 84px;font-size:15px}
+  .layer .ld{font-weight:400;font-size:13.5px;opacity:.95}
+  .layer.l1{background:linear-gradient(90deg,#7c5cff,#9d7bff)}
+  .layer.l2{background:linear-gradient(90deg,#5b9dff,#7bb4ff)}
+  .layer.l3{background:linear-gradient(90deg,#36d399,#5be0b0)}
+  .layer.l4{background:linear-gradient(90deg,#fbbd23,#fccf57)}
+  .layer.l5{background:linear-gradient(90deg,#f472b6,#f88fc8)}
+
+  /* 网格四要素 */
+  .four-el{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:520px;margin:0 auto;position:relative}
+  .el-card{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;transition:.2s}
+  .el-card:hover{transform:scale(1.04);border-color:var(--accent)}
+  .el-card .ei{font-size:30px}
+  .el-card h4{margin:6px 0 2px}
+  .el-card small{color:var(--ink-soft)}
+
+  /* ===== 翻转卡片 ===== */
+  .flip-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:14px 0}
+  .flip{perspective:1000px;height:175px;cursor:pointer}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+  .flip.on .flip-inner{transform:rotateY(180deg)}
+  .flip-front,.flip-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px solid var(--line)}
+  .flip-back{transform:rotateY(180deg);background:var(--card-2);font-size:14px;line-height:1.6}
+  .flip-front{background:var(--card-2)}
+  .flip-front .emoji{font-size:38px}
+  .flip-front h4{margin:8px 0 2px;font-size:19px}
+  .flip-front .en{color:var(--ink-soft);font-size:12px}
+  .flip-front.c,.flip-back.c{border-top:3px solid var(--accent)}
+  .flip-front.i,.flip-back.i{border-top:3px solid var(--green)}
+  .flip-front.a,.flip-back.a{border-top:3px solid var(--amber)}
+  .flip-back small{color:var(--ink-soft);display:block;margin-top:6px}
+
+  /* ===== 互动测验 ===== */
+  .quiz{background:linear-gradient(135deg,#1a2547,#212f52);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0}
+  .quiz .q{font-weight:600;margin-bottom:12px}
+  .quiz .q .badge{background:var(--accent-2);color:#fff;border-radius:8px;padding:1px 9px;font-size:12px;margin-right:8px}
+  .opt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:11px 15px;border-radius:10px;margin:7px 0;cursor:pointer;transition:.15s;font-size:14.5px;font-family:inherit}
+  .opt:hover{border-color:var(--accent);background:var(--card-2)}
+  .opt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .opt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .opt.disabled{pointer-events:none;opacity:.75}
+  .feedback{font-size:14px;margin-top:8px;padding:10px 14px;border-radius:10px;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:rgba(54,211,153,.12);color:#aef5d4}
+  .feedback.no{background:rgba(248,114,114,.12);color:#ffc2c2}
+
+  /* ===== 匹配题 ===== */
+  .match{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0}
+  .match .col{display:flex;flex-direction:column;gap:10px}
+  .match .col .ct{font-size:13px;color:var(--ink-soft);margin-bottom:2px}
+  .mitem{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;transition:.15s;font-size:14px}
+  .mitem:hover{border-color:var(--accent)}
+  .mitem.sel{border-color:var(--accent-2);background:var(--card-2)}
+  .mitem.done{border-color:var(--green);background:rgba(54,211,153,.12);cursor:default;color:#aef5d4}
+  .mitem.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  /* 学习打卡进度 */
+  .checkbar{position:sticky;top:46px;z-index:50;background:rgba(15,23,41,.92);backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+  .checkbar .lbl{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .checkbar .track{flex:1;height:10px;background:var(--card);border-radius:999px;overflow:hidden}
+  .checkbar .fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--accent));transition:width .4s}
+  .checkbar .pct{font-weight:700;color:var(--green);font-size:14px;min-width:42px;text-align:right}
+
+  .reveal-btn{background:var(--card-2);border:1px solid var(--accent);color:var(--accent);border-radius:10px;padding:8px 16px;cursor:pointer;font-size:14px;font-family:inherit;transition:.15s}
+  .reveal-btn:hover{background:var(--accent);color:#fff}
+
+  /* ===== 题库 ===== */
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{flex:1;min-width:140px;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    padding:11px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;transition:.15s}
+  .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent}
+  .tabpane{display:none}
+  .tabpane.active{display:block}
+
+  .score{position:sticky;top:100px;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:rgba(15,23,41,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:16px}
+  .score b{color:var(--green);font-size:18px}
+  .score .mini{font-size:13px;color:var(--ink-soft)}
+  .score .resetb{margin-left:auto;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    border-radius:8px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:13px}
+  .score .resetb:hover{border-color:var(--accent);color:var(--ink)}
+
+  .qitem{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  .qitem .qh{font-weight:600;margin-bottom:10px;line-height:1.6}
+  .qitem .qh .no{display:inline-block;background:var(--accent);color:#fff;border-radius:7px;padding:1px 9px;font-size:13px;margin-right:8px}
+  .qopt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:9px 14px;border-radius:9px;margin:6px 0;cursor:pointer;transition:.12s;font-size:14px;font-family:inherit}
+  .qopt:hover{border-color:var(--accent)}
+  .qopt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .qopt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .qopt.lock{pointer-events:none}
+  .qexp{font-size:13.5px;color:var(--ink-soft);margin-top:8px;padding:9px 13px;background:rgba(91,157,255,.08);border-radius:9px;border-left:3px solid var(--accent);display:none}
+  .qexp.show{display:block}
+
+  /* 填空 */
+  .blank-in{background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);
+    padding:7px 12px;font-size:14.5px;font-family:inherit;width:200px;margin:0 4px}
+  .blank-in:focus{outline:none;border-color:var(--accent)}
+  .blank-in.ok{border-color:var(--green);background:rgba(54,211,153,.12)}
+  .blank-in.bad{border-color:var(--red);background:rgba(248,114,114,.10)}
+  .blank-btns{margin-top:10px;display:flex;gap:8px}
+  .sbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:inherit;font-size:13.5px}
+  .sbtn:hover{border-color:var(--accent)}
+  .sbtn.primary{background:var(--accent);color:#fff;border-color:transparent}
+  .ansline{font-size:13.5px;color:var(--green);margin-top:8px;display:none}
+  .ansline.show{display:block}
+
+  footer{text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 0 10px}
+
+  /* 回到顶部 */
+  #top{position:fixed;right:26px;bottom:26px;width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none;
+    font-size:20px;cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s}
+  #top.show{opacity:1;pointer-events:auto}
+
+  @media(max-width:880px){
+    nav{display:none}
+    .wrap{padding:0 14px}
+    header.hero{padding:26px 22px}
+    section{padding:20px 18px}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<div class="chapnav">
+  <a href="index.html">🏠 目录</a>
+  <a href="CH1-信息安全概论.html">CH1 概论</a>
+  <a href="CH2-风险管理与国产化.html">CH2 风险管理</a>
+  <a href="CH3-信息安全保障与运维.html">CH3 安全保障</a>
+  <a class="cur" href="CH4-信息安全技术体系.html">CH4 技术体系</a>
+  <a href="CH5-鉴别技术.html">CH5 鉴别</a>
+  <a href="CH6-访问控制.html">CH6 访问控制</a>
+  <a href="CH7-防火墙技术.html">CH7 防火墙</a>
+  <a href="CH8-入侵检测技术.html">CH8 入侵检测</a>
+  <a href="古典密码-入门讲义.html">古典密码</a>
+  <a href="哈希函数-入门课.html">哈希函数</a>
+  <a href="牛津古典密码学-讲义.html">牛津密码练习</a>
+</div>
+
+<div class="wrap">
+  <!-- 侧边导航 -->
+  <nav id="nav">
+    <p class="nav-title">📖 本章目录</p>
+    <a href="#s0">学习目标</a>
+    <a href="#s1">① 五重屏障</a>
+    <a href="#s2">② 安全服务 vs 机制 ⭐</a>
+    <a href="#s3">③ 五种安全服务 ⭐</a>
+    <a href="#s4">④ 八种安全机制 ⭐</a>
+    <a href="#s5">⑤ 服务×机制×协议层</a>
+    <a href="#s6">⑥ 安全体系框架</a>
+    <a href="#s7">⑦ 加密机制</a>
+    <a href="#s8">⑧ 消息鉴别 MAC</a>
+    <a href="#s9">⑨ 数字签名 ⭐</a>
+    <a href="#s10">⑩ 访问控制机制</a>
+    <a href="#s11">⑪ 数据完整性机制</a>
+    <a href="#s12">⑫ 鉴别交换机制</a>
+    <a href="#s13">⑬ 其他机制</a>
+    <a href="#s14">⭐ 重点例题（作业2）</a>
+    <a href="#s15">本章小结</a>
+    <a href="#s16">🎯 自测</a>
+    <a href="#bank">📝 强化题库 64 题</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="tag">网络空间安全技术 · 第四章</span>
+      <h1>CH4 信息安全技术体系与技术</h1>
+      <p>技术总纲 · 按「目标 → 服务 → 机制 → 技术」串一遍 · 配套作业2（安全服务与机制 / 密码 / 鉴别 / 访问控制）</p>
+    </header>
+
+    <!-- 学习打卡进度 -->
+    <div class="checkbar">
+      <span class="lbl">📚 学习进度</span>
+      <div class="track"><div class="fill" id="learnFill"></div></div>
+      <span class="pct" id="learnPct">0%</span>
+    </div>
+
+    <!-- 学习目标 -->
+    <section id="s0">
+      <h2><span class="num">🎯</span>学习目标</h2>
+      <p>读完这一章，你应该能回答：</p>
+      <ol>
+        <li>网络空间安全的<b>五重屏障</b>是什么？（进不来/拿不走/改不了/看不懂/跑不掉/打不垮）</li>
+        <li>OSI 安全体系结构（GB/T 18794）里，<b>安全服务</b>和<b>安全机制</b>有什么区别？</li>
+        <li><b>五种安全服务</b>和<b>八种安全机制</b>分别是什么？怎么对应协议层？</li>
+        <li>信息系统安全体系框架的<b>三大体系</b>是什么？为什么说"三分技术七分管理"？</li>
+        <li>核心技术：对称/公钥密码、MAC、<b>数字签名</b>、完整性、鉴别、访问控制怎么工作？</li>
+      </ol>
+      <div class="box tip"><span class="bt">📝 配套作业</span>本章对应<b>作业2</b>（与 CH5 鉴别、CH6 访问控制合卷）。其中"安全服务与机制的区别、对称vs公钥、MAC、数字签名作用、先签名后加密"都是考点，已在<a href="#s14">第⑭节·重点例题</a>逐一精讲。</div>
+    </section>
+
+    <!-- 1 五重屏障 -->
+    <section id="s1">
+      <h2><span class="num">1</span>网络空间安全的五重屏障</h2>
+      <p>国际信息系统安全认证组织 <b>ISC²</b> 把信息安全划分为 <b>5 重屏障、共 10 大领域</b>。课件用一句很口语化的话来记忆——让攻击者：</p>
+
+      <div class="fig">
+        <svg viewBox="0 0 700 150" width="700">
+          <defs>
+            <linearGradient id="barG" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#5b9dff"/><stop offset="1" stop-color="#7c5cff"/>
+            </linearGradient>
+          </defs>
+          <!-- 攻击者 -->
+          <circle cx="40" cy="75" r="26" fill="#f87272"/>
+          <text x="40" y="70" text-anchor="middle" fill="#fff" font-size="22">😈</text>
+          <text x="40" y="118" text-anchor="middle" fill="#a9b4cc" font-size="12">攻击者</text>
+          <!-- 五道墙 -->
+          <g font-size="13" font-weight="700" fill="#fff" text-anchor="middle">
+            <rect x="100" y="35" width="92" height="80" rx="8" fill="url(#barG)"/><text x="146" y="80">进不来</text>
+            <rect x="208" y="35" width="92" height="80" rx="8" fill="url(#barG)"/><text x="254" y="80">拿不走</text>
+            <rect x="316" y="35" width="92" height="80" rx="8" fill="url(#barG)"/><text x="362" y="80">改不了</text>
+            <rect x="424" y="35" width="92" height="80" rx="8" fill="url(#barG)"/><text x="470" y="80">看不懂</text>
+            <rect x="532" y="35" width="92" height="80" rx="8" fill="url(#barG)"/><text x="578" y="80">跑不掉</text>
+          </g>
+          <!-- 保护对象 -->
+          <circle cx="668" cy="75" r="26" fill="#36d399"/>
+          <text x="668" y="70" text-anchor="middle" fill="#0f1729" font-size="20">💎</text>
+          <text x="668" y="118" text-anchor="middle" fill="#a9b4cc" font-size="12">信息资源</text>
+        </svg>
+        <div class="cap">图1 · 五重屏障：层层设防，外加"<b style="color:#36d399">打不垮</b>"——保证服务不中断</div>
+      </div>
+
+      <table>
+        <tr><th>通俗说法</th><th>对应安全目标</th><th>对应技术</th></tr>
+        <tr><td><b>进不来</b></td><td>访问控制</td><td>身份鉴别、防火墙、访问控制</td></tr>
+        <tr><td><b>拿不走</b></td><td>访问控制 + 机密性</td><td>访问控制、加密</td></tr>
+        <tr><td><b>改不了</b></td><td>完整性</td><td>数据完整性技术（MAC/摘要/签名）</td></tr>
+        <tr><td><b>看不懂</b></td><td>机密性</td><td>加密技术</td></tr>
+        <tr><td><b>跑不掉</b></td><td>抗抵赖 + 可审计</td><td>安全审计、抗抵赖（数字签名）</td></tr>
+        <tr><td style="color:var(--green)"><b>打不垮</b></td><td>可用性</td><td>备份恢复、高可用、容灾</td></tr>
+      </table>
+      <div class="box key"><span class="bt">💡 一句话连起来</span><b>进不来 → 拿不走 → 改不了 → 看不懂 → 跑不掉 → 打不垮！</b> 这条线把 CIA + 鉴别 + 抗抵赖全都串上了。</div>
+      <div class="box tip"><span class="bt">🧩 保护机制不止技术</span>课件强调：保护机制既有<b>技术因素</b>（电磁辐射防护、环境安全、计算机/网络技术），也有<b>非技术机制</b>（信息安全管理、法律、心理因素）。</div>
+    </section>
+
+    <!-- 2 服务 vs 机制 -->
+    <section id="s2">
+      <h2><span class="num">2</span>OSI 安全体系结构：服务 vs 机制 ⭐</h2>
+      <p>本章核心标准是 <b>开放系统互连安全体系结构（GB/T 18794）</b>。它提出了两个最容易考、又最容易混的概念：</p>
+
+      <div class="flip-row">
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front c"><div class="emoji">🎯</div><h4>安全服务</h4><span class="en">Security Service</span></div>
+            <div class="flip-back c"><b>"要达到什么效果"</b><br>加强数据处理系统和信息传输安全性的<b>一类服务/功能</b>。目的是利用一种或多种机制保障系统安全。<br><small>例：机密性服务、抗抵赖服务</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front i"><div class="emoji">🔧</div><h4>安全机制</h4><span class="en">Security Mechanism</span></div>
+            <div class="flip-back i"><b>"用什么方法实现"</b><br>用来保护/保障信息系统安全的<b>一种或一类技术</b>的总称。是落地手段。<br><small>例：加密、数字签名、访问控制</small></div>
+          </div>
+        </div>
+      </div>
+
+      <table>
+        <tr><th></th><th>安全服务（Service）</th><th>安全机制（Mechanism）</th></tr>
+        <tr><td>本质</td><td>功能 / 目标</td><td>技术 / 手段</td></tr>
+        <tr><td>回答的问题</td><td>"我要达到什么效果"</td><td>"我用什么方法实现"</td></tr>
+        <tr><td>数量</td><td>5 种</td><td>8 种基本 + 5 种普遍</td></tr>
+        <tr><td>举例</td><td>机密性、完整性、抗抵赖</td><td>加密、签名、访问控制</td></tr>
+      </table>
+      <div class="box key"><span class="bt">⭐ 关系（必考）</span>一个<b>服务</b>可由多个<b>机制</b>实现；一个<b>机制</b>也可支撑多个服务。二者是<b>多对多</b>，可以用一个<b>矩阵</b>来描述对应关系。<br>例：机密性服务 → 由"加密机制"实现；完整性服务 → 由"数据完整性机制 / 数字签名"实现。</div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">随堂测</span>"加强数据处理系统和信息传输安全性的<b>一类服务</b>"指的是？</div>
+        <button class="opt" data-correct="1">安全服务</button>
+        <button class="opt">安全机制</button>
+        <button class="opt">安全策略</button>
+        <button class="opt">安全审计</button>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- 3 五种安全服务 -->
+    <section id="s3">
+      <h2><span class="num">3</span>五种安全服务（必背）⭐</h2>
+      <p>OSI 安全模型提供 <b>5 种安全服务</b>。记忆口诀：<b>鉴 · 控 · 密 · 整 · 赖</b>（鉴别、访问控制、机密性、完整性、抗抵赖）。</p>
+
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">🪪</div><h4>① 鉴别服务</h4><p>对通信中的<b>对等实体</b>和<b>数据来源</b>进行鉴别，确认身份真实。</p><span class="en">对等实体鉴别 / 数据源（数据原发）鉴别</span></div>
+        <div class="ccard i"><div class="emoji">🚪</div><h4>② 访问控制</h4><p>保护以对抗对可访问资源的<b>非授权使用</b>。</p><span class="en">合法主体访问合法客体</span></div>
+        <div class="ccard a"><div class="emoji">🔒</div><h4>③ 数据机密性</h4><p>使数据<b>不被非授权泄漏</b>（防偷看）。</p><span class="en">连接 / 无连接 / 选择字段 / 业务流机密性</span></div>
+        <div class="ccard i"><div class="emoji">✅</div><h4>④ 数据完整性</h4><p>对数据做完整性检验；连接状态下被篡改/插入/删除还能<b>补救或恢复</b>。</p><span class="en">可恢复/不可恢复连接完整性、选择字段、无连接完整性</span></div>
+        <div class="ccard c"><div class="emoji">✍️</div><h4>⑤ 抗抵赖</h4><p>保留<b>发送证据</b>和<b>交付证据</b>，双方都不能赖账。</p><span class="en">数据源证明 / 交付证明的抗抵赖</span></div>
+      </div>
+
+      <h3>🎮 小练习：把"安全服务"和"它防的事"连起来</h3>
+      <p style="color:var(--ink-soft);font-size:14px">先点左边一个服务，再点右边对应的作用。连对会变绿。</p>
+      <div class="match" id="match1">
+        <div class="col">
+          <div class="ct">🛡️ 安全服务</div>
+          <div class="mitem" data-k="MM">数据机密性</div>
+          <div class="mitem" data-k="II">数据完整性</div>
+          <div class="mitem" data-k="JJ">鉴别服务</div>
+          <div class="mitem" data-k="KK">抗抵赖</div>
+        </div>
+        <div class="col">
+          <div class="ct">🎯 主要作用</div>
+          <div class="mitem" data-k="JJ">确认通信对方身份真实</div>
+          <div class="mitem" data-k="MM">防止信息被非授权泄漏</div>
+          <div class="mitem" data-k="KK">让发送/接收双方都不能赖账</div>
+          <div class="mitem" data-k="II">防止数据被篡改、插入、删除</div>
+        </div>
+      </div>
+      <div class="feedback" id="match1fb"></div>
+    </section>
+
+    <!-- 4 八种安全机制 -->
+    <section id="s4">
+      <h2><span class="num">4</span>八种安全机制（必背）⭐</h2>
+      <p>OSI 安全体系结构给出 <b>8 种基本安全机制</b>，外加 <b>5 种普遍（其他）安全机制</b>。</p>
+
+      <div class="fig">
+        <svg viewBox="0 0 700 280" width="700">
+          <rect x="20" y="10" width="330" height="260" rx="12" fill="#1b2745" stroke="#7c5cff" stroke-width="2"/>
+          <rect x="370" y="10" width="310" height="260" rx="12" fill="#1b2745" stroke="#5b9dff" stroke-width="2"/>
+          <text x="185" y="36" text-anchor="middle" fill="#cfe0ff" font-size="15" font-weight="700">八种基本安全机制</text>
+          <text x="525" y="36" text-anchor="middle" fill="#cfe0ff" font-size="15" font-weight="700">五种普遍安全机制</text>
+          <g font-size="13.5" fill="#e8edf7">
+            <text x="40" y="68">① 加密机制</text>
+            <text x="40" y="96">② 数字签名机制</text>
+            <text x="40" y="124">③ 访问控制机制</text>
+            <text x="40" y="152">④ 数据完整性机制</text>
+            <text x="40" y="180">⑤ 鉴别交换机制</text>
+            <text x="40" y="208">⑥ 通信业务流填充机制</text>
+            <text x="40" y="236">⑦ 路由选择控制机制</text>
+            <text x="40" y="264">⑧ 公证机制</text>
+          </g>
+          <g font-size="13.5" fill="#a9b4cc">
+            <text x="390" y="72">① 可信功能模块（可信软硬件）</text>
+            <text x="390" y="108">② 安全标记</text>
+            <text x="390" y="144">③ 事件检测</text>
+            <text x="390" y="180">④ 安全审计跟踪</text>
+            <text x="390" y="216">⑤ 安全恢复</text>
+          </g>
+        </svg>
+        <div class="cap">图2 · 八种基本安全机制 + 五种普遍安全机制</div>
+      </div>
+
+      <table>
+        <tr><th>机制</th><th>作用 / 要点</th></tr>
+        <tr><td>① <b>加密</b></td><td>既为数据提供机密性，也为<b>通信业务流</b>提供机密性，还为其他机制做补充；可配置在<b>多个协议层</b>。</td></tr>
+        <tr><td>② <b>数字签名</b></td><td>完成对数据单元的签名，也可验证已有签名；必须<b>不可伪造、不可抵赖</b>。</td></tr>
+        <tr><td>③ <b>访问控制</b></td><td>按实体的访问权限访问指定资源；非授权访问应有<b>报警/审计跟踪</b>。</td></tr>
+        <tr><td>④ <b>数据完整性</b></td><td>发送端产生与数据单元相关的<b>附加码</b>，接收端验证。</td></tr>
+        <tr><td>⑤ <b>鉴别交换</b></td><td>用密码技术，发送方提供、接收方验证；通过"握手"协议<b>防重放</b>。</td></tr>
+        <tr><td>⑥ <b>通信业务流填充</b></td><td>填充无用流量，对抗<b>业务量（流量）分析</b>；只有受机密服务保护时才有效。</td></tr>
+        <tr><td>⑦ <b>路由选择控制</b></td><td>动态/预选安全可靠的路由；发现非法处理可另选安全路由。</td></tr>
+        <tr><td>⑧ <b>公证</b></td><td>由<b>第三方</b>公证数据的完整性、原发性、时间、目的地等。</td></tr>
+      </table>
+      <div class="box warn"><span class="bt">⚠️ 易混点</span>"<b>数据完整性</b>"和"<b>鉴别</b>"既是<b>服务</b>名也是<b>机制</b>名；"<b>访问控制</b>"也是。但"<b>加密 / 数字签名 / 鉴别交换 / 通信业务流填充 / 路由选择控制 / 公证</b>"只是机制，不是 5 大服务之一。做题看清问的是服务还是机制！</div>
+    </section>
+
+    <!-- 5 服务×机制×协议层 -->
+    <section id="s5">
+      <h2><span class="num">5</span>服务 × 机制 × 协议层 的对应关系</h2>
+      <p>课件用矩阵描述"哪种服务能用哪些机制实现"，以及"哪种服务在 TCP/IP 哪一层提供"。下面是简化的<b>服务—机制对应矩阵</b>（✔表示该机制可实现该服务）：</p>
+      <div class="fig">
+        <table style="margin:0;font-size:13.5px">
+          <tr><th>安全服务＼机制</th><th>加密</th><th>数字签名</th><th>访问控制</th><th>数据完整性</th><th>鉴别交换</th><th>业务流填充</th><th>路由控制</th><th>公证</th></tr>
+          <tr><td>对等实体鉴别</td><td>✔</td><td>✔</td><td></td><td></td><td>✔</td><td></td><td></td><td></td></tr>
+          <tr><td>数据源鉴别</td><td>✔</td><td>✔</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>访问控制</td><td></td><td></td><td>✔</td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>数据机密性</td><td>✔</td><td></td><td></td><td></td><td></td><td>✔</td><td>✔</td><td></td></tr>
+          <tr><td>数据完整性</td><td>✔</td><td>✔</td><td></td><td>✔</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>抗抵赖</td><td></td><td>✔</td><td></td><td>✔</td><td></td><td></td><td></td><td>✔</td></tr>
+        </table>
+        <div class="cap">图3 · 安全服务 × 安全机制 对应矩阵（多对多关系）</div>
+      </div>
+
+      <h3>安全服务与 TCP/IP 协议层的关系（部分）</h3>
+      <p>不同服务在不同层实现。<b>抗抵赖、选择字段相关服务只在应用层</b>提供；连接/无连接机密性各层都能做。</p>
+      <div class="fig">
+        <table style="margin:0;font-size:13.5px">
+          <tr><th>安全服务</th><th>网络接口层</th><th>网络层</th><th>传输层</th><th>应用层</th></tr>
+          <tr><td>对等实体鉴别</td><td>－</td><td>Y</td><td>Y</td><td>Y</td></tr>
+          <tr><td>数据源鉴别</td><td>－</td><td>Y</td><td>Y</td><td>Y</td></tr>
+          <tr><td>访问控制服务</td><td>－</td><td>Y</td><td>Y</td><td>Y</td></tr>
+          <tr><td>连接机密性</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td></tr>
+          <tr><td>选择字段机密性</td><td>－</td><td>－</td><td>－</td><td>Y</td></tr>
+          <tr><td>流量保密性</td><td>Y</td><td>Y</td><td>－</td><td>Y</td></tr>
+          <tr><td>源发方抗抵赖</td><td>－</td><td>－</td><td>－</td><td>Y</td></tr>
+          <tr><td>接收方抗抵赖</td><td>－</td><td>－</td><td>－</td><td>Y</td></tr>
+        </table>
+        <div class="cap">图4 · 安全服务与 TCP/IP 协议层的对应（Y=可提供，－=不提供）</div>
+      </div>
+    </section>
+
+    <!-- 6 安全体系框架 -->
+    <section id="s6">
+      <h2><span class="num">6</span>信息系统安全体系框架（技术/组织/管理三体系）</h2>
+      <p>信息系统安全的总需求 = <b>物理安全 + 网络安全 + 信息内容安全 + 应用系统安全 + 安全管理</b> 的总和；最终目标是确保信息的<b>机密性、完整性、可用性、可控性和抗抵赖性</b>。完整的安全体系由三大体系共同构建：</p>
+
+      <div class="fig">
+        <div class="mind">
+          <div class="root">信息系统<br>安全体系框架</div>
+          <div class="branches">
+            <div class="branch"><div class="bh" style="color:var(--accent)">🔧 技术体系</div><div class="tags"><span>物理安全技术</span><span>系统安全技术</span><span>网络安全技术</span><span>应用安全技术</span></div></div>
+            <div class="branch inner"><div class="bh">🏢 组织机构体系</div><div class="tags"><span>机构（决策层/管理层/执行层）</span><span>岗位</span><span>人事</span></div></div>
+            <div class="branch outer"><div class="bh">📜 管理体系</div><div class="tags"><span>法律管理</span><span>制度管理</span><span>培训管理</span></div></div>
+          </div>
+        </div>
+        <div class="cap">图5 · 三大体系：技术体系 + 组织机构体系 + 管理体系</div>
+      </div>
+
+      <div class="box key"><span class="bt">⭐ 核心理念</span><b>"三分技术，七分管理；管理与技术并重。"</b> 管理是信息系统安全的<b>灵魂</b>。组织机构里机构分<b>决策层 / 管理层 / 执行层</b>三个层次；管理体系含<b>法律 / 制度 / 培训</b>三部分，其中培训管理是确保安全的<b>前提</b>。</div>
+
+      <h3>🧱 安全技术的五个层次</h3>
+      <p>安全防范技术体系划分为五个层次（从底到顶）：</p>
+      <div class="fig">
+        <div class="layers">
+          <div class="layer l1"><span class="ln">管理层</span><span class="ld">安全管理制度、部门/人员组织规则（影响全局）</span></div>
+          <div class="layer l5"><span class="ln">应用层</span><span class="ld">Web/邮件/DNS 等应用软件与数据安全</span></div>
+          <div class="layer l2"><span class="ln">网络层</span><span class="ld">网络身份鉴别、访问控制、传输机密/完整、入侵检测</span></div>
+          <div class="layer l3"><span class="ln">系统层</span><span class="ld">操作系统安全（漏洞、配置、病毒）</span></div>
+          <div class="layer l4"><span class="ln">物理层</span><span class="ld">通信线路、物理设备、机房、防灾防干扰、UPS</span></div>
+        </div>
+        <div class="cap">图6 · 安全技术五层次：物理层 → 系统层 → 网络层 → 应用层 → 管理层</div>
+      </div>
+    </section>
+
+    <!-- 7 加密机制 -->
+    <section id="s7">
+      <h2><span class="num">7</span>加密机制（核心技术）</h2>
+      <p>加密是 8 大机制之首：既提供机密性，也为其他机制做补充。分两大体制：</p>
+
+      <div class="fig">
+        <svg viewBox="0 0 700 200" width="700">
+          <!-- 对称 -->
+          <text x="175" y="22" text-anchor="middle" fill="#cfe0ff" font-size="14" font-weight="700">对称密码（同一把密钥）</text>
+          <rect x="30" y="60" width="70" height="46" rx="8" fill="#212f52" stroke="#2c3a5e"/><text x="65" y="88" text-anchor="middle" fill="#e8edf7" font-size="13">明文</text>
+          <rect x="140" y="60" width="70" height="46" rx="8" fill="#5b9dff"/><text x="175" y="88" text-anchor="middle" fill="#fff" font-size="13">加/解密</text>
+          <rect x="250" y="60" width="70" height="46" rx="8" fill="#212f52" stroke="#2c3a5e"/><text x="285" y="88" text-anchor="middle" fill="#e8edf7" font-size="13">密文</text>
+          <text x="175" y="140" text-anchor="middle" fill="#36d399" font-size="20">🔑</text>
+          <text x="175" y="162" text-anchor="middle" fill="#a9b4cc" font-size="12">收发共用同一密钥 K</text>
+          <line x1="100" y1="83" x2="138" y2="83" stroke="#5b9dff" stroke-width="2" marker-end="url(#ar)"/>
+          <line x1="210" y1="83" x2="248" y2="83" stroke="#5b9dff" stroke-width="2" marker-end="url(#ar)"/>
+          <line x1="380" y1="0" x2="380" y2="200" stroke="#2c3a5e" stroke-width="1" stroke-dasharray="4"/>
+          <!-- 公钥 -->
+          <text x="540" y="22" text-anchor="middle" fill="#cfe0ff" font-size="14" font-weight="700">公钥密码（一对密钥）</text>
+          <rect x="410" y="60" width="70" height="46" rx="8" fill="#212f52" stroke="#2c3a5e"/><text x="445" y="88" text-anchor="middle" fill="#e8edf7" font-size="13">明文</text>
+          <rect x="510" y="60" width="70" height="46" rx="8" fill="#7c5cff"/><text x="545" y="82" text-anchor="middle" fill="#fff" font-size="12">公钥加密</text><text x="545" y="98" text-anchor="middle" fill="#fff" font-size="12">私钥解密</text>
+          <rect x="610" y="60" width="70" height="46" rx="8" fill="#212f52" stroke="#2c3a5e"/><text x="645" y="88" text-anchor="middle" fill="#e8edf7" font-size="13">密文</text>
+          <line x1="480" y1="83" x2="508" y2="83" stroke="#7c5cff" stroke-width="2" marker-end="url(#ar)"/>
+          <line x1="580" y1="83" x2="608" y2="83" stroke="#7c5cff" stroke-width="2" marker-end="url(#ar)"/>
+          <text x="545" y="140" text-anchor="middle" fill="#fbbd23" font-size="18">🔑🗝️</text>
+          <text x="545" y="162" text-anchor="middle" fill="#a9b4cc" font-size="12">公钥公开 + 私钥保密</text>
+          <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9d7bff"/></marker></defs>
+        </svg>
+        <div class="cap">图7 · 对称密码 vs 公钥密码</div>
+      </div>
+
+      <h3>7.1 对称密码</h3>
+      <ul>
+        <li>加解密用<b>同一把密钥</b>；使用方便、速度快、<b>错误扩散小</b>。</li>
+        <li>最大缺陷：<b>密钥分发问题</b>—— n 个人两两通信需要 <code>n(n-1)/2</code> 把密钥。</li>
+        <li>两类：<b>序列密码（流密码）</b>逐比特加密、错误扩散低；<b>分组密码</b>固定长度分组加密、扩散性好、对插入/修改有免疫性，但加密<b>速度慢</b>。</li>
+      </ul>
+      <h3>7.2 公钥（非对称）密码</h3>
+      <ul>
+        <li>一对密钥：<b>公钥（公开）+ 私钥（保密）</b>。</li>
+        <li><b>RSA</b>（1977）：一个算法实现签名和加密。<b>私钥</b>→签名/解密；<b>公钥</b>→验证/加密。</li>
+        <li><b>ECC</b>（椭圆曲线，1985）：更小的密钥长度、更快，功能同 RSA。</li>
+        <li>两种用法：<b>公钥加密→私钥解密</b>（保密）；<b>私钥签名→公钥验证</b>（身份鉴别）。</li>
+      </ul>
+
+      <table>
+        <tr><th>对比项</th><th>对称密码</th><th>公钥密码</th></tr>
+        <tr><td>密钥</td><td>收发同一把</td><td>公钥 + 私钥一对</td></tr>
+        <tr><td>速度</td><td>快</td><td>慢</td></tr>
+        <tr><td>密钥分发</td><td>难（n(n-1)/2 把）</td><td>易（公钥可公开）</td></tr>
+        <tr><td>典型用途</td><td>大量数据加密</td><td>密钥分发、数字签名</td></tr>
+        <tr><td>典型算法</td><td>DES/AES、流密码</td><td>RSA、ECC</td></tr>
+      </table>
+      <div class="box tip"><span class="bt">🧮 算一算</span>100 个人两两通信，对称密钥需要 <code>100×99/2 = 4950</code> 把——这就是为什么需要公钥来解决密钥分发。</div>
+    </section>
+
+    <!-- 8 MAC -->
+    <section id="s8">
+      <h2><span class="num">8</span>消息鉴别 MAC（Message Authentication Code）</h2>
+      <p>MAC 同时验证<b>消息完整性</b>和<b>消息来源</b>。双方共享密钥 K：</p>
+      <div class="fig">
+        <svg viewBox="0 0 680 190" width="680">
+          <text x="80" y="20" text-anchor="middle" fill="#cfe0ff" font-size="14" font-weight="700">发送方 A</text>
+          <text x="600" y="20" text-anchor="middle" fill="#cfe0ff" font-size="14" font-weight="700">接收方 B</text>
+          <rect x="30" y="40" width="100" height="36" rx="8" fill="#212f52" stroke="#2c3a5e"/><text x="80" y="63" text-anchor="middle" fill="#e8edf7" font-size="13">消息 M0</text>
+          <rect x="30" y="92" width="100" height="36" rx="8" fill="#7c5cff"/><text x="80" y="115" text-anchor="middle" fill="#fff" font-size="12">C(K,M0)→MAC0</text>
+          <!-- 传输 -->
+          <rect x="240" y="62" width="200" height="44" rx="8" fill="#0d1530" stroke="#5b9dff"/><text x="340" y="89" text-anchor="middle" fill="#8fd6ff" font-size="13">M0 ‖ MAC0  （网络传输）</text>
+          <line x1="130" y1="84" x2="238" y2="84" stroke="#5b9dff" stroke-width="2" marker-end="url(#ar2)"/>
+          <line x1="440" y1="84" x2="548" y2="84" stroke="#5b9dff" stroke-width="2" marker-end="url(#ar2)"/>
+          <rect x="550" y="40" width="100" height="36" rx="8" fill="#212f52" stroke="#2c3a5e"/><text x="600" y="63" text-anchor="middle" fill="#e8edf7" font-size="12">用 K 重算 MAC2</text>
+          <rect x="550" y="92" width="100" height="36" rx="8" fill="#36d399"/><text x="600" y="111" text-anchor="middle" fill="#0f1729" font-size="12">MAC2 = MAC1?</text>
+          <text x="340" y="150" text-anchor="middle" fill="#a9b4cc" font-size="12">相等 → 完整且来自 A；不等 → 被篡改</text>
+          <text x="340" y="172" text-anchor="middle" fill="#fbbd23" font-size="12">⚠️ MAC 无保密作用，需双方共享密钥 K</text>
+          <defs><marker id="ar2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5b9dff"/></marker></defs>
+        </svg>
+        <div class="cap">图8 · MAC 验证流程：共享密钥 K，重算比对</div>
+      </div>
+      <ul>
+        <li>攻击者改了 M0 但不知道 K，无法生成匹配的 MAC，篡改会被发现。</li>
+        <li>也能防止消息被<b>整体替换</b>（攻击者不知 K，造不出正确 MAC）。</li>
+        <li>缺点：<b>没有保密作用</b>，且需要共享密钥（有密钥分发问题）。</li>
+      </ul>
+      <div class="box tip"><span class="bt">🆚 MAC vs 消息摘要</span>MAC 用<b>密钥</b>，摘要（Hash）<b>不用密钥</b>。单独的摘要无法防"同时改消息和摘要"，所以摘要常要再结合加密或签名。</div>
+    </section>
+
+    <!-- 9 数字签名 -->
+    <section id="s9">
+      <h2><span class="num">9</span>数字签名机制（重点）⭐</h2>
+      <div class="box key"><span class="bt">📖 ISO 定义</span>数字签名是<b>附加在数据单元上的一些数据</b>，或对数据单元所做的<b>密码变换</b>，允许接收者用以确认数据单元的<b>来源</b>和<b>完整性</b>，并防止被他人（如接收者）<b>伪造</b>。</div>
+
+      <h3>9.1 签名 + 验证全过程（鲍勃 & 苏珊）</h3>
+      <div class="fig">
+        <svg viewBox="0 0 700 260" width="700">
+          <text x="175" y="20" text-anchor="middle" fill="#cfe0ff" font-size="14" font-weight="700">① 鲍勃 签名（用私钥）</text>
+          <text x="525" y="20" text-anchor="middle" fill="#cfe0ff" font-size="14" font-weight="700">② 苏珊 验证（用公钥）</text>
+          <!-- 签名侧 -->
+          <rect x="30" y="40" width="90" height="38" rx="8" fill="#212f52" stroke="#2c3a5e"/><text x="75" y="64" text-anchor="middle" fill="#e8edf7" font-size="12">原文 M</text>
+          <rect x="150" y="40" width="90" height="38" rx="8" fill="#5b9dff"/><text x="195" y="58" text-anchor="middle" fill="#fff" font-size="12">Hash</text><text x="195" y="73" text-anchor="middle" fill="#fff" font-size="12">摘要</text>
+          <rect x="270" y="40" width="90" height="38" rx="8" fill="#7c5cff"/><text x="315" y="58" text-anchor="middle" fill="#fff" font-size="12">私钥签名</text><text x="315" y="73" text-anchor="middle" fill="#fff" font-size="11">(非加密)</text>
+          <line x1="120" y1="59" x2="148" y2="59" stroke="#9d7bff" stroke-width="2" marker-end="url(#ar3)"/>
+          <line x1="240" y1="59" x2="268" y2="59" stroke="#9d7bff" stroke-width="2" marker-end="url(#ar3)"/>
+          <text x="195" y="105" text-anchor="middle" fill="#a9b4cc" font-size="11">📨 发送：原文 M + 数字签名 DS</text>
+          <!-- 传输线 -->
+          <rect x="120" y="120" width="460" height="34" rx="8" fill="#0d1530" stroke="#5b9dff"/><text x="350" y="142" text-anchor="middle" fill="#8fd6ff" font-size="13">M ‖ DS （网络传输）</text>
+          <!-- 验证侧 -->
+          <rect x="430" y="170" width="100" height="38" rx="8" fill="#7c5cff"/><text x="480" y="188" text-anchor="middle" fill="#fff" font-size="12">公钥验证签名</text><text x="480" y="203" text-anchor="middle" fill="#fff" font-size="11">→ 摘要MD1</text>
+          <rect x="560" y="170" width="100" height="38" rx="8" fill="#5b9dff"/><text x="610" y="188" text-anchor="middle" fill="#fff" font-size="12">对M算Hash</text><text x="610" y="203" text-anchor="middle" fill="#fff" font-size="11">→ 摘要MD2</text>
+          <rect x="480" y="222" width="160" height="32" rx="8" fill="#36d399"/><text x="560" y="243" text-anchor="middle" fill="#0f1729" font-size="13" font-weight="700">MD1 = MD2 ? → 验证通过</text>
+          <defs><marker id="ar3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9d7bff"/></marker></defs>
+        </svg>
+        <div class="cap">图9 · 数字签名 = <b>私钥签名 + 公钥验证 + Hash 摘要</b>（此处运算是签名/验证，不是加密/解密）</div>
+      </div>
+      <ol>
+        <li>鲍勃有公钥+私钥，把<b>公钥</b>发给朋友们。</li>
+        <li>回信时先用 <b>Hash 函数</b>对信件生成<b>摘要</b>。</li>
+        <li>用<b>私钥对摘要签名</b>（注意：是签名，不是加密），生成"数字签名 DS"。</li>
+        <li>把 DS 附在信后一起发给苏珊。</li>
+        <li>苏珊用鲍勃的<b>公钥验证签名</b>得到摘要 MD1 → 证明信确实是鲍勃发的。</li>
+        <li>苏珊再对信件本身算 Hash 得 MD2，与 MD1 对比，一致说明<b>没被改</b>。</li>
+      </ol>
+
+      <h3>9.2 数字签名的 5 个作用</h3>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">🪪</div><h4>① 身份鉴别</h4><p>能用 A 公钥解开 → 一定是 A 用私钥签的。</p></div>
+        <div class="ccard i"><div class="emoji">🛑</div><h4>② 防假冒</h4><p>C 没有 A 私钥，无法假冒 A 签名。</p></div>
+        <div class="ccard a"><div class="emoji">⚖️</div><h4>③ 抗抵赖</h4><p>私钥只有 A 有，A 不能否认发过。</p></div>
+        <div class="ccard i"><div class="emoji">✅</div><h4>④ 防篡改</h4><p>C 改了消息但没私钥重签，验证不过。</p></div>
+        <div class="ccard c"><div class="emoji">📜</div><h4>⑤ 法律效力</h4><p>多数国家承认与手工签名同等效力（如 U 盾转账）。</p></div>
+      </div>
+
+      <h3>9.3 先签名后加密 vs 数字信封</h3>
+      <div class="box warn"><span class="bt">⚠️ 应"先签名后加密"</span>若<b>先加密后签名</b>，攻击者截获后可<b>去掉签名换成自己的签名</b>再转发，接收者会误以为是黑客发来的，造成混乱。所以正确顺序是<b>先签名、后加密</b>。</div>
+      <div class="box key"><span class="bt">✉️ 数字信封（解决 RSA 太慢）</span>① 用<b>一次性对称密钥 K1</b> 加密消息（快）；② 用对方<b>公钥加密 K1</b>（封装）；③ 只对短的 K1 做非对称运算。这样兼顾速度与安全，K1 一次性用完即弃可<b>防重放</b>。</div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">随堂测</span>数字签名生成时使用发送方的哪把密钥？</div>
+        <button class="opt">接收方公钥</button>
+        <button class="opt" data-correct="1">发送方私钥</button>
+        <button class="opt">接收方私钥</button>
+        <button class="opt">发送方公钥</button>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- 10 访问控制 -->
+    <section id="s10">
+      <h2><span class="num">10</span>访问控制机制</h2>
+      <p>访问控制的作用涉及<b>机密性、完整性和可用性</b>。其核心是：<b>合法的主体访问合法的客体</b>。</p>
+      <ul>
+        <li><b>目标</b>：防止对任何资源（计算/通信/信息资源）进行<b>未授权访问</b>，使资源在授权范围内使用，决定"用户能做什么"。</li>
+        <li><b>最小特权原则</b>：用户和代表用户的进程只应拥有完成其职责所需的<b>最小</b>权限集合，不给超出任务所需的特权。</li>
+        <li>两类未授权访问：① 非法用户使用系统资源；② 合法用户对资源的非法使用。</li>
+      </ul>
+      <div class="box key"><span class="bt">🔑 访问控制三元组</span>访问控制可描述为 <code>(S, A, O)</code> = 主体 Subject、访问操作 Access、客体 Object。模型分类（详见 CH6）：<b>DAC（自主，含 ACL/能力表/访问矩阵）</b>、<b>MAC（强制，含 BLP保密性 / Biba完整性 / Clark-Wilson / Chinese Wall）</b>、<b>RBAC（基于角色）</b>。</div>
+    </section>
+
+    <!-- 11 数据完整性 -->
+    <section id="s11">
+      <h2><span class="num">11</span>数据完整性机制</h2>
+      <div class="box key"><span class="bt">📖 定义</span>数据完整性是防止非法实体对交换数据的<b>修改、插入、替换和删除</b>，或者被改后<b>能够被检测出来</b>。</div>
+
+      <h3>11.1 四种提供完整性的方式</h3>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">🔐</div><h4>① 密码学</h4><p>对称→<b>密封</b>（密码检验值）；非对称→<b>数字签名</b>。</p></div>
+        <div class="ccard i"><div class="emoji">🔁</div><h4>② 上下文</h4><p><b>数据重复</b>（多份拷贝比对）+ <b>预共识上下文</b>（特定时间/地点）。</p></div>
+        <div class="ccard a"><div class="emoji">🔄</div><h4>③ 探测和确认</h4><p>正馈<b>等幂</b>运算反复执行直到确认；不适用于数据存储。</p></div>
+        <div class="ccard i"><div class="emoji">⛔</div><h4>④ 阻止</h4><p>通过<b>访问控制</b>阻止对存储/传输媒体的物理访问。</p></div>
+      </div>
+
+      <h3>11.2 技术实现基本思路（信息验证码）</h3>
+      <ol>
+        <li>发送方对原信息 M0 产生验证码 C0；</li>
+        <li>把 M0 和 C0 一起发送；</li>
+        <li>接收方分离出 M1、C1；</li>
+        <li>接收方对 M1 用同样函数算出 C2；</li>
+        <li>比较 C2 与 C1：相等→完整，不等→被篡改。</li>
+      </ol>
+
+      <h3>11.3 六种典型实现机制（逐步改进）</h3>
+      <table>
+        <tr><th>机制</th><th>要点 / 缺点</th></tr>
+        <tr><td>① 基于数据校验（CRC）</td><td>缺点：攻击者可<b>同时改数据和 CRC</b>，检测不出。</td></tr>
+        <tr><td>② 校验码 + 对称加密</td><td>密钥只有双方知道，解决①；但有<b>密钥分发问题</b>。</td></tr>
+        <tr><td>③ 非对称 + 对称结合</td><td>用对方公钥包装一次性对称密钥 K1，解决密钥分发、<b>防重放</b>。</td></tr>
+        <tr><td>④ 基于 RSA 数字签名</td><td>私钥加密整条消息，靠"解密后是否有意义"判断；<b>无保密作用、速度慢</b>。</td></tr>
+        <tr><td>⑤ 基于 MAC</td><td>共享密钥算 MAC；<b>无保密作用</b>。</td></tr>
+        <tr><td>⑥ <b>基于消息摘要（Hash）</b></td><td><b>不需共享密钥、有效率高</b>，是常用方案；与加密结合可同时防"改消息+改摘要"。</td></tr>
+      </table>
+      <div class="box warn"><span class="bt">⚠️ 抗碰撞要求</span>对给定消息 m1 及其摘要 H(m1)，找到另一个 m2≠m1 且 H(m2)=H(m1) 在<b>计算上不可行</b>（抗碰撞）。这是完整性验证安全性的关键。</div>
+    </section>
+
+    <!-- 12 鉴别交换 -->
+    <section id="s12">
+      <h2><span class="num">12</span>鉴别交换机制</h2>
+      <p>鉴别机制以<b>交换信息</b>的方式确认实体真实身份，用来对抗<b>假冒威胁</b>。<b>所有其他安全服务都依赖于该服务。</b></p>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">🧠</div><h4>你所知道的</h4><span class="en">What you know</span><p>口令、密码、知识</p></div>
+        <div class="ccard i"><div class="emoji">💳</div><h4>你所拥有的</h4><span class="en">What you have</span><p>身份证、智能卡、令牌、钥匙</p></div>
+        <div class="ccard a"><div class="emoji">🫆</div><h4>你的个人特征</h4><span class="en">What you are</span><p>指纹、虹膜、声音、脸型、视网膜</p></div>
+      </div>
+      <p>结合两个/多个因素即<b>双因素 / 多因素认证</b>。鉴别可分：单向/双向/第三方鉴别；本地/远程鉴别。</p>
+      <div class="box warn"><span class="bt">⚠️ 鉴别 vs 认证（易混）</span><b>鉴别（Authentication）= 真伪性</b>：验证身份/数据的真实性。<b>认证（Certification）= 资格审查</b>：技术评估某系统/网络在多大程度上满足预定安全要求。两个词中文相近，但含义不同！</div>
+    </section>
+
+    <!-- 13 其他机制 -->
+    <section id="s13">
+      <h2><span class="num">13</span>其他机制（业务流填充 / 路由控制 / 抗抵赖 / 公证 / 审计）</h2>
+      <table>
+        <tr><th>机制</th><th>要点</th></tr>
+        <tr><td><b>通信业务流填充</b></td><td>填充无用流量，提供不同级别保护，对抗<b>业务量分析</b>；<b>只有受机密服务保护时才有效</b>。</td></tr>
+        <tr><td><b>路由选择控制</b></td><td>动态/预选物理上安全可靠的子网/链路；发现连续性非法处理时<b>另选安全路由</b>并告警。</td></tr>
+        <tr><td><b>抗抵赖</b></td><td>生成、收集、维护证据，解决"做没做过"的争议。两种思路：<b>直接数字签名法</b>（凭自身特性）vs <b>仲裁数字签名</b>（借可信第三方公证）。</td></tr>
+        <tr><td><b>公证</b></td><td>由<b>第三方</b>公证完整性、信源、通信时间和目的地、密钥分配、数字签名等；可仲裁或判决方式。</td></tr>
+        <tr><td><b>安全审计和报警</b></td><td>事后审计检测安全策略执行情况与遭破坏情况；审计跟踪的存在对攻击有<b>威慑作用</b>。日志=安全机制，分析报告=安全管理功能。</td></tr>
+      </table>
+      <div class="box tip"><span class="bt">🪤 直接签名的缺点</span>直接签名的抗抵赖依赖发送方私钥保密。发送方可能声称"私钥已暴露/过期/被盗用"来抵赖，因此需要<b>可信第三方</b>（查公钥是否注销、时间戳防重放）来兜底，这就是<b>仲裁数字签名</b>。</div>
+    </section>
+
+    <!-- 14 重点例题 -->
+    <section id="s14">
+      <h2><span class="num">⭐</span>重点例题精讲（来自作业2）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">下面把作业2中与本章直接相关的高频考点，逐一拆解讲透。</p>
+
+      <h3>例题1 · 安全服务 vs 安全机制的区别（作业2·简答1）</h3>
+      <div class="box key">
+        <span class="bt">参考答案要点</span>
+        <b>安全服务</b>是加强系统安全性的一类<b>功能/目标</b>（"要什么效果"），OSI 有 5 种：鉴别、访问控制、数据机密性、数据完整性、抗抵赖。<br>
+        <b>安全机制</b>是实现这些服务的<b>技术手段</b>（"用什么方法"），有 8 种基本机制：加密、数字签名、访问控制、数据完整性、鉴别交换、通信业务流填充、路由选择控制、公证。<br>
+        <b>关系</b>：二者<b>多对多</b>——一个服务可由多个机制实现，一个机制可支撑多个服务。例：机密性服务由加密机制实现；完整性服务由数据完整性机制和数字签名机制共同支撑。
+      </div>
+
+      <h3>例题2 · 对称 vs 公钥密码体制比较（作业2·简答2）</h3>
+      <div class="box key">
+        <span class="bt">参考答案要点</span>
+        <b>性能</b>：对称<b>快</b>，适合大量数据加密；公钥<b>慢</b>。<br>
+        <b>密钥管理</b>：对称密钥需安全分发，n 人需 <code>n(n-1)/2</code> 把，分发困难；公钥的公钥可公开，分发容易。<br>
+        <b>应用场景</b>：对称→数据加密；公钥→<b>密钥分发</b>和<b>数字签名</b>。实际常<b>结合使用</b>（数字信封：对称加密数据 + 公钥加密对称密钥）。
+      </div>
+
+      <h3>例题3 · MAC 的主要作用（作业2·选择7）</h3>
+      <div class="box tip"><span class="bt">✅ 答案：检测消息完整性并认证消息来源</span>MAC 用共享密钥 K 计算，接收方重算比对；攻击者无 K 则改不了也造不出 MAC。但 <b>无保密作用</b>。</div>
+
+      <h3>例题4 · 数字签名不能直接提供什么（作业2·选择4）</h3>
+      <div class="box tip"><span class="bt">✅ 答案：明文压缩</span>数字签名能提供<b>身份鉴别、完整性验证、抗抵赖</b>（私钥签名+公钥验证+Hash摘要），但<b>不</b>提供"明文压缩"，单独的签名也不提供保密。</div>
+
+      <h3>例题5 · 先签名后加密（作业2·案例3 电子合同）</h3>
+      <div class="box key">
+        <span class="bt">同时满足机密性+完整性+抗抵赖的组合</span>
+        ① 用 <b>Hash</b> 对合同 M 算摘要 → 发送方<b>私钥签名</b>摘要（完整性 + 抗抵赖 + 来源认证）；<br>
+        ② 用<b>一次性对称密钥 K1</b> 加密 M（机密性，速度快）；<br>
+        ③ 用<b>接收方公钥</b>加密 K1（数字信封，解决密钥分发）；<br>
+        ④ 顺序须<b>先签名后加密</b>，防止攻击者换签名。<br>
+        各部分分工：<b>消息摘要</b>=完整性指纹；<b>数字签名</b>=抗抵赖+来源；<b>对称加密</b>=快速加密正文；<b>公钥加密</b>=安全分发对称密钥。引入<b>可信第三方/时间戳</b>可进一步解决"私钥被盗抵赖""消息时间先后"等争议。
+      </div>
+
+      <h3>例题6 · 访问控制原则（作业2·选择5）</h3>
+      <div class="box tip"><span class="bt">✅ 答案：最小特权原则</span>只给完成职责所需的<b>最小</b>权限集合，不给超出任务的特权。</div>
+
+      <h3>例题7 · 业务流填充对抗什么（作业2·选择8）</h3>
+      <div class="box tip"><span class="bt">✅ 答案：业务量（流量）分析</span>填充无用流量掩盖真实通信的频率/长度/收发码型，但要配合机密服务才有效。</div>
+    </section>
+
+    <!-- 15 小结 -->
+    <section id="s15">
+      <h2><span class="num">15</span>本章小结</h2>
+      <ul>
+        <li>五重屏障：<b>进不来 / 拿不走 / 改不了 / 看不懂 / 跑不掉 / 打不垮</b>。</li>
+        <li>OSI 安全体系（GB/T 18794）：<b>5 种服务</b>（鉴别、访问控制、机密性、完整性、抗抵赖）+ <b>8 种机制</b>，服务与机制<b>多对多</b>。</li>
+        <li>安全体系框架 = <b>技术 + 组织 + 管理</b>三体系，"<b>三分技术七分管理</b>"；安全技术分<b>物理/系统/网络/应用/管理</b>五层。</li>
+        <li>核心技术：<b>对称/公钥密码</b>（密钥分发 n(n-1)/2）、<b>MAC</b>、<b>数字签名</b>、完整性、鉴别、访问控制。</li>
+        <li>数字签名 = <b>私钥签名 + 公钥验证 + Hash 摘要</b>，5 个作用，<b>先签名后加密</b>，数字信封提速。</li>
+      </ul>
+      <p style="margin-top:16px">
+        <span class="pill">📄 配套作业2</span>
+        <span class="pill">📘 继续：CH5 鉴别技术</span>
+        <span class="pill">📗 继续：CH6 访问控制</span>
+      </p>
+    </section>
+
+    <!-- 16 自测 -->
+    <section id="s16">
+      <h2><span class="num">🎯</span>自测（点击展开参考要点）</h2>
+      <details>
+        <summary>安全服务和安全机制有什么区别？举例说明二者关系。</summary>
+        <div class="ans">服务=功能/目标（5种：鉴别、访问控制、机密性、完整性、抗抵赖）；机制=技术手段（8种：加密、数字签名、访问控制、数据完整性、鉴别交换、业务流填充、路由控制、公证）。二者多对多——如机密性服务由加密机制实现，完整性服务由完整性机制和数字签名共同支撑。</div>
+      </details>
+      <details>
+        <summary>五重屏障分别对应哪些安全目标？</summary>
+        <div class="ans">进不来=访问控制、拿不走=访问控制+机密性、改不了=完整性、看不懂=机密性、跑不掉=抗抵赖+审计、打不垮=可用性。</div>
+      </details>
+      <details>
+        <summary>对称密码和公钥密码各有什么优缺点？</summary>
+        <div class="ans">对称：快但密钥分发难（n(n-1)/2把）；公钥：公钥可公开、便于分发和签名，但慢。实际结合用（数字信封）。</div>
+      </details>
+      <details>
+        <summary>简述数字签名的签名与验证过程。</summary>
+        <div class="ans">发送方对原文算 Hash 得摘要，用私钥签名摘要生成 DS，连同原文发送；接收方用发送方公钥验证 DS 得摘要 MD1，再对原文算 Hash 得 MD2，MD1=MD2 则来源真实且未被篡改。</div>
+      </details>
+      <details>
+        <summary>为什么要"先签名后加密"而不是"先加密后签名"？</summary>
+        <div class="ans">先加密后签名时，攻击者截获后可去掉原签名换成自己的签名再转发，接收者无法正确解签名、会误判来源。先签名后加密则签名被密文保护，更安全。</div>
+      </details>
+      <details>
+        <summary>数据完整性的四种提供方式是什么？</summary>
+        <div class="ans">通过密码学（密封/数字签名）、通过上下文（数据重复/预共识）、通过探测和确认（正馈等幂）、通过阻止（访问控制阻止物理访问）。</div>
+      </details>
+      <details>
+        <summary>鉴别交换的三种途径？鉴别和认证的区别？</summary>
+        <div class="ans">你知道的（口令）、你拥有的（智能卡）、你是的（生物特征）。鉴别(Authentication)=验证身份真伪；认证(Certification)=资格审查，评估系统是否满足安全要求。</div>
+      </details>
+      <details>
+        <summary>抗抵赖的两种基本思路？</summary>
+        <div class="ans">直接数字签名法（凭发送方私钥自身特性）；仲裁数字签名（借可信第三方公证，防"私钥被盗"抵赖）。</div>
+      </details>
+      <div class="box tip" style="margin-top:18px">
+        <span class="bt">✅ 都能答上来？</span>那 CH4 就掌握了，可以去做<b>作业2</b>，并继续学 CH5 鉴别技术、CH6 访问控制。
+      </div>
+    </section>
+
+    <!-- 强化题库 -->
+    <section id="bank">
+      <h2><span class="num">📝</span>强化题库（32 选择 + 32 填空 = 64 题）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">覆盖本章全部知识点，含【作业举一反三】变体题。选择题点选即时判分；填空题输入后点"检查"或"显示答案"。</p>
+      <div class="tabs">
+        <button class="tab active" data-tab="mcq">📋 选择题 (32)</button>
+        <button class="tab" data-tab="fill">✏️ 填空题 (32)</button>
+      </div>
+
+      <div class="tabpane active" id="pane-mcq">
+        <div class="score">
+          <span class="mini">已答 <b id="mcqDone">0</b>/32</span>
+          <span class="mini">答对 <b id="mcqRight">0</b></span>
+          <span class="mini">正确率 <b id="mcqRate">—</b></span>
+          <button class="resetb" id="mcqReset">↺ 重做</button>
+        </div>
+        <div id="mcqList"></div>
+      </div>
+
+      <div class="tabpane" id="pane-fill">
+        <div class="score">
+          <span class="mini">已检查 <b id="fillDone">0</b>/32</span>
+          <span class="mini">答对 <b id="fillRight">0</b></span>
+          <button class="resetb" id="fillRevealAll">👁 全部显示答案</button>
+          <button class="resetb" id="fillReset">↺ 重做</button>
+        </div>
+        <div id="fillList"></div>
+      </div>
+    </section>
+
+    <footer>
+      网络空间安全技术 · CH4 信息安全技术体系与技术 · 零基础教学讲义<br>
+      💡 配套 Markdown 版：CH4-信息安全技术体系.md ｜ 配套作业2 ｜ 后续：CH5 鉴别 · CH6 访问控制
+    </footer>
+  </main>
+</div>
+
+<button id="top" title="回到顶部">↑</button>
+
+<script>
+  // 进度条
+  const progress=document.getElementById('progress');
+  const topBtn=document.getElementById('top');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const scrolled=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+    progress.style.width=scrolled+'%';
+    topBtn.classList.toggle('show',h.scrollTop>400);
+  });
+  topBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+  // 导航高亮 + 学习进度
+  const links=[...document.querySelectorAll('#nav a')];
+  const allSecs=[...document.querySelectorAll('main section')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const seen=new Set();
+  const learnFill=document.getElementById('learnFill');
+  const learnPct=document.getElementById('learnPct');
+  function updateLearn(){
+    const p=Math.round(seen.size/allSecs.length*100);
+    learnFill.style.width=p+'%';
+    learnPct.textContent=p+'%';
+    if(p===100){learnPct.textContent='✅100%';}
+  }
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        if(e.target.id){seen.add(e.target.id);updateLearn();}
+        const id='#'+e.target.id;
+        links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')===id));
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>s&&io.observe(s));
+  allSecs.forEach(s=>io.observe(s));
+
+  // ===== 选择题测验 =====
+  document.querySelectorAll('[data-quiz]').forEach(quiz=>{
+    const opts=[...quiz.querySelectorAll('.opt')];
+    const fb=quiz.querySelector('.feedback');
+    opts.forEach((opt,idx)=>{
+      opt.addEventListener('click',()=>{
+        const correctIdx=opts.findIndex(o=>o.dataset.correct!==undefined);
+        opts.forEach(o=>o.classList.add('disabled'));
+        if(opt.dataset.correct!==undefined){
+          opt.classList.add('correct');
+          fb.className='feedback show ok';
+          fb.textContent='🎉 答对了！理解到位。';
+        }else{
+          opt.classList.add('wrong');
+          opts[correctIdx].classList.add('correct');
+          fb.className='feedback show no';
+          fb.textContent='再想想～ 正确答案已用绿色标出。';
+        }
+      });
+    });
+  });
+
+  // ===== 匹配题 =====
+  (function(){
+    const box=document.getElementById('match1');
+    if(!box)return;
+    const fb=document.getElementById('match1fb');
+    let sel=null,done=0;
+    const items=[...box.querySelectorAll('.mitem')];
+    const total=box.querySelectorAll('.col')[0].querySelectorAll('.mitem').length;
+    items.forEach(it=>{
+      it.addEventListener('click',()=>{
+        if(it.classList.contains('done'))return;
+        if(!sel){sel=it;it.classList.add('sel');return;}
+        if(sel===it){it.classList.remove('sel');sel=null;return;}
+        if(sel.parentElement===it.parentElement){
+          sel.classList.remove('sel');sel=it;it.classList.add('sel');return;
+        }
+        if(sel.dataset.k===it.dataset.k){
+          sel.classList.remove('sel');sel.classList.add('done');it.classList.add('done');
+          done++;sel=null;
+          if(done===total){fb.className='feedback show ok';fb.textContent='🏆 全部连对！你已分清五种安全服务的作用了。';}
+        }else{
+          const a=sel,b=it;a.classList.add('shake');b.classList.add('shake');
+          setTimeout(()=>{a.classList.remove('shake','sel');b.classList.remove('shake');},420);
+          sel=null;
+          fb.className='feedback show no';fb.textContent='这两个不匹配，再试试～';
+        }
+      });
+    });
+  })();
+
+  // ===== 强化题库数据 =====
+  const MCQ=[
+    {q:'OSI 安全体系结构（GB/T 18794）中的五类安全服务不包括？',o:['鉴别服务','访问控制服务','数据机密性服务','数据压缩服务'],a:3,e:'五种服务=鉴别、访问控制、数据机密性、数据完整性、抗抵赖；数据压缩不是安全服务。【作业2·选择1】'},
+    {q:'下列属于 OSI"八种基本安全机制"的是？',o:['数字签名机制','负载均衡机制','项目验收机制','需求访谈机制'],a:0,e:'八种基本机制：加密、数字签名、访问控制、数据完整性、鉴别交换、业务流填充、路由选择控制、公证。【作业2·选择2】'},
+    {q:'"加强数据处理系统和信息传输安全性的一类服务"指的是？',o:['安全机制','安全服务','安全策略','安全审计'],a:1,e:'安全服务=功能/目标；安全机制=实现手段。'},
+    {q:'"用来保护或保障信息系统安全的一种或一类技术的总称"指的是？',o:['安全服务','安全策略','安全机制','安全模型'],a:2,e:'这是安全机制的定义。'},
+    {q:'安全服务与安全机制的关系是？',o:['一一对应','一个服务只能由一个机制实现','多对多（一个服务可由多个机制实现）','机制比服务少'],a:2,e:'多对多，可用矩阵描述对应关系。'},
+    {q:'加密机制最直接支持的安全目标是？',o:['数据机密性','设备散热','项目进度','用户体验'],a:0,e:'加密既提供数据机密性，也为通信业务流提供机密性。【作业2·选择3】'},
+    {q:'数字签名机制通常不能直接提供的是？',o:['身份鉴别','完整性验证','抗抵赖','明文压缩'],a:3,e:'签名提供鉴别/完整性/抗抵赖，不提供明文压缩。【作业2·选择4】'},
+    {q:'访问控制应遵循的基本原则是？',o:['最大授权原则','最小特权原则','默认完全开放原则','只审计不限制原则'],a:1,e:'最小特权原则：只给完成职责所需的最小权限。【作业2·选择5】'},
+    {q:'关于对称密码体制，下列说法正确的是？',o:['加解密速度快，但存在密钥分发问题','不需要任何密钥','只适合数字签名不适合加密','公钥必须公开私钥无需保密'],a:0,e:'对称快但有密钥分发问题，n 人需 n(n-1)/2 把。【作业2·选择6】'},
+    {q:'消息认证码 MAC 的主要作用是？',o:['检测消息完整性并认证消息来源','产生随机IP地址','替代所有访问控制策略','提升显示器分辨率'],a:0,e:'MAC=完整性+来源认证，但无保密作用。【作业2·选择7】'},
+    {q:'通信业务流填充机制主要用于对抗？',o:['业务量分析','硬盘坏道','口令过期','文件误删除'],a:0,e:'填充无用流量对抗流量/业务量分析，需配合机密服务。【作业2·选择8】'},
+    {q:'路由选择控制机制的主要思想是？',o:['根据数据安全要求选择安全可靠的链路或路由','使所有数据走最慢路径','取消所有路由协议','只保护主机本地文件'],a:0,e:'动态/预选安全可靠路由，发现非法处理可另选。【作业2·选择9】'},
+    {q:'OSI 中"对通信中对等实体和数据来源进行确认"的服务是？',o:['访问控制','鉴别服务','机密性服务','抗抵赖'],a:1,e:'鉴别服务含对等实体鉴别和数据源鉴别。'},
+    {q:'下列哪项既是安全服务也是安全机制的名称？',o:['加密','公证','数据完整性','鉴别交换'],a:2,e:'数据完整性、访问控制、鉴别既出现在服务也出现在机制；加密/公证/鉴别交换只是机制。'},
+    {q:'对称密码中，n 个用户两两通信需要的密钥数是？',o:['n','n-1','n(n-1)/2','2n'],a:2,e:'n(n-1)/2，这是对称密码的密钥分发难题。'},
+    {q:'下列属于公钥密码算法的是？',o:['DES','AES','RSA','流密码'],a:2,e:'RSA、ECC 是公钥算法；DES/AES/流密码是对称的。'},
+    {q:'RSA 算法中，用于"签名和解密"的是？',o:['公钥','私钥','会话密钥','对称密钥'],a:1,e:'RSA：私钥用于签名/解密，公钥用于验证/加密。'},
+    {q:'ECC（椭圆曲线密码）相比 RSA 的特点是？',o:['密钥更长更慢','更小的密钥长度、更快，功能同RSA','只能加密不能签名','属于对称密码'],a:1,e:'ECC（1985）：更小密钥、更快，功能同 RSA（签名/密钥管理/加密）。'},
+    {q:'序列密码（流密码）的特点是？',o:['逐比特加密、错误扩散低','分组加密、速度慢','只能用公钥','不需要密钥'],a:0,e:'流密码逐比特加解密，传输中某比特错误只影响该比特。'},
+    {q:'分组密码体制的特点是？',o:['错误扩散低','扩散性好、对插入修改有免疫性、速度较慢','逐比特加密','属于非对称密码'],a:1,e:'分组密码扩散特性好，对插入/修改免疫，但加密速度慢。'},
+    {q:'数字签名的 ISO 定义强调它能确认数据单元的？',o:['来源和完整性','价格和数量','颜色和大小','速度和延迟'],a:0,e:'确认来源和完整性，并防止被他人伪造。'},
+    {q:'生成数字签名使用发送方的哪把密钥？',o:['接收方公钥','发送方私钥','接收方私钥','发送方公钥'],a:1,e:'发送方用自己的私钥签名，接收方用其公钥验证。【作业2·填空3】'},
+    {q:'数字签名图解过程中，对摘要进行的运算是？',o:['加密','签名','压缩','哈希'],a:1,e:'课件强调：此处运算是签名而非加密，对应验证而非解密。'},
+    {q:'关于"先签名后加密"，正确的说法是？',o:['应先加密后签名','应先签名后加密，防止攻击者替换签名','顺序无所谓','两者都不安全'],a:1,e:'先加密后签名会被攻击者去掉签名换成自己的，造成混乱。'},
+    {q:'数字信封技术的核心做法是？',o:['用对称密钥加密整条消息再公开','用一次性对称密钥加密消息，再用对方公钥加密该对称密钥','只用RSA加密整条消息','放弃加密只签名'],a:1,e:'对称加密数据（快）+ 公钥加密一次性对称密钥（封装），兼顾速度与安全。'},
+    {q:'数据完整性机制的目标是发现对数据的修改、插入、替换和？',o:['压缩','删除','排序','打印'],a:1,e:'修改、插入、替换和删除。【作业2·填空4】'},
+    {q:'数据完整性"四种提供方式"不包括？',o:['通过密码学','通过上下文','通过探测和确认','通过广播'],a:3,e:'四种=密码学、上下文、探测和确认、阻止。'},
+    {q:'基于 CRC 数据校验的完整性机制最大缺点是？',o:['速度太慢','攻击者可同时修改数据和CRC而检测不出','不能用于网络','需要公钥'],a:1,e:'攻击者重算CRC一起替换即可绕过，解决办法是加密。'},
+    {q:'下列完整性机制中"不需要双方共享密钥、有效率高"的是？',o:['基于CRC','基于MAC','基于对称加密','基于消息摘要(Hash)'],a:3,e:'基于消息摘要不需共享密钥，是常用方案。'},
+    {q:'鉴别交换中"基于你所拥有的"因素是？',o:['口令','智能卡/令牌','指纹','虹膜'],a:1,e:'know=口令，have=智能卡/令牌/钥匙，are=生物特征。【作业2·选择12对照】'},
+    {q:'关于"鉴别"和"认证"的区别，正确的是？',o:['两者完全相同','鉴别=验证身份真伪，认证=资格审查/技术评估','认证用于验证身份','鉴别用于评估系统'],a:1,e:'Authentication=真伪性；Certification=资格审查。'},
+    {q:'抗抵赖机制中"借助可信第三方公证防止抵赖"的方法称为？',o:['直接数字签名法','仲裁数字签名机制','对称加密法','流量填充法'],a:1,e:'直接签名法凭自身特性；仲裁签名借第三方公证（防私钥被盗抵赖）。'}
+  ];
+
+  const FILL=[
+    {q:'网络空间安全五重屏障：进不来、拿不走、改不了、看不懂、跑不掉、____。',a:['打不垮']},
+    {q:'OSI 安全服务包括鉴别、访问控制、数据机密性、数据完整性和 ____。',a:['抗抵赖','抗抵赖性']},
+    {q:'八种基本安全机制包括加密、数字签名、访问控制、数据完整性、鉴别交换、通信业务流填充、路由选择控制和 ____。',a:['公证','公证机制']},
+    {q:'安全服务回答"要什么效果"，安全机制回答"用什么方法实现"，二者是 ____ 对多的关系。',a:['多','多对多']},
+    {q:'本章核心标准是开放系统互连安全体系结构 ____（国标号）。',a:['GB/T 18794','GB/T18794','18794']},
+    {q:'鉴别服务包括对等实体鉴别和 ____ 鉴别。',a:['数据源','数据原发','数据来源']},
+    {q:'数字签名通常使用发送方的 ____ 生成签名，接收方用对应公钥验证。',a:['私钥']},
+    {q:'数据完整性机制的目标是发现非法实体对数据的修改、插入、替换和 ____。',a:['删除']},
+    {q:'对称密码中 n 个用户两两通信需要 ____ 把密钥。',a:['n(n-1)/2']},
+    {q:'对称密码两类：序列密码（流密码）和 ____ 密码。',a:['分组','分组密码']},
+    {q:'公钥密码的两种典型算法是 RSA 和 ____。',a:['ECC','椭圆曲线']},
+    {q:'公钥密码用法：公钥加密→私钥解密实现保密；私钥签名→公钥验证实现 ____。',a:['身份鉴别','鉴别','认证']},
+    {q:'MAC 的英文全称是 Message ____ Code。',a:['Authentication','authentication']},
+    {q:'MAC 用双方共享的 ____ 计算，缺点是没有保密作用。',a:['密钥','秘密密钥','对称密钥']},
+    {q:'数字签名 = 私钥签名 + 公钥验证 + ____ 摘要。',a:['Hash','哈希','散列']},
+    {q:'数字签名图解中，对信件先用 Hash 函数生成 ____。',a:['摘要','消息摘要','digest']},
+    {q:'课件强调：数字签名顺序应先签名后 ____。',a:['加密']},
+    {q:'数字信封用一次性对称密钥加密消息，再用对方 ____ 加密该对称密钥。',a:['公钥']},
+    {q:'数字签名的五个作用：身份鉴别、防假冒、抗抵赖、防篡改和具有 ____ 效力。',a:['法律']},
+    {q:'访问控制应遵循 ____ 原则，即只给完成职责所需的最小权限。',a:['最小特权']},
+    {q:'访问控制可描述为三元组（S，A，O），分别表示主体、访问操作和 ____。',a:['客体']},
+    {q:'数据完整性"通过密码学"提供时，对称对应密封，非对称对应 ____。',a:['数字签名','签名']},
+    {q:'数据完整性的四种提供方式：密码学、上下文、探测和确认、____。',a:['阻止']},
+    {q:'完整性安全要求：对给定 m1，找到 m2≠m1 且 H(m2)=H(m1) 在计算上 ____。',a:['不可行','不可行性']},
+    {q:'鉴别交换的三种途径：你所知道的、你所 ____ 的、你的个人特征。',a:['拥有','拥有的']},
+    {q:'"基于你所知道的"鉴别因素通常指口令或 ____。',a:['密码']},
+    {q:'鉴别（Authentication）指真伪性，认证（Certification）指 ____ 审查。',a:['资格']},
+    {q:'通信业务流填充机制用于对抗 ____ 分析（流量分析）。',a:['业务量','流量','业务流']},
+    {q:'抗抵赖两种思路：直接数字签名法和 ____ 数字签名机制。',a:['仲裁']},
+    {q:'公证机制由 ____ 方对完整性、信源、时间和目的地等加以保证。',a:['第三','第三方']},
+    {q:'信息系统安全体系框架由技术体系、组织机构体系和 ____ 体系共同构建。',a:['管理']},
+    {q:'安全管理的核心理念是"三分技术，____ 管理"。',a:['七分']}
+  ];
+
+  // 渲染选择题
+  (function(){
+    const list=document.getElementById('mcqList');if(!list)return;
+    let done=0,right=0;
+    const dn=document.getElementById('mcqDone'),rt=document.getElementById('mcqRight'),ra=document.getElementById('mcqRate');
+    function render(){
+      list.innerHTML='';done=0;right=0;dn.textContent=0;rt.textContent=0;ra.textContent='—';
+      MCQ.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        let opts=item.o.map((t,j)=>`<button class="qopt" data-i="${j}">${String.fromCharCode(65+j)}. ${t}</button>`).join('');
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${item.q}</div>${opts}<div class="qexp">💡 ${item.e}</div>`;
+        const btns=[...d.querySelectorAll('.qopt')];const exp=d.querySelector('.qexp');
+        btns.forEach(b=>b.addEventListener('click',()=>{
+          btns.forEach(x=>x.classList.add('lock'));
+          const ans=item.a;
+          if(+b.dataset.i===ans){b.classList.add('correct');right++;}
+          else{b.classList.add('wrong');btns[ans].classList.add('correct');}
+          exp.classList.add('show');
+          done++;dn.textContent=done;rt.textContent=right;ra.textContent=Math.round(right/done*100)+'%';
+        }));
+        list.appendChild(d);
+      });
+    }
+    render();
+    document.getElementById('mcqReset').onclick=render;
+  })();
+
+  // 渲染填空题
+  (function(){
+    const list=document.getElementById('fillList');if(!list)return;
+    let done=0,right=0;const checked=new Set();
+    const dn=document.getElementById('fillDone'),rt=document.getElementById('fillRight');
+    function norm(s){return (s||'').trim().replace(/\s/g,'').toLowerCase();}
+    function build(){
+      list.innerHTML='';done=0;right=0;checked.clear();dn.textContent=0;rt.textContent=0;
+      FILL.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        const qhtml=item.q.replace('____',`<input class="blank-in" data-i="${i}" placeholder="在此作答">`);
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${qhtml}</div>
+          <div class="blank-btns">
+            <button class="sbtn primary" data-act="check">检查</button>
+            <button class="sbtn" data-act="show">显示答案</button>
+          </div>
+          <div class="ansline">✅ 参考答案：${item.a[0]}</div>`;
+        const inp=d.querySelector('.blank-in');const ansl=d.querySelector('.ansline');
+        d.querySelector('[data-act="check"]').onclick=()=>{
+          const v=norm(inp.value);if(!v)return;
+          const ok=item.a.some(a=>norm(a)===v||v.includes(norm(a)));
+          inp.classList.remove('ok','bad');inp.classList.add(ok?'ok':'bad');
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;if(ok)right++;dn.textContent=done;rt.textContent=right;}
+        };
+        d.querySelector('[data-act="show"]').onclick=()=>{
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;dn.textContent=done;rt.textContent=right;}
+        };
+        list.appendChild(d);
+      });
+    }
+    build();
+    document.getElementById('fillReset').onclick=build;
+    document.getElementById('fillRevealAll').onclick=()=>{
+      list.querySelectorAll('.ansline').forEach(a=>a.classList.add('show'));
+    };
+  })();
+
+  // Tab 切换
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('pane-'+t.dataset.tab).classList.add('active');
+    };
+  });
+</script>
+</body>
+</html>

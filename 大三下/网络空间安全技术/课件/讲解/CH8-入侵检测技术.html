@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CH8 入侵检测技术 · 小白教学</title>
+<style>
+  :root{
+    --bg:#0f1729;
+    --bg-soft:#16213e;
+    --card:#1b2745;
+    --card-2:#212f52;
+    --ink:#e8edf7;
+    --ink-soft:#a9b4cc;
+    --line:#2c3a5e;
+    --accent:#5b9dff;
+    --accent-2:#7c5cff;
+    --green:#36d399;
+    --amber:#fbbd23;
+    --red:#f87272;
+    --pink:#f472b6;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0f1729 0%,#131d38 100%);
+    color:var(--ink);
+    line-height:1.75;
+    font-size:16px;
+  }
+  #progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:999;transition:width .1s}
+
+  .chapnav{position:sticky;top:0;z-index:200;display:flex;gap:4px;flex-wrap:wrap;background:rgba(10,16,30,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 14px}
+  .chapnav a{color:var(--ink-soft);text-decoration:none;font-size:13px;padding:5px 11px;border-radius:8px;white-space:nowrap;transition:.15s}
+  .chapnav a:hover{background:var(--card-2);color:var(--ink)}
+  .chapnav a.cur{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;display:flex;gap:26px}
+
+  nav{
+    position:sticky;top:46px;align-self:flex-start;
+    width:230px;flex:0 0 230px;height:calc(100vh - 46px);overflow-y:auto;
+    padding:26px 8px 40px 0;
+    font-size:14px;
+  }
+  nav .nav-title{font-weight:700;color:var(--accent);letter-spacing:1px;margin:0 0 14px 10px;font-size:13px}
+  nav a{
+    display:block;color:var(--ink-soft);text-decoration:none;
+    padding:8px 12px;border-radius:10px;margin:2px 0;
+    border-left:3px solid transparent;transition:.2s;
+  }
+  nav a:hover{background:var(--card);color:var(--ink)}
+  nav a.active{background:var(--card-2);color:#fff;border-left-color:var(--accent)}
+
+  main{flex:1;min-width:0;padding:34px 0 90px}
+
+  header.hero{
+    background:radial-gradient(120% 140% at 0% 0%,#26356b 0%,#1a234a 60%,#161f3e 100%);
+    border:1px solid var(--line);border-radius:24px;
+    padding:38px 38px 32px;margin-bottom:30px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  header.hero::after{content:"🔍";position:absolute;right:30px;top:18px;font-size:90px;opacity:.12}
+  header.hero .tag{display:inline-block;background:rgba(91,157,255,.18);color:var(--accent);
+    padding:4px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:14px}
+  header.hero h1{margin:0 0 8px;font-size:32px;letter-spacing:.5px}
+  header.hero p{margin:0;color:var(--ink-soft);font-size:15px}
+
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px 30px;margin-bottom:24px;box-shadow:var(--shadow);scroll-margin-top:20px;
+  }
+  h2{font-size:23px;margin:0 0 18px;padding-bottom:12px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:10px}
+  h2 .num{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+    width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 34px}
+  h3{font-size:18px;margin:22px 0 10px;color:#cfe0ff}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px;overflow:hidden;border-radius:12px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--card-2);color:#cfe0ff;font-weight:600}
+  tr:hover td{background:rgba(91,157,255,.06)}
+  td code,p code,li code{background:#0d1530;color:#8fd6ff;padding:2px 7px;border-radius:6px;font-size:13.5px}
+
+  .box{border-radius:12px;padding:14px 18px;margin:16px 0;border-left:4px solid;font-size:15px}
+  .box .bt{font-weight:700;display:block;margin-bottom:4px}
+  .box.tip{background:rgba(54,211,153,.08);border-color:var(--green)}
+  .box.warn{background:rgba(251,189,35,.08);border-color:var(--amber)}
+  .box.key{background:rgba(124,92,255,.10);border-color:var(--accent-2)}
+  .box.quote{background:rgba(244,114,182,.07);border-color:var(--pink);font-style:italic}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:18px 0}
+  .ccard{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s}
+  .ccard:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.35)}
+  .ccard .emoji{font-size:34px}
+  .ccard h4{margin:8px 0 6px;font-size:18px}
+  .ccard .en{color:var(--ink-soft);font-size:13px}
+  .ccard.c{border-top:3px solid var(--accent)}
+  .ccard.i{border-top:3px solid var(--green)}
+  .ccard.a{border-top:3px solid var(--amber)}
+
+  .timeline{position:relative;margin:20px 0 6px;padding-left:28px}
+  .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .tl{position:relative;margin-bottom:18px}
+  .tl::before{content:"";position:absolute;left:-24px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(91,157,255,.2)}
+  .tl .yr{color:var(--accent);font-weight:700;font-size:14px}
+
+  details{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:6px 18px;margin:12px 0}
+  details summary{cursor:pointer;font-weight:600;padding:10px 0;list-style:none}
+  details summary::before{content:"❓ ";}
+  details[open] summary{color:var(--accent)}
+  details .ans{color:var(--ink-soft);padding:6px 0 14px;border-top:1px dashed var(--line)}
+
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .pill{display:inline-block;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;margin:3px}
+
+  .fig{background:#0d1530;border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;text-align:center}
+  .fig svg{max-width:100%;height:auto}
+  .fig .cap{color:var(--ink-soft);font-size:13px;margin-top:10px}
+
+  pre{background:#0d1530;border:1px solid var(--line);border-radius:10px;padding:14px 18px;overflow-x:auto;font-size:14px;color:#8fd6ff;line-height:1.6;margin:14px 0}
+
+  .checkbar{position:sticky;top:46px;z-index:50;background:rgba(15,23,41,.92);backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+  .checkbar .lbl{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .checkbar .track{flex:1;height:10px;background:var(--card);border-radius:999px;overflow:hidden}
+  .checkbar .fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--accent));transition:width .4s}
+  .checkbar .pct{font-weight:700;color:var(--green);font-size:14px;min-width:42px;text-align:right}
+
+  .quiz{background:linear-gradient(135deg,#1a2547,#212f52);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0}
+  .quiz .q{font-weight:600;margin-bottom:12px}
+  .quiz .q .badge{background:var(--accent-2);color:#fff;border-radius:8px;padding:1px 9px;font-size:12px;margin-right:8px}
+  .opt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:11px 15px;border-radius:10px;margin:7px 0;cursor:pointer;transition:.15s;font-size:14.5px;font-family:inherit}
+  .opt:hover{border-color:var(--accent);background:var(--card-2)}
+  .opt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .opt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .opt.disabled{pointer-events:none;opacity:.75}
+  .feedback{font-size:14px;margin-top:8px;padding:10px 14px;border-radius:10px;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:rgba(54,211,153,.12);color:#aef5d4}
+  .feedback.no{background:rgba(248,114,114,.12);color:#ffc2c2}
+
+  footer{text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 0 10px}
+
+  #top{position:fixed;right:26px;bottom:26px;width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none;
+    font-size:20px;cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s}
+  #top.show{opacity:1;pointer-events:auto}
+
+  @media(max-width:880px){
+    nav{display:none}
+    .wrap{padding:0 14px}
+    header.hero{padding:26px 22px}
+    section{padding:20px 18px}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="chapnav">
+  <a href="index.html">🏠 目录</a>
+  <a href="CH1-信息安全概论.html">CH1 概论</a>
+  <a href="CH2-风险管理与国产化.html">CH2 风险管理</a>
+  <a href="CH3-信息安全保障与运维.html">CH3 安全保障</a>
+  <a href="CH4-信息安全技术体系.html">CH4 技术体系</a>
+  <a href="CH5-鉴别技术.html">CH5 鉴别</a>
+  <a href="CH6-访问控制.html">CH6 访问控制</a>
+  <a href="CH7-防火墙技术.html">CH7 防火墙</a>
+  <a class="cur" href="CH8-入侵检测技术.html">CH8 入侵检测</a>
+  <a href="古典密码-入门讲义.html">古典密码</a>
+  <a href="哈希函数-入门课.html">哈希函数</a>
+  <a href="牛津古典密码学-讲义.html">牛津密码练习</a>
+</div>
+
+<div class="wrap">
+  <nav id="nav">
+    <p class="nav-title">📖 本章目录</p>
+    <a href="#s0">学习目标</a>
+    <a href="#s1">① 为什么需要 IDS</a>
+    <a href="#s2">② 基本概念</a>
+    <a href="#s3">③ 检测模型 ⭐</a>
+    <a href="#s4">④ 检测技术分类 ⭐⭐</a>
+    <a href="#s5">⑤ HIDS vs NIDS ⭐</a>
+    <a href="#s6">⑥ 性能指标与响应</a>
+    <a href="#s7">⑦ Snort 实战 ⭐⭐</a>
+    <a href="#s8">⑧ 高级检测技术</a>
+    <a href="#s9">⑨ IDS 部署策略</a>
+    <a href="#s10">⑩ 快速记忆总结</a>
+    <a href="#s11">🎯 自测</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="tag">网络空间安全技术 · 第八章</span>
+      <h1>CH8 入侵检测技术</h1>
+      <p>从 IDS 原理到 Snort 实战规则，安全防御的"巡逻队与监控摄像头"</p>
+    </header>
+
+    <div class="checkbar">
+      <span class="lbl">📚 学习进度</span>
+      <div class="track"><div class="fill" id="learnFill"></div></div>
+      <span class="pct" id="learnPct">0%</span>
+    </div>
+
+    <!-- 学习目标 -->
+    <section id="s0">
+      <h2><span class="num">🎯</span>学习目标</h2>
+      <p>读完这一章，你应该能回答：</p>
+      <ol>
+        <li>IDS 为什么存在？它和防火墙有什么区别？</li>
+        <li><b>CIDF</b> 通用架构的四大组件是什么？</li>
+        <li><b>异常检测 vs 特征检测</b>各自的优缺点？</li>
+        <li>HIDS、NIDS、NNIDS 的区别？</li>
+        <li>Snort 规则的<b>语法格式</b>和常见检测实例？</li>
+      </ol>
+    </section>
+
+    <!-- 1 为什么需要 IDS -->
+    <section id="s1">
+      <h2><span class="num">1</span>为什么需要入侵检测？</h2>
+
+      <div class="box quote">
+        <span class="bt">形象比喻</span>
+        防火墙是小区的大门保安，IDS 是小区里的巡逻队和监控摄像头。保安只管门口进出，但小偷翻墙进来、或住户自己搞破坏，保安管不了。
+      </div>
+
+      <h3>安全工具对比</h3>
+      <table>
+        <tr><th>工具</th><th>主要功能</th><th>优点</th><th>缺点</th></tr>
+        <tr><td><b>防火墙</b></td><td>网络访问控制</td><td>成本低、性能好</td><td>无法检测内部攻击</td></tr>
+        <tr><td><b>IDS</b></td><td>检测入侵行为</td><td>实时检测、深层分析</td><td>误报/漏报、配置复杂</td></tr>
+        <tr><td><b>扫描器</b></td><td>发现系统漏洞</td><td>主动发现隐患</td><td>只发现不能防御</td></tr>
+        <tr><td><b>VPN</b></td><td>加密隧道通信</td><td>保护传输安全</td><td>隧道内恶意流量检测困难</td></tr>
+        <tr><td><b>防病毒</b></td><td>查杀病毒木马</td><td>针对性强</td><td>依赖特征库、零日无效</td></tr>
+      </table>
+
+      <h3>预防-检测-响应：三步防御</h3>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">🛡️</div><h4>预防</h4><p>防火墙、加密、访问控制 — 挡住攻击</p></div>
+        <div class="ccard i"><div class="emoji">🔍</div><h4>检测</h4><p>IDS、日志分析 — 发现已进入的攻击</p></div>
+        <div class="ccard a"><div class="emoji">🚨</div><h4>响应</h4><p>应急响应 — 处理攻击后果</p></div>
+      </div>
+    </section>
+
+    <!-- 2 基本概念 -->
+    <section id="s2">
+      <h2><span class="num">2</span>入侵检测基本概念</h2>
+
+      <h3>入侵的分类</h3>
+      <table>
+        <tr><th>类型</th><th>说明</th></tr>
+        <tr><td><b>外部渗透</b></td><td>未授权用户从外部入侵</td></tr>
+        <tr><td><b>内部渗透</b></td><td>授权用户越权访问</td></tr>
+        <tr><td><b>不法行为</b></td><td>合法用户做非法的事</td></tr>
+      </table>
+
+      <h3>IDS 六大功能</h3>
+      <ol>
+        <li><b>监视和分析</b>用户和系统活动</li>
+        <li><b>审计</b>系统的配置和脆弱性</li>
+        <li><b>评估</b>关键系统和数据文件的完整性</li>
+        <li><b>识别</b>已知的攻击模式</li>
+        <li><b>统计分析</b>异常行为</li>
+        <li>对异常行为做出<b>响应</b>（自动/报警）</li>
+      </ol>
+    </section>
+
+    <!-- 3 检测模型 -->
+    <section id="s3">
+      <h2><span class="num">3</span>入侵检测模型 ⭐</h2>
+
+      <h3>Denning 通用模型（1987）</h3>
+      <p>最早、最有影响力的入侵检测模型。核心思想：建立用户/系统的"正常行为基线"，偏离基线就是异常。</p>
+      <table>
+        <tr><th>组件</th><th>作用</th></tr>
+        <tr><td>主体（Subject）</td><td>活动的发起者，通常指用户</td></tr>
+        <tr><td>对象（Object）</td><td>资源实体，如文件、命令、设备</td></tr>
+        <tr><td>审计记录</td><td>记录操作：&lt;主体, 动作, 对象, 异常条件, 资源使用, 时间戳&gt;</td></tr>
+        <tr><td>活动档案（Profile）</td><td>保存主体的正常行为特征</td></tr>
+        <tr><td>异常记录</td><td>记录检测到的异常</td></tr>
+        <tr><td>活动规则</td><td>判断是否异常，更新档案，输出报警</td></tr>
+      </table>
+
+      <h3>CIDF 通用架构（重点）</h3>
+      <p><b>CIDF</b>（Common Intrusion Detection Framework）定义了 IDS 的四大组件：</p>
+      <div class="cards">
+        <div class="ccard c">
+          <h4>E-box</h4>
+          <p class="en">事件产生器</p>
+          <p>从网络/系统中采集事件数据（监控摄像头）</p>
+        </div>
+        <div class="ccard i">
+          <h4>A-box</h4>
+          <p class="en">事件分析器</p>
+          <p>分析数据，判断是否入侵（视频分析员）</p>
+        </div>
+        <div class="ccard a">
+          <h4>R-box</h4>
+          <p class="en">响应单元</p>
+          <p>对入侵做出响应、报警/阻断（保安队）</p>
+        </div>
+        <div class="ccard">
+          <h4>D-box</h4>
+          <p class="en">事件数据库</p>
+          <p>存储中间数据和最终数据（录像存储）</p>
+        </div>
+      </div>
+
+      <h3>其他模型</h3>
+      <ul>
+        <li><b>IDM 层次化模型</b>：分安全审计（下层）和安全管理（上层）两个层次</li>
+        <li><b>SNMP-IDSM</b>：将入侵检测引入网络管理体系，有 Agent/Manager/MIB 三角色</li>
+      </ul>
+    </section>
+
+    <!-- 4 检测技术 -->
+    <section id="s4">
+      <h2><span class="num">4</span>检测技术分类 ⭐⭐</h2>
+
+      <h3>两大检测范式</h3>
+      <table>
+        <tr><th></th><th>异常检测</th><th>特征检测（误用检测）</th></tr>
+        <tr><td><b>原理</b></td><td>建立正常行为模型，偏离 = 入侵</td><td>建立攻击特征库，匹配 = 入侵</td></tr>
+        <tr><td><b>优点</b></td><td>能检测未知攻击</td><td>误报率低，速度快</td></tr>
+        <tr><td><b>缺点</b></td><td>误报率高，需要训练</td><td>无法检测未知攻击（零日）</td></tr>
+        <tr><td><b>别名</b></td><td>基于行为/统计</td><td>基于知识/规则/签名</td></tr>
+      </table>
+
+      <h3>异常检测的具体技术</h3>
+      <table>
+        <tr><th>技术</th><th>原理</th></tr>
+        <tr><td>统计异常检测</td><td>收集正常活动的统计数据，建立统计模型</td></tr>
+        <tr><td>HMM 隐马尔可夫</td><td>建立正常系统调用序列的概率模型</td></tr>
+        <tr><td>神经网络</td><td>学习正常行为模式，自动分类异常</td></tr>
+        <tr><td>免疫系统方法</td><td>模拟生物免疫：自我/非我识别</td></tr>
+        <tr><td>遗传算法</td><td>用遗传进化搜索最优检测规则</td></tr>
+        <tr><td>SVM 支持向量机</td><td>找最优分割超平面，区分正常/异常</td></tr>
+      </table>
+
+      <h3>特征检测的具体技术</h3>
+      <table>
+        <tr><th>技术</th><th>原理</th></tr>
+        <tr><td>专家系统</td><td>将安全专家知识编码为 if-then 规则</td></tr>
+        <tr><td>攻击签名</td><td>将攻击表示为特定签名/模式</td></tr>
+        <tr><td>模式匹配</td><td>在网络流量中搜索特定字节序列</td></tr>
+        <tr><td>状态转换分析</td><td>将攻击建模为状态机（初始 → 中间 → 入侵）</td></tr>
+      </table>
+
+      <div class="box tip">
+        <span class="bt">状态转换分析（STAT）</span>
+        把攻击过程画成从"正常状态"到"被入侵状态"的路径图，每一步对应一个系统事件。直观、可分析复杂多步攻击。
+      </div>
+    </section>
+
+    <!-- 5 HIDS vs NIDS -->
+    <section id="s5">
+      <h2><span class="num">5</span>HIDS vs NIDS vs NNIDS ⭐</h2>
+
+      <h3>主机入侵检测系统（HIDS）</h3>
+      <p>数据来源：主机上的系统日志、应用日志、文件变化。两种检测方法：网络连接检测 + 主机文件检测。</p>
+      <table>
+        <tr><th>优点</th><th>缺点</th></tr>
+        <tr><td>可以精确判断入侵是否成功</td><td>依赖主机 OS，不同系统需不同版本</td></tr>
+        <tr><td>可以监控加密后的流量</td><td>可能被攻击者禁用</td></tr>
+        <tr><td>不需要额外硬件</td><td>占用主机资源</td></tr>
+        <tr><td>能关联到具体用户</td><td>无法检测网络层攻击</td></tr>
+      </table>
+
+      <h3>网络入侵检测系统（NIDS）</h3>
+      <p>数据来源：网络流量（在交换机/路由器上抓包分析）。两种检测方法：模式匹配 + 协议分析。</p>
+      <table>
+        <tr><th>优点</th><th>缺点</th></tr>
+        <tr><td>实时检测网络流量</td><td>无法检测加密流量</td></tr>
+        <tr><td>对网络性能影响小</td><td>高速网络下丢包</td></tr>
+        <tr><td>独立于 OS</td><td>无法判断入侵是否成功</td></tr>
+        <tr><td>攻击者难以清除痕迹</td><td>对交换网络需要镜像端口</td></tr>
+      </table>
+
+      <h3>网络节点 IDS（NNIDS）</h3>
+      <p>结合 HIDS 和 NIDS 的优点：安装在主机上，但只检测该主机相关的网络流量。解决了 NIDS 检测加密流量的问题。</p>
+
+      <h3>三者对比速查</h3>
+      <table>
+        <tr><th>特性</th><th>HIDS</th><th>NIDS</th><th>NNIDS</th></tr>
+        <tr><td>数据源</td><td>主机日志</td><td>网络流量</td><td>本机网络流量</td></tr>
+        <tr><td>加密检测</td><td>可以</td><td>不可以</td><td>可以</td></tr>
+        <tr><td>部署</td><td>每台主机</td><td>网络关键节点</td><td>每台主机</td></tr>
+        <tr><td>内部攻击</td><td>可检测</td><td>不可检测</td><td>部分可检测</td></tr>
+      </table>
+    </section>
+
+    <!-- 6 性能指标 -->
+    <section id="s6">
+      <h2><span class="num">6</span>性能指标与响应方式</h2>
+
+      <h3>关键指标</h3>
+      <div class="cards">
+        <div class="ccard" style="border-top:3px solid var(--red)">
+          <h4>误报 False Positive</h4>
+          <p>把正常行为判定为攻击 = "冤枉好人"</p>
+        </div>
+        <div class="ccard" style="border-top:3px solid var(--amber)">
+          <h4>漏报 False Negative</h4>
+          <p>攻击行为没检测到 = "放过坏人"</p>
+        </div>
+        <div class="ccard" style="border-top:3px solid var(--green)">
+          <h4>检测率</h4>
+          <p>检测到的攻击占全部攻击的比例，越高越好</p>
+        </div>
+      </div>
+
+      <div class="box warn">
+        <span class="bt">现实困境</span>
+        降低误报率往往会增加漏报率，反之亦然。需要在两者之间找平衡。
+      </div>
+
+      <h3>IDS 响应方式</h3>
+      <table>
+        <tr><th>类型</th><th>方式</th><th>说明</th></tr>
+        <tr><td rowspan="3"><b>主动响应</b></td><td>自动阻断连接</td><td>发送 TCP RST 包切断连接</td></tr>
+        <tr><td>防火墙联动</td><td>通知防火墙添加阻断规则</td></tr>
+        <tr><td>重配路由器</td><td>让可疑流量进入"蜜罐"</td></tr>
+        <tr><td rowspan="3"><b>被动响应</b></td><td>报警通知</td><td>向管理员发送邮件/短信</td></tr>
+        <tr><td>日志记录</td><td>记录详细的攻击信息</td></tr>
+        <tr><td>SNMP Trap</td><td>发送网管告警</td></tr>
+      </table>
+    </section>
+
+    <!-- 7 Snort -->
+    <section id="s7">
+      <h2><span class="num">7</span>Snort 实战详解 ⭐⭐</h2>
+      <p>Snort 是世界上最流行的<b>开源 NIDS</b>，由 Martin Roesch 于 1998 年开发。开源、轻量级、功能强大。</p>
+
+      <h3>三个子系统</h3>
+      <div class="cards">
+        <div class="ccard c"><h4>数据包解码器</h4><p>从网卡抓包，解析各层协议头</p></div>
+        <div class="ccard i"><h4>检测引擎</h4><p>将数据包与规则库进行匹配</p></div>
+        <div class="ccard a"><h4>日志和报警</h4><p>匹配成功后记录日志或发出报警</p></div>
+      </div>
+
+      <h3>三种工作模式</h3>
+      <table>
+        <tr><th>模式</th><th>说明</th></tr>
+        <tr><td>嗅探器模式</td><td>类似 tcpdump，只是抓包并显示</td></tr>
+        <tr><td>数据包记录器模式</td><td>抓包并记录到磁盘</td></tr>
+        <tr><td>网络入侵检测模式</td><td>抓包 + 规则匹配 + 报警（最常用）</td></tr>
+      </table>
+
+      <h3>规则语法（必考）</h3>
+      <div class="box key">
+        <span class="bt">规则格式</span>
+        <code>动作  协议  源IP  源端口  方向  目的IP  目的端口  (选项)</code>
+      </div>
+
+      <p>示例：</p>
+      <pre>alert tcp any any -> 192.168.1.0/24 80 (content:"attack"; msg:"Web Attack Detected"; sid:1000001;)</pre>
+      <p>含义：任何来源向 192.168.1.0/24 的 80 端口发送 TCP 包，且内容包含 "attack" 时报警。</p>
+
+      <h3>规则头要素</h3>
+      <table>
+        <tr><th>要素</th><th>可选值</th><th>说明</th></tr>
+        <tr><td><b>动作</b></td><td>alert, log, pass, activate, dynamic</td><td>alert=报警+记录，log=只记录，pass=忽略</td></tr>
+        <tr><td><b>协议</b></td><td>tcp, udp, icmp, ip</td><td>检测哪种协议</td></tr>
+        <tr><td><b>方向</b></td><td><code>-></code> 或 <code>&lt;></code></td><td>单向或双向</td></tr>
+        <tr><td><b>IP/端口</b></td><td>具体值或 any</td><td>源和目的地址</td></tr>
+      </table>
+
+      <h3>常用规则选项</h3>
+      <table>
+        <tr><th>选项</th><th>作用</th></tr>
+        <tr><td><code>msg</code></td><td>报警消息文本</td></tr>
+        <tr><td><code>content</code></td><td>匹配数据包中的特定内容</td></tr>
+        <tr><td><code>flags</code></td><td>匹配 TCP 标志位（SYN, ACK, FIN 等）</td></tr>
+        <tr><td><code>sid</code></td><td>规则唯一标识号</td></tr>
+        <tr><td><code>itype</code></td><td>ICMP 类型</td></tr>
+        <tr><td><code>dsize</code></td><td>数据包负载大小</td></tr>
+      </table>
+
+      <h3>检测实例</h3>
+
+      <p><b>检测 ICMP 大包 Ping（Ping of Death）：</b></p>
+      <pre>alert icmp any any -> any any (dsize:>800; msg:"ICMP Large Packet"; sid:1000002;)</pre>
+
+      <p><b>检测 NMAP TCP SYN 扫描：</b></p>
+      <pre>alert tcp any any -> any any (flags:S; msg:"Possible NMAP SYN Scan"; sid:1000003;)</pre>
+
+      <p><b>检测 NMAP XMAS 扫描：</b></p>
+      <pre>alert tcp any any -> any any (flags:FPU; msg:"Possible NMAP XMAS Scan"; sid:1000004;)</pre>
+      <div class="box tip">
+        <span class="bt">为什么叫 XMAS？</span>
+        XMAS 扫描同时设置 FIN+PSH+URG 标志位，像圣诞树一样"灯全亮了"。
+      </div>
+
+      <p><b>检测 NMAP NULL 扫描：</b></p>
+      <pre>alert tcp any any -> any any (flags:0; msg:"Possible NMAP NULL Scan"; sid:1000005;)</pre>
+      <div class="box tip">
+        <span class="bt">NULL 扫描</span>
+        所有标志位都不设置，像"关灯偷偷摸进来"。
+      </div>
+    </section>
+
+    <!-- 8 高级检测 -->
+    <section id="s8">
+      <h2><span class="num">8</span>高级检测技术</h2>
+
+      <h3>神经网络异常检测</h3>
+      <p>两种常用模型：</p>
+      <ul>
+        <li><b>MLP（多层感知器）</b>：标准前馈神经网络，输入 → 隐藏层 → 输出</li>
+        <li><b>CMAC（小脑模型关节控制器）</b>：联想记忆网络，适合模式分类</li>
+      </ul>
+      <p>工作流程：收集正常流量 → 提取特征 → 训练网络 → 偏离正常模式时触发报警。</p>
+
+      <h3>状态转换分析（STAT）</h3>
+      <p>将攻击建模为有限状态机：从初始状态经过一系列中间状态到达入侵状态。每个转换对应一个系统事件。</p>
+    </section>
+
+    <!-- 9 部署策略 -->
+    <section id="s9">
+      <h2><span class="num">9</span>IDS 部署策略</h2>
+
+      <h3>四种典型部署位置</h3>
+      <table>
+        <tr><th>位置</th><th>检测内容</th><th>说明</th></tr>
+        <tr><td><b>防火墙外部</b></td><td>Internet 上的所有攻击尝试</td><td>能看到最多攻击但噪音最大</td></tr>
+        <tr><td><b>DMZ 区域</b></td><td>针对对外服务器的攻击</td><td>保护 Web/邮件等公开服务</td></tr>
+        <tr><td><b>防火墙内部</b></td><td>穿过防火墙的攻击</td><td>过滤了外部噪音，关注真正威胁</td></tr>
+        <tr><td><b>内部网络</b></td><td>内部攻击/异常行为</td><td>检测内部威胁</td></tr>
+      </table>
+
+      <div class="box quote">
+        <span class="bt">最佳实践</span>
+        在多个位置部署，形成纵深检测。就像在小区大门、楼道、家门口都装摄像头。
+      </div>
+
+      <h3>部署注意事项</h3>
+      <ul>
+        <li>NIDS 需要能<b>镜像</b>流量（交换机的 SPAN 端口）</li>
+        <li>高速网络需要考虑性能瓶颈</li>
+        <li>加密流量要在终端或代理处检测</li>
+        <li>HIDS 和 NIDS <b>互补部署</b>效果最好</li>
+      </ul>
+    </section>
+
+    <!-- 10 总结 -->
+    <section id="s10">
+      <h2><span class="num">📋</span>快速记忆总结</h2>
+
+      <h3>检测技术对比</h3>
+      <table>
+        <tr><th></th><th>异常检测</th><th>特征检测</th></tr>
+        <tr><td>原理</td><td>偏离正常 = 入侵</td><td>匹配特征 = 入侵</td></tr>
+        <tr><td>未知攻击</td><td>能检测</td><td>不能检测</td></tr>
+        <tr><td>误报率</td><td>高</td><td>低</td></tr>
+      </table>
+
+      <div class="box key">
+        <span class="bt">CIDF 四大组件</span>
+        E-box（产生事件） → A-box（分析事件） → R-box（响应） + D-box（存储）
+      </div>
+
+      <div class="box key">
+        <span class="bt">Snort 规则记忆</span>
+        <code>动作 协议 源IP 源端口 -> 目的IP 目的端口 (选项)</code><br>
+        常用动作：alert / log / pass<br>
+        常用选项：msg / content / flags / sid
+      </div>
+
+      <div class="box tip">
+        <span class="bt">关键指标</span>
+        误报 = 冤枉好人 | 漏报 = 放过坏人
+      </div>
+    </section>
+
+    <!-- 11 自测 -->
+    <section id="s11">
+      <h2><span class="num">🎯</span>本章自测</h2>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">单选</span>CIDF 架构中，负责采集事件数据的组件是？</div>
+        <button class="opt" data-correct>E-box（事件产生器）</button>
+        <button class="opt">A-box（事件分析器）</button>
+        <button class="opt">R-box（响应单元）</button>
+        <button class="opt">D-box（事件数据库）</button>
+        <div class="feedback ok">正确！E-box 负责从网络/系统中采集事件数据。</div>
+        <div class="feedback no">E-box（事件产生器）负责采集数据，A-box 分析，R-box 响应，D-box 存储。</div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">单选</span>能检测未知攻击（零日漏洞）的检测方法是？</div>
+        <button class="opt" data-correct>异常检测</button>
+        <button class="opt">特征检测</button>
+        <button class="opt">模式匹配</button>
+        <button class="opt">专家系统</button>
+        <div class="feedback ok">正确！异常检测基于偏离正常行为来判断，所以能发现未知攻击。</div>
+        <div class="feedback no">特征检测、模式匹配、专家系统都依赖已知特征库，无法检测未知攻击。异常检测可以。</div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">单选</span>以下哪种 IDS 可以检测加密流量？</div>
+        <button class="opt">NIDS</button>
+        <button class="opt" data-correct>HIDS</button>
+        <button class="opt">防火墙</button>
+        <button class="opt">VPN</button>
+        <div class="feedback ok">正确！HIDS 在主机上运行，此时流量已解密，所以能检测加密流量。</div>
+        <div class="feedback no">NIDS 看到的是网络上的加密数据包，无法解密。HIDS 在主机上，数据已解密。</div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">单选</span>Snort 规则 <code>alert tcp any any -> any any (flags:FPU; ...)</code> 检测的是？</div>
+        <button class="opt">SYN 扫描</button>
+        <button class="opt" data-correct>XMAS 扫描</button>
+        <button class="opt">NULL 扫描</button>
+        <button class="opt">ACK 扫描</button>
+        <div class="feedback ok">正确！FPU = FIN+PSH+URG，就是 XMAS 扫描，像圣诞树一样"灯全亮了"。</div>
+        <div class="feedback no">flags:FPU 表示 FIN+PSH+URG 同时设置，这是 XMAS 扫描的特征。</div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">单选</span>"误报"（False Positive）的含义是？</div>
+        <button class="opt" data-correct>把正常行为判定为攻击</button>
+        <button class="opt">攻击行为没检测到</button>
+        <button class="opt">攻击被成功阻断</button>
+        <button class="opt">正常行为被放行</button>
+        <div class="feedback ok">正确！误报 = 冤枉好人。漏报才是放过坏人。</div>
+        <div class="feedback no">误报 = 冤枉好人（把正常判为攻击）。攻击没检测到是"漏报"。</div>
+      </div>
+
+      <details>
+        <summary>Snort 的三个子系统是什么？</summary>
+        <div class="ans">数据包解码器（Packet Decoder）、检测引擎（Detection Engine）、日志和报警（Logger & Alert）。</div>
+      </details>
+
+      <details>
+        <summary>HIDS 和 NIDS 最大的区别是什么？</summary>
+        <div class="ans">HIDS 数据来源是主机日志，能检测加密流量但占用主机资源；NIDS 数据来源是网络流量，独立于 OS 但无法检测加密流量。二者互补部署效果最好。</div>
+      </details>
+
+      <details>
+        <summary>Denning 模型的核心思想是什么？</summary>
+        <div class="ans">建立用户/系统的"正常行为基线"（活动档案），偏离基线就是异常。这是异常检测方法的理论基础。</div>
+      </details>
+    </section>
+
+    <footer>CH8 入侵检测技术 · 网络空间安全技术 · 小白教学讲义</footer>
+  </main>
+</div>
+
+<button id="top" title="回到顶部">↑</button>
+
+<script>
+  const progress=document.getElementById('progress');
+  const topBtn=document.getElementById('top');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const scrolled=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+    progress.style.width=scrolled+'%';
+    topBtn.classList.toggle('show',h.scrollTop>400);
+  });
+  topBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+  const links=[...document.querySelectorAll('#nav a')];
+  const allSecs=[...document.querySelectorAll('main section')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const seen=new Set();
+  const learnFill=document.getElementById('learnFill');
+  const learnPct=document.getElementById('learnPct');
+  function updateLearn(){
+    const p=Math.round(seen.size/allSecs.length*100);
+    learnFill.style.width=p+'%';
+    learnPct.textContent=p+'%';
+    if(p===100){learnPct.textContent='✅100%';}
+  }
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        if(e.target.id){seen.add(e.target.id);updateLearn();}
+        const id='#'+e.target.id;
+        links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')===id));
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>s&&io.observe(s));
+  allSecs.forEach(s=>io.observe(s));
+
+  document.querySelectorAll('[data-quiz]').forEach(quiz=>{
+    const opts=[...quiz.querySelectorAll('.opt')];
+    const fb=quiz.querySelector('.feedback');
+    opts.forEach((opt,idx)=>{
+      opt.addEventListener('click',()=>{
+        const correctIdx=opts.findIndex(o=>o.dataset.correct!==undefined);
+        opts.forEach(o=>o.classList.add('disabled'));
+        if(opt.dataset.correct!==undefined){
+          opt.classList.add('correct');
+          quiz.querySelectorAll('.feedback.ok').forEach(f=>f.classList.add('show'));
+        }else{
+          opt.classList.add('wrong');
+          opts[correctIdx].classList.add('correct');
+          quiz.querySelectorAll('.feedback.no').forEach(f=>f.classList.add('show'));
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>

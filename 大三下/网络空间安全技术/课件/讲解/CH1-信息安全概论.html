@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CH1 信息安全概论 · 小白教学</title>
+<style>
+  :root{
+    --bg:#0f1729;
+    --bg-soft:#16213e;
+    --card:#1b2745;
+    --card-2:#212f52;
+    --ink:#e8edf7;
+    --ink-soft:#a9b4cc;
+    --line:#2c3a5e;
+    --accent:#5b9dff;
+    --accent-2:#7c5cff;
+    --green:#36d399;
+    --amber:#fbbd23;
+    --red:#f87272;
+    --pink:#f472b6;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0f1729 0%,#131d38 100%);
+    color:var(--ink);
+    line-height:1.75;
+    font-size:16px;
+  }
+  /* 顶部进度条 */
+  #progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:999;transition:width .1s}
+
+  /* 章节切换栏 */
+  .chapnav{position:sticky;top:0;z-index:200;display:flex;gap:4px;flex-wrap:wrap;background:rgba(10,16,30,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 14px}
+  .chapnav a{color:var(--ink-soft);text-decoration:none;font-size:13px;padding:5px 11px;border-radius:8px;white-space:nowrap;transition:.15s}
+  .chapnav a:hover{background:var(--card-2);color:var(--ink)}
+  .chapnav a.cur{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;display:flex;gap:26px}
+
+  /* 侧边导航 */
+  nav{
+    position:sticky;top:0;align-self:flex-start;
+    width:230px;flex:0 0 230px;height:100vh;overflow-y:auto;
+    padding:26px 8px 40px 0;
+    font-size:14px;
+  }
+  nav .nav-title{font-weight:700;color:var(--accent);letter-spacing:1px;margin:0 0 14px 10px;font-size:13px}
+  nav a{
+    display:block;color:var(--ink-soft);text-decoration:none;
+    padding:8px 12px;border-radius:10px;margin:2px 0;
+    border-left:3px solid transparent;transition:.2s;
+  }
+  nav a:hover{background:var(--card);color:var(--ink)}
+  nav a.active{background:var(--card-2);color:#fff;border-left-color:var(--accent)}
+
+  main{flex:1;min-width:0;padding:34px 0 90px}
+
+  header.hero{
+    background:radial-gradient(120% 140% at 0% 0%,#26356b 0%,#1a234a 60%,#161f3e 100%);
+    border:1px solid var(--line);border-radius:24px;
+    padding:38px 38px 32px;margin-bottom:30px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  header.hero::after{content:"🛡️";position:absolute;right:30px;top:18px;font-size:90px;opacity:.12}
+  header.hero .tag{display:inline-block;background:rgba(91,157,255,.18);color:var(--accent);
+    padding:4px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:14px}
+  header.hero h1{margin:0 0 8px;font-size:32px;letter-spacing:.5px}
+  header.hero p{margin:0;color:var(--ink-soft);font-size:15px}
+
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px 30px;margin-bottom:24px;box-shadow:var(--shadow);scroll-margin-top:20px;
+  }
+  h2{font-size:23px;margin:0 0 18px;padding-bottom:12px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:10px}
+  h2 .num{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+    width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 34px}
+  h3{font-size:18px;margin:22px 0 10px;color:#cfe0ff}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+
+  /* 表格 */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px;overflow:hidden;border-radius:12px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--card-2);color:#cfe0ff;font-weight:600}
+  tr:hover td{background:rgba(91,157,255,.06)}
+  td code,p code,li code{background:#0d1530;color:#8fd6ff;padding:2px 7px;border-radius:6px;font-size:13.5px}
+
+  /* 提示框 */
+  .box{border-radius:12px;padding:14px 18px;margin:16px 0;border-left:4px solid;font-size:15px}
+  .box .bt{font-weight:700;display:block;margin-bottom:4px}
+  .box.tip{background:rgba(54,211,153,.08);border-color:var(--green)}
+  .box.warn{background:rgba(251,189,35,.08);border-color:var(--amber)}
+  .box.key{background:rgba(124,92,255,.10);border-color:var(--accent-2)}
+  .box.quote{background:rgba(244,114,182,.07);border-color:var(--pink);font-style:italic}
+
+  /* CIA 卡片 */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:18px 0}
+  .ccard{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s}
+  .ccard:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.35)}
+  .ccard .emoji{font-size:34px}
+  .ccard h4{margin:8px 0 6px;font-size:18px}
+  .ccard .en{color:var(--ink-soft);font-size:13px}
+  .ccard.c{border-top:3px solid var(--accent)}
+  .ccard.i{border-top:3px solid var(--green)}
+  .ccard.a{border-top:3px solid var(--amber)}
+
+  /* 时间线 */
+  .timeline{position:relative;margin:20px 0 6px;padding-left:28px}
+  .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .tl{position:relative;margin-bottom:18px}
+  .tl::before{content:"";position:absolute;left:-24px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(91,157,255,.2)}
+  .tl .yr{color:var(--accent);font-weight:700;font-size:14px}
+
+  /* 折叠自测 */
+  details{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:6px 18px;margin:12px 0}
+  details summary{cursor:pointer;font-weight:600;padding:10px 0;list-style:none}
+  details summary::before{content:"❓ ";}
+  details[open] summary{color:var(--accent)}
+  details .ans{color:var(--ink-soft);padding:6px 0 14px;border-top:1px dashed var(--line)}
+
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .pill{display:inline-block;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;margin:3px}
+
+  /* ===== 图表通用 ===== */
+  .fig{background:#0d1530;border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;text-align:center}
+  .fig svg{max-width:100%;height:auto}
+  .fig .cap{color:var(--ink-soft);font-size:13px;margin-top:10px}
+  .fig text{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+
+  /* 脑图分支 */
+  .mind{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+  .mind .root{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;padding:16px 20px;border-radius:14px;font-weight:700;font-size:16px;box-shadow:var(--shadow)}
+  .mind .branches{display:flex;flex-direction:column;gap:14px;margin-left:24px;position:relative}
+  .mind .branches::before{content:"";position:absolute;left:-24px;top:0;bottom:0;width:24px;border-left:2px solid var(--line)}
+  .branch{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-align:left;position:relative;min-width:300px}
+  .branch::before{content:"";position:absolute;left:-24px;top:50%;width:24px;height:2px;background:var(--line)}
+  .branch .bh{font-weight:700;margin-bottom:6px}
+  .branch.inner .bh{color:var(--amber)}
+  .branch.outer .bh{color:var(--red)}
+  .branch .tags span{display:inline-block;background:#0d1530;border:1px solid var(--line);border-radius:8px;padding:2px 9px;font-size:12.5px;margin:3px 3px 0 0;color:var(--ink-soft)}
+
+  /* 分层堆叠图 */
+  .layers{display:flex;flex-direction:column;gap:8px;max-width:560px;margin:0 auto}
+  .layer{display:flex;align-items:center;border-radius:12px;padding:13px 18px;color:#fff;font-weight:600;box-shadow:var(--shadow);position:relative}
+  .layer .ln{flex:0 0 84px;font-size:15px}
+  .layer .ld{font-weight:400;font-size:13.5px;opacity:.95}
+  .layer.l1{background:linear-gradient(90deg,#7c5cff,#9d7bff)}
+  .layer.l2{background:linear-gradient(90deg,#5b9dff,#7bb4ff)}
+  .layer.l3{background:linear-gradient(90deg,#36d399,#5be0b0)}
+  .layer.l4{background:linear-gradient(90deg,#fbbd23,#fccf57)}
+
+  /* 网络空间四要素 */
+  .four-el{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:520px;margin:0 auto;position:relative}
+  .el-card{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;transition:.2s}
+  .el-card:hover{transform:scale(1.04);border-color:var(--accent)}
+  .el-card .ei{font-size:30px}
+  .el-card h4{margin:6px 0 2px}
+  .el-card small{color:var(--ink-soft)}
+
+  /* ===== 翻转卡片 ===== */
+  .flip-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:14px 0}
+  .flip{perspective:1000px;height:175px;cursor:pointer}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+  .flip.on .flip-inner{transform:rotateY(180deg)}
+  .flip-front,.flip-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px solid var(--line)}
+  .flip-back{transform:rotateY(180deg);background:var(--card-2);font-size:14px;line-height:1.6}
+  .flip-front{background:var(--card-2)}
+  .flip-front .emoji{font-size:38px}
+  .flip-front h4{margin:8px 0 2px;font-size:19px}
+  .flip-front .en{color:var(--ink-soft);font-size:12px}
+  .flip-front.c,.flip-back.c{border-top:3px solid var(--accent)}
+  .flip-front.i,.flip-back.i{border-top:3px solid var(--green)}
+  .flip-front.a,.flip-back.a{border-top:3px solid var(--amber)}
+  .flip-back small{color:var(--ink-soft);display:block;margin-top:6px}
+
+  /* ===== 互动测验 ===== */
+  .quiz{background:linear-gradient(135deg,#1a2547,#212f52);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0}
+  .quiz .q{font-weight:600;margin-bottom:12px}
+  .quiz .q .badge{background:var(--accent-2);color:#fff;border-radius:8px;padding:1px 9px;font-size:12px;margin-right:8px}
+  .opt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:11px 15px;border-radius:10px;margin:7px 0;cursor:pointer;transition:.15s;font-size:14.5px;font-family:inherit}
+  .opt:hover{border-color:var(--accent);background:var(--card-2)}
+  .opt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .opt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .opt.disabled{pointer-events:none;opacity:.75}
+  .feedback{font-size:14px;margin-top:8px;padding:10px 14px;border-radius:10px;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:rgba(54,211,153,.12);color:#aef5d4}
+  .feedback.no{background:rgba(248,114,114,.12);color:#ffc2c2}
+
+  /* ===== 匹配题 ===== */
+  .match{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0}
+  .match .col{display:flex;flex-direction:column;gap:10px}
+  .match .col .ct{font-size:13px;color:var(--ink-soft);margin-bottom:2px}
+  .mitem{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;transition:.15s;font-size:14px}
+  .mitem:hover{border-color:var(--accent)}
+  .mitem.sel{border-color:var(--accent-2);background:var(--card-2)}
+  .mitem.done{border-color:var(--green);background:rgba(54,211,153,.12);cursor:default;color:#aef5d4}
+  .mitem.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  /* 学习打卡进度 */
+  .checkbar{position:sticky;top:46px;z-index:50;background:rgba(15,23,41,.92);backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+  .checkbar .lbl{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .checkbar .track{flex:1;height:10px;background:var(--card);border-radius:999px;overflow:hidden}
+  .checkbar .fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--accent));transition:width .4s}
+  .checkbar .pct{font-weight:700;color:var(--green);font-size:14px;min-width:42px;text-align:right}
+
+  /* 木桶 */
+  .reveal-btn{background:var(--card-2);border:1px solid var(--accent);color:var(--accent);border-radius:10px;padding:8px 16px;cursor:pointer;font-size:14px;font-family:inherit;transition:.15s}
+  .reveal-btn:hover{background:var(--accent);color:#fff}
+
+  /* ===== 题库 ===== */
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{flex:1;min-width:140px;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    padding:11px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;transition:.15s}
+  .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent}
+  .tabpane{display:none}
+  .tabpane.active{display:block}
+
+  .score{position:sticky;top:46px;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:rgba(15,23,41,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:16px}
+  .score b{color:var(--green);font-size:18px}
+  .score .mini{font-size:13px;color:var(--ink-soft)}
+  .score .resetb{margin-left:auto;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    border-radius:8px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:13px}
+  .score .resetb:hover{border-color:var(--accent);color:var(--ink)}
+
+  .qitem{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  .qitem .qh{font-weight:600;margin-bottom:10px;line-height:1.6}
+  .qitem .qh .no{display:inline-block;background:var(--accent);color:#fff;border-radius:7px;padding:1px 9px;font-size:13px;margin-right:8px}
+  .qopt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:9px 14px;border-radius:9px;margin:6px 0;cursor:pointer;transition:.12s;font-size:14px;font-family:inherit}
+  .qopt:hover{border-color:var(--accent)}
+  .qopt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .qopt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .qopt.lock{pointer-events:none}
+  .qexp{font-size:13.5px;color:var(--ink-soft);margin-top:8px;padding:9px 13px;background:rgba(91,157,255,.08);border-radius:9px;border-left:3px solid var(--accent);display:none}
+  .qexp.show{display:block}
+
+  /* 填空 */
+  .blank-in{background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);
+    padding:7px 12px;font-size:14.5px;font-family:inherit;width:200px;margin:0 4px}
+  .blank-in:focus{outline:none;border-color:var(--accent)}
+  .blank-in.ok{border-color:var(--green);background:rgba(54,211,153,.12)}
+  .blank-in.bad{border-color:var(--red);background:rgba(248,114,114,.10)}
+  .blank-btns{margin-top:10px;display:flex;gap:8px}
+  .sbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:inherit;font-size:13.5px}
+  .sbtn:hover{border-color:var(--accent)}
+  .sbtn.primary{background:var(--accent);color:#fff;border-color:transparent}
+  .ansline{font-size:13.5px;color:var(--green);margin-top:8px;display:none}
+  .ansline.show{display:block}
+
+
+  footer{text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 0 10px}
+
+  /* 回到顶部 */
+  #top{position:fixed;right:26px;bottom:26px;width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none;
+    font-size:20px;cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s}
+  #top.show{opacity:1;pointer-events:auto}
+
+  @media(max-width:880px){
+    nav{display:none}
+    .wrap{padding:0 14px}
+    header.hero{padding:26px 22px}
+    section{padding:20px 18px}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="chapnav">
+  <a href="index.html">🏠 目录</a>
+  <a class="cur" href="CH1-信息安全概论.html">CH1 概论</a>
+  <a href="CH2-风险管理与国产化.html">CH2 风险管理</a>
+  <a href="CH3-信息安全保障与运维.html">CH3 安全保障</a>
+  <a href="CH4-信息安全技术体系.html">CH4 技术体系</a>
+  <a href="CH5-鉴别技术.html">CH5 鉴别</a>
+  <a href="CH6-访问控制.html">CH6 访问控制</a>
+  <a href="CH7-防火墙技术.html">CH7 防火墙</a>
+  <a href="CH8-入侵检测技术.html">CH8 入侵检测</a>
+  <a href="古典密码-入门讲义.html">古典密码</a>
+  <a href="哈希函数-入门课.html">哈希函数</a>
+  <a href="牛津古典密码学-讲义.html">牛津密码练习</a>
+</div>
+
+<div class="wrap">
+  <!-- 侧边导航 -->
+  <nav id="nav">
+    <p class="nav-title">📖 本章目录</p>
+    <a href="#s0">学习目标</a>
+    <a href="#s1">① 为什么有安全问题</a>
+    <a href="#s2">② CIA 三要素 ⭐</a>
+    <a href="#s3">③ 两个层面与本质</a>
+    <a href="#s4">④ 发展三阶段</a>
+    <a href="#s5">⑤ 安全形势</a>
+    <a href="#s6">⑥ 五个安全故事</a>
+    <a href="#s7">⑦ 重要观念</a>
+    <a href="#s8">⑧ 网络空间四要素</a>
+    <a href="#s9">⑨ 六种论 ⭐</a>
+    <a href="#s10">⑩ 本章小结</a>
+    <a href="#s11">🎯 自测</a>
+    <a href="#bank">📝 强化题库 70 题</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="tag">网络空间安全技术 · 第一章</span>
+      <h1>CH1 信息安全概论</h1>
+      <p>零基础教学讲义 · 按「为什么 → 是什么 → 怎么做」重新讲一遍 · 配套作业1</p>
+    </header>
+
+    <!-- 学习打卡进度 -->
+    <div class="checkbar">
+      <span class="lbl">📚 学习进度</span>
+      <div class="track"><div class="fill" id="learnFill"></div></div>
+      <span class="pct" id="learnPct">0%</span>
+    </div>
+
+    <!-- 学习目标 -->
+    <section id="s0">
+      <h2><span class="num">🎯</span>学习目标</h2>
+      <p>读完这一章，你应该能回答：</p>
+      <ol>
+        <li>为什么会有信息安全问题？（根源）</li>
+        <li>信息安全到底是什么？（<b>CIA</b>）</li>
+        <li>信息安全经历了哪几个发展阶段？</li>
+        <li>什么是"网络空间"和"网络空间安全"？</li>
+        <li>网络空间安全的几种哲学特性（<b>六种论</b>）。</li>
+      </ol>
+    </section>
+
+    <!-- 1 -->
+    <section id="s1">
+      <h2><span class="num">1</span>为什么会有信息安全问题？</h2>
+      <p>很多人以为信息安全问题是因为"有黑客、有病毒、有漏洞"。课件指出，这些都是原因，但<b>没说到根源</b>。真正的根源分两类：</p>
+
+      <div class="fig">
+        <div class="mind">
+          <div class="root">信息安全<br>问题根源</div>
+          <div class="branches">
+            <div class="branch inner">
+              <div class="bh">🔧 内因：系统越来越复杂</div>
+              <div class="tags"><span>移动U盘</span><span>内网其他系统</span><span>连接因特网</span><span>无线网络</span><span>其他单位网络</span></div>
+            </div>
+            <div class="branch outer">
+              <div class="bh">👤 外因：对手威胁 + 自然破坏</div>
+              <div class="tags"><span>信息战士</span><span>情报机构</span><span>恐怖分子</span><span>商业间谍</span><span>犯罪团伙</span><span>黑客</span><span>地震/洪水</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="cap">图1 · 信息安全问题的两大根源（连接越多，暴露面越大）</div>
+      </div>
+
+      <h3>🔧 内因：系统越来越复杂</h3>
+      <p>现在一台工作电脑会连接：移动U盘、内网其他系统、因特网、其他单位网络、无线网络……连接越多，<b>暴露面越大</b>，越容易出问题。</p>
+
+      <h3>👤 外因：来自对手的威胁 + 自然破坏</h3>
+      <p>课件列了一串"对手"：信息战士、情报机构、恐怖分子、商业间谍、犯罪团伙、社会型黑客、娱乐型黑客。还有地震、洪水等自然破坏。</p>
+
+      <h3>⚠️ 最薄弱的环节是"人"</h3>
+      <div class="box quote">
+        <span class="bt">Kevin Mitnick（著名黑客，后成为安全顾问）</span>
+        "<b>人是最薄弱的环节</b>。你可能拥有最好的技术、防火墙、入侵检测系统、生物鉴别设备，可只要有人给毫无戒心的员工打个电话……"
+      </div>
+      <p>这句话说明：<b>再好的技术，也防不住被骗的人</b>。这就是"社会工程攻击"的可怕之处。</p>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <h2><span class="num">2</span>信息安全是什么？CIA 三要素 ⭐</h2>
+      <p>信息安全要保护信息的三个基本属性，合称 <b>CIA</b>——这是整章、整门课最重要的概念。</p>
+
+      <div class="fig">
+        <svg viewBox="0 0 420 300" width="420">
+          <!-- 三角形 -->
+          <polygon points="210,40 50,260 370,260" fill="none" stroke="#2c3a5e" stroke-width="2"/>
+          <!-- 中心 -->
+          <circle cx="210" cy="190" r="44" fill="#1b2745" stroke="#7c5cff" stroke-width="2"/>
+          <text x="210" y="185" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">信息安全</text>
+          <text x="210" y="204" text-anchor="middle" fill="#a9b4cc" font-size="12">CIA</text>
+          <!-- 顶点 C -->
+          <circle cx="210" cy="40" r="34" fill="#5b9dff"/>
+          <text x="210" y="36" text-anchor="middle" fill="#fff" font-size="20" font-weight="700">C</text>
+          <text x="210" y="54" text-anchor="middle" fill="#fff" font-size="11">机密性</text>
+          <!-- 顶点 I -->
+          <circle cx="50" cy="260" r="34" fill="#36d399"/>
+          <text x="50" y="256" text-anchor="middle" fill="#0f1729" font-size="20" font-weight="700">I</text>
+          <text x="50" y="274" text-anchor="middle" fill="#0f1729" font-size="11">完整性</text>
+          <!-- 顶点 A -->
+          <circle cx="370" cy="260" r="34" fill="#fbbd23"/>
+          <text x="370" y="256" text-anchor="middle" fill="#0f1729" font-size="20" font-weight="700">A</text>
+          <text x="370" y="274" text-anchor="middle" fill="#0f1729" font-size="11">可用性</text>
+        </svg>
+        <div class="cap">图2 · CIA 安全三角 —— 信息安全的三大基石</div>
+      </div>
+
+      <p style="text-align:center;color:var(--ink-soft);font-size:14px">👇 点击下面的卡片，翻转看"防什么"</p>
+      <div class="flip-row">
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front c"><div class="emoji">🔒</div><h4>机密性</h4><span class="en">Confidentiality</span></div>
+            <div class="flip-back c"><b>防泄露</b><br>不该看的人看不到。确保信息不被非授权的人/组织/程序使用。<br><small>例：聊天记录别人偷看不到</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front i"><div class="emoji">✅</div><h4>完整性</h4><span class="en">Integrity</span></div>
+            <div class="flip-back i"><b>防篡改</b><br>信息不被偷偷篡改、破坏。"不能追求残缺美。"<br><small>例：转账金额不被改</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front a"><div class="emoji">⚡</div><h4>可用性</h4><span class="en">Availability</span></div>
+            <div class="flip-back a"><b>防瘫痪</b><br>需要用时能正常用。确保授权用户能及时、正常使用。<br><small>例：双十一淘宝不崩</small></div>
+          </div>
+        </div>
+      </div>
+
+      <table>
+        <tr><th>字母</th><th>中文</th><th>一句话理解</th><th>生活例子</th></tr>
+        <tr><td><b>C</b></td><td>机密性</td><td>不该看的人看不到</td><td>你的微信聊天记录别人偷看不到</td></tr>
+        <tr><td><b>I</b></td><td>完整性</td><td>信息不被偷偷篡改</td><td>银行转账金额不能被中途改掉</td></tr>
+        <tr><td><b>A</b></td><td>可用性</td><td>需要时能正常用</td><td>双十一时淘宝不能崩</td></tr>
+      </table>
+
+      <div class="box key">
+        <span class="bt">💡 记忆口诀</span>
+        <b>机密 = 别偷看，完整 = 别乱改，可用 = 能用上。</b>
+      </div>
+      <div class="box tip">
+        <span class="bt">📌 广义五要素</span>
+        后来还补充两个属性凑成"五要素"：<b>真实性（可鉴别性）</b>——信息确实来自它声称的来源；<b>抗抵赖性/可控性</b>——做过的事不能赖账。
+      </div>
+
+      <h3>🎮 小练习：把场景和被破坏的安全属性连起来</h3>
+      <p style="color:var(--ink-soft);font-size:14px">先点左边一个场景，再点右边对应的属性。连对会变绿。</p>
+      <div class="match" id="match1">
+        <div class="col">
+          <div class="ct">📌 安全事件场景</div>
+          <div class="mitem" data-k="C">黑客偷看了你的体检报告</div>
+          <div class="mitem" data-k="I">成绩被人偷偷从 60 改成 90</div>
+          <div class="mitem" data-k="A">网站被 DDoS 打到无法访问</div>
+        </div>
+        <div class="col">
+          <div class="ct">🎯 被破坏的属性</div>
+          <div class="mitem" data-k="A">可用性（Availability）</div>
+          <div class="mitem" data-k="C">机密性（Confidentiality）</div>
+          <div class="mitem" data-k="I">完整性（Integrity）</div>
+        </div>
+      </div>
+      <div class="feedback" id="match1fb"></div>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <h2><span class="num">3</span>信息安全的两个层面 + 一个本质</h2>
+      <p>课件反复强调，信息安全不只是技术问题：</p>
+      <ul>
+        <li><b>技术层面</b>：防止外部用户的非法入侵（防火墙、加密、入侵检测等）。</li>
+        <li><b>管理层面</b>：内部员工的教育和管理（制度、安全意识培训）。</li>
+      </ul>
+      <h3>本质上做三件事</h3>
+      <table>
+        <tr><th>动作</th><th>内容</th></tr>
+        <tr><td><b>保护</b></td><td>系统的硬件、软件、数据</td></tr>
+        <tr><td><b>防止</b></td><td>系统和数据被破坏、更改、泄露</td></tr>
+        <tr><td><b>保证</b></td><td>系统连续可靠运行，服务不中断</td></tr>
+      </table>
+      <h3>如何保障？四句话</h3>
+      <ol>
+        <li>技术层面要部署<b>控制措施</b>（信息依赖技术系统存在）。</li>
+        <li>管理层面要<b>约束人</b>（系统由人建设维护）。</li>
+        <li>要有贯穿生命周期的<b>工程过程</b>（今天安全不代表明天安全）。</li>
+        <li>归根结底是<b>人才队伍</b>的对抗。</li>
+      </ol>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <h2><span class="num">4</span>信息安全发展的三个阶段</h2>
+      <p>信息安全的历史和信息通信一样长。公元前 500 年，斯巴达人就用"天书棒"（把羊皮缠在木棒上加密）。现代分三个阶段：</p>
+      <div class="timeline">
+        <div class="tl">
+          <div class="yr">20世纪 40-70 年代 · 通信安全</div>
+          核心问题：通信保密、防内容篡改。核心手段：<b>密码技术</b>（如战争时期加密电报）。
+        </div>
+        <div class="tl">
+          <div class="yr">70-90 年代后 · 信息系统安全</div>
+          计算机和网络改变了一切。核心目标：确保信息在<b>存储、处理、传输</b>时不被非授权访问，防止拒绝服务。
+        </div>
+        <div class="tl">
+          <div class="yr">90 年代后至今 · 信息安全保障</div>
+          不只靠技术，而是 <b>技术 + 管理 + 工程 + 人才</b> 综合保障，强调全生命周期、动态防护。
+        </div>
+      </div>
+      <div class="box warn">
+        <span class="bt">⚠️ 易考点</span>
+        题目里"从安全发展阶段看，20年代/40年代/70年代分别关注什么"就是考这条线。
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">随堂测</span>"通信安全阶段（40-70年代）"主要依靠下列哪种手段解决保密问题？</div>
+        <button class="opt">防火墙</button>
+        <button class="opt" data-correct="1">密码技术</button>
+        <button class="opt">入侵检测系统</button>
+        <button class="opt">访问控制列表</button>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <h2><span class="num">5</span>信息安全形势（现状与趋势）</h2>
+      <p>课件用大量 2020 年案例说明形势严峻（雅诗兰黛 4.4 亿数据泄露、委内瑞拉电网被攻击全国停电、本田遭勒索软件、新西兰证交所被 DDoS 等）。</p>
+      <h3>三大趋势</h3>
+      <table>
+        <tr><th>趋势</th><th>说明</th></tr>
+        <tr><td><b>隐蔽性</b></td><td>看不见摸不着，不知不觉就中招</td></tr>
+        <tr><td><b>趋利性</b></td><td>为炫技的黑客少了，为非法政治/经济利益的人多了</td></tr>
+        <tr><td><b>新应用带来新风险</b></td><td>AI、大数据(B)、云计算(C)、物联网、5G 都很时髦，但有巨大风险</td></tr>
+      </table>
+      <h3>📈 我国信息化发展数据（2020年12月）</h3>
+      <div class="four-el" style="max-width:420px">
+        <div class="el-card"><div class="ei">👥</div><h4>9.89 亿</h4><small>全国网民数</small></div>
+        <div class="el-card"><div class="ei">📱</div><h4>9.86 亿</h4><small>手机网民规模</small></div>
+      </div>
+      <p style="color:var(--ink-soft);font-size:14px;text-align:center;margin-top:8px">我国信息化建设起步于 20 世纪 80 年代，2000 年后取得长足进步。</p>
+
+      <h3>🇨🇳 国家高度重视（政策时间线）</h3>
+      <div class="timeline">
+        <div class="tl"><div class="yr">2003年9月</div>中办、国办转发《关于加强信息安全保障工作的意见》（27号文），<b>第一次</b>把信息安全提到促进经济发展、维护社会稳定、保障国家安全的高度。</div>
+        <div class="tl"><div class="yr">2004年秋</div>党的十六届四中全会，将信息安全与<b>政治安全、经济安全、文化安全</b>并列为国家安全的重要组成要素。</div>
+        <div class="tl"><div class="yr">2014年2月</div>中央网络安全和信息化领导小组第一次会议，习近平任组长。</div>
+        <div class="tl"><div class="yr">2016年4月19日</div>习近平在网络安全和信息化工作座谈会上讲话，提出建设<b>网络强国</b>。</div>
+        <div class="tl"><div class="yr">2017年6月1日</div>《<b>网络安全法</b>》正式实施。</div>
+      </div>
+      <div class="box quote">
+        <span class="bt">习近平 · 网络强国战略</span>
+        "<b>没有网络安全就没有国家安全，没有信息化就没有现代化。</b>" 建设网络强国要：有自己过硬的技术、有丰富的信息服务与网络文化、有良好的信息基础设施、有高素质的人才队伍、积极开展国际交流合作（"五个要有"）。
+      </div>
+      <div class="box tip">
+        <span class="bt">📜 《网络安全法》六大要点</span>
+        ① 明确网络空间<b>主权</b>原则；② 明确网络产品和服务提供者的安全义务；③ 明确网络运营者的安全义务；④ 完善个人信息保护规则；⑤ 建立<b>关键信息基础设施</b>安全保护制度；⑥ 确立关键信息基础设施重要数据跨境传输规则。
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <h2><span class="num">6</span>五个安全小故事（会考的"启发题"）</h2>
+      <p>课件用五个故事讲安全意识，理解它们的寓意：</p>
+      <table>
+        <tr><th>故事</th><th>寓意</th></tr>
+        <tr><td>🐸 温水煮青蛙</td><td>要居安思危，及时发现隐患，别等危险到了才反应</td></tr>
+        <tr><td>🧊 冰山理论</td><td>露出水面的只是一角，要防患于未然，做到"三不放过"</td></tr>
+        <tr><td>🍞 墨菲定律</td><td>可能出错的事终会出错，不能有侥幸心理，要预防为主</td></tr>
+        <tr><td>👨‍⚕️ 名医启示</td><td>真正的高手是防微杜渐（事前预防），不是事后救火</td></tr>
+        <tr><td>🪣 木桶原理</td><td>安全取决于最短的板，重技术轻管理也不行</td></tr>
+      </table>
+      <div class="fig">
+        <svg viewBox="0 0 360 240" width="340">
+          <!-- 水 -->
+          <path d="M70 120 L290 120 L278 215 L82 215 Z" fill="#5b9dff" opacity="0.45"/>
+          <!-- 木板（长） -->
+          <rect x="60" y="60" width="18" height="160" rx="3" fill="#36d399"/>
+          <rect x="84" y="50" width="18" height="170" rx="3" fill="#36d399"/>
+          <rect x="108" y="55" width="18" height="165" rx="3" fill="#36d399"/>
+          <!-- 短板 -->
+          <rect x="132" y="120" width="18" height="100" rx="3" fill="#f87272"/>
+          <text x="141" y="112" text-anchor="middle" fill="#f87272" font-size="12" font-weight="700">短板</text>
+          <!-- 长板继续 -->
+          <rect x="156" y="52" width="18" height="168" rx="3" fill="#36d399"/>
+          <rect x="180" y="58" width="18" height="162" rx="3" fill="#36d399"/>
+          <rect x="204" y="50" width="18" height="170" rx="3" fill="#36d399"/>
+          <rect x="228" y="56" width="18" height="164" rx="3" fill="#36d399"/>
+          <rect x="252" y="62" width="18" height="158" rx="3" fill="#36d399"/>
+          <!-- 水从短板溢出 -->
+          <path d="M150 120 q14 6 26 26 q-6 -4 -26 -4 Z" fill="#5b9dff" opacity="0.7"/>
+          <text x="180" y="232" text-anchor="middle" fill="#a9b4cc" font-size="12">水位被最短的板决定 → 安全被最弱环节决定</text>
+        </svg>
+        <div class="cap">图6 · 木桶原理：装多少水，取决于<b style="color:#f87272">最短的那块板</b></div>
+      </div>
+
+      <div class="box warn">
+        <span class="bt">🎈 物理安全案例</span>
+        管理员用气球骗过动作探测器进了数据中心，说明：<b>自以为是的安全，恰恰是最不安全的</b>；物理安全也很关键。
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <h2><span class="num">7</span>安全的几个重要观念</h2>
+      <div class="box key">
+        <span class="bt">1️⃣ 绝对的安全不存在</span>
+        零风险不现实。安全性越高，可用性越低、成本越大，要<b>平衡</b>。格言："真正安全的计算机是拔下网线、断电、放在地下保险柜里……"——但这样的电脑没法用。
+      </div>
+      <div class="box key">
+        <span class="bt">2️⃣ 明确安全责任很重要</span>
+        安全角色与责任不明确，是实施信息安全的最大障碍。
+      </div>
+      <div class="box key">
+        <span class="bt">3️⃣ 安全意识（Security Awareness）</span>
+        能认知安全问题、明白危害、恪守正确行为、知道出事时怎么办。<br>
+        🦘 "别忘了关门"的故事——管理员一直加高袋鼠笼子，却忘了关门。网络安全最重要的是那颗"<b>别忘了关门的心</b>"——安全意识。
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <h2><span class="num">8</span>网络空间与四要素</h2>
+      <h3>📖 信息安全的完整定义（S113，重要）</h3>
+      <div class="box key">
+        <span class="bt">信息安全 = 通过实现一组合适"控制"所获得的特定能力</span>
+        "控制"可以是策略、惯例、规程、组织结构和软件功能。其目标体现在保护信息与信息系统的<b>四个核心安全属性</b>，具体反映在<b>四个层面</b>上。
+      </div>
+      <div class="match" style="grid-template-columns:1fr 1fr">
+        <div class="col">
+          <div class="ct">🎯 四个核心安全属性</div>
+          <div class="mitem done" style="cursor:default">机密性</div>
+          <div class="mitem done" style="cursor:default">可鉴别性（含完整性、真实性、不可抵赖性）</div>
+          <div class="mitem done" style="cursor:default">可控性</div>
+          <div class="mitem done" style="cursor:default">可用性</div>
+        </div>
+        <div class="col">
+          <div class="ct">🧱 四个层面</div>
+          <div class="mitem done" style="cursor:default">物理安全</div>
+          <div class="mitem done" style="cursor:default">运行安全</div>
+          <div class="mitem done" style="cursor:default">数据安全</div>
+          <div class="mitem done" style="cursor:default">内容安全</div>
+        </div>
+      </div>
+      <div class="box warn">
+        <span class="bt">⚠️ 千万别和 CIA 三层次模型搞混</span>
+        本页"四个核心安全属性"是 <b>机密性·可鉴别性·可控性·可用性</b>（注意不是 CIA！多了可鉴别性、可控性）；本页"四个层面"是 <b>物理·运行·数据·内容</b>，与下面的"四层次模型（设备·系统·数据·应用）"也<b>不是同一个东西</b>，做题要看清问的是哪个！
+      </div>
+
+      <h3>🛡️ 五种信息威胁 → 对应保护技术（S129）</h3>
+      <div class="fig">
+        <table style="margin:0">
+          <tr><th>信息面临的威胁</th><th>对应保护技术</th></tr>
+          <tr><td>信息窃取（被偷看）</td><td><b>加密技术</b></td></tr>
+          <tr><td>信息篡改（被改）</td><td><b>完整性技术</b></td></tr>
+          <tr><td>信息冒充（假身份）</td><td><b>鉴别技术</b></td></tr>
+          <tr><td>信息抵赖（赖账）</td><td><b>数字签名</b></td></tr>
+        </table>
+        <div class="cap">图3 · 信息安全四大威胁与对应技术（信息传递过程中的安全保护）</div>
+      </div>
+
+      <h3>网络空间的四要素</h3>
+      <div class="fig">
+        <div class="four-el">
+          <div class="el-card"><div class="ei">🏗️</div><h4>设施</h4><small>载体 · 互联网/电信网/计算机</small></div>
+          <div class="el-card"><div class="ei">📦</div><h4>数据</h4><small>对象 · 表达意图的信号</small></div>
+          <div class="el-card"><div class="ei">🧑‍💻</div><h4>用户</h4><small>主体 · 活动发起者</small></div>
+          <div class="el-card"><div class="ei">⚙️</div><h4>操作</h4><small>形式 · 加工/存储/传输</small></div>
+        </div>
+        <div class="cap">图4 · 网络空间四要素（设施·数据·用户·操作）</div>
+      </div>
+      <div class="box tip">
+        <span class="bt">🎓 学术角度定义网络空间</span>
+        网络空间是人类通过"<b>网络角色</b>"，依托"<b>信息通信技术系统</b>"来进行"<b>广义信号</b>"交互"<b>操作</b>"的人造活动空间。（广义信号：光、电、声、磁等可用于表达/存储/传输的信号。）
+      </div>
+
+      <h3>网络空间安全的四层次模型</h3>
+      <div class="fig">
+        <div class="layers">
+          <div class="layer l1"><span class="ln">应用层</span><span class="ld">内容安全、应用安全</span></div>
+          <div class="layer l2"><span class="ln">数据层</span><span class="ld">数据安全、身份安全、隐私保护</span></div>
+          <div class="layer l3"><span class="ln">系统层</span><span class="ld">网络安全、软件安全</span></div>
+          <div class="layer l4"><span class="ln">设备层</span><span class="ld">物理安全、环境安全、设备安全</span></div>
+        </div>
+        <div class="cap">图5 · 四层次模型（从上到下：应用 → 数据 → 系统 → 设备）<br>对应：电子信息系统的四个层面 = 电磁设备 / 电子信息系统 / 运行数据 / 系统应用</div>
+      </div>
+
+      <h3>🌐 网络空间安全的定义与范围</h3>
+      <div class="box key">
+        <span class="bt">网络空间安全定义</span>
+        既要<b>防止、保护</b>信息通信技术系统及其承载的数据免受攻击；也要<b>防止、应对</b>滥用这些系统而波及到政治/经济/文化/社会/国防安全的情况。需采取 <b>法律、管理、技术、自律</b> 等综合手段，确保数据的机密性、可鉴别性、可用性、可控性。
+      </div>
+      <p><b>涉及范围（多个领域）：</b>信息保密、网络安全、移动网络安全、电信网安全、可信计算、云安全、大数据安全、物联网安全、广电网安全、信息战、舆论安全、在线社交网络、工控安全、传感网安全、智能设备、支付安全、GPS 等。</p>
+      <div class="box tip">
+        <span class="bt">🔗 相关概念的层层关系（S127-134）</span>
+        <b>信息安全</b>（关注 CIA）→ <b>应用安全</b>（控制应用程序使用风险，含内容安全：封堵有害信息）→ <b>网络安全</b>（机构内/间/与用户间网络的信息安全）→ <b>因特网安全</b> → <b>关键信息基础设施保护（CIIP）</b>（保护能源、电信、水利等关键设施）。网络空间安全是 <b>CIIP 的必要组成部分</b>。
+      </div>
+
+      <h3>🤝 方法论："三位一体"协同监控（S145）</h3>
+      <div class="layers" style="max-width:600px">
+        <div class="layer l1"><span class="ln">上位</span><span class="ld">政府主导顶层监控（骨干网）</span></div>
+        <div class="layer l2"><span class="ln">中位</span><span class="ld">关键用户主导重要信息系统/关键基础设施监控（网关）</span></div>
+        <div class="layer l3"><span class="ln">下位</span><span class="ld">企业主导终端监控（公众用户）</span></div>
+      </div>
+      <p style="color:var(--ink-soft);font-size:14px;text-align:center;margin-top:8px">上中下三位一体协同监控，感知网络空间安全态势——这就是"方法论=协同安全"。</p>
+    </section>
+
+    <!-- 9 -->
+    <section id="s9">
+      <h2><span class="num">9</span>网络空间安全的"六种论" ⭐</h2>
+      <p>课件用六个哲学比喻概括网络安全的特性，很容易出选择/简答题：</p>
+      <table>
+        <tr><th>"论"</th><th>核心观点</th><th>关键词</th></tr>
+        <tr><td>实践论</td><td>安全是<b>开放的</b>而非封闭的</td><td>开放、实践中进取</td></tr>
+        <tr><td style="color:var(--amber)"><b>相对论 ⭐</b></td><td>安全是<b>相对的</b>而非绝对的</td><td><b>适度安全</b>、立足国情、等级保护</td></tr>
+        <tr><td>进化论</td><td>安全是<b>动态的</b>而非静态的</td><td>威胁在变化、动态防护</td></tr>
+        <tr><td>认识论</td><td>安全是<b>整体的</b>而非割裂的</td><td>与政治/经济/文化/国防安全相辅相成、主权</td></tr>
+        <tr><td>方法论</td><td>安全是<b>共同的</b>而非孤立的</td><td>协同安全、共筑防线</td></tr>
+        <tr><td>矛盾论</td><td>安全是<b>妥协的</b>而非互斥的</td><td>发展与安全平衡</td></tr>
+      </table>
+      <div class="box key">
+        <span class="bt">⭐ 重点：相对论 = 适度安全</span>
+        信息系统按重要程度和被破坏后的危害程度分成 <b>5 个安全等级</b>，施加<b>适当强度</b>的防护——这就是"<b>等级保护</b>"。这也是后面风险管理的核心思想。
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">随堂测</span>"安全是相对的而非绝对的，要立足国情、适度安全"——这对应哪一种"论"？</div>
+        <button class="opt" data-correct="0">相对论（适度安全、等级保护）</button>
+        <button class="opt">进化论（动态防护）</button>
+        <button class="opt">认识论（整体安全）</button>
+        <button class="opt">矛盾论（发展与安全平衡）</button>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10">
+      <h2><span class="num">10</span>本章小结</h2>
+      <ul>
+        <li>信息安全问题的根源是<b>内因（系统复杂）+ 外因（对手/自然）</b>，最薄弱的是<b>人</b>。</li>
+        <li>信息安全核心是 <b>CIA 三要素</b>。</li>
+        <li>发展经历<b>通信安全 → 信息系统安全 → 信息安全保障</b>三阶段。</li>
+        <li>网络空间有<b>四要素（设施/数据/用户/操作）</b>和<b>四层次模型</b>。</li>
+        <li>网络空间安全有<b>六种论</b>，其中"<b>相对论 = 适度安全</b>"最重要。</li>
+        <li><b>安全意识</b>和<b>管理</b>与技术同等重要（木桶原理）。</li>
+      </ul>
+      <p style="margin-top:16px">
+        <span class="pill">📄 配套作业1</span>
+        <span class="pill">📘 配套 CH2 风险管理</span>
+      </p>
+    </section>
+
+    <!-- 11 自测 -->
+    <section id="s11">
+      <h2><span class="num">🎯</span>自测（点击展开参考要点）</h2>
+      <details>
+        <summary>CIA 三要素分别防什么？各举一个校园例子。</summary>
+        <div class="ans">机密性=防泄露（学生成绩不被别人看到）；完整性=防篡改（教务系统成绩不被改）；可用性=防瘫痪（选课系统高峰期能用）。</div>
+      </details>
+      <details>
+        <summary>信息安全发展的三个阶段及各自核心？</summary>
+        <div class="ans">通信安全（密码技术防保密/篡改）→ 信息系统安全（防非授权访问、拒绝服务）→ 信息安全保障（技术+管理+工程+人才综合保障）。</div>
+      </details>
+      <details>
+        <summary>网络空间的四要素是什么？</summary>
+        <div class="ans">设施（载体）、数据（对象）、用户（主体）、操作（形式）。</div>
+      </details>
+      <details>
+        <summary>"相对论"对应什么核心思想？</summary>
+        <div class="ans">适度安全——绝对安全不存在，要在安全性、可用性、成本之间平衡，立足国情做等级保护。</div>
+      </details>
+      <details>
+        <summary>木桶原理在信息安全中说明什么？</summary>
+        <div class="ans">整体安全取决于最薄弱的环节。光重视技术、忽视管理和安全意识，照样会出事（如没锁屏的服务器被U盘拷走数据）。</div>
+      </details>
+      <div class="box tip" style="margin-top:18px">
+        <span class="bt">✅ 都能答上来？</span>
+        那 CH1 的知识点你就掌握了，可以去做<b>作业1</b>了。还可以继续学 <code>CH2-风险管理与国产化.md</code>。
+      </div>
+    </section>
+
+    <!-- 强化题库 -->
+    <section id="bank">
+      <h2><span class="num">📝</span>强化题库（40 选择 + 30 填空 = 70 题）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">覆盖本章全部知识点，按知识点系统出题。选择题点选即时判分；填空题输入后点"检查"或"显示答案"。</p>
+      <div class="tabs">
+        <button class="tab active" data-tab="mcq">📋 选择题 (40)</button>
+        <button class="tab" data-tab="fill">✏️ 填空题 (30)</button>
+      </div>
+
+      <div class="tabpane active" id="pane-mcq">
+        <div class="score">
+          <span class="mini">已答 <b id="mcqDone">0</b>/40</span>
+          <span class="mini">答对 <b id="mcqRight">0</b></span>
+          <span class="mini">正确率 <b id="mcqRate">—</b></span>
+          <button class="resetb" id="mcqReset">↺ 重做</button>
+        </div>
+        <div id="mcqList"></div>
+      </div>
+
+      <div class="tabpane" id="pane-fill">
+        <div class="score">
+          <span class="mini">已检查 <b id="fillDone">0</b>/30</span>
+          <span class="mini">答对 <b id="fillRight">0</b></span>
+          <button class="resetb" id="fillRevealAll">👁 全部显示答案</button>
+          <button class="resetb" id="fillReset">↺ 重做</button>
+        </div>
+        <div id="fillList"></div>
+      </div>
+    </section>
+
+    <footer>
+      网络空间安全技术 · CH1 信息安全概论 · 零基础教学讲义<br>
+      💡 配套 Markdown 版：CH1-信息安全概论.md ｜ 学习导航：README-学习导航.md
+    </footer>
+  </main>
+</div>
+
+<button id="top" title="回到顶部">↑</button>
+
+<script>
+  // 进度条
+  const progress=document.getElementById('progress');
+  const topBtn=document.getElementById('top');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const scrolled=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+    progress.style.width=scrolled+'%';
+    topBtn.classList.toggle('show',h.scrollTop>400);
+  });
+  topBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+  // 导航高亮 + 学习进度（读过的章节计数）
+  const links=[...document.querySelectorAll('#nav a')];
+  const allSecs=[...document.querySelectorAll('main section')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const seen=new Set();
+  const learnFill=document.getElementById('learnFill');
+  const learnPct=document.getElementById('learnPct');
+  function updateLearn(){
+    const p=Math.round(seen.size/allSecs.length*100);
+    learnFill.style.width=p+'%';
+    learnPct.textContent=p+'%';
+    if(p===100){learnPct.textContent='✅100%';}
+  }
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        if(e.target.id){seen.add(e.target.id);updateLearn();}
+        const id='#'+e.target.id;
+        links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')===id));
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>s&&io.observe(s));
+  allSecs.forEach(s=>io.observe(s));
+
+  // ===== 选择题测验 =====
+  document.querySelectorAll('[data-quiz]').forEach(quiz=>{
+    const opts=[...quiz.querySelectorAll('.opt')];
+    const fb=quiz.querySelector('.feedback');
+    opts.forEach((opt,idx)=>{
+      opt.addEventListener('click',()=>{
+        const correctIdx=opts.findIndex(o=>o.dataset.correct!==undefined);
+        opts.forEach(o=>o.classList.add('disabled'));
+        if(opt.dataset.correct!==undefined){
+          opt.classList.add('correct');
+          fb.className='feedback show ok';
+          fb.textContent='🎉 答对了！理解到位。';
+        }else{
+          opt.classList.add('wrong');
+          opts[correctIdx].classList.add('correct');
+          fb.className='feedback show no';
+          fb.textContent='再想想～ 正确答案已用绿色标出。';
+        }
+      });
+    });
+  });
+
+  // ===== 匹配题 =====
+  (function(){
+    const box=document.getElementById('match1');
+    if(!box)return;
+    const fb=document.getElementById('match1fb');
+    let sel=null,done=0;
+    const items=[...box.querySelectorAll('.mitem')];
+    const total=box.querySelectorAll('.col')[0].querySelectorAll('.mitem').length;
+    items.forEach(it=>{
+      it.addEventListener('click',()=>{
+        if(it.classList.contains('done'))return;
+        if(!sel){sel=it;it.classList.add('sel');return;}
+        if(sel===it){it.classList.remove('sel');sel=null;return;}
+        // 第二个，且必须在不同列
+        if(sel.parentElement===it.parentElement){
+          sel.classList.remove('sel');sel=it;it.classList.add('sel');return;
+        }
+        if(sel.dataset.k===it.dataset.k){
+          sel.classList.remove('sel');sel.classList.add('done');it.classList.add('done');
+          done++;sel=null;
+          if(done===total){fb.className='feedback show ok';fb.textContent='🏆 全部连对！你已经分清 CIA 三要素了。';}
+        }else{
+          const a=sel,b=it;a.classList.add('shake');b.classList.add('shake');
+          setTimeout(()=>{a.classList.remove('shake','sel');b.classList.remove('shake');},420);
+          sel=null;
+          fb.className='feedback show no';fb.textContent='这两个不匹配，再试试～';
+        }
+      });
+    });
+  })();
+
+  // ===== 强化题库数据 =====
+  const MCQ=[
+    {q:'信息安全的基本目标 CIA 指的是？',o:['机密性、完整性、可用性','认证性、完整性、可用性','可靠性、可控性、可用性','可见性、完整性、可审计性'],a:0,e:'CIA = Confidentiality 机密性、Integrity 完整性、Availability 可用性。'},
+    {q:'"确保信息没有非授权泄漏，不被非授权的人使用"指的是？',o:['完整性','机密性','可用性','真实性'],a:1,e:'机密性 = 防泄露，不该看的人看不到。'},
+    {q:'"确保信息没有遭到篡改和破坏"指的是？',o:['机密性','可用性','完整性','可控性'],a:2,e:'完整性 = 防篡改，"信息不是维纳斯，不能追求残缺美"。'},
+    {q:'"确保授权用户能及时、正常使用信息"指的是？',o:['可用性','机密性','完整性','抗抵赖性'],a:0,e:'可用性 = 防瘫痪，需要用时能正常用（如双十一淘宝不崩）。'},
+    {q:'按课件观点，信息安全中最薄弱的环节是？',o:['防火墙','加密算法','人','操作系统'],a:2,e:'Kevin Mitnick 名言："人是最薄弱的环节"，再好的技术也防不住被骗的人。'},
+    {q:'"人是最薄弱的环节"这句名言出自？',o:['图灵','Kevin Mitnick','斯诺登','香农'],a:1,e:'著名黑客 Kevin Mitnick（后成为安全顾问）。'},
+    {q:'下列属于信息安全问题"内因"的是？',o:['黑客攻击','地震洪水','系统越来越复杂','商业间谍'],a:2,e:'内因 = 系统越来越复杂（连接越多暴露面越大）；外因才是对手威胁和自然破坏。'},
+    {q:'下列属于信息安全问题"外因"的是？',o:['系统连接过多','移动介质使用','员工误操作','情报机构窃密'],a:3,e:'外因 = 来自对手的威胁（信息战士/情报机构/黑客等）和自然破坏。'},
+    {q:'通信安全阶段（20世纪40-70年代）主要依靠什么手段？',o:['防火墙','密码技术','入侵检测','访问控制'],a:1,e:'通信安全阶段核心是用密码技术解决通信保密和内容篡改。'},
+    {q:'信息安全发展三个阶段的正确顺序是？',o:['信息系统安全→通信安全→信息安全保障','通信安全→信息系统安全→信息安全保障','信息安全保障→通信安全→信息系统安全','通信安全→信息安全保障→信息系统安全'],a:1,e:'通信安全→信息系统安全→信息安全保障。'},
+    {q:'公元前500年用"天书棒"加密的是哪个民族？',o:['罗马人','埃及人','斯巴达人','波斯人'],a:2,e:'斯巴达人把羊皮螺旋缠在圆柱形棒上加密。'},
+    {q:'信息安全的两个层面是指？',o:['硬件层面和软件层面','技术层面和管理层面','物理层面和网络层面','内部层面和外部层面'],a:1,e:'技术层面（防外部入侵）+ 管理层面（内部员工教育管理）。'},
+    {q:'关于"绝对安全"，下列说法正确的是？',o:['投入足够资金就能实现零风险','绝对的零风险不存在，要做平衡','安全性越高系统越好用','安全与成本无关'],a:1,e:'绝对零风险不现实；安全性越高，可用性越低、成本越大，要平衡。'},
+    {q:'计算机系统安全性越高，则其可用性通常？',o:['越高','越低','不变','无规律'],a:1,e:'安全性与可用性是矛盾的，要在两者及成本之间找平衡点。'},
+    {q:'"木桶能装多少水取决于最短的板"在信息安全中说明？',o:['技术最重要','整体安全取决于最薄弱环节','成本决定一切','长板决定容量'],a:1,e:'木桶原理/短板效应：重技术轻管理，照样会因最弱环节泄密。'},
+    {q:'"温水煮青蛙"故事在信息安全上的启示是？',o:['要事后补救','要居安思危、及时发现隐患','安全无需预防','只关注大事故'],a:1,e:'要居安思危，通过风险评估及时发现隐患，早作预防。'},
+    {q:'"冰山理论"强调的"三不放过"不包括？',o:['当事人未受教育不放过','根本原因未查明不放过','整改措施未落实不放过','损失未赔偿不放过'],a:3,e:'三不放过：当事人未受教育、根本原因未查明、整改措施未落实。'},
+    {q:'"墨菲定律"在安全管理上提示我们？',o:['事故不可避免就放任','侥幸心理和麻痹大意是事故主因，要预防为主','概率小的事可忽略','只防大概率事件'],a:1,e:'可能出错的事终会出错，不能存侥幸，要坚持预防为主。'},
+    {q:'"名医启示（扁鹊三兄弟）"强调的安全理念是？',o:['事后救火最重要','防微杜渐、防患于未然','名气最重要','只治大病'],a:1,e:'真正高手是事前预防（防微杜渐），而不是事后当"救火队员"。'},
+    {q:'下列关于"安全意识"的描述正确的是？',o:['只是技术人员的事','能认知安全问题、明白危害、恪守正确行为并知道出事怎么办','与普通员工无关','有了防火墙就不需要'],a:1,e:'"别忘了关门"的故事——最重要的是那颗别忘关门的心（安全意识）。'},
+    {q:'在一个机构中，实施信息安全过程中的最大障碍是？',o:['资金不足','安全角色与责任不明确','设备落后','人员太多'],a:1,e:'建立安全组织、落实责任是实施信息安全管理的第一步。'},
+    {q:'网络空间的"四要素"是？',o:['设施、数据、用户、操作','硬件、软件、网络、人员','物理、系统、数据、应用','政治、经济、文化、国防'],a:0,e:'载体=设施、对象=数据、主体=用户、形式=操作。'},
+    {q:'网络空间安全"四层次模型"由下到上是？',o:['应用层、数据层、系统层、设备层','设备层、系统层、数据层、应用层','物理层、运行层、数据层、内容层','网络层、传输层、会话层、应用层'],a:1,e:'设备层→系统层→数据层→应用层（对应电磁设备/电子信息系统/运行数据/系统应用）。'},
+    {q:'课件中"信息安全"的四个核心安全属性是？',o:['机密性、完整性、可用性、真实性','机密性、可鉴别性、可控性、可用性','物理、运行、数据、内容','保密、完整、可用、可审计'],a:1,e:'S113：机密性、可鉴别性（含完整性/真实性/不可抵赖性）、可控性、可用性。'},
+    {q:'课件中信息安全"具体反映在四个层面"，下列属于这四个层面的是？',o:['设备、系统、数据、应用','物理安全、运行安全、数据安全、内容安全','网络、主机、应用、管理','感知、传输、平台、应用'],a:1,e:'S113四个层面：物理安全、运行安全、数据安全、内容安全。'},
+    {q:'信息在传递中防"信息窃取"应采用的技术是？',o:['加密技术','完整性技术','鉴别技术','数字签名'],a:0,e:'窃取→加密；篡改→完整性；冒充→鉴别；抵赖→数字签名。'},
+    {q:'防止"信息抵赖（赖账）"主要采用？',o:['加密技术','防火墙','数字签名','访问控制'],a:2,e:'抵赖→数字签名（抗抵赖）。'},
+    {q:'"安全是相对的而非绝对的，要立足国情、适度安全"对应？',o:['实践论','相对论','进化论','矛盾论'],a:1,e:'相对论=适度安全，对应信息系统等级保护（5个等级）。'},
+    {q:'"安全是动态的而非静态的，威胁来源和手段在变化"对应？',o:['认识论','方法论','进化论','矛盾论'],a:2,e:'进化论=动态、综合的防护理念。'},
+    {q:'"安全是整体的而非割裂的，国家拥有网络空间主权"对应？',o:['认识论','实践论','相对论','方法论'],a:0,e:'认识论：网络安全与政治/经济/文化/国防安全相辅相成。'},
+    {q:'"安全是共同的而非孤立的，要协同安全、共筑防线"对应？',o:['矛盾论','方法论','进化论','实践论'],a:1,e:'方法论=协同安全（政府/关键用户/企业 三位一体协同监控）。'},
+    {q:'"发展与安全要平衡、妥协而非互斥"对应？',o:['矛盾论','认识论','相对论','实践论'],a:0,e:'矛盾论：既要保障安全完成使命，更要在达成使命前提下力求安全。'},
+    {q:'《网络安全法》正式实施的时间是？',o:['2014年2月','2016年4月','2017年6月1日','2003年9月'],a:2,e:'2017年6月1日正式实施。'},
+    {q:'习近平关于网络强国的论述中，下列正确的是？',o:['"没有网络安全就没有国家安全"','"安全比发展更重要"','"技术可以完全依赖进口"','"网络安全只是技术问题"'],a:0,e:'"没有网络安全就没有国家安全，没有信息化就没有现代化"。'},
+    {q:'CIIP 的中文含义是？',o:['通用入侵检测框架','关键信息基础设施保护','计算机信息集成平台','国家信息安全标准'],a:1,e:'CIIP=Critical Information Infrastructure Protection，关键信息基础设施保护。'},
+    {q:'信息安全的"最大特点之一是看不见摸不着"，这体现了趋势中的？',o:['趋利性','隐蔽性','复杂性','突发性'],a:1,e:'隐蔽性：不知不觉就中招、遭受损失。'},
+    {q:'课件中 ABC 分别代表的新应用是？',o:['人工智能、大数据、云计算','区块链、大数据、云存储','人工智能、区块链、云计算','自动化、大数据、计算机'],a:0,e:'A=Artificial Intelligence，B=Big Data，C=Cloud Computing。'},
+    {q:'我国信息系统等级保护将信息系统划分为几个安全等级？',o:['3个','4个','5个','8个'],a:2,e:'按重要程度和被破坏后危害程度分5个安全等级（适度安全/相对论）。'},
+    {q:'网络空间安全所采取的"综合手段"不包括？',o:['法律','管理','技术','武力'],a:3,e:'综合手段=法律、管理、技术、自律。'},
+    {q:'关于网络空间安全与 CIIP 的关系，正确的是？',o:['二者无关','网络空间安全是CIIP的必要组成部分','CIIP取代了网络空间安全','CIIP只管物理安全'],a:1,e:'网络空间安全是关键信息基础设施保护（CIIP）的必要组成部分。'}
+  ];
+
+  const FILL=[
+    {q:'信息安全的基本目标 CIA 是指机密性、完整性和 ____。',a:['可用性']},
+    {q:'按课件观点，信息安全中最薄弱的环节是 ____。',a:['人']},
+    {q:'通信安全阶段主要依靠 ____ 技术解决保密问题。',a:['密码']},
+    {q:'信息安全发展三阶段：通信安全 → ____ → 信息安全保障。',a:['信息系统安全']},
+    {q:'公元前500年用天书棒加密的是 ____ 人。',a:['斯巴达']},
+    {q:'信息安全的两个层面是技术层面和 ____ 层面。',a:['管理']},
+    {q:'一般来说，系统的安全性越高，其可用性越 ____。',a:['低']},
+    {q:'木桶能装多少水取决于 ____ 的那块木板（短板效应）。',a:['最短']},
+    {q:'机密性的英文是 ____。',a:['Confidentiality','confidentiality']},
+    {q:'完整性的英文是 ____。',a:['Integrity','integrity']},
+    {q:'可用性的英文是 ____。',a:['Availability','availability']},
+    {q:'课件中信息安全的四个核心安全属性：机密性、____、可控性、可用性。',a:['可鉴别性']},
+    {q:'信息安全具体反映在四个层面：物理安全、运行安全、____、内容安全。',a:['数据安全','数据']},
+    {q:'网络空间四要素：设施、数据、____、操作。',a:['用户']},
+    {q:'网络空间四层次模型：设备层、系统层、数据层、____。',a:['应用层','应用']},
+    {q:'防止信息窃取应采用 ____ 技术。',a:['加密']},
+    {q:'防止信息篡改应采用 ____ 技术。',a:['完整性']},
+    {q:'防止信息冒充应采用 ____ 技术。',a:['鉴别']},
+    {q:'防止信息抵赖应采用 ____。',a:['数字签名']},
+    {q:'"立足国情、适度安全"对应网络空间安全的 ____ 论。',a:['相对']},
+    {q:'"威胁和手段在变化，要动态防护"对应 ____ 论。',a:['进化']},
+    {q:'"网络安全与政治/经济/文化/国防安全相辅相成、国家拥有网络空间主权"对应 ____ 论。',a:['认识']},
+    {q:'"协同安全、共筑防线"对应 ____ 论。',a:['方法']},
+    {q:'"发展与安全要平衡、妥协而非互斥"对应 ____ 论。',a:['矛盾']},
+    {q:'《网络安全法》于 ____ 年6月1日正式实施。',a:['2017']},
+    {q:'CIIP 的中文含义是 ____。',a:['关键信息基础设施保护']},
+    {q:'网络空间安全采取的综合手段：法律、管理、技术、____。',a:['自律']},
+    {q:'我国信息系统等级保护把信息系统划分为 ____ 个安全等级。',a:['5','五']},
+    {q:'信息安全趋势中，除"隐蔽性"外另一重要特点是 ____。',a:['趋利性']},
+    {q:'方法论"三位一体"协同监控指：政府、关键用户、____。',a:['企业']}
+  ];
+
+  // 渲染选择题
+  (function(){
+    const list=document.getElementById('mcqList');if(!list)return;
+    let done=0,right=0;
+    const dn=document.getElementById('mcqDone'),rt=document.getElementById('mcqRight'),ra=document.getElementById('mcqRate');
+    function render(){
+      list.innerHTML='';done=0;right=0;dn.textContent=0;rt.textContent=0;ra.textContent='—';
+      MCQ.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        let opts=item.o.map((t,j)=>`<button class="qopt" data-i="${j}">${String.fromCharCode(65+j)}. ${t}</button>`).join('');
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${item.q}</div>${opts}<div class="qexp">💡 ${item.e}</div>`;
+        const btns=[...d.querySelectorAll('.qopt')];const exp=d.querySelector('.qexp');
+        btns.forEach(b=>b.addEventListener('click',()=>{
+          btns.forEach(x=>x.classList.add('lock'));
+          const ans=item.a;
+          if(+b.dataset.i===ans){b.classList.add('correct');right++;}
+          else{b.classList.add('wrong');btns[ans].classList.add('correct');}
+          exp.classList.add('show');
+          done++;dn.textContent=done;rt.textContent=right;ra.textContent=Math.round(right/done*100)+'%';
+        }));
+        list.appendChild(d);
+      });
+    }
+    render();
+    document.getElementById('mcqReset').onclick=render;
+  })();
+
+  // 渲染填空题
+  (function(){
+    const list=document.getElementById('fillList');if(!list)return;
+    let done=0,right=0;const checked=new Set();
+    const dn=document.getElementById('fillDone'),rt=document.getElementById('fillRight');
+    function norm(s){return (s||'').trim().replace(/\s/g,'').toLowerCase();}
+    function build(){
+      list.innerHTML='';done=0;right=0;checked.clear();dn.textContent=0;rt.textContent=0;
+      FILL.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        const qhtml=item.q.replace('____',`<input class="blank-in" data-i="${i}" placeholder="在此作答">`);
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${qhtml}</div>
+          <div class="blank-btns">
+            <button class="sbtn primary" data-act="check">检查</button>
+            <button class="sbtn" data-act="show">显示答案</button>
+          </div>
+          <div class="ansline">✅ 参考答案：${item.a[0]}</div>`;
+        const inp=d.querySelector('.blank-in');const ansl=d.querySelector('.ansline');
+        d.querySelector('[data-act="check"]').onclick=()=>{
+          const v=norm(inp.value);if(!v)return;
+          const ok=item.a.some(a=>norm(a)===v||v.includes(norm(a)));
+          inp.classList.remove('ok','bad');inp.classList.add(ok?'ok':'bad');
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;if(ok)right++;dn.textContent=done;rt.textContent=right;}
+        };
+        d.querySelector('[data-act="show"]').onclick=()=>{
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;dn.textContent=done;rt.textContent=right;}
+        };
+        list.appendChild(d);
+      });
+    }
+    build();
+    document.getElementById('fillReset').onclick=build;
+    document.getElementById('fillRevealAll').onclick=()=>{
+      list.querySelectorAll('.ansline').forEach(a=>a.classList.add('show'));
+    };
+  })();
+
+  // Tab 切换
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('pane-'+t.dataset.tab).classList.add('active');
+    };
+  });
+</script>
+</body>
+</html>

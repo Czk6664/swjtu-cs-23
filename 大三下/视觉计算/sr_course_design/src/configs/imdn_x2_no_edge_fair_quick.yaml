@@ -1,0 +1,17 @@
+model_name: imdn_no_edge_fair_quick
+scale: 2
+batch_size: 8
+epochs: 2
+learning_rate: 0.0002
+patch_size: 32
+num_features: 32
+use_edge_loss: false
+edge_weight: 0.0
+patches_per_image: 2
+max_train_pairs: 64
+max_val_pairs: 16
+dataset_dir: ./data
+eval_dir: ./data/eval
+checkpoint_dir: ./checkpoints
+result_dir: ./results
+log_csv_path: ./logs/imdn_x2_no_edge_fair_quick_metrics.csv

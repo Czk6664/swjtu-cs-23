@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CH5 鉴别机制与技术 · 小白教学</title>
+<style>
+  :root{
+    --bg:#0f1729;
+    --bg-soft:#16213e;
+    --card:#1b2745;
+    --card-2:#212f52;
+    --ink:#e8edf7;
+    --ink-soft:#a9b4cc;
+    --line:#2c3a5e;
+    --accent:#5b9dff;
+    --accent-2:#7c5cff;
+    --green:#36d399;
+    --amber:#fbbd23;
+    --red:#f87272;
+    --pink:#f472b6;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0f1729 0%,#131d38 100%);
+    color:var(--ink);
+    line-height:1.75;
+    font-size:16px;
+  }
+  /* 顶部进度条 */
+  #progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:999;transition:width .1s}
+
+  /* 章节切换栏 */
+  .chapnav{position:sticky;top:0;z-index:200;display:flex;gap:4px;flex-wrap:wrap;background:rgba(10,16,30,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 14px}
+  .chapnav a{color:var(--ink-soft);text-decoration:none;font-size:13px;padding:5px 11px;border-radius:8px;white-space:nowrap;transition:.15s}
+  .chapnav a:hover{background:var(--card-2);color:var(--ink)}
+  .chapnav a.cur{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;display:flex;gap:26px}
+
+  /* 侧边导航 */
+  nav.side{
+    position:sticky;top:46px;align-self:flex-start;
+    width:230px;flex:0 0 230px;height:calc(100vh - 46px);overflow-y:auto;
+    padding:26px 8px 40px 0;
+    font-size:14px;
+  }
+  nav.side .nav-title{font-weight:700;color:var(--accent);letter-spacing:1px;margin:0 0 14px 10px;font-size:13px}
+  nav.side a{
+    display:block;color:var(--ink-soft);text-decoration:none;
+    padding:8px 12px;border-radius:10px;margin:2px 0;
+    border-left:3px solid transparent;transition:.2s;
+  }
+  nav.side a:hover{background:var(--card);color:var(--ink)}
+  nav.side a.active{background:var(--card-2);color:#fff;border-left-color:var(--accent)}
+
+  main{flex:1;min-width:0;padding:34px 0 90px}
+
+  header.hero{
+    background:radial-gradient(120% 140% at 0% 0%,#26356b 0%,#1a234a 60%,#161f3e 100%);
+    border:1px solid var(--line);border-radius:24px;
+    padding:38px 38px 32px;margin-bottom:30px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  header.hero::after{content:"🪪";position:absolute;right:30px;top:18px;font-size:90px;opacity:.12}
+  header.hero .tag{display:inline-block;background:rgba(91,157,255,.18);color:var(--accent);
+    padding:4px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:14px}
+  header.hero h1{margin:0 0 8px;font-size:32px;letter-spacing:.5px}
+  header.hero p{margin:0;color:var(--ink-soft);font-size:15px}
+
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px 30px;margin-bottom:24px;box-shadow:var(--shadow);scroll-margin-top:66px;
+  }
+  h2{font-size:23px;margin:0 0 18px;padding-bottom:12px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:10px}
+  h2 .num{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+    width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 34px}
+  h3{font-size:18px;margin:22px 0 10px;color:#cfe0ff}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+
+  /* 表格 */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px;overflow:hidden;border-radius:12px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--card-2);color:#cfe0ff;font-weight:600}
+  tr:hover td{background:rgba(91,157,255,.06)}
+  td code,p code,li code{background:#0d1530;color:#8fd6ff;padding:2px 7px;border-radius:6px;font-size:13.5px}
+
+  /* 提示框 */
+  .box{border-radius:12px;padding:14px 18px;margin:16px 0;border-left:4px solid;font-size:15px}
+  .box .bt{font-weight:700;display:block;margin-bottom:4px}
+  .box.tip{background:rgba(54,211,153,.08);border-color:var(--green)}
+  .box.warn{background:rgba(251,189,35,.08);border-color:var(--amber)}
+  .box.key{background:rgba(124,92,255,.10);border-color:var(--accent-2)}
+  .box.quote{background:rgba(244,114,182,.07);border-color:var(--pink);font-style:italic}
+
+  /* 卡片 */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:18px 0}
+  .ccard{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s}
+  .ccard:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.35)}
+  .ccard .emoji{font-size:34px}
+  .ccard h4{margin:8px 0 6px;font-size:18px}
+  .ccard .en{color:var(--ink-soft);font-size:13px}
+  .ccard.c{border-top:3px solid var(--accent)}
+  .ccard.i{border-top:3px solid var(--green)}
+  .ccard.a{border-top:3px solid var(--amber)}
+
+  /* 时间线 */
+  .timeline{position:relative;margin:20px 0 6px;padding-left:28px}
+  .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .tl{position:relative;margin-bottom:18px}
+  .tl::before{content:"";position:absolute;left:-24px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(91,157,255,.2)}
+  .tl .yr{color:var(--accent);font-weight:700;font-size:14px}
+
+  /* 折叠自测 */
+  details{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:6px 18px;margin:12px 0}
+  details summary{cursor:pointer;font-weight:600;padding:10px 0;list-style:none}
+  details summary::before{content:"❓ ";}
+  details[open] summary{color:var(--accent)}
+  details .ans{color:var(--ink-soft);padding:6px 0 14px;border-top:1px dashed var(--line)}
+
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .pill{display:inline-block;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;margin:3px}
+
+  /* ===== 图表通用 ===== */
+  .fig{background:#0d1530;border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;text-align:center}
+  .fig svg{max-width:100%;height:auto}
+  .fig .cap{color:var(--ink-soft);font-size:13px;margin-top:10px}
+  .fig text{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+
+  /* 脑图分支 */
+  .mind{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+  .mind .root{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;padding:16px 20px;border-radius:14px;font-weight:700;font-size:16px;box-shadow:var(--shadow)}
+  .mind .branches{display:flex;flex-direction:column;gap:14px;margin-left:24px;position:relative}
+  .mind .branches::before{content:"";position:absolute;left:-24px;top:0;bottom:0;width:24px;border-left:2px solid var(--line)}
+  .branch{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-align:left;position:relative;min-width:300px}
+  .branch::before{content:"";position:absolute;left:-24px;top:50%;width:24px;height:2px;background:var(--line)}
+  .branch .bh{font-weight:700;margin-bottom:6px}
+  .branch.inner .bh{color:var(--amber)}
+  .branch.outer .bh{color:var(--red)}
+  .branch .tags span{display:inline-block;background:#0d1530;border:1px solid var(--line);border-radius:8px;padding:2px 9px;font-size:12.5px;margin:3px 3px 0 0;color:var(--ink-soft)}
+
+  /* 分层堆叠图 */
+  .layers{display:flex;flex-direction:column;gap:8px;max-width:620px;margin:0 auto}
+  .layer{display:flex;align-items:center;border-radius:12px;padding:13px 18px;color:#fff;font-weight:600;box-shadow:var(--shadow);position:relative}
+  .layer .ln{flex:0 0 96px;font-size:15px}
+  .layer .ld{font-weight:400;font-size:13.5px;opacity:.95}
+  .layer.l0{background:linear-gradient(90deg,#6b7280,#9aa3b2)}
+  .layer.l1{background:linear-gradient(90deg,#7c5cff,#9d7bff)}
+  .layer.l2{background:linear-gradient(90deg,#5b9dff,#7bb4ff)}
+  .layer.l3{background:linear-gradient(90deg,#36d399,#5be0b0)}
+  .layer.l4{background:linear-gradient(90deg,#fbbd23,#fccf57)}
+
+  /* 四要素 / 网格 */
+  .four-el{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:520px;margin:0 auto;position:relative}
+  .el-card{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;transition:.2s}
+  .el-card:hover{transform:scale(1.04);border-color:var(--accent)}
+  .el-card .ei{font-size:30px}
+  .el-card h4{margin:6px 0 2px}
+  .el-card small{color:var(--ink-soft)}
+
+  /* ===== 翻转卡片 ===== */
+  .flip-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:14px 0}
+  .flip{perspective:1000px;height:185px;cursor:pointer}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+  .flip.on .flip-inner{transform:rotateY(180deg)}
+  .flip-front,.flip-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px solid var(--line)}
+  .flip-back{transform:rotateY(180deg);background:var(--card-2);font-size:14px;line-height:1.6}
+  .flip-front{background:var(--card-2)}
+  .flip-front .emoji{font-size:38px}
+  .flip-front h4{margin:8px 0 2px;font-size:19px}
+  .flip-front .en{color:var(--ink-soft);font-size:12px}
+  .flip-front.c,.flip-back.c{border-top:3px solid var(--accent)}
+  .flip-front.i,.flip-back.i{border-top:3px solid var(--green)}
+  .flip-front.a,.flip-back.a{border-top:3px solid var(--amber)}
+  .flip-back small{color:var(--ink-soft);display:block;margin-top:6px}
+
+  /* ===== 互动测验 ===== */
+  .quiz{background:linear-gradient(135deg,#1a2547,#212f52);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0}
+  .quiz .q{font-weight:600;margin-bottom:12px}
+  .quiz .q .badge{background:var(--accent-2);color:#fff;border-radius:8px;padding:1px 9px;font-size:12px;margin-right:8px}
+  .opt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:11px 15px;border-radius:10px;margin:7px 0;cursor:pointer;transition:.15s;font-size:14.5px;font-family:inherit}
+  .opt:hover{border-color:var(--accent);background:var(--card-2)}
+  .opt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .opt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .opt.disabled{pointer-events:none;opacity:.75}
+  .feedback{font-size:14px;margin-top:8px;padding:10px 14px;border-radius:10px;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:rgba(54,211,153,.12);color:#aef5d4}
+  .feedback.no{background:rgba(248,114,114,.12);color:#ffc2c2}
+
+  /* ===== 匹配题 ===== */
+  .match{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0}
+  .match .col{display:flex;flex-direction:column;gap:10px}
+  .match .col .ct{font-size:13px;color:var(--ink-soft);margin-bottom:2px}
+  .mitem{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;transition:.15s;font-size:14px}
+  .mitem:hover{border-color:var(--accent)}
+  .mitem.sel{border-color:var(--accent-2);background:var(--card-2)}
+  .mitem.done{border-color:var(--green);background:rgba(54,211,153,.12);cursor:default;color:#aef5d4}
+  .mitem.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  /* 学习打卡进度 */
+  .checkbar{position:sticky;top:46px;z-index:50;background:rgba(15,23,41,.92);backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+  .checkbar .lbl{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .checkbar .track{flex:1;height:10px;background:var(--card);border-radius:999px;overflow:hidden}
+  .checkbar .fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--accent));transition:width .4s}
+  .checkbar .pct{font-weight:700;color:var(--green);font-size:14px;min-width:42px;text-align:right}
+
+  .reveal-btn{background:var(--card-2);border:1px solid var(--accent);color:var(--accent);border-radius:10px;padding:8px 16px;cursor:pointer;font-size:14px;font-family:inherit;transition:.15s}
+  .reveal-btn:hover{background:var(--accent);color:#fff}
+
+  /* ===== 题库 ===== */
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{flex:1;min-width:140px;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    padding:11px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;transition:.15s}
+  .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent}
+  .tabpane{display:none}
+  .tabpane.active{display:block}
+
+  .score{position:sticky;top:100px;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:rgba(15,23,41,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:16px}
+  .score b{color:var(--green);font-size:18px}
+  .score .mini{font-size:13px;color:var(--ink-soft)}
+  .score .resetb{margin-left:auto;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    border-radius:8px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:13px}
+  .score .resetb:hover{border-color:var(--accent);color:var(--ink)}
+
+  .qitem{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  .qitem .qh{font-weight:600;margin-bottom:10px;line-height:1.6}
+  .qitem .qh .no{display:inline-block;background:var(--accent);color:#fff;border-radius:7px;padding:1px 9px;font-size:13px;margin-right:8px}
+  .qopt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:9px 14px;border-radius:9px;margin:6px 0;cursor:pointer;transition:.12s;font-size:14px;font-family:inherit}
+  .qopt:hover{border-color:var(--accent)}
+  .qopt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .qopt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .qopt.lock{pointer-events:none}
+  .qexp{font-size:13.5px;color:var(--ink-soft);margin-top:8px;padding:9px 13px;background:rgba(91,157,255,.08);border-radius:9px;border-left:3px solid var(--accent);display:none}
+  .qexp.show{display:block}
+
+  /* 填空 */
+  .blank-in{background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);
+    padding:7px 12px;font-size:14.5px;font-family:inherit;width:200px;margin:0 4px}
+  .blank-in:focus{outline:none;border-color:var(--accent)}
+  .blank-in.ok{border-color:var(--green);background:rgba(54,211,153,.12)}
+  .blank-in.bad{border-color:var(--red);background:rgba(248,114,114,.10)}
+  .blank-btns{margin-top:10px;display:flex;gap:8px}
+  .sbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:inherit;font-size:13.5px}
+  .sbtn:hover{border-color:var(--accent)}
+  .sbtn.primary{background:var(--accent);color:#fff;border-color:transparent}
+  .ansline{font-size:13.5px;color:var(--green);margin-top:8px;display:none}
+  .ansline.show{display:block}
+
+  /* 重点例题 */
+  .exam{background:var(--card-2);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:12px;padding:16px 20px;margin:16px 0}
+  .exam .et{font-weight:700;color:var(--amber);margin-bottom:6px}
+  .exam .opts{margin:8px 0;color:var(--ink-soft);font-size:14.5px}
+  .exam .sol{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:14.5px}
+  .exam .sol b{color:var(--green)}
+
+  footer{text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 0 10px}
+
+  /* 回到顶部 */
+  #top{position:fixed;right:26px;bottom:26px;width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none;
+    font-size:20px;cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s}
+  #top.show{opacity:1;pointer-events:auto}
+
+  @media(max-width:880px){
+    nav.side{display:none}
+    .wrap{padding:0 14px}
+    header.hero{padding:26px 22px}
+    section{padding:20px 18px}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<div class="chapnav">
+  <a href="index.html">🏠 目录</a>
+  <a href="CH1-信息安全概论.html">CH1 概论</a>
+  <a href="CH2-风险管理与国产化.html">CH2 风险管理</a>
+  <a href="CH3-信息安全保障与运维.html">CH3 安全保障</a>
+  <a href="CH4-信息安全技术体系.html">CH4 技术体系</a>
+  <a class="cur" href="CH5-鉴别技术.html">CH5 鉴别</a>
+  <a href="CH6-访问控制.html">CH6 访问控制</a>
+  <a href="CH7-防火墙技术.html">CH7 防火墙</a>
+  <a href="CH8-入侵检测技术.html">CH8 入侵检测</a>
+  <a href="古典密码-入门讲义.html">古典密码</a>
+  <a href="哈希函数-入门课.html">哈希函数</a>
+  <a href="牛津古典密码学-讲义.html">牛津密码练习</a>
+</div>
+
+<div class="wrap">
+  <!-- 侧边导航 -->
+  <nav class="side" id="nav">
+    <p class="nav-title">📖 本章目录</p>
+    <a href="#s0">学习目标</a>
+    <a href="#s1">① 鉴别是什么 ⭐</a>
+    <a href="#s2">② 鉴别系统四方</a>
+    <a href="#s3">③ 三种途径 ⭐</a>
+    <a href="#s4">④ 保护等级 0-4 级 ⭐</a>
+    <a href="#s5">⑤ 口令机制</a>
+    <a href="#s6">⑥ OTP 与验证码</a>
+    <a href="#s7">⑦ 挑战-应答 ⭐</a>
+    <a href="#s8">⑧ 生物特征与令牌</a>
+    <a href="#s9">⑨ 零知识证明 ⭐</a>
+    <a href="#s10">⑩ 密码鉴别机制</a>
+    <a href="#s11">⑪ Kerberos ⭐</a>
+    <a href="#s12">⑫ 本章小结</a>
+    <a href="#exam">⭐ 重点例题（作业2）</a>
+    <a href="#s13">🎯 自测</a>
+    <a href="#bank">📝 强化题库 64 题</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="tag">网络空间安全技术 · 第五章</span>
+      <h1>CH5 鉴别机制与技术</h1>
+      <p>零基础教学讲义 · 一句话主题「怎么确认你是你」· 配套作业2（安全机制·鉴别技术·访问控制）</p>
+    </header>
+
+    <!-- 学习打卡进度 -->
+    <div class="checkbar">
+      <span class="lbl">📚 学习进度</span>
+      <div class="track"><div class="fill" id="learnFill"></div></div>
+      <span class="pct" id="learnPct">0%</span>
+    </div>
+
+    <!-- 学习目标 -->
+    <section id="s0">
+      <h2><span class="num">🎯</span>学习目标</h2>
+      <p>读完这一章，你应该能回答：</p>
+      <ol>
+        <li>什么是鉴别？为什么说它是<b>最重要的安全服务</b>？它和访问控制/完整性/审计是什么关系？</li>
+        <li>实体鉴别系统由哪<b>四方</b>组成？</li>
+        <li>实现鉴别的<b>三种途径</b>（所知/所有/所是）和双因素、多因素认证。</li>
+        <li>鉴别按保护等级分 <b>0~4 级</b>，每一级多防了什么？什么是<b>重放攻击</b>？</li>
+        <li>口令的<b>五大脆弱点</b>与对策；什么是<b>加盐</b>、<b>OTP</b>、<b>挑战-应答</b>？</li>
+        <li><b>零知识证明</b>的三原则和经典例子（山洞问题等）。</li>
+        <li><b>Kerberos</b> 的组成（KDC=AS+TGS）、三步流程、优缺点。</li>
+      </ol>
+    </section>
+
+    <!-- 1 -->
+    <section id="s1">
+      <h2><span class="num">1</span>鉴别是什么？为什么最重要？ ⭐</h2>
+      <p><b>鉴别（Authentication）</b>就是<b>确认实体"是它所声称的那个"</b>。某一成员（声称者）提交一个身份并声称它是那个主体，鉴别的目的是让验证者<b>获得对该声称事实的信任</b>。</p>
+      <div class="box key">
+        <span class="bt">💡 一句话</span>
+        鉴别 = 确认"<b>你是你</b>"。它提供了关于某个实体身份的保证，<b>所有其他安全服务都依赖于它</b>，主要用来<b>对抗假冒攻击</b>。
+      </div>
+
+      <h3>🔗 鉴别与其他机制的关系（会考）</h3>
+      <div class="fig">
+        <div class="mind">
+          <div class="root">鉴别<br>Authentication</div>
+          <div class="branches">
+            <div class="branch inner">
+              <div class="bh">🚪 支撑「访问控制」</div>
+              访问控制的执行<b>依赖于确知的身份</b>——先知道你是谁，才能决定你能干什么。
+            </div>
+            <div class="branch inner">
+              <div class="bh">📝 支撑「数据完整性」</div>
+              与完整性机制结合，提供<b>数据起源鉴别</b>（这条数据确实来自它声称的来源）。
+            </div>
+            <div class="branch inner">
+              <div class="bh">🧾 支撑「审计」</div>
+              审计追踪记录时提供<b>确知的身份</b>，支持"责任原则"（是谁干的赖不掉）。
+            </div>
+          </div>
+        </div>
+        <div class="cap">图1 · 鉴别是地基：访问控制、完整性、审计都站在它上面</div>
+      </div>
+
+      <h3>📜 身份鉴别的协议基础</h3>
+      <p>身份鉴别协议 = 通信参与者为完成相互的身份识别而采用的规程、约定、约束和交换信息的总和，分两类：</p>
+      <table>
+        <tr><th>协议</th><th>英文</th><th>含义</th></tr>
+        <tr><td><b>单向鉴别</b></td><td>one-way authentication</td><td>两方只有一方被鉴别</td></tr>
+        <tr><td><b>双向鉴别</b></td><td>mutual authentication</td><td>两方相互鉴别对方身份</td></tr>
+      </table>
+      <div class="box warn">
+        <span class="bt">⚠️ 网络环境下的两类威胁</span>
+        <b>被动威胁（窃听 sniffer）</b>：要求口令不在网上明码传输；<b>主动威胁（阻断、伪造、重放）</b>：要求网络上传输的鉴别信息<b>不可重用</b>。
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <h2><span class="num">2</span>实体鉴别系统的组成（四方）</h2>
+      <div class="fig">
+        <svg viewBox="0 0 520 230" width="520">
+          <!-- P -->
+          <circle cx="80" cy="80" r="44" fill="#5b9dff"/>
+          <text x="80" y="74" text-anchor="middle" fill="#fff" font-size="22" font-weight="700">P</text>
+          <text x="80" y="94" text-anchor="middle" fill="#fff" font-size="11">示证者</text>
+          <!-- V -->
+          <circle cx="380" cy="80" r="44" fill="#36d399"/>
+          <text x="380" y="74" text-anchor="middle" fill="#0f1729" font-size="22" font-weight="700">V</text>
+          <text x="380" y="94" text-anchor="middle" fill="#0f1729" font-size="11">验证者</text>
+          <!-- 箭头 P->V -->
+          <line x1="128" y1="70" x2="332" y2="70" stroke="#7c5cff" stroke-width="2"/>
+          <polygon points="332,70 320,64 320,76" fill="#7c5cff"/>
+          <text x="230" y="58" text-anchor="middle" fill="#cfe0ff" font-size="12">出示证件 / 声称身份</text>
+          <!-- TP -->
+          <rect x="190" y="160" width="100" height="46" rx="10" fill="#fbbd23"/>
+          <text x="240" y="182" text-anchor="middle" fill="#0f1729" font-size="14" font-weight="700">TP 可信第三方</text>
+          <text x="240" y="198" text-anchor="middle" fill="#0f1729" font-size="11">调解纠纷</text>
+          <line x1="100" y1="120" x2="195" y2="168" stroke="#fbbd23" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <line x1="360" y1="120" x2="285" y2="168" stroke="#fbbd23" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <!-- 攻击者 -->
+          <text x="230" y="118" text-anchor="middle" fill="#f87272" font-size="13">😈 攻击者：窃听 / 伪装 P 骗取 V 的信任</text>
+        </svg>
+        <div class="cap">图2 · 实体鉴别系统四方：P 出示、V 检验、TP 调解、攻击者捣乱</div>
+      </div>
+      <table>
+        <tr><th>角色</th><th>英文</th><th>作用</th></tr>
+        <tr><td><b>示证者 P</b></td><td>Prover / Claimant（声称者）</td><td>出示证件、声称身份的一方</td></tr>
+        <tr><td><b>验证者 V</b></td><td>Verifier</td><td>检验证件的正确性与合法性，决定是否满足要求</td></tr>
+        <tr><td><b>可信第三方 TP</b></td><td>Trusted third party</td><td>参与调解纠纷</td></tr>
+        <tr><td><b>攻击者</b></td><td>—</td><td>窃听或伪装声称者，骗取验证者的信任</td></tr>
+      </table>
+      <div class="box tip">
+        <span class="bt">📌 对身份鉴别系统的要求</span>
+        ① 合法申请者被正确识别的概率<b>极大化</b>；② <b>不可传递性</b>；③ 攻击者伪装成功的概率<b>小到可忽略</b>；④ 计算有效性；⑤ 通信有效性；⑥ 秘密参数能安全存储。
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <h2><span class="num">3</span>实现鉴别的三种途径 ⭐</h2>
+      <p style="text-align:center;color:var(--ink-soft);font-size:14px">👇 点击卡片翻转，看每种途径的例子</p>
+      <div class="flip-row">
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front c"><div class="emoji">🧠</div><h4>你所知道的</h4><span class="en">What you KNOW</span></div>
+            <div class="flip-back c"><b>知识 / 口令 / 密码 / PIN</b><br>大脑里记着的秘密。<br><small>例：登录密码、银行卡 PIN</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front i"><div class="emoji">💳</div><h4>你所拥有的</h4><span class="en">What you HAVE</span></div>
+            <div class="flip-back i"><b>身份证 / 信用卡 / 钥匙 / 智能卡 / 令牌</b><br>手里拿着的实物。<br><small>例：U盾、动态令牌</small></div>
+          </div>
+        </div>
+        <div class="flip" onclick="this.classList.toggle('on')">
+          <div class="flip-inner">
+            <div class="flip-front a"><div class="emoji">🫆</div><h4>你的个人特征</h4><span class="en">What you ARE</span></div>
+            <div class="flip-back a"><b>指纹 / 笔迹 / 声音 / 手型 / 脸型 / 视网膜 / 虹膜</b><br>身体本身的特征。<br><small>例：刷脸、指纹解锁</small></div>
+          </div>
+        </div>
+      </div>
+      <div class="box key">
+        <span class="bt">💡 双因素 / 多因素认证</span>
+        把上面任意两种或以上<b>组合</b>使用，就是双因素 / 多因素认证（如：<b>密码 + 短信验证码</b>、<b>智能卡 + PIN</b>）。安全更高。
+      </div>
+      <div class="box tip">
+        <span class="bt">📐 设计依据</span>
+        选哪种途径要综合考虑：<b>安全水平、系统通过率、用户可接受性、成本</b>。
+      </div>
+
+      <h3>🎮 小练习：把鉴别因素和它的类别连起来</h3>
+      <p style="color:var(--ink-soft);font-size:14px">先点左边一个因素，再点右边对应的类别。连对会变绿。</p>
+      <div class="match" id="match1">
+        <div class="col">
+          <div class="ct">📌 鉴别因素</div>
+          <div class="mitem" data-k="K">登录口令 / PIN</div>
+          <div class="mitem" data-k="H">智能卡 / U盾令牌</div>
+          <div class="mitem" data-k="A">指纹 / 虹膜</div>
+        </div>
+        <div class="col">
+          <div class="ct">🎯 所属类别</div>
+          <div class="mitem" data-k="A">你所是的（are）</div>
+          <div class="mitem" data-k="K">你所知道的（know）</div>
+          <div class="mitem" data-k="H">你所拥有的（have）</div>
+        </div>
+      </div>
+      <div class="feedback" id="match1fb"></div>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <h2><span class="num">4</span>鉴别技术分类：按保护等级 0~4 级 ⭐</h2>
+      <p>这是一个递进的保护强度分级。核心思路：<b>等级越高，越能防"重放攻击"</b>。</p>
+      <div class="box warn">
+        <span class="bt">🔁 什么是重放攻击（Replay）？</span>
+        攻击者把你这次的认证信息（比如加密后的口令）<b>原样录下来</b>，下次直接<b>重新发送</b>给验证者，从而冒充你——哪怕他根本不知道你真正的口令。
+      </div>
+      <div class="fig">
+        <div class="layers">
+          <div class="layer l0"><span class="ln">0 级</span><span class="ld">无保护：申请AI连同标识符直接发送（如直接发口令）→ 易暴露、易重放</span></div>
+          <div class="layer l1"><span class="ln">1 级</span><span class="ld">抗泄露：用变换函数（如单向函数/散列）变换后再传，真口令不上信道 → 仍易被重放</span></div>
+          <div class="layer l2"><span class="ln">2 级</span><span class="ld">抗泄露 + 抗对【不同】验证者重放：数据项含"预期验证者"唯一特征 → 不能抗同一验证者重放</span></div>
+          <div class="layer l3"><span class="ln">3 级</span><span class="ld">抗泄露 + 抗对【同一】验证者重放：用唯一数（随机数/时间戳/计数器/密码链）</span></div>
+          <div class="layer l4"><span class="ln">4 级</span><span class="ld">抗泄露 + 抗对【相同/不同】验证者重放：唯一数/质询/专用加密质询/计算响应（最强）</span></div>
+        </div>
+        <div class="cap">图3 · 鉴别保护等级阶梯（越往下越强，依次补防"泄露"和各种"重放"）</div>
+      </div>
+      <table>
+        <tr><th>等级</th><th>提供的保护</th><th>关键做法</th><th>缺点</th></tr>
+        <tr><td><b>0 级</b></td><td>无保护</td><td>口令明文直接发送</td><td>易暴露、易被重放</td></tr>
+        <tr><td><b>1 级</b></td><td>抗泄露</td><td>单向函数变换后传，真AI不上信道</td><td>仍易被重放</td></tr>
+        <tr><td><b>2 级</b></td><td>抗泄露 + 抗对<b>不同</b>验证者重放</td><td>加入"预期验证者"唯一特征</td><td>不能抗对同一验证者重放</td></tr>
+        <tr><td><b>3 级</b></td><td>抗泄露 + 抗对<b>同一</b>验证者重放</td><td>使用唯一数（随机数/时间戳/计数器/密码链）</td><td>—</td></tr>
+        <tr><td><b>4 级</b></td><td>抗泄露 + 抗对<b>相同/不同</b>验证者重放</td><td>4A唯一数 / 4B质询 / 4C专用加密质询 / 4D计算响应</td><td>实现最复杂</td></tr>
+      </table>
+      <div class="box tip">
+        <span class="bt">🔢 唯一数（非重复值）的四种来源（3级、4级用）</span>
+        ① <b>随机数 / 伪随机数</b>（生命期内不重复）；② <b>时间戳</b>（从可信来源得到）；③ <b>计数器</b>；④ <b>密码链</b>（由先前交换数据导出）。
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">随堂测</span>0 级鉴别（无保护）的主要缺陷是？</div>
+        <button class="opt" data-correct="1">申请鉴别信息简单发送，易泄露并受到重放攻击</button>
+        <button class="opt">计算过于复杂、速度太慢</button>
+        <button class="opt">必须使用虹膜识别</button>
+        <button class="opt">不能用于任何网络环境</button>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <h2><span class="num">5</span>非密码鉴别之一：口令机制</h2>
+      <p>口令（通行字）是<b>研究和使用最广泛</b>的身份鉴别法，通常为长度 <b>6~8</b> 的字符串。系统事先保存每个用户的二元组：<b>用户身份 + 口令</b>（明文或简单变换后存储）。</p>
+      <div class="box key">
+        <span class="bt">✅ 口令选择原则</span>
+        <b>易记、难猜、抗分析能力强。</b>
+      </div>
+      <p>典型协议是 <b>PAP（口令鉴别协议）</b>，在<b>通信连接建立阶段</b>进行鉴别，数据传输阶段不再做 PAP 鉴别（连接请求端不停发送 ID/Password，直到被响应或连接终止）。</p>
+
+      <h3>⚠️ 口令机制的五大脆弱点 + 对策（重点）</h3>
+      <table>
+        <tr><th>脆弱点</th><th>说明</th><th>对策</th></tr>
+        <tr><td><b>外部泄露</b></td><td>被人偷看/记在纸上</td><td>教育培训、严格管理、口令定期改、一人一令、输入不回显、不写纸上</td></tr>
+        <tr><td><b>口令猜测</b></td><td>被暴力/字典猜出</td><td>限制非法登录次数、插入实时延迟、限制最小长度(≥6~8)、防与用户特征相关、及时改预设口令、机器产生口令</td></tr>
+        <tr><td style="color:var(--amber)"><b>线路窃听</b></td><td>在网线上被嗅探</td><td><b>一次性口令 OTP、引入散列函数、加盐(Salt)</b></td></tr>
+        <tr><td><b>危及验证者</b></td><td>验证者的口令文件被偷</td><td>使用<b>单向函数</b>存储口令的散列值而非明文</td></tr>
+        <tr><td><b>重放攻击</b></td><td>录下认证信息再重发</td><td><b>随机数、一次性口令</b></td></tr>
+      </table>
+
+      <h3>🧂 加盐（Salt）—— 防字典攻击</h3>
+      <div class="box warn">
+        <span class="bt">脆弱点：直接哈希存口令会被"字典攻击"</span>
+        若只存 <code>q = H(口令)</code>，攻击者可<b>预先</b>把常见口令都算好哈希做成一张大表（彩虹表/字典），拿到 <code>q</code> 反查就能猜出口令。
+      </div>
+      <div class="fig">
+        <svg viewBox="0 0 520 150" width="520">
+          <rect x="20" y="55" width="110" height="40" rx="8" fill="#1b2745" stroke="#5b9dff"/>
+          <text x="75" y="80" text-anchor="middle" fill="#e8edf7" font-size="13">口令 password</text>
+          <text x="150" y="80" text-anchor="middle" fill="#fbbd23" font-size="22">+</text>
+          <rect x="170" y="55" width="120" height="40" rx="8" fill="#1b2745" stroke="#fbbd23"/>
+          <text x="230" y="80" text-anchor="middle" fill="#fbbd23" font-size="13">随机盐 Salt</text>
+          <text x="310" y="80" text-anchor="middle" fill="#36d399" font-size="20">→ H()</text>
+          <rect x="370" y="55" width="130" height="40" rx="8" fill="#1b2745" stroke="#36d399"/>
+          <text x="435" y="80" text-anchor="middle" fill="#aef5d4" font-size="13">散列值入库</text>
+          <text x="260" y="125" text-anchor="middle" fill="#a9b4cc" font-size="12">每个用户盐不同 → 预算好的字典表全部作废</text>
+        </svg>
+        <div class="cap">图4 · 加盐：在口令后拼接随机串再做散列，使字典攻击难以实施</div>
+      </div>
+      <p>加盐就是在散列运算时<b>额外输入一个随机字符串（Salt）</b>，把 Salt 和口令混合（以特定符号间隔）后再算散列。加盐后即使两人口令相同，散列值也不同，攻击者无法用预先算好的字典表批量破解。</p>
+      <div class="box tip">
+        <span class="bt">🔧 单向函数防"危及验证者"</span>
+        验证者只存口令的<b>单向函数（散列）值</b>而非明文，即使口令文件被偷，攻击者也无法直接反推出口令。
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <h2><span class="num">6</span>一次性口令 OTP 与验证码</h2>
+      <h3>🔑 一次性口令 OTP（One-Time Password，重点）</h3>
+      <div class="box key">
+        <span class="bt">核心特征</span>
+        <b>每次认证使用的口令都不同</b>，用过即废 —— 这样录下来也无法重放，专门<b>对付重放攻击</b>。
+      </div>
+      <p>确定每次口令的三种方法（两端要<b>保持同步</b>）：</p>
+      <ol>
+        <li>两端共同拥有一串随机口令，在该串的<b>某一位置保持同步</b>；</li>
+        <li>两端共用一个<b>随机序列生成器</b>，在生成器的<b>初态</b>保持同步；</li>
+        <li>使用<b>时间戳</b>，两端维持同步的时钟。</li>
+      </ol>
+      <div class="box tip">
+        <span class="bt">🔒 OTP 安全性分析</span>
+        没有器件而只知口令 p，不能简单攻击；有器件而不知 p，也不能简单攻击；除非攻击者能做时间同步，否则重放不简单；知道 q 而不知设备安全值 dsv，也不能简单攻击。
+      </div>
+      <h3>📉 S/Key 一次性口令协议（OTP 的演进）及其缺陷</h3>
+      <div class="box warn">
+        <span class="bt">⚠️ S/Key 的缺陷</span>
+        ① 不能防<b>小数攻击</b>；② <b>缺乏完整性保护</b>机制，不能抵抗主动攻击（注入虚假信息、修改传输中的鉴别数据、修改口令文件等）；③ 实际应用还需进一步完善。
+      </div>
+
+      <h3>🤖 小技巧：验证码（CAPTCHA）</h3>
+      <p><b>目的</b>：防止用机器人自动注册/登录/灌水，有效防止用特定程序<b>暴力破解</b>式地不断登录尝试。</p>
+      <p><b>定义</b>：把一串随机数字/符号生成一幅图片，加入干扰像素，由用户<b>肉眼识别</b>后输入提交，验证成功才能使用某项功能。</p>
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">随堂测</span>一次性口令 OTP 的核心特征是？</div>
+        <button class="opt" data-correct="0">每次认证使用不同的口令</button>
+        <button class="opt">口令永远不变，方便记忆</button>
+        <button class="opt">只能用于物理门禁</button>
+        <button class="opt">完全不需要时间或序列同步</button>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <h2><span class="num">7</span>基于挑战-应答的鉴别 ⭐</h2>
+      <p>鉴别时，由<b>验证者</b>给声称者发送一个<b>确定的质询值（challenge）</b>，该值参与鉴别信息的运算。由于质询值<b>每次都不同、由验证者随机决定</b>，所以每次传输的鉴别信息都不一样 —— 这能很好地<b>防口令窃听和重放</b>，但需要额外的通信开销。</p>
+      <div class="fig">
+        <svg viewBox="0 0 520 250" width="520">
+          <text x="110" y="28" text-anchor="middle" fill="#5b9dff" font-size="15" font-weight="700">声称者 / Client</text>
+          <text x="410" y="28" text-anchor="middle" fill="#36d399" font-size="15" font-weight="700">验证者 / Server</text>
+          <line x1="110" y1="40" x2="110" y2="230" stroke="#2c3a5e" stroke-width="2"/>
+          <line x1="410" y1="40" x2="410" y2="230" stroke="#2c3a5e" stroke-width="2"/>
+          <text x="260" y="58" text-anchor="middle" fill="#a9b4cc" font-size="12">（双方共享密钥 K）</text>
+          <!-- 1 发起 -->
+          <line x1="110" y1="80" x2="410" y2="80" stroke="#7c5cff" stroke-width="2"/>
+          <polygon points="410,80 398,74 398,86" fill="#7c5cff"/>
+          <text x="260" y="74" text-anchor="middle" fill="#cfe0ff" font-size="12">① 请求登录</text>
+          <!-- 2 质询 -->
+          <line x1="410" y1="120" x2="110" y2="120" stroke="#fbbd23" stroke-width="2"/>
+          <polygon points="110,120 122,114 122,126" fill="#fbbd23"/>
+          <text x="260" y="114" text-anchor="middle" fill="#fbbd23" font-size="12">② 发随机质询 R（每次不同）</text>
+          <!-- 3 应答 -->
+          <line x1="110" y1="170" x2="410" y2="170" stroke="#5b9dff" stroke-width="2"/>
+          <polygon points="410,170 398,164 398,176" fill="#5b9dff"/>
+          <text x="260" y="164" text-anchor="middle" fill="#cfe0ff" font-size="12">③ 应答 MAC = H(R, K)</text>
+          <!-- 4 验证 -->
+          <text x="410" y="205" text-anchor="middle" fill="#36d399" font-size="12">④ 自算 MAC′=H(R,K)</text>
+          <text x="410" y="222" text-anchor="middle" fill="#36d399" font-size="12">比较 MAC′ 与 MAC</text>
+        </svg>
+        <div class="cap">图5 · 挑战-应答握手：质询 R 每次随机 → 录下旧应答也无法重放</div>
+      </div>
+      <div class="box key">
+        <span class="bt">🔑 防重放的关键</span>
+        产生非重复值的能力<b>完全掌握在验证者手中</b>，质询值<b>不可预测、不重复</b>，提供了很好的重放检测能力。MAC 的计算可基于 Hash 算法、对称密钥算法或公开密钥算法。
+      </div>
+      <div class="box warn">
+        <span class="bt">⚠️ 局限</span>
+        ① 安全性取决于<b>散列函数的安全性</b>；② 单向鉴别时仍存在<b>验证者假冒</b>问题（可用双向鉴别或时间戳解决）；③ 增加通信开销，<b>不适合无连接应用</b>（握手开销抵消了无连接的优点）。
+      </div>
+      <div class="box tip">
+        <span class="bt">📍 补充：基于地址的机制</span>
+        以呼叫的<b>源地址</b>为基础辨别身份。<b>自身不能单独作鉴别机制</b>，只能作为其他机制的有用补充（临时环境中维持稳定的地址联系很困难）。
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <h2><span class="num">8</span>基于生物特征 与 个人鉴别令牌</h2>
+      <h3>🫆 基于个人生理特征（What you are）</h3>
+      <p>基于假设：<b>每个人的生理特征具有唯一性</b>。常见生物特征：</p>
+      <div class="four-el" style="max-width:640px;grid-template-columns:repeat(3,1fr)">
+        <div class="el-card"><div class="ei">👆</div><h4>指纹</h4><small>曲线/分叉等微特征</small></div>
+        <div class="el-card"><div class="ei">👁️</div><h4>虹膜</h4><small>瞳孔周围彩色环纹</small></div>
+        <div class="el-card"><div class="ei">🩸</div><h4>视网膜</h4><small>眼球后方血管图案</small></div>
+        <div class="el-card"><div class="ei">🗣️</div><h4>语音</h4><small>声纹识别</small></div>
+        <div class="el-card"><div class="ei">😊</div><h4>面部</h4><small>骨骼/鼻梁/眼眶形状</small></div>
+        <div class="el-card"><div class="ei">✋</div><h4>手型</h4><small>手长/宽/手指几何</small></div>
+      </div>
+      <p style="color:var(--ink-soft);font-size:14px;text-align:center;margin-top:8px">指纹识别原理：光电扫描 + 图像处理，采集→分析→比对，与数据库中模板指纹匹配以确认身份。</p>
+
+      <h3>💳 个人鉴别令牌</h3>
+      <p>物理器件用于支持"<b>某人拥有某东西</b>"，但通常要<b>与口令或 PIN 结合使用</b>（即双因素）。器件可具有存储、键盘、显示器，更复杂的能支持一次性口令，甚至嵌入处理器和网络通信（如<b>智能卡</b>）。</p>
+      <table>
+        <tr><th>IC 卡分类</th><th>类型</th></tr>
+        <tr><td>按接口</td><td>接触式 / 非接触式 / 双界面卡</td></tr>
+        <tr><td>按芯片形式</td><td>非加密存储卡 / 逻辑加密卡 / <b>CPU 卡（智能卡）</b></td></tr>
+      </table>
+      <p>智能卡软硬件特性：与外界通信前先完成卡与终端的<b>认证</b>；加安全传感器防读写时被改；存储器加密<b>不保存明文</b>；使用需通过<b>双因素认证</b>；支持 <b>DES、3DES 和 RSA</b> 等密码算法。</p>
+      <div class="box warn">
+        <span class="bt">📰 现实案例：2024 黎巴嫩寻呼机事件</span>
+        课件以此作为"个人令牌/硬件设备"安全的现实警示 —— 你"所拥有"的硬件本身也可能被供应链攻击。
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section id="s9">
+      <h2><span class="num">9</span>零知识证明与身份鉴别 ⭐</h2>
+      <div class="box key">
+        <span class="bt">💡 核心思想</span>
+        让一个鉴别协议能在声称者<b>向验证者证明自己身份（知道某秘密）</b>的同时，<b>不泄露任何信息（秘密本身）</b>。
+      </div>
+      <p>向别人证明"知道某事物/拥有某物品"有两种方法：</p>
+      <ul>
+        <li><b>直接证明</b>：直接出示或说出该秘密——但这会让别人也知道，是<b>最大泄漏</b>的证明。</li>
+        <li><b>间接证明（零知识证明）</b>：用一种有效的数学方法证明"我知道"，<b>而不泄露</b>秘密内容。</li>
+      </ul>
+
+      <h3>📐 三大原则（必背）</h3>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">✅</div><h4>完备性</h4><p>真的假不了：证明者若<b>确实具备</b>某能力，能被轻易验证通过。</p></div>
+        <div class="ccard i"><div class="emoji">🚫</div><h4>合理性</h4><p>假的真不了：证明者若<b>不具备</b>该能力，几乎不可能蒙混冒充。</p></div>
+        <div class="ccard a"><div class="emoji">🤐</div><h4>零知识</h4><p>验证者<b>仅</b>获得"对方具备此能力"这一信息，<b>不获得任何其他知识</b>。</p></div>
+      </div>
+
+      <h3>🏔️ 经典例子：山洞问题（最常考）</h3>
+      <div class="fig">
+        <svg viewBox="0 0 460 240" width="460">
+          <!-- 环形山洞 -->
+          <path d="M230 50 C150 50 120 120 120 150 C120 200 170 220 230 220 C290 220 340 200 340 150 C340 120 310 50 230 50 Z" fill="none" stroke="#2c3a5e" stroke-width="3"/>
+          <!-- 暗门 -->
+          <line x1="230" y1="150" x2="230" y2="220" stroke="#f87272" stroke-width="4" stroke-dasharray="6 5"/>
+          <text x="230" y="240" text-anchor="middle" fill="#f87272" font-size="12">🔒 暗门（需咒语）</text>
+          <!-- C D -->
+          <text x="150" y="215" text-anchor="middle" fill="#5b9dff" font-size="16" font-weight="700">C</text>
+          <text x="312" y="215" text-anchor="middle" fill="#36d399" font-size="16" font-weight="700">D</text>
+          <!-- 入口 -->
+          <text x="230" y="42" text-anchor="middle" fill="#cfe0ff" font-size="12">洞口（盗贼在此喊话）</text>
+          <text x="230" y="120" text-anchor="middle" fill="#fbbd23" font-size="13">P 先进洞</text>
+          <text x="230" y="138" text-anchor="middle" fill="#a9b4cc" font-size="11">V 随机喊"从 C 出"或"从 D 出"</text>
+        </svg>
+        <div class="cap">图6 · 山洞问题：知道咒语就能任意从 C/D 出；不知道每轮只能蒙对 1/2</div>
+      </div>
+      <p>阿里巴巴（P）知道开暗门的咒语。他先进入 C/D 分叉的环形山洞，盗贼（V）在洞口随机喊"从 C 出"或"从 D 出"。</p>
+      <ul>
+        <li><b>真知道咒语</b>：每次都能按要求那边出来（完备性）。</li>
+        <li><b>不知道咒语</b>：每轮蒙对概率 <b>1/2</b>，做 <b>16 轮</b>后全蒙对的概率仅 <code>1/2¹⁶ = 1/65536</code>（合理性）。</li>
+        <li>盗贼<b>不能看着</b> P 从哪边进洞，否则录像给别人看就泄露了"P 有咒语"这一事实——必须保证<b>零知识</b>。</li>
+      </ul>
+      <div class="box tip">
+        <span class="bt">🎲 更多经典例子（同一套"多轮随机验证"思路）</span>
+        <b>色盲验证双球（红绿）</b>、<b>皇帝的新衣</b>、<b>数独问题</b>（盖牌→选行列→装袋抖匀→验总和）、<b>地图三色问题</b>（信封装色→选相邻两区验证→下轮轮换重填）。它们都满足：真的总能过、假的几乎过不了、且不泄露秘密。
+      </div>
+      <div class="box key">
+        <span class="bt">🌐 重要延伸：转化为 NPC 问题</span>
+        任意数学命题（哥德巴赫猜想、费马大定理等）都可<b>转换为一个 NPC 问题</b>（如地图三染色）。所以可以零知识地证明"我证明了哥德巴赫猜想"而<b>不泄露证明过程</b>（防被剽窃成果）。
+      </div>
+      <div class="box tip">
+        <span class="bt">🔬 典型零知识身份鉴别协议</span>
+        基于<b>离散对数困难性</b>或<b>计算模 n 平方根困难性</b>：<b>Fiat-Shamir</b>、<b>Feige-Fiat-Shamir</b>、<b>Needham-Schroeder</b> 协议。
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10">
+      <h2><span class="num">10</span>基于密码算法的鉴别机制</h2>
+      <h3>🎯 设计鉴别协议的两大核心问题</h3>
+      <div class="cards">
+        <div class="ccard c"><div class="emoji">🔐</div><h4>保密性</h4><p>基本鉴别信息和会话密钥必须以<b>保密形式</b>通信，防伪装、防暴露会话密钥。</p></div>
+        <div class="ccard i"><div class="emoji">⏱️</div><h4>时效性</h4><p>防止<b>消息重放攻击</b>——这是核心难点。</p></div>
+      </div>
+      <p><b>重放攻击的常见形式</b>：简单重放、可被日志记录的复制品、不能被检测到的复制品、反向重放（向发送者重放，对称加密时可能发生）。</p>
+
+      <h3>🔢 防重放的三种"非重复值"（重点）</h3>
+      <table>
+        <tr><th>手段</th><th>原理</th><th>注意</th></tr>
+        <tr><td><b>序列号</b></td><td>给每条消息编号，仅接受序号合法的消息</td><td>双方必须保持上次消息的序号</td></tr>
+        <tr><td><b>时间戳</b></td><td>只接受时间戳足够接近当前时间的消息</td><td>要求<b>时钟同步</b>；同步失败会造成 DoS 或放大攻击窗口</td></tr>
+        <tr><td><b>随机值（质询）</b></td><td>验证者发不可预测、不重复的随机值</td><td>即挑战-应答方式</td></tr>
+      </table>
+      <div class="box warn">
+        <span class="bt">⏱️ 时间戳的两难</span>
+        分布式环境时钟同步并不容易：同步失败时，要么协议无法服务（影响可用性、造成 DoS），要么放大时钟窗口、给攻击者机会。时间窗大小要根据消息时效性确定。
+      </div>
+
+      <h3>🔑 三种密码鉴别机制</h3>
+      <table>
+        <tr><th>机制</th><th>怎么证明身份</th></tr>
+        <tr><td><b>采用对称密码算法</b></td><td>通信双方<b>共享一个密钥</b>，在质询-应答协议中加密交换信息（有单向、双向、带可信第三方 4/5 次传送等多种方案）</td></tr>
+        <tr><td><b>采用公开密码算法</b></td><td>声称者用<b>自己的秘密签名私钥</b>签署某消息证明身份，验证者用其<b>公钥</b>验证；消息含非重复值抗重放</td></tr>
+        <tr><td><b>采用密码校验函数</b></td><td>声称者用<b>秘密鉴别密钥 + 特定数据</b>经校验函数算出<b>密码校验值</b>来证明身份（双方共享该密钥）</td></tr>
+      </table>
+      <div class="box tip">
+        <span class="bt">🤝 相互（双向）鉴别</span>
+        理论上可由两个单向鉴别组合而成，但这种组合需仔细考察——<b>可能易受窃听重放攻击</b>，所以双向鉴别协议要为此目的<b>专门设计</b>（课件举例：WAPI 想国产化替代 WiFi）。
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section id="s11">
+      <h2><span class="num">11</span>Kerberos 鉴别协议 ⭐</h2>
+      <p><b>Kerberos</b> 是美国麻省理工学院（MIT）为 <b>Athena</b> 项目开发的身份鉴别协议，<b>采用对称密钥加密</b>技术，公开版本有 V4 和 V5。"Kerberos"本意是希腊神话中守护地狱之门的<b>三头犬</b>。它提供网络环境下的鉴别框架（A：Authentication 鉴别 / Accounting 记账 / Auditing 审计）。</p>
+      <div class="box tip">
+        <span class="bt">📋 使用条件</span>
+        ① 有一个<b>时钟基本同步</b>的环境；② 客户机与 KDC、KDC 与服务器在协议工作前<b>已各自拥有共享密钥</b>。
+      </div>
+
+      <h3>🧩 组成：KDC = AS + TGS</h3>
+      <div class="four-el" style="max-width:560px;grid-template-columns:repeat(3,1fr)">
+        <div class="el-card"><div class="ei">🏛️</div><h4>KDC</h4><small>密钥分发中心（含下面两部分）</small></div>
+        <div class="el-card"><div class="ei">🪪</div><h4>AS</h4><small>认证服务器 Authentication Server</small></div>
+        <div class="el-card"><div class="ei">🎫</div><h4>TGS</h4><small>票据授权服务器 Ticket Granting Server</small></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:14px">还有一个关键概念：<b>TGT（票据授权票据 Ticket-Granting Ticket）</b>。</p>
+
+      <h3>🔄 三步流程（重点）</h3>
+      <div class="fig">
+        <svg viewBox="0 0 560 270" width="560">
+          <!-- Client -->
+          <rect x="20" y="110" width="100" height="50" rx="10" fill="#5b9dff"/>
+          <text x="70" y="140" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">客户机 C</text>
+          <!-- KDC box -->
+          <rect x="220" y="20" width="160" height="120" rx="12" fill="none" stroke="#fbbd23" stroke-width="2" stroke-dasharray="5 4"/>
+          <text x="300" y="38" text-anchor="middle" fill="#fbbd23" font-size="12">KDC 认证中心</text>
+          <rect x="235" y="48" width="130" height="36" rx="8" fill="#fbbd23"/>
+          <text x="300" y="71" text-anchor="middle" fill="#0f1729" font-size="13" font-weight="700">AS 认证服务器</text>
+          <rect x="235" y="95" width="130" height="36" rx="8" fill="#7c5cff"/>
+          <text x="300" y="118" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">TGS 票据授权</text>
+          <!-- Server -->
+          <rect x="440" y="180" width="100" height="50" rx="10" fill="#36d399"/>
+          <text x="490" y="210" text-anchor="middle" fill="#0f1729" font-size="14" font-weight="700">服务器 S</text>
+          <!-- 1 -->
+          <line x1="120" y1="120" x2="232" y2="66" stroke="#5b9dff" stroke-width="2"/>
+          <polygon points="232,66 219,67 224,77" fill="#5b9dff"/>
+          <text x="150" y="92" fill="#cfe0ff" font-size="11">① 请求 TGT</text>
+          <!-- 2 -->
+          <line x1="232" y1="78" x2="120" y2="132" stroke="#fbbd23" stroke-width="2"/>
+          <polygon points="120,132 133,131 128,121" fill="#fbbd23"/>
+          <text x="135" y="150" fill="#fbbd23" font-size="11">② 发 TGT + 会话密钥</text>
+          <!-- 3 -->
+          <line x1="120" y1="150" x2="232" y2="113" stroke="#7c5cff" stroke-width="2"/>
+          <polygon points="232,113 219,113 224,123" fill="#7c5cff"/>
+          <text x="120" y="180" fill="#cfe0ff" font-size="11">③ 持 TGT 请求服务票据</text>
+          <!-- 4 -->
+          <line x1="232" y1="122" x2="125" y2="158" stroke="#7c5cff" stroke-width="2" stroke-dasharray="4 3"/>
+          <text x="118" y="200" fill="#cfe0ff" font-size="11">④ 发服务票据 Ticket</text>
+          <!-- 5 -->
+          <line x1="120" y1="155" x2="438" y2="200" stroke="#36d399" stroke-width="2"/>
+          <polygon points="438,200 426,196 427,208" fill="#36d399"/>
+          <text x="240" y="235" fill="#aef5d4" font-size="11">⑤ 持 Ticket 请求服务 → 服务器验证后许可</text>
+        </svg>
+        <div class="cap">图7 · Kerberos 三步票据流程（① ② 找 AS 拿 TGT；③ ④ 找 TGS 拿服务票据；⑤ 找服务器用票据）</div>
+      </div>
+      <div class="timeline">
+        <div class="tl"><div class="yr">第一步 · 获得票据许可票据 TGT</div>用户登录客户机请求服务，<b>AS（认证服务器）</b>在数据库中验证用户权限，生成 <b>TGT 和会话密钥</b>，用<b>由用户口令导出的密钥</b>加密发回（客户机提示输口令解密）。</div>
+        <div class="tl"><div class="yr">第二步 · 获得服务许可票据 Ticket</div>客户机把 <b>TGT</b> 加上含用户名/网络地址/时间的<b>鉴别符</b>发给 <b>TGS（票据授权服务器）</b>；TGS 解密验证后生成<b>服务许可票据 Ticket</b>（含用户名、IP、服务名、有效期、时间戳等）。</div>
+        <div class="tl"><div class="yr">第三步 · 获得服务</div>客户机把 <b>Ticket</b> 和鉴别符发给<b>服务器 S</b>；服务器验证匹配后许可访问。如需双向鉴别，服务器返回一个鉴别符。</div>
+      </div>
+
+      <h3>⚖️ 优缺点（重点）</h3>
+      <div class="cards">
+        <div class="ccard i"><div class="emoji">👍</div><h4>优点</h4><p><b>单点登录（SSO）</b>：拿到 TGT 且未过期，就能通过 TGS 完成到任一服务器的鉴别，<b>不必重新输口令</b>；与授权机制结合；通过交换"跨域密钥"支持<b>双向鉴别</b>。</p></div>
+        <div class="ccard a"><div class="emoji">👎</div><h4>缺点</h4><p>① AS 和 TGS <b>集中式管理</b>，易成<b>瓶颈</b>，性能和安全严重依赖二者；② <b>时钟同步问题</b>；③ 采用对称加密，随用户增多<b>密钥管理复杂</b>。</p></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q"><span class="badge">随堂测</span>Kerberos 身份鉴别协议主要基于？</div>
+        <button class="opt" data-correct="0">对称密钥和票据机制</button>
+        <button class="opt">完全人工审核</button>
+        <button class="opt">物理隔离</button>
+        <button class="opt">单纯 IP 地址过滤</button>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- 12 -->
+    <section id="s12">
+      <h2><span class="num">12</span>本章小结</h2>
+      <ul>
+        <li>鉴别 = 确认"<b>你是你</b>"，是<b>所有安全服务的基础</b>，对抗<b>假冒</b>；支撑访问控制、完整性、审计。</li>
+        <li>实体鉴别系统四方：<b>示证者 P、验证者 V、可信第三方 TP、攻击者</b>。</li>
+        <li>三种途径：<b>所知（口令）、所有（令牌）、所是（生物特征）</b>，组合即<b>双/多因素</b>。</li>
+        <li>按保护等级分 <b>0~4 级</b>，越高越能防<b>泄露和重放</b>。</li>
+        <li>口令防护：<b>OTP / 散列 / 加盐</b>对付窃听、防字典攻击；<b>单向函数</b>对付危及验证者。</li>
+        <li><b>挑战-应答</b> 和 <b>OTP</b> 都用来防重放；防重放三手段=<b>序列号 / 时间戳 / 随机数</b>。</li>
+        <li><b>零知识证明</b>：证明知道秘密但不泄露，三原则=<b>完备性 / 合理性 / 零知识</b>，经典例子是<b>山洞问题</b>。</li>
+        <li><b>Kerberos</b>：对称密钥 + 票据，<b>KDC = AS + TGS</b>，优点<b>单点登录</b>，缺点需<b>时钟同步</b>、密钥管理复杂。</li>
+      </ul>
+      <p style="margin-top:16px">
+        <span class="pill">📄 配套作业2</span>
+        <span class="pill">📘 配套 CH4 技术体系</span>
+        <span class="pill">📗 配套 CH6 访问控制</span>
+      </p>
+    </section>
+
+    <!-- 重点例题 -->
+    <section id="exam">
+      <h2><span class="num">⭐</span>重点例题（作业2 · 本章相关精讲）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">下面把作业2中与本章鉴别技术相关的题目挑出来逐题精讲，理解了它们，考试就稳了。</p>
+
+      <div class="exam">
+        <div class="et">例1（单选10）鉴别的基本目的可以概括为？</div>
+        <div class="opts">A. 确认实体确实是其所声明的实体　B. 为所有用户分配最高权限　C. 对所有数据进行备份　D. 限制网络带宽</div>
+        <div class="sol">答案：<b>A</b>。鉴别=确认"你是你"，提供实体身份的保证，对抗假冒。B 是授权问题，C 是可用性/备份，D 与鉴别无关。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例2（单选11）实体鉴别系统中，负责提交身份声明的一方称为？</div>
+        <div class="opts">A. 示证者/声称者　B. 审计员　C. 路由器　D. 客体</div>
+        <div class="sol">答案：<b>A</b>。四方=示证者 P（提交身份声明）、验证者 V（检验）、可信第三方 TP（调解）、攻击者。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例3（单选12）"基于你所知道的"鉴别因素通常指？</div>
+        <div class="opts">A. 指纹　B. 口令或密码　C. 智能卡　D. 门禁卡</div>
+        <div class="sol">答案：<b>B</b>。所知=口令/密码/PIN；指纹是"所是"；智能卡、门禁卡是"所有"。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例4（单选13）0 级鉴别的主要缺陷是？</div>
+        <div class="opts">A. 申请鉴别信息简单发送，易泄露并受到重放攻击　B. 计算过于复杂　C. 必须使用虹膜识别　D. 不能用于任何网络环境</div>
+        <div class="sol">答案：<b>A</b>。0 级把申请AI连同标识符明文直接发送（如直接发口令），既易暴露又易被重放。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例5（单选14）质询—应答机制能够防止重放攻击，关键在于？</div>
+        <div class="opts">A. 每次使用验证者给出的非重复质询值　B. 每次都发送相同口令　C. 删除所有日志　D. 关闭网络服务</div>
+        <div class="sol">答案：<b>A</b>。质询值由验证者随机产生、<b>每次不同、不可预测</b>，所以录下旧应答无法重放。这正是挑战-应答的精髓。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例6（单选15）一次性口令 OTP 的核心特征是？</div>
+        <div class="opts">A. 每次认证使用不同口令　B. 口令永远不变　C. 只用于物理门禁　D. 不需要时间或序列同步</div>
+        <div class="sol">答案：<b>A</b>。OTP 每次口令都不同、用过即废，专门对付重放攻击；它恰恰<b>需要</b>时间/序列/口令串同步（D 错）。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例7（单选16）零知识证明希望实现的是？</div>
+        <div class="opts">A. 证明自己知道秘密，同时不泄露秘密本身　B. 公开所有密钥　C. 让验证者获得全部证明细节　D. 用明文传输口令</div>
+        <div class="sol">答案：<b>A</b>。这就是零知识思想；三原则=完备性（真的假不了）、合理性（假的真不了）、零知识（只知道"对方有能力"，不获得其他知识）。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例8（单选17）Kerberos 身份鉴别协议主要基于？</div>
+        <div class="opts">A. 对称密钥和票据机制　B. 完全人工审核　C. 物理隔离　D. 单纯 IP 地址过滤</div>
+        <div class="sol">答案：<b>A</b>。Kerberos 用对称密钥加密 + 票据（TGT、服务票据 Ticket），KDC=AS+TGS。</div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例9（填空5、6、7、8）本章相关填空</div>
+        <div class="sol">
+          5. 身份鉴别系统包含示证者、验证者、可信第三方和 <b>攻击者</b>。<br>
+          6. 基于个人特征的鉴别可使用指纹、虹膜、声音、面部等 <b>生物（生理）</b> 特征。<br>
+          7. 口令加盐机制在散列中加入随机字符串，以增加 <b>字典</b> 攻击的难度。<br>
+          8. 零知识证明强调完备性、合理性和 <b>零知识</b>。
+        </div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例10（判断5、6、7）本章相关判断</div>
+        <div class="sol">
+          判断5：质询值应尽量"可预测、可重复" → <b>错误</b>（应不可预测、不重复才能防重放）。<br>
+          判断6：一次性口令可降低口令在网络中被重放利用的风险 → <b>正确</b>。<br>
+          判断7：零知识证明中验证者应获得证明者全部秘密才算成功 → <b>错误</b>（恰恰相反，验证者不获得任何秘密）。
+        </div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例11（简答3）口令、OTP、质询-应答、生物特征、智能卡各自优缺点</div>
+        <div class="sol">
+          <b>口令</b>：简单易用、成本低；但易被窃听/猜测/重放、易遗忘。<br>
+          <b>OTP</b>：每次不同、能防重放；但需同步（时间/序列），有 S/Key 小数攻击等缺陷。<br>
+          <b>质询-应答</b>：防窃听与重放、口令不上网；但增加通信开销、不适合无连接、安全依赖散列函数。<br>
+          <b>生物特征</b>：唯一、不易丢失、无需记忆；但有误识率、采集设备成本高、生物信息泄露不可更换、有隐私问题。<br>
+          <b>智能卡</b>：双因素（卡+PIN）、能算密码、安全性高；但会丢失/被盗、需读卡设备、成本较高。
+        </div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例12（课堂练习）设计一个 A、B 双方可对抗字典攻击的鉴别方案</div>
+        <div class="sol">
+          思路：<b>口令加盐散列 + 挑战-应答（随机数）</b>。① A、B 共享口令的<b>加盐散列</b>（每用户随机盐，使预算字典表失效，对抗字典攻击）；② 鉴别时 B 发<b>随机质询 R</b>，A 回 <code>MAC=H(R, 口令散列)</code>；③ B 自算比较。这样口令不明文上网（防窃听）、R 每次不同（防重放）、加盐（防字典攻击）。
+        </div>
+      </div>
+
+      <div class="exam">
+        <div class="et">例13（案例1）在线教学平台分级鉴别 —— 本章要点提炼</div>
+        <div class="sol">
+          学生：<b>口令 + 加盐散列 + 验证码</b>（防撞库/暴力破解）；教师（涉成绩）：<b>双因素</b>=口令 + 短信/动态 OTP；管理员（最高权限）：<b>多因素</b>=口令 + 智能卡/U盾 + 生物特征。用<b>加盐散列</b>抗字典/撞库，<b>验证码</b>防机器人暴力，<b>OTP/质询-应答</b>防重放。登录、改成绩、提权等操作需<b>审计记录</b>——鉴别确认"是谁"，审计才能记下"谁干了什么"，二者必须配合。
+        </div>
+      </div>
+    </section>
+
+    <!-- 13 自测 -->
+    <section id="s13">
+      <h2><span class="num">🎯</span>自测（点击展开参考要点）</h2>
+      <details>
+        <summary>鉴别为什么是"最重要的安全服务"？它和访问控制是什么关系？</summary>
+        <div class="ans">鉴别提供实体身份的保证，所有其他安全服务都依赖它，主要对抗假冒。访问控制的执行依赖确知的身份——先鉴别"你是谁"，才能决定"你能干什么"。</div>
+      </details>
+      <details>
+        <summary>实现鉴别的三种途径是什么？双因素认证举一个例子。</summary>
+        <div class="ans">所知（口令/PIN）、所有（智能卡/令牌）、所是（指纹/虹膜）。双因素例子：登录密码 + 短信验证码，或智能卡 + PIN。</div>
+      </details>
+      <details>
+        <summary>鉴别保护等级 0~4 级各防了什么？</summary>
+        <div class="ans">0级无保护（明文发口令）；1级抗泄露（变换后传）；2级再抗对"不同"验证者重放；3级再抗对"同一"验证者重放（用唯一数）；4级抗对相同/不同验证者重放（唯一数/质询/专用加密质询/计算响应）。越高越防重放。</div>
+      </details>
+      <details>
+        <summary>口令的五大脆弱点是什么？加盐防什么攻击？</summary>
+        <div class="ans">外部泄露、口令猜测、线路窃听、危及验证者、重放攻击。加盐（口令后加随机串再散列）防字典攻击/彩虹表。</div>
+      </details>
+      <details>
+        <summary>挑战-应答和 OTP 都靠什么防重放？</summary>
+        <div class="ans">挑战-应答靠验证者每次发不同、不可预测的随机质询值；OTP 靠每次口令都不同、用过即废。本质都是让传输的鉴别信息"不可重用"。</div>
+      </details>
+      <details>
+        <summary>零知识证明的三个原则？山洞问题怎么体现合理性？</summary>
+        <div class="ans">完备性（真的假不了）、合理性（假的真不了）、零知识（不泄露其他信息）。不知道咒语者每轮蒙对概率1/2，16轮后只有1/65536的机会，几乎不可能蒙混过关——体现合理性。</div>
+      </details>
+      <details>
+        <summary>Kerberos 的 KDC 由哪两部分组成？三步流程是什么？</summary>
+        <div class="ans">KDC = AS（认证服务器）+ TGS（票据授权服务器）。三步：①向AS拿TGT；②持TGT向TGS拿服务票据Ticket；③持Ticket向服务器请求服务。优点单点登录，缺点需时钟同步、密钥管理复杂。</div>
+      </details>
+      <details>
+        <summary>防消息重放的三种"非重复值"是什么？时间戳的缺点？</summary>
+        <div class="ans">序列号、时间戳、随机值（质询）。时间戳要求时钟同步，分布式环境难做到，同步失败会造成DoS或放大攻击窗口。</div>
+      </details>
+      <div class="box tip" style="margin-top:18px">
+        <span class="bt">✅ 都能答上来？</span>
+        那 CH5 的知识点你就掌握了，可以去做<b>作业2</b>的鉴别部分了，再继续学 <code>CH6-访问控制.html</code>。
+      </div>
+    </section>
+
+    <!-- 强化题库 -->
+    <section id="bank">
+      <h2><span class="num">📝</span>强化题库（34 选择 + 30 填空 = 64 题）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">覆盖本章全部知识点，含【作业举一反三】变体题。选择题点选即时判分；填空题输入后点"检查"或"显示答案"。</p>
+      <div class="tabs">
+        <button class="tab active" data-tab="mcq">📋 选择题 (34)</button>
+        <button class="tab" data-tab="fill">✏️ 填空题 (30)</button>
+      </div>
+
+      <div class="tabpane active" id="pane-mcq">
+        <div class="score">
+          <span class="mini">已答 <b id="mcqDone">0</b>/34</span>
+          <span class="mini">答对 <b id="mcqRight">0</b></span>
+          <span class="mini">正确率 <b id="mcqRate">—</b></span>
+          <button class="resetb" id="mcqReset">↺ 重做</button>
+        </div>
+        <div id="mcqList"></div>
+      </div>
+
+      <div class="tabpane" id="pane-fill">
+        <div class="score">
+          <span class="mini">已检查 <b id="fillDone">0</b>/30</span>
+          <span class="mini">答对 <b id="fillRight">0</b></span>
+          <button class="resetb" id="fillRevealAll">👁 全部显示答案</button>
+          <button class="resetb" id="fillReset">↺ 重做</button>
+        </div>
+        <div id="fillList"></div>
+      </div>
+    </section>
+
+    <footer>
+      网络空间安全技术 · CH5 鉴别机制与技术 · 零基础教学讲义<br>
+      💡 配套 Markdown 版：CH5-鉴别技术.md ｜ 配套作业：作业2
+    </footer>
+  </main>
+</div>
+
+<button id="top" title="回到顶部">↑</button>
+
+<script>
+  // 进度条
+  const progress=document.getElementById('progress');
+  const topBtn=document.getElementById('top');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const scrolled=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+    progress.style.width=scrolled+'%';
+    topBtn.classList.toggle('show',h.scrollTop>400);
+  });
+  topBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+  // 导航高亮 + 学习进度
+  const links=[...document.querySelectorAll('#nav a')];
+  const allSecs=[...document.querySelectorAll('main section')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const seen=new Set();
+  const learnFill=document.getElementById('learnFill');
+  const learnPct=document.getElementById('learnPct');
+  function updateLearn(){
+    const p=Math.round(seen.size/allSecs.length*100);
+    learnFill.style.width=p+'%';
+    learnPct.textContent=p+'%';
+    if(p===100){learnPct.textContent='✅100%';}
+  }
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        if(e.target.id){seen.add(e.target.id);updateLearn();}
+        const id='#'+e.target.id;
+        links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')===id));
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>s&&io.observe(s));
+  allSecs.forEach(s=>io.observe(s));
+
+  // ===== 随堂选择题测验 =====
+  document.querySelectorAll('[data-quiz]').forEach(quiz=>{
+    const opts=[...quiz.querySelectorAll('.opt')];
+    const fb=quiz.querySelector('.feedback');
+    opts.forEach((opt,idx)=>{
+      opt.addEventListener('click',()=>{
+        const correctIdx=opts.findIndex(o=>o.dataset.correct!==undefined);
+        opts.forEach(o=>o.classList.add('disabled'));
+        if(opt.dataset.correct!==undefined){
+          opt.classList.add('correct');
+          fb.className='feedback show ok';
+          fb.textContent='🎉 答对了！理解到位。';
+        }else{
+          opt.classList.add('wrong');
+          opts[correctIdx].classList.add('correct');
+          fb.className='feedback show no';
+          fb.textContent='再想想～ 正确答案已用绿色标出。';
+        }
+      });
+    });
+  });
+
+  // ===== 匹配题 =====
+  (function(){
+    const box=document.getElementById('match1');
+    if(!box)return;
+    const fb=document.getElementById('match1fb');
+    let sel=null,done=0;
+    const items=[...box.querySelectorAll('.mitem')];
+    const total=box.querySelectorAll('.col')[0].querySelectorAll('.mitem').length;
+    items.forEach(it=>{
+      it.addEventListener('click',()=>{
+        if(it.classList.contains('done'))return;
+        if(!sel){sel=it;it.classList.add('sel');return;}
+        if(sel===it){it.classList.remove('sel');sel=null;return;}
+        if(sel.parentElement===it.parentElement){
+          sel.classList.remove('sel');sel=it;it.classList.add('sel');return;
+        }
+        if(sel.dataset.k===it.dataset.k){
+          sel.classList.remove('sel');sel.classList.add('done');it.classList.add('done');
+          done++;sel=null;
+          if(done===total){fb.className='feedback show ok';fb.textContent='🏆 全部连对！你已经分清"所知/所有/所是"三种途径了。';}
+        }else{
+          const a=sel,b=it;a.classList.add('shake');b.classList.add('shake');
+          setTimeout(()=>{a.classList.remove('shake','sel');b.classList.remove('shake');},420);
+          sel=null;
+          fb.className='feedback show no';fb.textContent='这两个不匹配，再试试～';
+        }
+      });
+    });
+  })();
+
+  // ===== 强化题库数据 =====
+  const MCQ=[
+    {q:'鉴别（Authentication）的本质是？',o:['确认实体是它所声称的那个','为用户分配最高权限','对数据进行加密','备份所有数据'],a:0,e:'鉴别=确认"你是你"，提供实体身份的保证。'},
+    {q:'下列关于鉴别的说法正确的是？',o:['鉴别只是可有可无的辅助服务','鉴别是最重要的安全服务之一，其他安全服务都依赖它','鉴别只能用于加密','鉴别与访问控制无关'],a:1,e:'鉴别是最重要的安全服务之一，所有其他安全服务都依赖它，主要对抗假冒攻击。'},
+    {q:'鉴别主要用来对抗哪种攻击？',o:['拒绝服务攻击','假冒攻击','物理破坏','社会工程'],a:1,e:'鉴别对抗假冒（冒充身份）攻击。'},
+    {q:'访问控制服务的执行依赖于？',o:['确知的身份（鉴别）','网络带宽','磁盘容量','机房温度'],a:0,e:'先鉴别"你是谁"，访问控制才能决定"你能干什么"。'},
+    {q:'实体鉴别系统中，出示证件、声称身份的一方是？',o:['验证者 V','示证者 P / 声称者','可信第三方 TP','攻击者'],a:1,e:'示证者 P（Prover/Claimant）提交身份声明。'},
+    {q:'实体鉴别系统中，检验证件正确性与合法性的一方是？',o:['示证者 P','验证者 V','可信第三方 TP','客体'],a:1,e:'验证者 V（Verifier）检验并决定是否满足要求。'},
+    {q:'实体鉴别系统的四方不包括？',o:['示证者 P','验证者 V','可信第三方 TP','负载均衡器'],a:3,e:'四方=示证者P、验证者V、可信第三方TP、攻击者。'},
+    {q:'"基于你所知道的"鉴别因素通常指？',o:['指纹','口令或密码','智能卡','门禁卡'],a:1,e:'所知=口令/密码/PIN；指纹是"所是"，卡是"所有"。'},
+    {q:'指纹、虹膜、人脸属于哪种鉴别途径？',o:['你所知道的','你所拥有的','你所是的（个人特征）','你所计算的'],a:2,e:'生物特征属于 What you are（你所是的）。'},
+    {q:'智能卡、U盾、动态令牌属于哪种鉴别途径？',o:['你所知道的','你所拥有的','你所是的','你所看到的'],a:1,e:'实物器件属于 What you have（你所拥有的）。'},
+    {q:'"密码 + 短信验证码"属于？',o:['单因素认证','双因素认证','零因素认证','生物认证'],a:1,e:'组合两种途径即双因素认证。'},
+    {q:'选择鉴别途径时不需要重点考虑的是？',o:['安全水平','系统通过率','用户可接受性与成本','机房楼层高度'],a:3,e:'设计依据=安全水平、系统通过率、用户可接受性、成本。'},
+    {q:'攻击者把录下的认证信息再次发送以冒充用户，这是？',o:['重放攻击','字典攻击','拒绝服务','社会工程'],a:0,e:'重放攻击（Replay）：原样重发旧的认证信息。'},
+    {q:'0 级鉴别（无保护）的主要缺陷是？',o:['计算太复杂','申请鉴别信息明文直接发送，易泄露并受重放攻击','必须用虹膜','不能用于网络'],a:1,e:'0级把口令等明文直接发送，既易暴露又易重放。'},
+    {q:'1 级鉴别（抗泄露）的做法和缺点是？',o:['明文发送/易泄露','用变换函数变换后再传/仍易被重放','加随机数/已不能重放','加时间戳/需同步'],a:1,e:'1级用单向函数变换后传，真口令不上信道（抗泄露），但仍易被重放。'},
+    {q:'2 级鉴别相比 1 级，多提供了什么保护？',o:['抗对不同验证者的重放','抗对同一验证者的重放','抗物理破坏','抗病毒'],a:0,e:'2级加入"预期验证者"唯一特征，抗对不同验证者重放；仍不能抗同一验证者重放。'},
+    {q:'3 级鉴别使用的"唯一数"来源不包括？',o:['随机数/伪随机数','时间戳','计数器','用户身高'],a:3,e:'唯一数来源=随机数、时间戳、计数器、密码链。'},
+    {q:'随保护等级升高，鉴别主要增强了对哪类攻击的防护？',o:['重放攻击','断电','硬盘损坏','电磁泄漏'],a:0,e:'0→4级核心是逐步补防泄露和各种重放。'},
+    {q:'口令选择的基本原则是？',o:['越长越好不用记','易记、难猜、抗分析能力强','用生日最方便','和用户名相同'],a:1,e:'口令选择原则：易记、难猜、抗分析能力强。'},
+    {q:'口令机制的五大脆弱点不包括？',o:['外部泄露','口令猜测','线路窃听','磁盘碎片'],a:3,e:'五大脆弱点：外部泄露、口令猜测、线路窃听、危及验证者、重放攻击。'},
+    {q:'对付"线路窃听"的措施是？',o:['一次性口令、散列函数、加盐','增大显示器','关闭防火墙','明文传输'],a:0,e:'对付线路窃听=OTP、引入散列函数、加盐(Salt)。'},
+    {q:'口令"加盐(Salt)"主要是为了对抗？',o:['字典攻击','拒绝服务','物理盗窃','电磁干扰'],a:0,e:'加盐使预算好的字典表/彩虹表失效，增加字典攻击难度。'},
+    {q:'为对付"危及验证者"（口令文件被偷），应？',o:['口令明文存储','用单向函数存储口令的散列值','把口令写在纸上','取消口令'],a:1,e:'用单向函数存散列值而非明文，偷到文件也难反推口令。'},
+    {q:'一次性口令 OTP 的核心特征是？',o:['每次认证使用不同口令','口令永远不变','只用于物理门禁','不需要任何同步'],a:0,e:'OTP每次口令不同、用过即废，对付重放攻击。'},
+    {q:'S/Key 一次性口令协议的缺陷是？',o:['不能防小数攻击、缺乏完整性保护','计算太快','不能用于网络','口令太短'],a:0,e:'S/Key不能防小数攻击、缺乏完整性保护、不能抵抗主动攻击。'},
+    {q:'验证码（CAPTCHA）的主要目的是？',o:['加密数据','防止机器人自动注册/登录与暴力破解','压缩图片','提升网速'],a:1,e:'验证码防机器人自动注册/登录/灌水和暴力破解尝试。'},
+    {q:'质询—应答机制能防重放，关键在于？',o:['每次发相同口令','使用验证者给出的非重复（随机）质询值','删除日志','关闭服务'],a:1,e:'质询值由验证者随机产生、每次不同不可预测，旧应答无法重放。'},
+    {q:'质询—应答机制的局限是？',o:['完全不安全','增加通信开销、不适合无连接应用','口令必须明文','无法用散列'],a:1,e:'要先握手，增加开销，不适合无连接；安全依赖散列函数，单向时仍有验证者假冒。'},
+    {q:'基于地址的鉴别机制正确的说法是？',o:['可单独作为可靠鉴别机制','自身不能单独作鉴别，只能作其他机制的补充','比生物特征更安全','与重放无关'],a:1,e:'以源地址为基础，自身不能单独鉴别，只能作补充。'},
+    {q:'零知识证明希望实现的是？',o:['公开所有密钥','证明知道秘密同时不泄露秘密本身','让验证者获得全部细节','明文传口令'],a:1,e:'零知识=证明"我知道"但不泄露秘密。'},
+    {q:'零知识证明的三个原则是？',o:['机密性、完整性、可用性','完备性、合理性、零知识','保密、签名、审计','序列号、时间戳、随机数'],a:1,e:'完备性(真的假不了)、合理性(假的真不了)、零知识(不泄露其他信息)。'},
+    {q:'山洞问题中，不知道咒语者经过 16 轮验证仍蒙混过关的概率约为？',o:['1/2','1/16','1/65536','1/100'],a:2,e:'每轮1/2，16轮=1/2^16=1/65536。'},
+    {q:'防消息重放的三种"非重复值"是？',o:['序列号、时间戳、随机值（质询）','用户名、密码、邮箱','加密、签名、压缩','IP、MAC、端口'],a:0,e:'防重放三手段：序列号、时间戳、随机值（质询）。'},
+    {q:'Kerberos 协议的 KDC 由哪两部分组成？',o:['AS（认证服务器）和 TGS（票据授权服务器）','防火墙和路由器','客户机和服务器','AS 和 DNS'],a:0,e:'KDC=AS（认证服务器）+TGS（票据授权服务器），还有TGT票据授权票据。'}
+  ];
+
+  const FILL=[
+    {q:'鉴别就是确认实体"是它所____的那个"。',a:['声称','声明']},
+    {q:'鉴别是最重要的安全服务之一，所有其他安全服务都____于它。',a:['依赖']},
+    {q:'鉴别主要用来对抗____攻击。',a:['假冒','冒充']},
+    {q:'访问控制服务的执行依赖于确知的____。',a:['身份']},
+    {q:'实体鉴别系统四方：示证者P、验证者V、可信第三方TP 和 ____。',a:['攻击者']},
+    {q:'示证者P 又称声称者，英文为 ____。',a:['Prover','Claimant','prover']},
+    {q:'身份鉴别协议分为单向鉴别协议和 ____ 鉴别协议。',a:['双向','相互']},
+    {q:'实现鉴别的三种途径：你所知道的、你所拥有的、你所 ____ 的。',a:['是']},
+    {q:'"你所知道的"对应的典型鉴别因素是 ____（口令/密码）。',a:['口令','密码','口令或密码']},
+    {q:'指纹、虹膜、人脸属于"你所____的"鉴别途径。',a:['是']},
+    {q:'把两种或以上鉴别途径组合使用称为 ____ 认证。',a:['双因素','多因素','双因素或多因素']},
+    {q:'鉴别按保护等级分为 0 级到 ____ 级。',a:['4','四']},
+    {q:'0 级鉴别（无保护）的主要缺点是易暴露鉴别信息和受到 ____ 攻击。',a:['重放']},
+    {q:'1 级鉴别使用 ____ 函数对申请AI变换后再传，使真口令不在信道传输。',a:['单向','单向（散列）','散列']},
+    {q:'3 级鉴别使用唯一数对抗对同一验证者的重放，唯一数来源有随机数、时间戳、计数器和 ____。',a:['密码链']},
+    {q:'口令选择原则：易记、难猜、____ 能力强。',a:['抗分析']},
+    {q:'对付线路窃听的三种措施：一次性口令、引入散列函数和 ____。',a:['加盐','Salt','加盐(Salt)']},
+    {q:'加盐机制是在散列运算时加入随机字符串，用来增加 ____ 攻击的难度。',a:['字典']},
+    {q:'一次性口令OTP 的核心：每次认证使用 ____ 的口令，以对付重放攻击。',a:['不同']},
+    {q:'OTP 演进算法 ____ 协议存在不能防小数攻击、缺乏完整性保护的缺陷。',a:['S/Key','SKey','S/KEY']},
+    {q:'质询—应答中，产生非重复质询值的能力完全掌握在 ____ 手中。',a:['验证者']},
+    {q:'质询—应答机制的安全性主要取决于 ____ 函数的安全性。',a:['散列','哈希','Hash']},
+    {q:'零知识证明的三原则：完备性、合理性和 ____。',a:['零知识']},
+    {q:'零知识证明"假的真不了"对应的原则是 ____。',a:['合理性']},
+    {q:'零知识证明的经典例子（先进洞、洞口随机喊从哪边出）称为 ____ 问题。',a:['山洞','洞穴','山洞（洞穴）']},
+    {q:'防消息重放的三种非重复值：序列号、时间戳和 ____。',a:['随机数','随机值','随机值（质询）']},
+    {q:'采用公开密码算法的鉴别中，声称者用自己的 ____ 私钥签名消息以证明身份。',a:['签名','私有签名','秘密签名']},
+    {q:'Kerberos 采用 ____ 密钥加密技术，由 MIT 为 Athena 项目开发。',a:['对称']},
+    {q:'Kerberos 的 KDC 由认证服务器 AS 和票据授权服务器 ____ 组成。',a:['TGS']},
+    {q:'Kerberos 的主要优点是 ____ 登录（拿到TGT不必重复输口令）。',a:['单点','单点登录','SSO']}
+  ];
+
+  // 渲染选择题
+  (function(){
+    const list=document.getElementById('mcqList');if(!list)return;
+    let done=0,right=0;
+    const dn=document.getElementById('mcqDone'),rt=document.getElementById('mcqRight'),ra=document.getElementById('mcqRate');
+    function render(){
+      list.innerHTML='';done=0;right=0;dn.textContent=0;rt.textContent=0;ra.textContent='—';
+      MCQ.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        let opts=item.o.map((t,j)=>`<button class="qopt" data-i="${j}">${String.fromCharCode(65+j)}. ${t}</button>`).join('');
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${item.q}</div>${opts}<div class="qexp">💡 ${item.e}</div>`;
+        const btns=[...d.querySelectorAll('.qopt')];const exp=d.querySelector('.qexp');
+        btns.forEach(b=>b.addEventListener('click',()=>{
+          btns.forEach(x=>x.classList.add('lock'));
+          const ans=item.a;
+          if(+b.dataset.i===ans){b.classList.add('correct');right++;}
+          else{b.classList.add('wrong');btns[ans].classList.add('correct');}
+          exp.classList.add('show');
+          done++;dn.textContent=done;rt.textContent=right;ra.textContent=Math.round(right/done*100)+'%';
+        }));
+        list.appendChild(d);
+      });
+    }
+    render();
+    document.getElementById('mcqReset').onclick=render;
+  })();
+
+  // 渲染填空题
+  (function(){
+    const list=document.getElementById('fillList');if(!list)return;
+    let done=0,right=0;const checked=new Set();
+    const dn=document.getElementById('fillDone'),rt=document.getElementById('fillRight');
+    function norm(s){return (s||'').trim().replace(/\s/g,'').toLowerCase();}
+    function build(){
+      list.innerHTML='';done=0;right=0;checked.clear();dn.textContent=0;rt.textContent=0;
+      FILL.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        const qhtml=item.q.replace('____',`<input class="blank-in" data-i="${i}" placeholder="在此作答">`);
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${qhtml}</div>
+          <div class="blank-btns">
+            <button class="sbtn primary" data-act="check">检查</button>
+            <button class="sbtn" data-act="show">显示答案</button>
+          </div>
+          <div class="ansline">✅ 参考答案：${item.a[0]}</div>`;
+        const inp=d.querySelector('.blank-in');const ansl=d.querySelector('.ansline');
+        d.querySelector('[data-act="check"]').onclick=()=>{
+          const v=norm(inp.value);if(!v)return;
+          const ok=item.a.some(a=>norm(a)===v||v.includes(norm(a)));
+          inp.classList.remove('ok','bad');inp.classList.add(ok?'ok':'bad');
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;if(ok)right++;dn.textContent=done;rt.textContent=right;}
+        };
+        d.querySelector('[data-act="show"]').onclick=()=>{
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;dn.textContent=done;rt.textContent=right;}
+        };
+        list.appendChild(d);
+      });
+    }
+    build();
+    document.getElementById('fillReset').onclick=build;
+    document.getElementById('fillRevealAll').onclick=()=>{
+      list.querySelectorAll('.ansline').forEach(a=>a.classList.add('show'));
+    };
+  })();
+
+  // Tab 切换
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('pane-'+t.dataset.tab).classList.add('active');
+    };
+  });
+</script>
+</body>
+</html>

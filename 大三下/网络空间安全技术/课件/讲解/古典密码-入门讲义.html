@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>古典密码入门 · 小白教学</title>
+<style>
+  :root{
+    --bg:#0f1729;
+    --bg-soft:#16213e;
+    --card:#1b2745;
+    --card-2:#212f52;
+    --ink:#e8edf7;
+    --ink-soft:#a9b4cc;
+    --line:#2c3a5e;
+    --accent:#5b9dff;
+    --accent-2:#7c5cff;
+    --green:#36d399;
+    --amber:#fbbd23;
+    --red:#f87272;
+    --pink:#f472b6;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0f1729 0%,#131d38 100%);
+    color:var(--ink);
+    line-height:1.75;
+    font-size:16px;
+  }
+  #progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:999;transition:width .1s}
+
+  /* 章节切换栏 */
+  .chapnav{position:sticky;top:0;z-index:200;display:flex;gap:4px;flex-wrap:wrap;background:rgba(10,16,30,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 14px}
+  .chapnav a{color:var(--ink-soft);text-decoration:none;font-size:13px;padding:5px 11px;border-radius:8px;white-space:nowrap;transition:.15s}
+  .chapnav a:hover{background:var(--card-2);color:var(--ink)}
+  .chapnav a.cur{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px;display:flex;gap:26px}
+
+  nav{
+    position:sticky;top:0;align-self:flex-start;
+    width:230px;flex:0 0 230px;height:100vh;overflow-y:auto;
+    padding:26px 8px 40px 0;
+    font-size:14px;
+  }
+  nav .nav-title{font-weight:700;color:var(--accent);letter-spacing:1px;margin:0 0 14px 10px;font-size:13px}
+  nav a{
+    display:block;color:var(--ink-soft);text-decoration:none;
+    padding:8px 12px;border-radius:10px;margin:2px 0;
+    border-left:3px solid transparent;transition:.2s;
+  }
+  nav a:hover{background:var(--card);color:var(--ink)}
+  nav a.active{background:var(--card-2);color:#fff;border-left-color:var(--accent)}
+
+  main{flex:1;min-width:0;padding:34px 0 90px}
+
+  header.hero{
+    background:radial-gradient(120% 140% at 0% 0%,#26356b 0%,#1a234a 60%,#161f3e 100%);
+    border:1px solid var(--line);border-radius:24px;
+    padding:38px 38px 32px;margin-bottom:30px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  header.hero::after{content:"🔐";position:absolute;right:30px;top:18px;font-size:90px;opacity:.12}
+  header.hero .tag{display:inline-block;background:rgba(91,157,255,.18);color:var(--accent);
+    padding:4px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:14px}
+  header.hero h1{margin:0 0 8px;font-size:32px;letter-spacing:.5px}
+  header.hero p{margin:0;color:var(--ink-soft);font-size:15px}
+
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px 30px;margin-bottom:24px;box-shadow:var(--shadow);scroll-margin-top:60px;
+  }
+  h2{font-size:23px;margin:0 0 18px;padding-bottom:12px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:10px}
+  h2 .num{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+    width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 34px}
+  h3{font-size:18px;margin:22px 0 10px;color:#cfe0ff}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px;overflow:hidden;border-radius:12px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--card-2);color:#cfe0ff;font-weight:600}
+  tr:hover td{background:rgba(91,157,255,.06)}
+  td code,p code,li code{background:#0d1530;color:#8fd6ff;padding:2px 7px;border-radius:6px;font-size:13.5px}
+
+  .box{border-radius:12px;padding:14px 18px;margin:16px 0;border-left:4px solid;font-size:15px}
+  .box .bt{font-weight:700;display:block;margin-bottom:4px}
+  .box.tip{background:rgba(54,211,153,.08);border-color:var(--green)}
+  .box.warn{background:rgba(251,189,35,.08);border-color:var(--amber)}
+  .box.key{background:rgba(124,92,255,.10);border-color:var(--accent-2)}
+  .box.quote{background:rgba(244,114,182,.07);border-color:var(--pink);font-style:italic}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:18px 0}
+  .ccard{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.2s}
+  .ccard:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.35)}
+  .ccard .emoji{font-size:34px}
+  .ccard h4{margin:8px 0 6px;font-size:18px}
+  .ccard .en{color:var(--ink-soft);font-size:13px}
+
+  .timeline{position:relative;margin:20px 0 6px;padding-left:28px}
+  .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .tl{position:relative;margin-bottom:18px}
+  .tl::before{content:"";position:absolute;left:-24px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(91,157,255,.2)}
+  .tl .yr{color:var(--accent);font-weight:700;font-size:14px}
+
+  details{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:6px 18px;margin:12px 0}
+  details summary{cursor:pointer;font-weight:600;padding:10px 0;list-style:none}
+  details summary::before{content:"❓ ";}
+  details[open] summary{color:var(--accent)}
+  details .ans{color:var(--ink-soft);padding:6px 0 14px;border-top:1px dashed var(--line)}
+
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .pill{display:inline-block;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;margin:3px}
+
+  .fig{background:#0d1530;border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;text-align:center}
+  .fig svg{max-width:100%;height:auto}
+  .fig .cap{color:var(--ink-soft);font-size:13px;margin-top:10px}
+  .fig text{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+
+  .mind{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+  .mind .root{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;padding:16px 20px;border-radius:14px;font-weight:700;font-size:16px;box-shadow:var(--shadow)}
+  .mind .branches{display:flex;flex-direction:column;gap:14px;margin-left:24px;position:relative}
+  .mind .branches::before{content:"";position:absolute;left:-24px;top:0;bottom:0;width:24px;border-left:2px solid var(--line)}
+  .branch{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-align:left;position:relative;min-width:300px}
+  .branch::before{content:"";position:absolute;left:-24px;top:50%;width:24px;height:2px;background:var(--line)}
+  .branch .bh{font-weight:700;margin-bottom:6px}
+  .branch.inner .bh{color:var(--amber)}
+  .branch.outer .bh{color:var(--red)}
+  .branch .tags span{display:inline-block;background:#0d1530;border:1px solid var(--line);border-radius:8px;padding:2px 9px;font-size:12.5px;margin:3px 3px 0 0;color:var(--ink-soft)}
+
+  /* ===== 翻转卡片 ===== */
+  .flip-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:14px 0}
+  .flip{perspective:1000px;height:185px;cursor:pointer}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+  .flip.on .flip-inner{transform:rotateY(180deg)}
+  .flip-front,.flip-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px solid var(--line)}
+  .flip-back{transform:rotateY(180deg);background:var(--card-2);font-size:14px;line-height:1.6}
+  .flip-front{background:var(--card-2)}
+  .flip-front .emoji{font-size:38px}
+  .flip-front h4{margin:8px 0 2px;font-size:19px}
+  .flip-front .en{color:var(--ink-soft);font-size:12px}
+  .flip-front.c,.flip-back.c{border-top:3px solid var(--accent)}
+  .flip-front.i,.flip-back.i{border-top:3px solid var(--green)}
+  .flip-front.a,.flip-back.a{border-top:3px solid var(--amber)}
+  .flip-back small{color:var(--ink-soft);display:block;margin-top:6px}
+
+  /* ===== 互动测验 ===== */
+  .quiz{background:linear-gradient(135deg,#1a2547,#212f52);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0}
+  .quiz .q{font-weight:600;margin-bottom:12px}
+  .quiz .q .badge{background:var(--accent-2);color:#fff;border-radius:8px;padding:1px 9px;font-size:12px;margin-right:8px}
+  .opt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:11px 15px;border-radius:10px;margin:7px 0;cursor:pointer;transition:.15s;font-size:14.5px;font-family:inherit}
+  .opt:hover{border-color:var(--accent);background:var(--card-2)}
+  .opt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .opt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .opt.disabled{pointer-events:none;opacity:.75}
+  .feedback{font-size:14px;margin-top:8px;padding:10px 14px;border-radius:10px;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:rgba(54,211,153,.12);color:#aef5d4}
+  .feedback.no{background:rgba(248,114,114,.12);color:#ffc2c2}
+
+  /* ===== 匹配题 ===== */
+  .match{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0}
+  .match .col{display:flex;flex-direction:column;gap:10px}
+  .match .col .ct{font-size:13px;color:var(--ink-soft);margin-bottom:2px}
+  .mitem{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;transition:.15s;font-size:14px}
+  .mitem:hover{border-color:var(--accent)}
+  .mitem.sel{border-color:var(--accent-2);background:var(--card-2)}
+  .mitem.done{border-color:var(--green);background:rgba(54,211,153,.12);cursor:default;color:#aef5d4}
+  .mitem.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  /* 学习打卡进度 */
+  .checkbar{position:sticky;top:46px;z-index:50;background:rgba(15,23,41,.92);backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+  .checkbar .lbl{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .checkbar .track{flex:1;height:10px;background:var(--card);border-radius:999px;overflow:hidden}
+  .checkbar .fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--accent));transition:width .4s}
+  .checkbar .pct{font-weight:700;color:var(--green);font-size:14px;min-width:42px;text-align:right}
+
+  /* ===== 凯撒交互加密器 ===== */
+  .caesar{background:#0d1530;border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:18px 0}
+  .caesar .crow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+  .caesar input[type=range]{flex:1;min-width:200px;accent-color:var(--accent)}
+  .caesar .kval{font-weight:700;color:var(--accent);font-size:16px;min-width:120px}
+  .caesar .alpha{font-family:"Consolas","Courier New",monospace;letter-spacing:2px;font-size:15px;overflow-x:auto;white-space:nowrap;padding:6px 0}
+  .caesar .alpha .lab{display:inline-block;width:70px;color:var(--ink-soft);font-family:inherit;font-size:13px}
+  .caesar .alpha .pl span{display:inline-block;width:20px;text-align:center;color:var(--ink-soft)}
+  .caesar .alpha .ci span{display:inline-block;width:20px;text-align:center;color:#8fd6ff;font-weight:700}
+  .caesar .ctext input[type=text]{width:100%;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:9px 13px;font-size:15px;font-family:inherit;margin:4px 0}
+  .caesar .out{font-family:"Consolas","Courier New",monospace;background:var(--card);border:1px solid var(--accent);border-radius:8px;padding:10px 13px;color:#8fd6ff;font-size:16px;letter-spacing:1px;word-break:break-all;min-height:24px}
+
+  /* 替换/维吉尼亚 字母对照 */
+  .lettab{font-family:"Consolas","Courier New",monospace;font-size:14px;letter-spacing:1px;overflow-x:auto}
+  .lettab td{padding:5px 8px;text-align:center;border:1px solid var(--line)}
+  .lettab .pl{background:var(--card-2);color:var(--ink-soft)}
+  .lettab .ci{color:#8fd6ff;font-weight:700}
+
+  /* ===== 题库 ===== */
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{flex:1;min-width:140px;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    padding:11px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;transition:.15s}
+  .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent}
+  .tabpane{display:none}
+  .tabpane.active{display:block}
+
+  .score{position:sticky;top:100px;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:rgba(15,23,41,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:16px}
+  .score b{color:var(--green);font-size:18px}
+  .score .mini{font-size:13px;color:var(--ink-soft)}
+  .score .resetb{margin-left:auto;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft);
+    border-radius:8px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:13px}
+  .score .resetb:hover{border-color:var(--accent);color:var(--ink)}
+
+  .qitem{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  .qitem .qh{font-weight:600;margin-bottom:10px;line-height:1.6}
+  .qitem .qh .no{display:inline-block;background:var(--accent);color:#fff;border-radius:7px;padding:1px 9px;font-size:13px;margin-right:8px}
+  .qopt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:9px 14px;border-radius:9px;margin:6px 0;cursor:pointer;transition:.12s;font-size:14px;font-family:inherit}
+  .qopt:hover{border-color:var(--accent)}
+  .qopt.correct{background:rgba(54,211,153,.18);border-color:var(--green);color:#aef5d4}
+  .qopt.wrong{background:rgba(248,114,114,.16);border-color:var(--red);color:#ffc2c2}
+  .qopt.lock{pointer-events:none}
+  .qexp{font-size:13.5px;color:var(--ink-soft);margin-top:8px;padding:9px 13px;background:rgba(91,157,255,.08);border-radius:9px;border-left:3px solid var(--accent);display:none}
+  .qexp.show{display:block}
+
+  .blank-in{background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);
+    padding:7px 12px;font-size:14.5px;font-family:inherit;width:200px;margin:0 4px}
+  .blank-in:focus{outline:none;border-color:var(--accent)}
+  .blank-in.ok{border-color:var(--green);background:rgba(54,211,153,.12)}
+  .blank-in.bad{border-color:var(--red);background:rgba(248,114,114,.10)}
+  .blank-btns{margin-top:10px;display:flex;gap:8px}
+  .sbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:inherit;font-size:13.5px}
+  .sbtn:hover{border-color:var(--accent)}
+  .sbtn.primary{background:var(--accent);color:#fff;border-color:transparent}
+  .ansline{font-size:13.5px;color:var(--green);margin-top:8px;display:none}
+  .ansline.show{display:block}
+
+  footer{text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 0 10px}
+
+  #top{position:fixed;right:26px;bottom:26px;width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none;
+    font-size:20px;cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s}
+  #top.show{opacity:1;pointer-events:auto}
+
+  @media(max-width:880px){
+    nav{display:none}
+    .wrap{padding:0 14px}
+    header.hero{padding:26px 22px}
+    section{padding:20px 18px}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<div class="chapnav">
+  <a href="index.html">🏠 目录</a>
+  <a href="CH1-信息安全概论.html">CH1 概论</a>
+  <a href="CH2-风险管理与国产化.html">CH2 风险管理</a>
+  <a href="CH3-信息安全保障与运维.html">CH3 安全保障</a>
+  <a href="CH4-信息安全技术体系.html">CH4 技术体系</a>
+  <a href="CH5-鉴别技术.html">CH5 鉴别</a>
+  <a href="CH6-访问控制.html">CH6 访问控制</a>
+  <a href="CH7-防火墙技术.html">CH7 防火墙</a>
+  <a href="CH8-入侵检测技术.html">CH8 入侵检测</a>
+  <a href="古典密码-入门讲义.html" class="cur">古典密码</a>
+  <a href="哈希函数-入门课.html">哈希函数</a>
+  <a href="牛津古典密码学-讲义.html">牛津密码练习</a>
+</div>
+
+<div class="wrap">
+  <nav id="nav">
+    <p class="nav-title">📖 本讲目录</p>
+    <a href="#s0">学习目标</a>
+    <a href="#s1">① 通信小游戏</a>
+    <a href="#s2">② 单向函数 ⭐</a>
+    <a href="#s3">③ 凯撒密码 🎮</a>
+    <a href="#s4">④ 替换密码</a>
+    <a href="#s5">⑤ 维吉尼亚密码 ⭐</a>
+    <a href="#s6">⑥ 三者对比</a>
+    <a href="#s7">⑦ 频率分析</a>
+    <a href="#s8">⑧ 本讲小结</a>
+    <a href="#s9">🎯 自测</a>
+    <a href="#bank">📝 强化题库 40 题</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="tag">密码学基础 · 古典密码</span>
+      <h1>🔐 古典密码入门</h1>
+      <p>从一个通信小游戏出发 · 凯撒 → 替换 → 维吉尼亚 · 配套牛津练习册</p>
+    </header>
+
+    <div class="checkbar">
+      <span class="lbl">📚 学习进度</span>
+      <div class="track"><div class="fill" id="learnFill"></div></div>
+      <span class="pct" id="learnPct">0%</span>
+    </div>
+
+    <section id="s0">
+      <h2><span class="num">🎯</span>学习目标</h2>
+      <p>读完这一讲，你应该能回答：</p>
+      <ol>
+        <li>通信小游戏揭示了密码学最核心的直觉是什么？（<b>单向函数</b>）</li>
+        <li>凯撒密码、替换密码、维吉尼亚密码各自的原理和区别？</li>
+        <li>为什么<b>频率分析</b>能破解古典密码？维吉尼亚为什么更难？</li>
+        <li>密码强度提升的本质是什么？（让同一明文字母在不同位置呈现不同密文行为）</li>
+      </ol>
+    </section>
+
+    <!-- 1 通信小游戏 -->
+    <section id="s1">
+      <h2><span class="num">1</span>开篇：一个通信小游戏</h2>
+      <p>两个人<b>面对面</b>时，抛一枚硬币就能公平决定输赢。可一旦改成<b>打电话 / 网络通信</b>，双方都犯嘀咕：</p>
+      <div class="box quote">
+        "你会不会<b>先看结果</b>再说？" &nbsp;·&nbsp; "你会不会<b>事后改口</b>？"
+      </div>
+      <p><b>核心问题：</b>两人不见面，怎样仍能<b>公平地决定正反面</b>？</p>
+
+      <h3>解决思路：先"承诺"，再"公开"，最后"验证"</h3>
+      <div class="fig">
+        <svg viewBox="0 0 560 200" width="560">
+          <rect x="10" y="70" width="120" height="60" rx="10" fill="#1b2745" stroke="#5b9dff" stroke-width="2"/>
+          <text x="70" y="95" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">① 承诺</text>
+          <text x="70" y="116" text-anchor="middle" fill="#a9b4cc" font-size="11">甲发出 f(x)</text>
+          <rect x="220" y="70" width="120" height="60" rx="10" fill="#1b2745" stroke="#36d399" stroke-width="2"/>
+          <text x="280" y="95" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">② 猜测</text>
+          <text x="280" y="116" text-anchor="middle" fill="#a9b4cc" font-size="11">乙猜 x 奇偶</text>
+          <rect x="430" y="70" width="120" height="60" rx="10" fill="#1b2745" stroke="#fbbd23" stroke-width="2"/>
+          <text x="490" y="95" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">③ 公开验证</text>
+          <text x="490" y="116" text-anchor="middle" fill="#a9b4cc" font-size="11">甲公开 x,核 f(x)</text>
+          <line x1="130" y1="100" x2="218" y2="100" stroke="#2c3a5e" stroke-width="2" marker-end="url(#ar)"/>
+          <line x1="340" y1="100" x2="428" y2="100" stroke="#2c3a5e" stroke-width="2" marker-end="url(#ar)"/>
+          <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5b9dff"/></marker></defs>
+        </svg>
+        <div class="cap">图1 · 承诺—公开—验证 协议流程</div>
+      </div>
+      <ol>
+        <li>甲随机选一个大数 <code>x</code>，计算 <code>f(x)</code>。</li>
+        <li>甲先把 <code>f(x)</code> 发给乙——<b>先承诺，但不暴露 x</b>。</li>
+        <li>乙根据规则猜 <code>x</code> 的奇偶（偶=正面，奇=反面）。</li>
+        <li>甲<b>公开 x</b>，乙再算一次 <code>f(x)</code> 核验是否真实。</li>
+      </ol>
+      <div class="box tip">
+        <span class="bt">✅ 为什么公平？</span>
+        甲<b>不能事后更改</b>（f(x) 已发出，锁定了选择）；乙<b>不能事先看穿</b>（只看到 f(x)，不知道 x）。
+      </div>
+    </section>
+
+    <!-- 2 单向函数 -->
+    <section id="s2">
+      <h2><span class="num">2</span>最核心的直觉：单向函数 ⭐</h2>
+      <p>这个小游戏告诉我们密码学最核心的思想：</p>
+      <div class="box key">
+        <span class="bt">💡 一句话</span>
+        <b>合法方容易算，攻击者难反推。</b>
+      </div>
+      <div class="fig">
+        <svg viewBox="0 0 460 160" width="460">
+          <circle cx="90" cy="80" r="40" fill="#36d399"/>
+          <text x="90" y="86" text-anchor="middle" fill="#0f1729" font-size="22" font-weight="700">x</text>
+          <circle cx="370" cy="80" r="40" fill="#5b9dff"/>
+          <text x="370" y="86" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">f(x)</text>
+          <line x1="135" y1="62" x2="325" y2="62" stroke="#36d399" stroke-width="3" marker-end="url(#a2)"/>
+          <text x="230" y="52" text-anchor="middle" fill="#36d399" font-size="13">正向：容易 ✓</text>
+          <line x1="325" y1="104" x2="135" y2="104" stroke="#f87272" stroke-width="3" stroke-dasharray="6 5" marker-end="url(#a3)"/>
+          <text x="230" y="128" text-anchor="middle" fill="#f87272" font-size="13">逆向：很难 ✗</text>
+          <defs>
+            <marker id="a2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#36d399"/></marker>
+            <marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#f87272"/></marker>
+          </defs>
+        </svg>
+        <div class="cap">图2 · 单向函数：从 x 算 f(x) 容易，从 f(x) 反推 x 很难</div>
+      </div>
+      <ul>
+        <li>从 <code>x</code> 计算 <code>f(x)</code> <b>很容易</b>（正向）。</li>
+        <li>给出 <code>f(x)</code> 要反推 <code>x</code> <b>很难</b>（逆向）。</li>
+      </ul>
+      <p>这就是<b>单向函数</b>的直观理解。密码设计的核心就是：<b>让"正向计算"方便，让"逆向恢复秘密"变难</b>。</p>
+      <div class="box tip">
+        <span class="bt">🔗 贯穿全课</span>
+        这个思想贯穿整个密码学——后面的<b>哈希函数</b>、<b>公钥密码</b>都基于"正向易、逆向难"。下面三种古典密码，都在解决"如何把明文藏起来"。
+      </div>
+    </section>
+
+    <!-- 3 凯撒密码 -->
+    <section id="s3">
+      <h2><span class="num">3</span>凯撒密码：固定步长的"整体平移" 🎮</h2>
+      <h3>原理</h3>
+      <ul>
+        <li>把 26 个英文字母看成一个<b>循环表</b>（A→0, B→1, …, Z→25）。</li>
+        <li>选一个固定步长 <code>k</code>，所有字母<b>一起平移</b>。</li>
+      </ul>
+      <div class="box key">
+        <span class="bt">📐 公式（模 26）</span>
+        加密：<code>C = (P + k) mod 26</code> &nbsp;·&nbsp; 解密：<code>P = (C - k) mod 26</code>
+      </div>
+
+      <h3>🎮 凯撒密码交互加密器（拖动滑块即时加密）</h3>
+      <p style="color:var(--ink-soft);font-size:14px">拖动滑块改变位移 <code>k</code>，下面会实时显示「明文字母表 → 密文字母表」的平移对照；在输入框打字即可看到密文。</p>
+      <div class="caesar">
+        <div class="crow">
+          <span class="kval" id="kLabel">位移 k = 3（密钥 D）</span>
+          <input type="range" id="kRange" min="0" max="25" value="3">
+        </div>
+        <div class="alpha">
+          <div class="pl"><span class="lab">明文 ▶</span><span id="plAlpha"></span></div>
+          <div class="ci"><span class="lab">密文 ▶</span><span id="ciAlpha"></span></div>
+        </div>
+        <div class="ctext">
+          <label style="font-size:13px;color:var(--ink-soft)">输入明文（可含空格，只加密字母）：</label>
+          <input type="text" id="caesarIn" value="CAESAR" maxlength="60">
+          <label style="font-size:13px;color:var(--ink-soft)">密文输出：</label>
+          <div class="out" id="caesarOut">—</div>
+        </div>
+      </div>
+      <div class="box tip">
+        <span class="bt">🧪 试一试</span>
+        把 k 拖到 <b>15</b>（密钥 P），输入 <code>CAESAR</code>，输出应是 <code>RPTHPG</code>（与牛津课件示例一致）。
+      </div>
+
+      <h3>为什么它很容易被破解？</h3>
+      <ul>
+        <li>只需尝试 <b>25 个有效移位</b>（暴力穷举即可）。</li>
+        <li>字母频率整体只是"平移"，<b>特征并没有消失</b>——配合频率分析更快。</li>
+      </ul>
+    </section>
+
+    <!-- 4 替换密码 -->
+    <section id="s4">
+      <h2><span class="num">4</span>替换密码：一字一映射</h2>
+      <h3>原理</h3>
+      <ul>
+        <li>每个明文字母对应一个固定的"<b>替身</b>"。</li>
+        <li>密钥不再是一个数字，而是<b>一整张替换表</b>。</li>
+        <li>解密时用这张表的<b>逆映射</b>（反查）。</li>
+      </ul>
+      <div class="fig">
+        <table class="lettab" style="margin:0 auto;width:auto">
+          <tr><td class="pl">明文</td><td>C</td><td>D</td><td>E</td><td>H</td><td>I</td><td>N</td><td>P</td><td>R</td><td>S</td><td>T</td><td>Y</td></tr>
+          <tr><td class="pl">密文</td><td class="ci">X</td><td class="ci">J</td><td class="ci">L</td><td class="ci">A</td><td class="ci">Z</td><td class="ci">E</td><td class="ci">V</td><td class="ci">K</td><td class="ci">H</td><td class="ci">O</td><td class="ci">M</td></tr>
+        </table>
+        <div class="cap">图3 · 替换表（牛津课件示例的一小段）</div>
+      </div>
+      <p>按这张表：<code>THIS SENTENCE IS ENCRYPTED</code> → <code>OAZH HLEOLEXL ZH LEXKMVOLJ</code>。只要映射固定，同一明文字母总变成同一密文字母。</p>
+      <div class="box key">
+        <span class="bt">🔑 比凯撒"隐蔽"在哪？</span>
+        密钥空间更大——不是 1 个位移量，而是<b>一整张映射表（26! 种可能，约 4×10²⁶）</b>，暴力穷举不可行。
+      </div>
+      <div class="box warn">
+        <span class="bt">⚠️ 但仍不安全</span>
+        它仍保留<b>单字母频率特征</b>（同一明文字母总变成同一密文字母），所以仍可被<b>频率分析</b>破解。
+      </div>
+    </section>
+
+    <!-- 5 维吉尼亚 -->
+    <section id="s5">
+      <h2><span class="num">5</span>维吉尼亚密码：关键词驱动的"多表替换" ⭐</h2>
+      <h3>原理</h3>
+      <ul>
+        <li>先选一个<b>关键词</b>（如 <code>KEY</code>）。</li>
+        <li>把关键词<b>重复展开</b>到与明文等长。</li>
+        <li>每个位置都做一次"对应位移"的凯撒加密——可理解成<b>多个凯撒轮流作用</b>。</li>
+      </ul>
+      <div class="box key">
+        <span class="bt">📐 按位公式（模 26）</span>
+        <code>Ci = (Pi + Ki) mod 26</code>
+      </div>
+      <div class="fig">
+        <table class="lettab" style="margin:0 auto;width:auto">
+          <tr><td class="pl">密钥</td><td>K</td><td>E</td><td>Y</td><td>K</td><td>E</td><td>Y</td><td>K</td><td>E</td><td>Y</td><td>K</td><td>E</td><td>Y</td></tr>
+          <tr><td class="pl">明文</td><td>C</td><td>R</td><td>Y</td><td>P</td><td>T</td><td>O</td><td>G</td><td>R</td><td>A</td><td>P</td><td>H</td><td>Y</td></tr>
+          <tr><td class="pl">密文</td><td class="ci">M</td><td class="ci">V</td><td class="ci">W</td><td class="ci">Z</td><td class="ci">X</td><td class="ci">M</td><td class="ci">Q</td><td class="ci">V</td><td class="ci">Y</td><td class="ci">Z</td><td class="ci">L</td><td class="ci">W</td></tr>
+        </table>
+        <div class="cap">图4 · 关键词 KEY 加密 CRYPTOGRAPHY → MVWZXMQVYZLW（逐位凯撒）</div>
+      </div>
+      <p>加密 C：用密钥 K（移 10 位）→ M；加密 H：用密钥 E（移 4 位）→ L。加密时通常<b>去掉空格和标点</b>。</p>
+      <div class="box tip">
+        <span class="bt">🔑 为什么比"单表替换"更难？</span>
+        同一个明文字母出现在不同位置时，可能因关键词字母不同而被加密成<b>不同结果</b>，因此<b>单字母频率特征被"摊薄"</b>。
+      </div>
+      <div class="box warn">
+        <span class="bt">⚠️ 关键理解</span>
+        它<b>不是随机替换</b>，而是"<b>有规律地、按位变化的替换</b>"——这是理解它的核心。
+      </div>
+    </section>
+
+    <!-- 6 对比 -->
+    <section id="s6">
+      <h2><span class="num">6</span>三种古典密码核心差别（一表看懂）</h2>
+      <table>
+        <tr><th>密码</th><th>密钥形式</th><th>本质操作</th><th>同一字母总变同一密文?</th><th>典型破解思路</th></tr>
+        <tr><td><b>凯撒</b></td><td>一个位移量 k</td><td>整体平移</td><td>是</td><td>穷举 25 个密钥 + 频率分析</td></tr>
+        <tr><td><b>替换</b></td><td>一整张替换表</td><td>单表映射</td><td>是</td><td>频率分析 + 常见单词/模式</td></tr>
+        <tr><td><b>维吉尼亚</b></td><td>一个关键词</td><td>按位变化的多表替换</td><td style="color:var(--amber)"><b>不一定</b></td><td>先猜关键词长度，再分组分析</td></tr>
+      </table>
+      <div class="box key">
+        <span class="bt">⭐ 难度变化的本质</span>
+        不是"字母表更复杂"，而是：<b>是否让同一个明文字母在不同位置呈现出不同的密文行为</b>（从而削弱频率特征）。
+      </div>
+
+      <h3>🎮 小练习：把密码和它的"本质操作"连起来</h3>
+      <p style="color:var(--ink-soft);font-size:14px">先点左边一个密码，再点右边对应的操作。连对会变绿。</p>
+      <div class="match" id="match1">
+        <div class="col">
+          <div class="ct">📌 古典密码</div>
+          <div class="mitem" data-k="A">凯撒密码</div>
+          <div class="mitem" data-k="B">替换密码</div>
+          <div class="mitem" data-k="C">维吉尼亚密码</div>
+        </div>
+        <div class="col">
+          <div class="ct">🎯 本质操作</div>
+          <div class="mitem" data-k="C">关键词驱动的多表替换</div>
+          <div class="mitem" data-k="A">固定步长整体平移</div>
+          <div class="mitem" data-k="B">单表逐字映射</div>
+        </div>
+      </div>
+      <div class="feedback" id="match1fb"></div>
+    </section>
+
+    <!-- 7 频率分析 -->
+    <section id="s7">
+      <h2><span class="num">7</span>破解方法：频率分析</h2>
+      <p><b>频率分析（Frequency Analysis）</b>：观察每个字母出现的<b>频率（次数）</b>。密文中最常见的字母，往往对应明文中最常见的字母；而明文中最常见的字母，通常是该语言里最常见的。</p>
+      <div class="fig">
+        <svg viewBox="0 0 520 180" width="520">
+          <line x1="40" y1="150" x2="500" y2="150" stroke="#2c3a5e" stroke-width="2"/>
+          <rect x="55"  y="40"  width="26" height="110" fill="#5b9dff"/><text x="68"  y="168" text-anchor="middle" fill="#a9b4cc" font-size="12">E</text>
+          <rect x="95"  y="70"  width="26" height="80"  fill="#7c5cff"/><text x="108" y="168" text-anchor="middle" fill="#a9b4cc" font-size="12">T</text>
+          <rect x="135" y="80"  width="26" height="70"  fill="#36d399"/><text x="148" y="168" text-anchor="middle" fill="#a9b4cc" font-size="12">A</text>
+          <rect x="175" y="88"  width="26" height="62"  fill="#36d399"/><text x="188" y="168" text-anchor="middle" fill="#a9b4cc" font-size="12">O</text>
+          <rect x="215" y="92"  width="26" height="58"  fill="#36d399"/><text x="228" y="168" text-anchor="middle" fill="#a9b4cc" font-size="12">I</text>
+          <rect x="255" y="98"  width="26" height="52"  fill="#fbbd23"/><text x="268" y="168" text-anchor="middle" fill="#a9b4cc" font-size="12">N</text>
+          <rect x="380" y="135" width="26" height="15"  fill="#f87272"/><text x="393" y="168" text-anchor="middle" fill="#a9b4cc" font-size="12">Q</text>
+          <rect x="420" y="138" width="26" height="12"  fill="#f87272"/><text x="433" y="168" text-anchor="middle" fill="#a9b4cc" font-size="12">Z</text>
+          <text x="270" y="24" text-anchor="middle" fill="#cfe0ff" font-size="14" font-weight="700">英语字母出现频率（示意）</text>
+        </svg>
+        <div class="cap">图5 · 英语中 E、T、A、O、I、N 最常见，Q、Z 最罕见</div>
+      </div>
+      <h3>辅助技巧</h3>
+      <ul>
+        <li><b>单字母单词</b>：英语中很可能是 <code>A</code> 或 <code>I</code>。</li>
+        <li><b>重复字母</b>：如 <code>letter</code> 中的 "tt"。</li>
+        <li><b>常见双字母单词</b>：of、to、in、is 等。</li>
+      </ul>
+      <div class="box warn">
+        <span class="bt">⚠️ 维吉尼亚为何能"挡住"频率分析？</span>
+        凯撒和替换都保留单字母频率，所以频率分析直接有效。维吉尼亚因为"多表"<b>摊薄了频率</b>，必须<b>先猜关键词长度</b>（卡西斯基测试），再分组做频率分析。
+      </div>
+    </section>
+
+    <!-- 8 小结 -->
+    <section id="s8">
+      <h2><span class="num">8</span>本讲小结</h2>
+      <ul>
+        <li>通信小游戏揭示密码学核心直觉：<b>单向函数</b>——正向易、逆向难。</li>
+        <li><b>凯撒</b> = 一个位移量、整体平移，只需穷举 25 种即可破。</li>
+        <li><b>替换</b> = 一整张映射表，密钥空间大（26!），但仍保留单字母频率。</li>
+        <li><b>维吉尼亚</b> = 关键词驱动的多表替换，摊薄频率，需先猜密钥长度再分组破。</li>
+        <li>强度提升本质：<b>让同一明文字母在不同位置呈现不同密文行为</b>。</li>
+        <li>下一步自然延伸：现代<b>分组密码（DES/AES）</b>与<b>公钥密码（RSA）</b>——见 CH4。</li>
+      </ul>
+      <p style="margin-top:16px">
+        <span class="pill">📄 配套 牛津密码练习</span>
+        <span class="pill">📘 配套 哈希函数入门</span>
+        <span class="pill">🔗 关联 CH4 密码技术</span>
+      </p>
+    </section>
+
+    <!-- 9 自测 -->
+    <section id="s9">
+      <h2><span class="num">🎯</span>自测（点击展开参考要点）</h2>
+      <details>
+        <summary>通信小游戏揭示了密码学的什么核心思想？</summary>
+        <div class="ans">单向函数：合法方正向计算 f(x) 容易，攻击者从 f(x) 反推 x 很难。靠"先承诺(发f(x))、再公开(发x)、后验证"保证甲不能改、乙不能偷看。</div>
+      </details>
+      <details>
+        <summary>凯撒密码的加解密公式？为什么容易破解？</summary>
+        <div class="ans">加密 C=(P+k) mod 26，解密 P=(C-k) mod 26。容易破解：只有 25 个有效密钥可穷举，且频率特征只是整体平移、没有消失。</div>
+      </details>
+      <details>
+        <summary>替换密码比凯撒更隐蔽，为什么仍不安全？</summary>
+        <div class="ans">密钥空间大到 26!（不可穷举），但同一明文字母总映射到同一密文字母，保留了单字母频率特征，所以仍能用频率分析破解。</div>
+      </details>
+      <details>
+        <summary>维吉尼亚密码为什么能削弱频率分析？怎么破解？</summary>
+        <div class="ans">关键词重复展开后逐位做不同的凯撒位移，同一明文字母在不同位置可能变成不同密文，单字母频率被摊薄。破解：先用卡西斯基测试猜密钥长度，再按长度分组（每组同一位移）分别频率分析。</div>
+      </details>
+      <details>
+        <summary>三种密码强度提升的本质是什么？</summary>
+        <div class="ans">不是字母表更复杂，而是是否让同一明文字母在不同位置呈现不同的密文行为（从单表到多表）。</div>
+      </details>
+      <div class="box tip" style="margin-top:18px">
+        <span class="bt">✅ 都能答上来？</span>
+        那就去做<b>牛津密码练习册</b>动手加密解密，再继续学 <b>哈希函数入门</b>。
+      </div>
+    </section>
+
+    <!-- 强化题库 -->
+    <section id="bank">
+      <h2><span class="num">📝</span>强化题库（20 选择 + 20 填空 = 40 题）</h2>
+      <p style="color:var(--ink-soft);font-size:14px">覆盖本讲全部知识点。选择题点选即时判分；填空题输入后点"检查"或"显示答案"。</p>
+      <div class="tabs">
+        <button class="tab active" data-tab="mcq">📋 选择题 (20)</button>
+        <button class="tab" data-tab="fill">✏️ 填空题 (20)</button>
+      </div>
+
+      <div class="tabpane active" id="pane-mcq">
+        <div class="score">
+          <span class="mini">已答 <b id="mcqDone">0</b>/20</span>
+          <span class="mini">答对 <b id="mcqRight">0</b></span>
+          <span class="mini">正确率 <b id="mcqRate">—</b></span>
+          <button class="resetb" id="mcqReset">↺ 重做</button>
+        </div>
+        <div id="mcqList"></div>
+      </div>
+
+      <div class="tabpane" id="pane-fill">
+        <div class="score">
+          <span class="mini">已检查 <b id="fillDone">0</b>/20</span>
+          <span class="mini">答对 <b id="fillRight">0</b></span>
+          <button class="resetb" id="fillRevealAll">👁 全部显示答案</button>
+          <button class="resetb" id="fillReset">↺ 重做</button>
+        </div>
+        <div id="fillList"></div>
+      </div>
+    </section>
+
+    <footer>
+      网络空间安全技术 · 密码学基础 · 古典密码入门讲义<br>
+      💡 配套：牛津古典密码学-讲义.html ｜ 哈希函数-入门课.html
+    </footer>
+  </main>
+</div>
+
+<button id="top" title="回到顶部">↑</button>
+
+<script>
+  // 进度条
+  const progress=document.getElementById('progress');
+  const topBtn=document.getElementById('top');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const scrolled=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+    progress.style.width=scrolled+'%';
+    topBtn.classList.toggle('show',h.scrollTop>400);
+  });
+  topBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+  // 导航高亮 + 学习进度
+  const links=[...document.querySelectorAll('#nav a')];
+  const allSecs=[...document.querySelectorAll('main section')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const seen=new Set();
+  const learnFill=document.getElementById('learnFill');
+  const learnPct=document.getElementById('learnPct');
+  function updateLearn(){
+    const p=Math.round(seen.size/allSecs.length*100);
+    learnFill.style.width=p+'%';
+    learnPct.textContent=p+'%';
+    if(p===100){learnPct.textContent='✅100%';}
+  }
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        if(e.target.id){seen.add(e.target.id);updateLearn();}
+        const id='#'+e.target.id;
+        links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')===id));
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>s&&io.observe(s));
+  allSecs.forEach(s=>io.observe(s));
+
+  // ===== 凯撒交互加密器 =====
+  (function(){
+    const AL='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const range=document.getElementById('kRange');
+    const kLabel=document.getElementById('kLabel');
+    const plAlpha=document.getElementById('plAlpha');
+    const ciAlpha=document.getElementById('ciAlpha');
+    const inp=document.getElementById('caesarIn');
+    const out=document.getElementById('caesarOut');
+    if(!range)return;
+    function shiftLetter(ch,k){
+      const c=ch.toUpperCase();
+      const i=AL.indexOf(c);
+      if(i<0)return ch;
+      return AL[(i+k)%26];
+    }
+    function render(){
+      const k=+range.value;
+      kLabel.textContent='位移 k = '+k+'（密钥 '+AL[k]+'）';
+      plAlpha.innerHTML=[...AL].map(c=>'<span>'+c+'</span>').join('');
+      ciAlpha.innerHTML=[...AL].map(c=>'<span>'+shiftLetter(c,k)+'</span>').join('');
+      const txt=inp.value;
+      out.textContent=[...txt].map(ch=>shiftLetter(ch,k)).join('')||'—';
+    }
+    range.addEventListener('input',render);
+    inp.addEventListener('input',render);
+    render();
+  })();
+
+  // ===== 匹配题 =====
+  (function(){
+    const box=document.getElementById('match1');
+    if(!box)return;
+    const fb=document.getElementById('match1fb');
+    let sel=null,done=0;
+    const items=[...box.querySelectorAll('.mitem')];
+    const total=box.querySelectorAll('.col')[0].querySelectorAll('.mitem').length;
+    items.forEach(it=>{
+      it.addEventListener('click',()=>{
+        if(it.classList.contains('done'))return;
+        if(!sel){sel=it;it.classList.add('sel');return;}
+        if(sel===it){it.classList.remove('sel');sel=null;return;}
+        if(sel.parentElement===it.parentElement){
+          sel.classList.remove('sel');sel=it;it.classList.add('sel');return;
+        }
+        if(sel.dataset.k===it.dataset.k){
+          sel.classList.remove('sel');sel.classList.add('done');it.classList.add('done');
+          done++;sel=null;
+          if(done===total){fb.className='feedback show ok';fb.textContent='🏆 全部连对！你已分清三种古典密码的本质操作。';}
+        }else{
+          const a=sel,b=it;a.classList.add('shake');b.classList.add('shake');
+          setTimeout(()=>{a.classList.remove('shake','sel');b.classList.remove('shake');},420);
+          sel=null;
+          fb.className='feedback show no';fb.textContent='这两个不匹配，再试试～';
+        }
+      });
+    });
+  })();
+
+  // ===== 强化题库数据 =====
+  const MCQ=[
+    {q:'通信小游戏揭示的密码学核心思想是？',o:['对称加密','单向函数（正向易、逆向难）','数字签名','频率分析'],a:1,e:'从 x 算 f(x) 容易，从 f(x) 反推 x 很难——这就是单向函数。'},
+    {q:'通信小游戏的协议顺序是？',o:['公开→承诺→验证','承诺→公开→验证','验证→承诺→公开','承诺→验证→公开'],a:1,e:'先承诺(发f(x))、再公开(发x)、最后验证(重算f(x))。'},
+    {q:'在小游戏中，甲先发出 f(x) 的作用是？',o:['让乙看到 x','锁定自己的选择，事后不能更改','加密通信内容','加快计算'],a:1,e:'先承诺=锁定选择，甲不能事后改成奇偶不同的数。'},
+    {q:'凯撒密码的加密公式是？',o:['C=(P+k) mod 26','C=P×k mod 26','C=(P-k)²','C=P XOR k'],a:0,e:'凯撒加密 C=(P+k) mod 26，解密 P=(C-k) mod 26。'},
+    {q:'凯撒密码的解密公式是？',o:['P=(C+k) mod 26','P=(C-k) mod 26','P=C×k','P=(C+26)'],a:1,e:'解密是反方向平移：P=(C-k) mod 26。'},
+    {q:'用密钥 P（位移15）加密 CAESAR 得到？',o:['RPTHPG','MKOCKB','SYFXUH','PQRSTU'],a:0,e:'牛津课件示例：CAESAR 位移 P → RPTHPG。'},
+    {q:'凯撒密码字母编号约定 A 对应？',o:['1','0','26','A本身'],a:1,e:'A→0, B→1, …, Z→25。'},
+    {q:'凯撒密码为什么容易被破解？',o:['密钥空间只有25个有效移位，可穷举','无法加密','字母会消失','需要关键词'],a:0,e:'仅25个有效密钥可暴力穷举，且频率特征只是整体平移未消失。'},
+    {q:'替换密码的密钥是？',o:['一个位移量','一整张字母替换表','一个关键词','一个大素数'],a:1,e:'替换密码密钥是整张映射表，不再是单个数字。'},
+    {q:'替换密码解密时需要使用替换表的？',o:['平方','逆映射（反查）','转置','哈希'],a:1,e:'用替换表的逆映射，把密文字母反查回明文字母。'},
+    {q:'替换密码的密钥空间约为？',o:['25','26','26!（约4×10²⁶）','256'],a:2,e:'26个字母的全排列共 26! 种，远大于凯撒的25种。'},
+    {q:'替换密码虽然密钥空间大，但仍可被破解，原因是？',o:['密钥太短','保留了单字母频率特征','无法解密','只能加密数字'],a:1,e:'同一明文字母总变同一密文字母，单字母频率特征被保留，可频率分析。'},
+    {q:'维吉尼亚密码使用的密钥是？',o:['一个位移量','一张替换表','一个关键词','两个素数'],a:2,e:'维吉尼亚用一个关键词，重复展开后逐位做凯撒。'},
+    {q:'维吉尼亚密码的按位加密公式是？',o:['Ci=(Pi+Ki) mod 26','Ci=Pi×Ki','Ci=(Pi-26)','Ci=Pi XOR 26'],a:0,e:'每个位置 Ci=(Pi+Ki) mod 26，Ki 是对齐的关键词字母。'},
+    {q:'用关键词 KEY 加密 CRYPTOGRAPHY 的结果是？',o:['MVWZXMQVYZLW','RPTHPGRPTHPG','OAZHHLEOLEXL','KEYKEYKEYKEY'],a:0,e:'牛津示例：KEY 加密 CRYPTOGRAPHY → MVWZXMQVYZLW。'},
+    {q:'维吉尼亚可视为？',o:['多个凯撒密码轮流作用在不同位置','一次替换','哈希压缩','异或运算'],a:0,e:'关键词每个字母对应一个凯撒位移，多表替换。'},
+    {q:'维吉尼亚密码为什么能削弱频率分析？',o:['字母表更复杂','同一明文字母在不同位置可能变成不同密文，频率被摊薄','使用了加盐','输出定长'],a:1,e:'多表替换让单字母频率特征被摊薄，直接频率分析失效。'},
+    {q:'破解维吉尼亚密码的第一步通常是？',o:['穷举所有25个位移','先猜测关键词长度（如卡西斯基测试）','直接频率分析','计算哈希值'],a:1,e:'先猜密钥长度，再按长度分组（每组同一位移）分别频率分析。'},
+    {q:'频率分析利用的规律是？',o:['密文最常见字母往往对应明文/语言中最常见字母','所有字母出现次数相同','密钥越长越易破','字母无规律'],a:0,e:'英语中 E、T、A 等最常见，据此映射密文高频字母。'},
+    {q:'三种古典密码强度提升的本质是？',o:['字母表变复杂','让同一明文字母在不同位置呈现不同密文行为','密钥变短','取消空格'],a:1,e:'从单表到多表，关键在于打破"同一字母总变同一密文"。'}
+  ];
+
+  const FILL=[
+    {q:'密码学最核心的直觉是：合法方容易算，攻击者难反推，这叫 ____ 函数。',a:['单向']},
+    {q:'通信小游戏的协议顺序是：承诺 → ____ → 验证。',a:['公开']},
+    {q:'凯撒密码加密公式：C=(P + ____) mod 26。',a:['k','K']},
+    {q:'凯撒密码解密公式：P=(C - k) mod ____。',a:['26']},
+    {q:'凯撒字母编号约定：A 对应数字 ____。',a:['0']},
+    {q:'用位移 P 加密 CAESAR 得到 ____。',a:['RPTHPG']},
+    {q:'凯撒密码只有 ____ 个有效移位，可暴力穷举。',a:['25','二十五']},
+    {q:'替换密码的密钥是一整张字母 ____ 表。',a:['替换','代换']},
+    {q:'替换密码解密时使用替换表的 ____ 映射。',a:['逆','逆映射']},
+    {q:'替换密码的密钥空间约为 26 的 ____（写"阶乘"或"!"）。',a:['阶乘','!','26!']},
+    {q:'替换密码仍可被破解，因为它保留了单字母 ____ 特征。',a:['频率']},
+    {q:'维吉尼亚密码使用一个 ____ 作为密钥。',a:['关键词','单词']},
+    {q:'维吉尼亚加密时要把关键词 ____ 展开到与明文等长。',a:['重复']},
+    {q:'维吉尼亚按位公式：Ci=(Pi + ____) mod 26。',a:['Ki','ki','K']},
+    {q:'用关键词 KEY 加密 CRYPTOGRAPHY 得到 ____。',a:['MVWZXMQVYZLW']},
+    {q:'维吉尼亚可理解为多个 ____ 密码轮流作用在不同位置。',a:['凯撒']},
+    {q:'维吉尼亚之所以更难破，是因为单字母频率被 ____。',a:['摊薄','削弱']},
+    {q:'破解维吉尼亚的第一步是先猜测密钥的 ____。',a:['长度']},
+    {q:'频率分析中，英语里出现频率最高的字母通常是 ____。',a:['E','e']},
+    {q:'密文中只有一个字母的单词，英语里很可能是 A 或 ____。',a:['I','i']}
+  ];
+
+  // 渲染选择题
+  (function(){
+    const list=document.getElementById('mcqList');if(!list)return;
+    let done=0,right=0;
+    const dn=document.getElementById('mcqDone'),rt=document.getElementById('mcqRight'),ra=document.getElementById('mcqRate');
+    function render(){
+      list.innerHTML='';done=0;right=0;dn.textContent=0;rt.textContent=0;ra.textContent='—';
+      MCQ.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        let opts=item.o.map((t,j)=>`<button class="qopt" data-i="${j}">${String.fromCharCode(65+j)}. ${t}</button>`).join('');
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${item.q}</div>${opts}<div class="qexp">💡 ${item.e}</div>`;
+        const btns=[...d.querySelectorAll('.qopt')];const exp=d.querySelector('.qexp');
+        btns.forEach(b=>b.addEventListener('click',()=>{
+          btns.forEach(x=>x.classList.add('lock'));
+          const ans=item.a;
+          if(+b.dataset.i===ans){b.classList.add('correct');right++;}
+          else{b.classList.add('wrong');btns[ans].classList.add('correct');}
+          exp.classList.add('show');
+          done++;dn.textContent=done;rt.textContent=right;ra.textContent=Math.round(right/done*100)+'%';
+        }));
+        list.appendChild(d);
+      });
+    }
+    render();
+    document.getElementById('mcqReset').onclick=render;
+  })();
+
+  // 渲染填空题
+  (function(){
+    const list=document.getElementById('fillList');if(!list)return;
+    let done=0,right=0;const checked=new Set();
+    const dn=document.getElementById('fillDone'),rt=document.getElementById('fillRight');
+    function norm(s){return (s||'').trim().replace(/\s/g,'').toLowerCase();}
+    function build(){
+      list.innerHTML='';done=0;right=0;checked.clear();dn.textContent=0;rt.textContent=0;
+      FILL.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='qitem';
+        const qhtml=item.q.replace('____',`<input class="blank-in" data-i="${i}" placeholder="在此作答">`);
+        d.innerHTML=`<div class="qh"><span class="no">${i+1}</span>${qhtml}</div>
+          <div class="blank-btns">
+            <button class="sbtn primary" data-act="check">检查</button>
+            <button class="sbtn" data-act="show">显示答案</button>
+          </div>
+          <div class="ansline">✅ 参考答案：${item.a[0]}</div>`;
+        const inp=d.querySelector('.blank-in');const ansl=d.querySelector('.ansline');
+        d.querySelector('[data-act="check"]').onclick=()=>{
+          const v=norm(inp.value);if(!v)return;
+          const ok=item.a.some(a=>norm(a)===v||v.includes(norm(a)));
+          inp.classList.remove('ok','bad');inp.classList.add(ok?'ok':'bad');
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;if(ok)right++;dn.textContent=done;rt.textContent=right;}
+        };
+        d.querySelector('[data-act="show"]').onclick=()=>{
+          ansl.classList.add('show');
+          if(!checked.has(i)){checked.add(i);done++;dn.textContent=done;rt.textContent=right;}
+        };
+        list.appendChild(d);
+      });
+    }
+    build();
+    document.getElementById('fillReset').onclick=build;
+    document.getElementById('fillRevealAll').onclick=()=>{
+      list.querySelectorAll('.ansline').forEach(a=>a.classList.add('show'));
+    };
+  })();
+
+  // Tab 切换
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('pane-'+t.dataset.tab).classList.add('active');
+    };
+  });
+</script>
+</body>
+</html>
