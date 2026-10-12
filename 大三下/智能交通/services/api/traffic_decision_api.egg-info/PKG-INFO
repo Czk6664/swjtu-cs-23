@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: traffic-decision-api
+Version: 0.1.0
+Summary: FastAPI backend for the intelligent traffic decision system
+Requires-Python: >=3.11
+Requires-Dist: fastapi>=0.115.0
+Requires-Dist: uvicorn[standard]>=0.32.0
+Requires-Dist: pydantic>=2.9.0
+Requires-Dist: pydantic-settings>=2.5.0
+Requires-Dist: python-dotenv>=1.0.1
+Requires-Dist: pyyaml>=6.0.2

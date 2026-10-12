@@ -1,0 +1,9 @@
+{
+  "task_id": "task-fail",
+  "task_type": "voice",
+  "title": "voice task",
+  "payload": {
+    "scene_name": "incident"
+  },
+  "artifact_path": "D:/大三下/智能交通/services/api/tests/_tmp/audio/task-fail.txt"
+}
