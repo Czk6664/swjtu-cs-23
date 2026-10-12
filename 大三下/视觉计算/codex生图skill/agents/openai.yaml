@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gateway Image Gen"
+  short_description: "Generate images through the configured Responses gateway"
+  default_prompt: "Use $codex-gateway-imagegen to generate an image through the configured Responses-compatible gateway and save it into the current workspace."
