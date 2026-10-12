@@ -1,0 +1,11 @@
+{
+  "model": "detection",
+  "version": "v3",
+  "num_samples": 9,
+  "labeling": "auto(offline-stub)",
+  "reasons": {
+    "low_confidence": 9
+  },
+  "hash": "4fbe4529e1e6",
+  "created_at": "2026-05-27T03:00:24+00:00"
+}

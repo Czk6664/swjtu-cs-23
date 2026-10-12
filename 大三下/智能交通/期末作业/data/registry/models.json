@@ -1,0 +1,48 @@
+{
+  "detection": {
+    "production": "v2",
+    "versions": {
+      "v1": {
+        "checkpoint": "大作业2/exp_C.../best.pt",
+        "dataset_snapshot": "baseline",
+        "metrics": {
+          "mAP50": 0.758
+        },
+        "status": "archived",
+        "trained_at": "2026-05-27T03:00:23+00:00"
+      },
+      "v2": {
+        "checkpoint": "runs/detection/v2/best.pt",
+        "dataset_snapshot": "v2",
+        "metrics": {
+          "mAP50": 0.7725
+        },
+        "status": "production",
+        "trained_at": "2026-05-27T03:00:24+00:00"
+      },
+      "v3": {
+        "checkpoint": "runs/detection/v3/best.pt",
+        "dataset_snapshot": "v3",
+        "metrics": {
+          "mAP50": 0.7611
+        },
+        "status": "staging",
+        "trained_at": "2026-05-27T03:00:24+00:00"
+      }
+    }
+  },
+  "forecast": {
+    "production": "v1",
+    "versions": {
+      "v1": {
+        "checkpoint": "大作业1/results/baseline.pth",
+        "dataset_snapshot": "baseline",
+        "metrics": {
+          "mae": 13.706
+        },
+        "status": "production",
+        "trained_at": "2026-05-27T03:00:23+00:00"
+      }
+    }
+  }
+}

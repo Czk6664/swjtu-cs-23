@@ -1,0 +1,12 @@
+# 飞轮运行产物（遥测/快照/注册表）
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+
+# 本地配置
+configs/local.yaml

@@ -1,0 +1,26 @@
+# 决策融合 + 数据飞轮 的阈值配置（覆盖 capstone/config.py 默认值）。
+fusion:
+  risk_high: 0.66
+  risk_medium: 0.33
+  weights:        # 各小模型/知识源对总风险的权重（按可用信号自动重归一化）
+    forecast: 0.5
+    detection: 0.35
+    knowledge: 0.15
+
+flywheel:
+  mining:
+    det_conf_threshold: 0.35       # 检测/信号置信低于此 → 难例
+    forecast_mae_sigma: 2.0
+    min_hard_cases_to_retrain: 5   # 难例累积达到才触发重训
+  promotion:
+    min_primary_gain: 0.005        # 候选主指标最小提升，否则拒绝晋升
+    max_safety_regression: 0.0
+
+llm:
+  provider: offline                # 复用大作业3 LLM；offline 不下载模型
+
+paths:
+  data_dir: data
+  forecast_results: 大作业1/results
+  detection_yaml: 大作业2/traffic_sign_detection/configs/dataset/tt100k.yaml
+  detection_csv: 大作业2/exp_C_704_b8_w0_e50/exp_C_704_b8_w0_e50/results.csv

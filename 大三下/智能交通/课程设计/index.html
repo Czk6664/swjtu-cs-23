@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能交通管理决策系统 Demo</title>
+  <meta
+    name="description"
+    content="大小模型协同的智能交通管理决策系统课程报告网站原型，展示交通流量预测、目标识别、分级预警诱导与决策闭环。"
+  >
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <div class="brand-lockup">
+        <span class="brand-pill">Course Demo</span>
+        <div>
+          <p class="brand-kicker">课程报告原型</p>
+          <h1>大小模型协同的智能交通管理决策系统</h1>
+        </div>
+      </div>
+      <nav class="site-nav" aria-label="主导航">
+        <a href="#overview">项目总览</a>
+        <a href="#architecture">协同架构</a>
+        <a href="#results">成果挂接</a>
+        <a href="#demo">演示流程</a>
+        <a href="#roadmap">迭代计划</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero-section panel">
+        <div class="hero-copy">
+          <p class="eyebrow">Intelligent Traffic Management / Demo Version</p>
+          <h2>用小模型做感知与预测，用大模型做研判与决策，让交通管理从“看见”走向“会判断、会诱导”</h2>
+          <p class="hero-text">
+            本原型面向课程报告展示，统一承接大作业1与大作业2的成果，并为大作业3的具身执勤与 Isaac
+            仿真验证预留扩展入口。页面强调系统闭环表达，而不是单点算法堆叠。
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#demo">查看 Demo 流程</a>
+            <a class="button button-secondary" href="#results">查看已嵌入成果</a>
+          </div>
+          <div class="hero-metrics" id="overview">
+            <article>
+              <span>已完成模块</span>
+              <strong>2 / 3</strong>
+              <p>交通流预测、复杂场景识别</p>
+            </article>
+            <article>
+              <span>决策闭环</span>
+              <strong>5 阶段</strong>
+              <p>感知、预测、研判、预警、诱导</p>
+            </article>
+            <article>
+              <span>已接入证据</span>
+              <strong>6 项</strong>
+              <p>训练曲线、对比图、检测样例、混淆矩阵</p>
+            </article>
+          </div>
+        </div>
+
+        <aside class="hero-board">
+          <div class="board-head">
+            <div>
+              <p class="board-label">实时态势面板</p>
+              <h3 id="scene-title">早高峰主干道拥堵预警</h3>
+            </div>
+            <span class="status-badge" id="scene-badge">Level II 预警</span>
+          </div>
+
+          <div class="scenario-switcher" role="tablist" aria-label="场景切换">
+            <button class="scenario-chip is-active" data-scene="commute">通勤高峰</button>
+            <button class="scenario-chip" data-scene="incident">事故扰动</button>
+            <button class="scenario-chip" data-scene="campus">校园路口</button>
+          </div>
+
+          <div class="signal-grid">
+            <article>
+              <span>路网负荷</span>
+              <strong id="metric-load">86%</strong>
+            </article>
+            <article>
+              <span>预测拥堵长度</span>
+              <strong id="metric-queue">1.8 km</strong>
+            </article>
+            <article>
+              <span>重点目标数量</span>
+              <strong id="metric-targets">24</strong>
+            </article>
+            <article>
+              <span>建议处置</span>
+              <strong id="metric-action">分级诱导</strong>
+            </article>
+          </div>
+
+          <div class="mini-timeline">
+            <div class="timeline-row is-active">
+              <span>01</span>
+              <p>小模型完成多尺度流量预测与目标检测</p>
+            </div>
+            <div class="timeline-row is-active">
+              <span>02</span>
+              <p>大模型结合规则库生成风险研判与值守建议</p>
+            </div>
+            <div class="timeline-row">
+              <span>03</span>
+              <p>输出诱导策略并联动路侧提示与执勤资源</p>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section-block">
+        <div class="section-heading">
+          <p class="eyebrow">System Narrative</p>
+          <h2>课程报告想讲清楚的，不只是模型准确率，而是完整的管理决策闭环</h2>
+        </div>
+        <div class="narrative-grid">
+          <article class="info-card">
+            <span class="card-tag">Why</span>
+            <h3>面向管理者的智能交通</h3>
+            <p>从“算法结果展示”升级为“管理建议输出”，让预测和识别真正服务于分级预警、诱导发布与辅助管控。</p>
+          </article>
+          <article class="info-card">
+            <span class="card-tag">How</span>
+            <h3>大小模型分工协作</h3>
+            <p>小模型负责高速、稳定、结构化输出，大模型负责跨模态理解、态势总结与策略生成，形成轻重结合的系统架构。</p>
+          </article>
+          <article class="info-card">
+            <span class="card-tag">Value</span>
+            <h3>课程项目可演示、可扩展</h3>
+            <p>当前先完成网页原型与成果嵌入，后续可继续接入图表、截图、仿真视频和更完整的规则推理链路。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-block" id="architecture">
+        <div class="section-heading">
+          <p class="eyebrow">Collaborative Architecture</p>
+          <h2>从感知到决策的五段式协同架构</h2>
+          <p>点击下方阶段卡片，可以查看该阶段由大模型还是小模型主导，以及它在交通管理中的作用。</p>
+        </div>
+
+        <div class="stage-grid" role="tablist" aria-label="协同阶段">
+          <button class="stage-card is-active" data-stage="perception">
+            <span>01</span>
+            <strong>场景感知</strong>
+            <p>多目标识别与态势切片</p>
+          </button>
+          <button class="stage-card" data-stage="prediction">
+            <span>02</span>
+            <strong>流量预测</strong>
+            <p>多尺度时空趋势判断</p>
+          </button>
+          <button class="stage-card" data-stage="assessment">
+            <span>03</span>
+            <strong>态势研判</strong>
+            <p>风险级别与原因归纳</p>
+          </button>
+          <button class="stage-card" data-stage="warning">
+            <span>04</span>
+            <strong>分级预警</strong>
+            <p>事件响应优先级输出</p>
+          </button>
+          <button class="stage-card" data-stage="guidance">
+            <span>05</span>
+            <strong>诱导管控</strong>
+            <p>路侧诱导与执勤建议生成</p>
+          </button>
+        </div>
+
+        <div class="decision-panel panel">
+          <div>
+            <p class="panel-kicker" id="stage-owner">小模型主导</p>
+            <h3 id="stage-title">场景感知：识别复杂交通参与者与关键异常目标</h3>
+            <p id="stage-description">
+              使用轻量视觉模型实时识别车辆、行人、非机动车和异常行为，为后续态势分析提供结构化输入。
+            </p>
+          </div>
+          <div class="decision-points">
+            <article>
+              <span>输入</span>
+              <strong id="stage-input">路口视频流 / 路侧传感器</strong>
+            </article>
+            <article>
+              <span>输出</span>
+              <strong id="stage-output">目标类别、位置、冲突风险</strong>
+            </article>
+            <article>
+              <span>对管理的意义</span>
+              <strong id="stage-impact">支撑异常目标快速发现</strong>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block" id="results">
+        <div class="section-heading">
+          <p class="eyebrow">Completed Work</p>
+          <h2>把已完成的大作业，真正挂接到统一的课程系统里</h2>
+          <p>下面不再只是“模块介绍”，而是直接嵌入你仓库里的训练曲线、模型对比图、检测样例和实验指标，作为课程报告的真实证据。</p>
+        </div>
+
+        <div class="results-grid">
+          <article class="result-card completed">
+            <div class="result-topline">
+              <span class="status-dot"></span>
+              <p>已完成 / 大作业1</p>
+            </div>
+            <h3>多尺度交通流量精准预测与分级预警诱导</h3>
+            <p>课程系统中的“预测层”。它提供路网负荷趋势、拥堵长度预估和预警提前量，为后续大模型研判与诱导发布提供时序依据。</p>
+            <ul>
+              <li>DGL 方案在 5 个数据集里拿下 4 个最佳 RMSE</li>
+              <li>METRLA 基线 MAE 为 3.84，DGL RMSE 降至 9.37</li>
+              <li>训练曲线与模型对比图已直接接入本页</li>
+            </ul>
+          </article>
+          <article class="result-card completed">
+            <div class="result-topline">
+              <span class="status-dot"></span>
+              <p>已完成 / 大作业2</p>
+            </div>
+            <h3>复杂交通场景多目标精准识别与态势研判</h3>
+            <p>课程系统中的“感知层”。它把复杂道路场景中的交通标志和关键目标识别结果，转成可用于态势判断的结构化事实输入。</p>
+            <ul>
+              <li>当前数据集聚焦 12 类交通标志</li>
+              <li>有效样本 3863 张，已拆分为 train / val / test</li>
+              <li>704 输入实验已得到可视化预测图和混淆矩阵</li>
+            </ul>
+          </article>
+          <article class="result-card pending">
+            <div class="result-topline">
+              <span class="status-dot"></span>
+              <p>规划中 / 大作业3</p>
+            </div>
+            <h3>具身机器狗自主交通执勤与辅助管控</h3>
+            <p>课程系统中的“执行层”。后续计划把这里接成策略落地端，让大模型给出的管控建议变成现场可执行动作，并由 Isaac 仿真验证。</p>
+            <ul>
+              <li>承接诱导策略与执勤资源调度</li>
+              <li>补全从感知到执行的闭环</li>
+              <li>后续再单独扩成仿真页面</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="evidence-stack">
+          <article class="evidence-panel panel">
+            <div class="evidence-header">
+              <div>
+                <p class="panel-kicker">Assignment 1 Evidence</p>
+                <h3>交通流预测：把论文复现、改进对比和训练稳定性放到同一个展示面板里</h3>
+              </div>
+              <a class="inline-link" href="../大作业1/实验报告_STAEformer_分析.md">查看分析文档</a>
+            </div>
+
+            <div class="evidence-metrics">
+              <article>
+                <span>最优覆盖</span>
+                <strong>4 / 5</strong>
+                <p>DGL 在 5 个数据集里拿下 4 个最佳 RMSE</p>
+              </article>
+              <article>
+                <span>METRLA 基线</span>
+                <strong>MAE 3.84</strong>
+                <p>Baseline RMSE 9.39，适合作为原始参考</p>
+              </article>
+              <article>
+                <span>METRLA 改进</span>
+                <strong>RMSE 9.37</strong>
+                <p>DGL 版本在同数据集上取得更优 RMSE</p>
+              </article>
+              <article>
+                <span>PEMSBAY</span>
+                <strong>RMSE 3.64</strong>
+                <p>DGL 版本在湾区数据集上表现最好</p>
+              </article>
+            </div>
+
+            <div class="figure-grid">
+              <figure class="figure-card">
+                <img src="../大作业1/results/fig1_model_comparison.png" alt="STAEformer 模型性能对比图">
+                <figcaption>
+                  <strong>模型对比图</strong>
+                  <span>直接展示 Baseline、DGL、LA、MST 在多个数据集上的 MAE / RMSE / MAPE 对比。</span>
+                </figcaption>
+              </figure>
+              <figure class="figure-card">
+                <img src="../大作业1/results/fig4_training_curves.png" alt="STAEformer 训练收敛曲线">
+                <figcaption>
+                  <strong>训练曲线</strong>
+                  <span>反映不同改进方案在 METRLA、PEMS03、PEMS04、PEMS08 上的验证集收敛趋势。</span>
+                </figcaption>
+              </figure>
+            </div>
+          </article>
+
+          <article class="evidence-panel panel">
+            <div class="evidence-header">
+              <div>
+                <p class="panel-kicker">Assignment 2 Evidence</p>
+                <h3>目标识别：把 12 类 TT100K 交通标志检测结果直接变成网页中的态势感知证据</h3>
+              </div>
+              <a class="inline-link" href="../大作业2/项目.md">查看项目说明</a>
+            </div>
+
+            <div class="evidence-metrics">
+              <article>
+                <span>类别数</span>
+                <strong>12 类</strong>
+                <p>限速、禁停、禁鸣、直行、左转等课程子集类别</p>
+              </article>
+              <article>
+                <span>样本规模</span>
+                <strong>3863 张</strong>
+                <p>train 2705 / val 772 / test 386</p>
+              </article>
+              <article>
+                <span>704 实验</span>
+                <strong>mAP50 0.758</strong>
+                <p>50 轮训练后的 704 输入实验显著提升了检测精度</p>
+              </article>
+              <article>
+                <span>综合精度</span>
+                <strong>mAP50-95 0.531</strong>
+                <p>同实验 precision 0.796 / recall 0.673</p>
+              </article>
+            </div>
+
+            <div class="figure-grid">
+              <figure class="figure-card">
+                <img src="../大作业2/exp_C_704_b8_w0_e50/exp_C_704_b8_w0_e50/val_batch0_pred.jpg" alt="TT100K 检测样例图">
+                <figcaption>
+                  <strong>检测样例</strong>
+                  <span>多张道路场景预测结果已直接嵌入，可用于展示限速、禁鸣、禁停和直行标志的检测效果。</span>
+                </figcaption>
+              </figure>
+              <figure class="figure-card">
+                <img src="../大作业2/exp_C_704_b8_w0_e50/exp_C_704_b8_w0_e50/confusion_matrix_normalized.png" alt="TT100K 归一化混淆矩阵">
+                <figcaption>
+                  <strong>归一化混淆矩阵</strong>
+                  <span>可直观看到 speed_limit、no_stopping、no_honking、go_straight 等类别的识别区分情况。</span>
+                </figcaption>
+              </figure>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-block" id="demo">
+        <div class="section-heading">
+          <p class="eyebrow">Demo Flow</p>
+          <h2>课堂演示时，可以按这条线快速讲完整个系统</h2>
+        </div>
+
+        <div class="demo-layout">
+          <div class="demo-tabs" role="tablist" aria-label="演示流程">
+            <button class="demo-tab is-active" data-demo="observe">1. 观测输入</button>
+            <button class="demo-tab" data-demo="reason">2. 协同研判</button>
+            <button class="demo-tab" data-demo="respond">3. 输出策略</button>
+          </div>
+          <div class="demo-panel panel">
+            <p class="panel-kicker" id="demo-kicker">Step 1</p>
+            <h3 id="demo-title">观测输入：汇聚视频流、流量序列与事件线索</h3>
+            <p id="demo-description">
+              以路口视频、历史流量、突发事件信息为输入，让小模型先产出结构化观察结果，作为大模型推理的事实基础。
+            </p>
+            <div class="demo-columns">
+              <article>
+                <span>输入载体</span>
+                <strong id="demo-input">视频帧、车流时序、事件标签</strong>
+              </article>
+              <article>
+                <span>系统动作</span>
+                <strong id="demo-action">抽取目标、统计流量、筛出异常</strong>
+              </article>
+              <article>
+                <span>展示建议</span>
+                <strong id="demo-output">显示检测框、流量曲线、异常摘要</strong>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block roadmap-block" id="roadmap">
+        <div class="section-heading">
+          <p class="eyebrow">Roadmap</p>
+          <h2>网站原型先搭骨架，后续再把课程报告的执行层和仿真层补齐</h2>
+        </div>
+
+        <div class="roadmap-list">
+          <article class="roadmap-item">
+            <span>Now</span>
+            <div>
+              <h3>完成单页课程报告原型并嵌入现有成果</h3>
+              <p>统一主题表达、视觉风格、实证图展示和 demo 讲述路径。</p>
+            </div>
+          </article>
+          <article class="roadmap-item">
+            <span>Next</span>
+            <div>
+              <h3>补充更多截图、结果表和阶段性结论</h3>
+              <p>把大作业1/2里更细的图表、论文复现摘要和实验对比补到对应模块中。</p>
+            </div>
+          </article>
+          <article class="roadmap-item">
+            <span>Later</span>
+            <div>
+              <h3>扩展机器狗执勤与 Isaac 仿真页</h3>
+              <p>补充具身执行端的仿真验证流程，形成从决策到执行的完整闭环。</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>智能交通课程报告 Demo Prototype</p>
+      <p>当前页面已经直接嵌入大作业1与大作业2的真实图表和实验结果。</p>
+    </footer>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>

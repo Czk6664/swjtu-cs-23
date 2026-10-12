@@ -1,0 +1,56 @@
+[
+  {
+    "inference_id": "3c7c29bb-8814-4a50-aadd-07872977f7d5",
+    "input_ref": "web",
+    "mined_reason": "low_confidence(<0.35)",
+    "auto_label": "建议补充同类样本以提升置信"
+  },
+  {
+    "inference_id": "11a7c707-81f2-4d38-8e91-0a9ec1ac8dc0",
+    "input_ref": "seed-0",
+    "mined_reason": "low_confidence(<0.35)",
+    "auto_label": "建议补充同类样本以提升置信"
+  },
+  {
+    "inference_id": "bcfd7641-fd33-47e9-8b66-78db55b7852e",
+    "input_ref": "seed-1",
+    "mined_reason": "low_confidence(<0.35)",
+    "auto_label": "建议补充同类样本以提升置信"
+  },
+  {
+    "inference_id": "6214c7dc-001b-46f4-a43a-0693839905b4",
+    "input_ref": "seed-2",
+    "mined_reason": "low_confidence(<0.35)",
+    "auto_label": "建议补充同类样本以提升置信"
+  },
+  {
+    "inference_id": "3965e2be-febd-4b68-9b42-89526ba19e7a",
+    "input_ref": "seed-3",
+    "mined_reason": "low_confidence(<0.35)",
+    "auto_label": "建议补充同类样本以提升置信"
+  },
+  {
+    "inference_id": "8ff54f10-59c7-4c69-a8db-2fccf3d6a114",
+    "input_ref": "seed-4",
+    "mined_reason": "low_confidence(<0.35)",
+    "auto_label": "建议补充同类样本以提升置信"
+  },
+  {
+    "inference_id": "75730237-fa08-42e5-8da7-b8ba8eade963",
+    "input_ref": "seed-5",
+    "mined_reason": "low_confidence(<0.35)",
+    "auto_label": "建议补充同类样本以提升置信"
+  },
+  {
+    "inference_id": "362f3839-2ddb-4ae4-be65-35e2f90be6a5",
+    "input_ref": "seed-6",
+    "mined_reason": "low_confidence(<0.35)",
+    "auto_label": "建议补充同类样本以提升置信"
+  },
+  {
+    "inference_id": "6bc33edc-c148-4463-a56c-51ff2bee2211",
+    "input_ref": "seed-7",
+    "mined_reason": "low_confidence(<0.35)",
+    "auto_label": "建议补充同类样本以提升置信"
+  }
+]
