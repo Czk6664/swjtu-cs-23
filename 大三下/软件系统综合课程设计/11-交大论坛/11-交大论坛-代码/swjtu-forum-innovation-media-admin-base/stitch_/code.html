@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>交大论坛 - 校园社区平台</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-fixed-variant": "#3b4851",
+                        "secondary-fixed": "#d6e4ef",
+                        "secondary": "#536069",
+                        "surface-variant": "#e0e3e6",
+                        "primary": "#004e8a",
+                        "on-primary-fixed-variant": "#004881",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#2d3133",
+                        "tertiary-fixed": "#6bf7f7",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#004f50",
+                        "on-primary-fixed": "#001c38",
+                        "tertiary-container": "#007070",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#48dada",
+                        "surface-container-high": "#e6e8eb",
+                        "on-secondary": "#ffffff",
+                        "surface": "#f7f9fc",
+                        "on-tertiary-container": "#6bf6f6",
+                        "tertiary": "#005656",
+                        "outline-variant": "#c1c7d3",
+                        "surface-container-highest": "#e0e3e6",
+                        "primary-container": "#0066b2",
+                        "on-primary-container": "#d1e3ff",
+                        "surface-bright": "#f7f9fc",
+                        "secondary-fixed-dim": "#bac8d3",
+                        "on-surface-variant": "#414751",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#a2c9ff",
+                        "inverse-primary": "#a2c9ff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#59666f",
+                        "inverse-on-surface": "#eff1f4",
+                        "primary-fixed": "#d3e4ff",
+                        "on-tertiary-fixed": "#002020",
+                        "error": "#ba1a1a",
+                        "on-surface": "#191c1e",
+                        "surface-container": "#eceef1",
+                        "surface-tint": "#0060a8",
+                        "on-secondary-fixed": "#101d25",
+                        "on-background": "#191c1e",
+                        "error-container": "#ffdad6",
+                        "background": "#f7f9fc",
+                        "outline": "#717782",
+                        "surface-container-low": "#f2f4f7",
+                        "surface-dim": "#d8dadd",
+                        "secondary-container": "#d6e4ef"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        "margin-mobile": "1rem",
+                        "gutter": "1.5rem",
+                        "stack-gap": "0.75rem",
+                        "container-max": "1200px",
+                        "card-padding": "1.25rem"
+                    },
+                    fontFamily: {
+                        "label-md": ["Inter"],
+                        "metadata": ["Inter"],
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"]
+                    },
+                    fontSize: {
+                        "label-md": ["13px", { lineHeight: "1", fontWeight: "500" }],
+                        "metadata": ["12px", { lineHeight: "1", fontWeight: "400" }],
+                        "headline-sm": ["18px", { lineHeight: "1.4", fontWeight: "600" }],
+                        "body-lg": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "headline-lg": ["32px", { lineHeight: "1.2", fontWeight: "700" }],
+                        "headline-md": ["24px", { lineHeight: "1.3", fontWeight: "600" }],
+                        "body-md": ["14px", { lineHeight: "1.6", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .symbol-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 100% 0%, rgba(0, 102, 178, 0.08) 0%, rgba(247, 249, 252, 0) 50%),
+                        radial-gradient(circle at 0% 100%, rgba(107, 247, 247, 0.05) 0%, rgba(247, 249, 252, 0) 50%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(224, 227, 230, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased">
+<!-- Suppressed Navigation Shells: Landing page intent is marketing/transactional -->
+<!-- Hero Section -->
+<header class="relative pt-32 pb-24 overflow-hidden hero-gradient">
+<div class="max-w-container-max mx-auto px-gutter relative z-10">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div class="max-w-2xl">
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-fixed/50 text-primary mb-6">
+<span class="material-symbols-outlined text-[16px]">school</span>
+<span class="font-label-md text-label-md">专为高校打造的新一代数字社区</span>
+</div>
+<h1 class="font-headline-lg text-[48px] leading-[1.1] font-extrabold text-on-surface mb-6 tracking-tight">
+                        交大论坛：连接校园，<br/>
+<span class="text-primary-container">共创成长</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-xl">
+                        一个以学生为中心，兼顾开放活力与秩序管理的校园专属交流平台。通过创新的成长体系与智能审核机制，打造安全、活跃、可持续的数字校园生态。
+                    </p>
+<div class="flex flex-wrap gap-4">
+<button class="bg-primary-container text-on-primary-container px-8 py-4 rounded-xl font-headline-sm text-[16px] font-bold hover:bg-primary transition-all shadow-[0_8px_16px_rgba(0,102,178,0.15)] hover:shadow-[0_12px_20px_rgba(0,102,178,0.2)] hover:-translate-y-0.5 flex items-center gap-2">
+                            进入社区
+                            <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<button class="bg-surface-container-highest text-on-surface px-8 py-4 rounded-xl font-headline-sm text-[16px] font-bold hover:bg-surface-variant transition-all border border-outline-variant/30 flex items-center gap-2">
+                            项目演示
+                            <span class="material-symbols-outlined">play_circle</span>
+</button>
+</div>
+</div>
+<div class="relative hidden lg:block">
+<!-- Abstract Hero Visual -->
+<div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden glass-card shadow-xl p-6 flex flex-col gap-4">
+<div class="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold">交</div>
+<div>
+<div class="h-4 w-24 bg-surface-variant rounded mb-1"></div>
+<div class="h-3 w-16 bg-surface-variant/50 rounded"></div>
+</div>
+</div>
+<div class="h-8 w-20 bg-secondary-fixed rounded-lg"></div>
+</div>
+<div class="space-y-3 mt-2">
+<div class="h-6 w-3/4 bg-surface-variant rounded"></div>
+<div class="h-4 w-full bg-surface-variant/50 rounded"></div>
+<div class="h-4 w-5/6 bg-surface-variant/50 rounded"></div>
+</div>
+<div class="mt-auto flex gap-3 pt-4 border-t border-outline-variant/30">
+<div class="h-8 w-16 bg-surface-variant/30 rounded-full"></div>
+<div class="h-8 w-16 bg-surface-variant/30 rounded-full"></div>
+<div class="h-8 w-16 bg-surface-variant/30 rounded-full"></div>
+</div>
+<!-- Floating Badges -->
+<div class="absolute -right-4 top-12 bg-surface shadow-lg rounded-xl p-3 flex items-center gap-3 animate-[bounce_4s_infinite]">
+<div class="w-8 h-8 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+</div>
+<div>
+<p class="font-label-md text-label-md">实名认证</p>
+<p class="font-metadata text-metadata text-outline">已通过</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Stats Section -->
+<section class="py-12 border-y border-outline-variant/20 bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto px-gutter">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-outline-variant/20">
+<div class="text-center px-4">
+<p class="font-headline-lg text-[36px] font-extrabold text-primary-container mb-1">12k+</p>
+<p class="font-label-md text-label-md text-on-surface-variant">月活跃用户</p>
+</div>
+<div class="text-center px-4">
+<p class="font-headline-lg text-[36px] font-extrabold text-primary-container mb-1">300+</p>
+<p class="font-label-md text-label-md text-on-surface-variant">日均新增内容</p>
+</div>
+<div class="text-center px-4">
+<p class="font-headline-lg text-[36px] font-extrabold text-primary-container mb-1">99.9%</p>
+<p class="font-label-md text-label-md text-on-surface-variant">安全审核拦截率</p>
+</div>
+<div class="text-center px-4">
+<p class="font-headline-lg text-[36px] font-extrabold text-primary-container mb-1">50+</p>
+<p class="font-label-md text-label-md text-on-surface-variant">合作校园组织</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="py-24">
+<div class="max-w-container-max mx-auto px-gutter">
+<div class="text-center mb-16">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-4">重塑校园数字生活全景</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
+                    打通前端体验与后端治理，构建一个让学生爱用、让校方放心的高质量学术与生活交流场域。
+                </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[320px]">
+<!-- Pillar 1: Student App (Large Card) -->
+<div class="md:col-span-8 bg-surface-container-lowest rounded-[24px] p-8 border border-outline-variant/30 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+<div class="relative z-10 w-2/3">
+<div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary mb-6">
+<span class="material-symbols-outlined text-[24px]">forum</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">学生端：高度可用的活力社区</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">
+                            提供流畅的发帖、搜索与互动体验。涵盖学术交流、闲置交易、失物招领等刚需场景，打造沉浸式的校园生活圈。
+                        </p>
+<ul class="space-y-2">
+<li class="flex items-center gap-2 font-label-md text-label-md text-secondary">
+<span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>
+                                全文极速检索与智能分类
+                            </li>
+<li class="flex items-center gap-2 font-label-md text-label-md text-secondary">
+<span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>
+                                沉浸式富文本与多图上传
+                            </li>
+</ul>
+</div>
+<div class="absolute -right-10 -bottom-10 w-64 h-64 bg-secondary-fixed/40 rounded-full blur-3xl group-hover:bg-primary-fixed/40 transition-colors"></div>
+</div>
+<!-- Pillar 2: Growth System (Tall Card) -->
+<div class="md:col-span-4 md:row-span-2 bg-primary-container text-on-primary-container rounded-[24px] p-8 relative overflow-hidden shadow-sm">
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-xl bg-on-primary-container/20 flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-[24px]">military_tech</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-3 text-on-primary">成长体系：正向反馈循环</h3>
+<p class="font-body-md text-body-md text-on-primary-container/80 mb-8">
+                            引入积分、徽章与等级制度。发帖、互助即可累积成长值，在积分商城兑换校园周边，驱动社区内容高质量、可持续产出。
+                        </p>
+<div class="bg-surface/10 rounded-xl p-4 backdrop-blur-sm border border-on-primary-container/10">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-md text-label-md text-on-primary">LV.5 资深学者</span>
+<span class="font-label-md text-label-md text-on-primary">850/1000</span>
+</div>
+<div class="w-full bg-surface/20 rounded-full h-2">
+<div class="bg-tertiary-container h-2 rounded-full w-[85%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Pillar 3: Admin & Governance (Wide Card) -->
+<div class="md:col-span-8 bg-surface-container-lowest rounded-[24px] p-8 border border-outline-variant/30 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+<div class="grid grid-cols-2 gap-8 h-full items-center">
+<div>
+<div class="w-12 h-12 rounded-xl bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed-variant mb-6">
+<span class="material-symbols-outlined text-[24px]">admin_panel_settings</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">管理员端：可控的数字治理</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                                强大的后台数据看板与多维权限系统。实时监控社区舆情，掌握关键数据指标，护航校园网络环境。
+                            </p>
+</div>
+<div class="flex justify-end pr-4">
+<!-- Abstract Chart Visual -->
+<div class="w-full max-w-[200px] h-32 flex items-end gap-2 border-b border-l border-outline-variant/30 pb-2 pl-2">
+<div class="w-1/4 bg-primary-fixed rounded-t-sm" style="height: 40%"></div>
+<div class="w-1/4 bg-primary-fixed rounded-t-sm" style="height: 60%"></div>
+<div class="w-1/4 bg-primary/60 rounded-t-sm" style="height: 85%"></div>
+<div class="w-1/4 bg-primary-container rounded-t-sm" style="height: 100%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</body></html>
