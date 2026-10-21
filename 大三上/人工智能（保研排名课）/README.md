@@ -39,7 +39,6 @@
 - [89进化与群智计算.docx](89%E8%BF%9B%E5%8C%96%E4%B8%8E%E7%BE%A4%E6%99%BA%E8%AE%A1%E7%AE%97.docx)
 - [89进化与群智计算.pdf](89%E8%BF%9B%E5%8C%96%E4%B8%8E%E7%BE%A4%E6%99%BA%E8%AE%A1%E7%AE%97.pdf)
 - [pdf.txt](pdf.txt)
-- [人工智能导论.md](%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%AF%BC%E8%AE%BA.md)
 - [人工智能导论教程.pdf](%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%AF%BC%E8%AE%BA%E6%95%99%E7%A8%8B.pdf)
 - [人工智能导论教程.tex](%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%AF%BC%E8%AE%BA%E6%95%99%E7%A8%8B.tex)
 - [扫描全能王 2025-12-29 17.36(OCR).pdf](%E6%89%AB%E6%8F%8F%E5%85%A8%E8%83%BD%E7%8E%8B%202025-12-29%2017.36%28OCR%29.pdf)
