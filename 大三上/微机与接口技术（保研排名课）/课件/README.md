@@ -1,0 +1,19 @@
+# 课件
+
+所属课程：[微机与接口技术](../README.md)。
+
+感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。
+
+## 本层导航
+
+- [10微机原理及应用（第10章）.pdf](10%E5%BE%AE%E6%9C%BA%E5%8E%9F%E7%90%86%E5%8F%8A%E5%BA%94%E7%94%A8%EF%BC%88%E7%AC%AC10%E7%AB%A0%EF%BC%89.pdf)
+- [7微机原理及应用（第7章）.pdf](7%E5%BE%AE%E6%9C%BA%E5%8E%9F%E7%90%86%E5%8F%8A%E5%BA%94%E7%94%A8%EF%BC%88%E7%AC%AC7%E7%AB%A0%EF%BC%89.pdf)
+- [8微机原理及应用（第8章）.pdf](8%E5%BE%AE%E6%9C%BA%E5%8E%9F%E7%90%86%E5%8F%8A%E5%BA%94%E7%94%A8%EF%BC%88%E7%AC%AC8%E7%AB%A0%EF%BC%89.pdf)
+- [9微机原理及应用（第9章）.pdf](9%E5%BE%AE%E6%9C%BA%E5%8E%9F%E7%90%86%E5%8F%8A%E5%BA%94%E7%94%A8%EF%BC%88%E7%AC%AC9%E7%AB%A0%EF%BC%89.pdf)
+- [第1章 微型计算机系统概述.pdf](%E7%AC%AC1%E7%AB%A0%20%E5%BE%AE%E5%9E%8B%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E6%A6%82%E8%BF%B0.pdf)
+- [第2章 计算机中的数.pdf](%E7%AC%AC2%E7%AB%A0%20%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%AD%E7%9A%84%E6%95%B0.pdf)
+- [第3章 8086微型计算机系统.pdf](%E7%AC%AC3%E7%AB%A0%208086%E5%BE%AE%E5%9E%8B%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F.pdf)
+- [第4章 8086寻址方式与指令系统.pdf](%E7%AC%AC4%E7%AB%A0%208086%E5%AF%BB%E5%9D%80%E6%96%B9%E5%BC%8F%E4%B8%8E%E6%8C%87%E4%BB%A4%E7%B3%BB%E7%BB%9F.pdf)
+- [第5章 8086汇编语言程序设计.pdf](%E7%AC%AC5%E7%AB%A0%208086%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1.pdf)
+
+[返回上级目录](../README.md)

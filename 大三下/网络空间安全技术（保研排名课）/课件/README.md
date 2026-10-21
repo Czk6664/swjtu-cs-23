@@ -1,0 +1,24 @@
+# 课件
+
+所属课程：[网络空间安全技术](../README.md)。
+
+感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。
+
+## 本层导航
+
+- [讲解/](%E8%AE%B2%E8%A7%A3/README.md)
+- [ch3_raw.txt](ch3_raw.txt)
+- [ch8_raw.txt](ch8_raw.txt)
+- [古典密码讲义-通信小游戏到三种古典密码.pptx](%E5%8F%A4%E5%85%B8%E5%AF%86%E7%A0%81%E8%AE%B2%E4%B9%89-%E9%80%9A%E4%BF%A1%E5%B0%8F%E6%B8%B8%E6%88%8F%E5%88%B0%E4%B8%89%E7%A7%8D%E5%8F%A4%E5%85%B8%E5%AF%86%E7%A0%81.pptx)
+- [哈希函数入门课(1).pptx](%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0%E5%85%A5%E9%97%A8%E8%AF%BE%281%29.pptx)
+- [牛津古典密码学-讲义(1).pdf](%E7%89%9B%E6%B4%A5%E5%8F%A4%E5%85%B8%E5%AF%86%E7%A0%81%E5%AD%A6-%E8%AE%B2%E4%B9%89%281%29.pdf)
+- [网安.doc](%E7%BD%91%E5%AE%89.doc)
+- [网络空间安全_CH1-CH8期末复习资料(1).pdf](%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B4%E5%AE%89%E5%85%A8_CH1-CH8%E6%9C%9F%E6%9C%AB%E5%A4%8D%E4%B9%A0%E8%B5%84%E6%96%99%281%29.pdf)
+- [网络空间安全_CH2（信息安全风险管理+国产化替代）.pptx](%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B4%E5%AE%89%E5%85%A8_CH2%EF%BC%88%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8%E9%A3%8E%E9%99%A9%E7%AE%A1%E7%90%86%2B%E5%9B%BD%E4%BA%A7%E5%8C%96%E6%9B%BF%E4%BB%A3%EF%BC%89.pptx)
+- [网络空间安全_CH3（信息与信息安全保障+安全运维）.pptx](%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B4%E5%AE%89%E5%85%A8_CH3%EF%BC%88%E4%BF%A1%E6%81%AF%E4%B8%8E%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8%E4%BF%9D%E9%9A%9C%2B%E5%AE%89%E5%85%A8%E8%BF%90%E7%BB%B4%EF%BC%89.pptx)
+- [网络空间安全_CH4（信息安全技术）(1).pptx](%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B4%E5%AE%89%E5%85%A8_CH4%EF%BC%88%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF%EF%BC%89%281%29.pptx)
+- [网络空间安全_CH5（鉴别技术NO3）(1).pptx](%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B4%E5%AE%89%E5%85%A8_CH5%EF%BC%88%E9%89%B4%E5%88%AB%E6%8A%80%E6%9C%AFNO3%EF%BC%89%281%29.pptx)
+- [网络空间安全_CH6（访问控制NO2）.pptx](%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B4%E5%AE%89%E5%85%A8_CH6%EF%BC%88%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6NO2%EF%BC%89.pptx)
+- [网络空间安全_CH8（入侵检测技术）.pptx](%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B4%E5%AE%89%E5%85%A8_CH8%EF%BC%88%E5%85%A5%E4%BE%B5%E6%A3%80%E6%B5%8B%E6%8A%80%E6%9C%AF%EF%BC%89.pptx)
+
+[返回上级目录](../README.md)

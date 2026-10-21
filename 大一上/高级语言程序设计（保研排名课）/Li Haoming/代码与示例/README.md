@@ -1,0 +1,26 @@
+# 代码与示例
+
+所属课程：[高级语言程序设计](../../README.md)。
+
+感谢 **Li Haoming** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。
+
+## 本层导航
+
+- [C语言程序设计（第4版）源代码.rar](C%E8%AF%AD%E8%A8%80%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%EF%BC%88%E7%AC%AC4%E7%89%88%EF%BC%89%E6%BA%90%E4%BB%A3%E7%A0%81.rar)
+- [书后各章习题参考程序.rar](%E4%B9%A6%E5%90%8E%E5%90%84%E7%AB%A0%E4%B9%A0%E9%A2%98%E5%8F%82%E8%80%83%E7%A8%8B%E5%BA%8F.rar)
+- [找出一个二维数组中的鞍点.cpp](%E6%89%BE%E5%87%BA%E4%B8%80%E4%B8%AA%E4%BA%8C%E7%BB%B4%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%9E%8D%E7%82%B9.cpp)
+- [教材例题源代码.rar](%E6%95%99%E6%9D%90%E4%BE%8B%E9%A2%98%E6%BA%90%E4%BB%A3%E7%A0%81.rar)
+- [数组及字符串程序.rar](%E6%95%B0%E7%BB%84%E5%8F%8A%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%A8%8B%E5%BA%8F.rar)
+- [数组及算法程序.rar](%E6%95%B0%E7%BB%84%E5%8F%8A%E7%AE%97%E6%B3%95%E7%A8%8B%E5%BA%8F.rar)
+- [杨辉三角形.cpp](%E6%9D%A8%E8%BE%89%E4%B8%89%E8%A7%92%E5%BD%A2.cpp)
+- [矩阵元素右移.cpp](%E7%9F%A9%E9%98%B5%E5%85%83%E7%B4%A0%E5%8F%B3%E7%A7%BB.cpp)
+- [矩阵列元素循环右移.cpp](%E7%9F%A9%E9%98%B5%E5%88%97%E5%85%83%E7%B4%A0%E5%BE%AA%E7%8E%AF%E5%8F%B3%E7%A7%BB.cpp)
+- [约瑟夫问题.cpp](%E7%BA%A6%E7%91%9F%E5%A4%AB%E9%97%AE%E9%A2%98.cpp)
+- [结构体及单链表示例程序.rar](%E7%BB%93%E6%9E%84%E4%BD%93%E5%8F%8A%E5%8D%95%E9%93%BE%E8%A1%A8%E7%A4%BA%E4%BE%8B%E7%A8%8B%E5%BA%8F.rar)
+- [蛇形(一字形)矩阵.cpp](%E8%9B%87%E5%BD%A2%28%E4%B8%80%E5%AD%97%E5%BD%A2%29%E7%9F%A9%E9%98%B5.cpp)
+- [蛇形(一字形)矩阵2.cpp](%E8%9B%87%E5%BD%A2%28%E4%B8%80%E5%AD%97%E5%BD%A2%29%E7%9F%A9%E9%98%B52.cpp)
+- [输出1~40的阶乘.cpp](%E8%BE%93%E5%87%BA1~40%E7%9A%84%E9%98%B6%E4%B9%98.cpp)
+- [链表示例程序.rar](%E9%93%BE%E8%A1%A8%E7%A4%BA%E4%BE%8B%E7%A8%8B%E5%BA%8F.rar)
+- [高级语言程序设计第3次实验-2025版.rar](%E9%AB%98%E7%BA%A7%E8%AF%AD%E8%A8%80%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E7%AC%AC3%E6%AC%A1%E5%AE%9E%E9%AA%8C-2025%E7%89%88.rar)
+
+[返回上级目录](../README.md)

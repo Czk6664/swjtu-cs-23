@@ -1,0 +1,14 @@
+# yolo11n_focaler_iou_704_e504
+
+所属课程：[智能+交通](../../../../../../README.md)。
+
+感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。
+
+## 本层导航
+
+- [args.yaml](args.yaml)
+- [labels.jpg](labels.jpg)
+- [train_batch0.jpg](train_batch0.jpg)
+- [train_batch1.jpg](train_batch1.jpg)
+
+[返回上级目录](../README.md)

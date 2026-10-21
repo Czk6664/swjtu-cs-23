@@ -1,0 +1,16 @@
+# 部署手册
+
+所属课程：[软件系统综合课程设计](../../../README.md)。
+
+感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。
+
+## 本层导航
+
+- [figures/](figures/README.md)
+- [deploy_report.pdf](deploy_report.pdf)
+- [deploy_report.tex](deploy_report.tex)
+- [mybib.bib](mybib.bib)
+- [report.cls](report.cls)
+- [部署手册.pdf](%E9%83%A8%E7%BD%B2%E6%89%8B%E5%86%8C.pdf)
+
+[返回上级目录](../README.md)
