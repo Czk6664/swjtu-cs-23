@@ -1,0 +1,21 @@
+# 计算机网络 · Zhao Junxiang
+
+感谢 **Zhao Junxiang** 提供本目录课程资料。资料提供者不等同于课件、教材及第三方内容的原作者，原作者署名保留。
+
+## 资料导航
+
+- [2025-复习课-重点及习题-1.pptx](2025-%E5%A4%8D%E4%B9%A0%E8%AF%BE-%E9%87%8D%E7%82%B9%E5%8F%8A%E4%B9%A0%E9%A2%98-1.pptx)
+- [2025计网-复习重点-2.pdf](2025%E8%AE%A1%E7%BD%91-%E5%A4%8D%E4%B9%A0%E9%87%8D%E7%82%B9-2.pdf)
+- [第1章-计算机网络概述.pdf](%E7%AC%AC1%E7%AB%A0-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E6%A6%82%E8%BF%B0.pdf)
+- [计算机网络体系结构图.pdf](%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%9B%BE.pdf)
+
+## 共同提供的资料
+
+以下资料与已收录内容一致，保留一份文件，并在此记录本次贡献和入口。
+
+- [Ch4_MAC子层和局域网技术v2.5.pdf](../%E8%AF%BE%E4%BB%B6/Ch4_MAC%E5%AD%90%E5%B1%82%E5%92%8C%E5%B1%80%E5%9F%9F%E7%BD%91%E6%8A%80%E6%9C%AFv2.5.pdf)
+- [Ch5_网络层_V2.5.pdf](../%E8%AF%BE%E4%BB%B6/Ch5_%E7%BD%91%E7%BB%9C%E5%B1%82_V2.5.pdf)
+- [Ch6_传输层_V2.5.pdf](../%E8%AF%BE%E4%BB%B6/Ch6_%E4%BC%A0%E8%BE%93%E5%B1%82_V2.5.pdf)
+- [Ch7_应用层_v2.5.pdf](../%E8%AF%BE%E4%BB%B6/Ch7_%E5%BA%94%E7%94%A8%E5%B1%82_v2.5.pdf)
+
+[返回课程目录](../README.md)

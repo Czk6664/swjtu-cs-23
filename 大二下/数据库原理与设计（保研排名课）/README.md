@@ -14,10 +14,11 @@
 
 ## 贡献致谢
 
-感谢 **Cheng Zekai**、**Mao Luhan** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Cheng Zekai**、**Mao Luhan**、**Linghu Biyi** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
+- [Linghu Biyi/](Linghu%20Biyi/README.md)
 - [Mao Luhan/](Mao%20Luhan/README.md)
 - [2023-05-18：数据库原理与设计课件(第五章)--完整性与故障恢复--打印.pptx](2023-05-18%EF%BC%9A%E6%95%B0%E6%8D%AE%E5%BA%93%E5%8E%9F%E7%90%86%E4%B8%8E%E8%AE%BE%E8%AE%A1%E8%AF%BE%E4%BB%B6%28%E7%AC%AC%E4%BA%94%E7%AB%A0%29--%E5%AE%8C%E6%95%B4%E6%80%A7%E4%B8%8E%E6%95%85%E9%9A%9C%E6%81%A2%E5%A4%8D--%E6%89%93%E5%8D%B0.pptx)
 - [2024-02-25：【第1章】：数据库系统概述.pptx](2024-02-25%EF%BC%9A%E3%80%90%E7%AC%AC1%E7%AB%A0%E3%80%91%EF%BC%9A%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F%E6%A6%82%E8%BF%B0.pptx)

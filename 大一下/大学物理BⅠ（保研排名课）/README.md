@@ -13,11 +13,12 @@
 
 ## 贡献致谢
 
-感谢 **Li Haoming** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Li Haoming**、**Linghu Biyi** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
 - [Li Haoming/](Li%20Haoming/README.md)
+- [Linghu Biyi/](Linghu%20Biyi/README.md)
 
 [仓库首页](../../README.md) · [分类依据与原始文件](../../%E5%9F%B9%E5%85%BB%E6%96%B9%E6%A1%88%E4%B8%8E%E6%8E%A8%E5%85%8D%E5%8F%82%E8%80%83/README.md)
 

@@ -11,10 +11,11 @@
 
 ## 贡献致谢
 
-感谢 **Cheng Zekai**、**Mao Luhan** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Cheng Zekai**、**Mao Luhan**、**Linghu Biyi** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
+- [Linghu Biyi/](Linghu%20Biyi/README.md)
 - [Mao Luhan/](Mao%20Luhan/README.md)
 - [操作系统实验讲义/](%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E9%AA%8C%E8%AE%B2%E4%B9%89/README.md)
 - [操作系统课件/](%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E8%AF%BE%E4%BB%B6/README.md)

@@ -11,11 +11,12 @@
 
 ## 贡献致谢
 
-感谢 **Cheng Zekai** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Cheng Zekai**、**Zhao Junxiang** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
 - [Cheng Zekai/](Cheng%20Zekai/README.md)
+- [Zhao Junxiang/](Zhao%20Junxiang/README.md)
 - [实验文档目录结构.md](%E5%AE%9E%E9%AA%8C%E6%96%87%E6%A1%A3%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84.md)
 - [计算机网络实验.tex](%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%AE%9E%E9%AA%8C.tex)
 

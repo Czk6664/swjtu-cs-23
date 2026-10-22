@@ -11,12 +11,13 @@
 
 ## 贡献致谢
 
-感谢 **Cheng Zekai** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Cheng Zekai**、**Zhao Junxiang** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
 - [chapters/](chapters/README.md)
 - [xhl课件/](xhl%E8%AF%BE%E4%BB%B6/README.md)
+- [Zhao Junxiang/](Zhao%20Junxiang/README.md)
 - [其余课件/](%E5%85%B6%E4%BD%99%E8%AF%BE%E4%BB%B6/README.md)
 - [参考教材/](%E5%8F%82%E8%80%83%E6%95%99%E6%9D%90/README.md)
 - [课件/](%E8%AF%BE%E4%BB%B6/README.md)

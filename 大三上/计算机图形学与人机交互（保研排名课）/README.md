@@ -13,7 +13,7 @@
 
 ## 贡献致谢
 
-感谢 **Cheng Zekai** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Cheng Zekai**、**Zhao Junxiang** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
@@ -22,6 +22,7 @@
 - [Cheng Zekai/](Cheng%20Zekai/README.md)
 - [shiyan3project/](shiyan3project/README.md)
 - [tex/](tex/README.md)
+- [Zhao Junxiang/](Zhao%20Junxiang/README.md)
 - [作业1/](%E4%BD%9C%E4%B8%9A1/README.md)
 - [作业2/](%E4%BD%9C%E4%B8%9A2/README.md)
 - [作业3/](%E4%BD%9C%E4%B8%9A3/README.md)
