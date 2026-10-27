@@ -10,13 +10,14 @@
 
 ## 贡献致谢
 
-感谢 **Cheng Zekai** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Cheng Zekai**、**Wan Jiale** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
 - [11-交大论坛/](11-%E4%BA%A4%E5%A4%A7%E8%AE%BA%E5%9D%9B/README.md)
 - [_src/](_src/README.md)
 - [jiaodaluntan-intro-video/](jiaodaluntan-intro-video/README.md)
+- [Wan Jiale/](Wan%20Jiale/README.md)
 - [作业/](%E4%BD%9C%E4%B8%9A/README.md)
 - [图片/](%E5%9B%BE%E7%89%87/README.md)
 - [头像/](%E5%A4%B4%E5%83%8F/README.md)

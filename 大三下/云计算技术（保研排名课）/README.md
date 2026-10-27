@@ -11,12 +11,13 @@
 
 ## 贡献致谢
 
-感谢 **Cheng Zekai** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Cheng Zekai**、**Wan Jiale** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
 - [_src/](_src/README.md)
 - [Cheng Zekai/](Cheng%20Zekai/README.md)
+- [Wan Jiale/](Wan%20Jiale/README.md)
 - [大作业/](%E5%A4%A7%E4%BD%9C%E4%B8%9A/README.md)
 - [课件/](%E8%AF%BE%E4%BB%B6/README.md)
 - [2023112621_程泽凯_midterm.ipynb](2023112621_%E7%A8%8B%E6%B3%BD%E5%87%AF_midterm.ipynb)

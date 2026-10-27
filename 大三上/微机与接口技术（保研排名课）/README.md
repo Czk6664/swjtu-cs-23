@@ -10,13 +10,14 @@
 
 ## 贡献致谢
 
-感谢 **Cheng Zekai**、**Linghu Biyi** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Cheng Zekai**、**Linghu Biyi**、**Wan Jiale** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
 - [assets/](assets/README.md)
 - [code/](code/README.md)
 - [Linghu Biyi/](Linghu%20Biyi/README.md)
+- [Wan Jiale/](Wan%20Jiale/README.md)
 - [代码/](%E4%BB%A3%E7%A0%81/README.md)
 - [参考教材/](%E5%8F%82%E8%80%83%E6%95%99%E6%9D%90/README.md)
 - [实验/](%E5%AE%9E%E9%AA%8C/README.md)

@@ -11,12 +11,13 @@
 
 ## 贡献致谢
 
-感谢 **Cheng Zekai**、**Mao Luhan** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Cheng Zekai**、**Mao Luhan**、**Wan Jiale** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
 - [Cheng Zekai/](Cheng%20Zekai/README.md)
 - [Mao Luhan/](Mao%20Luhan/README.md)
+- [Wan Jiale/](Wan%20Jiale/README.md)
 
 [仓库首页](../../README.md) · [分类依据与原始文件](../../%E5%9F%B9%E5%85%BB%E6%96%B9%E6%A1%88%E4%B8%8E%E6%8E%A8%E5%85%8D%E5%8F%82%E8%80%83/README.md)
 

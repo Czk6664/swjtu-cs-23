@@ -13,10 +13,11 @@
 
 ## 贡献致谢
 
-感谢 **Cheng Zekai** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Cheng Zekai**、**Wan Jiale** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
+- [Wan Jiale/](Wan%20Jiale/README.md)
 - [参考教材/](%E5%8F%82%E8%80%83%E6%95%99%E6%9D%90/README.md)
 - [实验/](%E5%AE%9E%E9%AA%8C/README.md)
 - [机器学习/](%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/README.md)

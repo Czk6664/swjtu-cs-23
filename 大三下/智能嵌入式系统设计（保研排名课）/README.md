@@ -11,13 +11,14 @@
 
 ## 贡献致谢
 
-感谢 **Cheng Zekai** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Cheng Zekai**、**Wan Jiale** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
 - [_src/](_src/README.md)
 - [Cheng Zekai/](Cheng%20Zekai/README.md)
 - [report_assets/](report_assets/README.md)
+- [Wan Jiale/](Wan%20Jiale/README.md)
 - [实验/](%E5%AE%9E%E9%AA%8C/README.md)
 - [课件/](%E8%AF%BE%E4%BB%B6/README.md)
 - [嵌入式.doc](%E5%B5%8C%E5%85%A5%E5%BC%8F.doc)

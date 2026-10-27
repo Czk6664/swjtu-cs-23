@@ -1,0 +1,34 @@
+# 教学课件
+
+感谢 **Wan Jiale** 提供本目录教学资料。教师、教材及第三方资料的原作者署名保留。
+
+## 资料导航
+
+- [Rust语言编程知识与应用(1.1 基本数据类型).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%281.1%20%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%29.pptx)
+- [Rust语言编程知识与应用(1.2 自定义数据类型).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%281.2%20%E8%87%AA%E5%AE%9A%E4%B9%89%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%29.pptx)
+- [Rust语言编程知识与应用(1.3 Vec和String).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%281.3%20Vec%E5%92%8CString%29.pptx)
+- [Rust语言编程知识与应用(1.4 表达式).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%281.4%20%E8%A1%A8%E8%BE%BE%E5%BC%8F%29.pptx)
+- [Rust语言编程知识与应用(1.5 函数).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%281.5%20%E5%87%BD%E6%95%B0%29.pptx)
+- [Rust语言编程知识与应用(2.1 模块系统).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%282.1%20%E6%A8%A1%E5%9D%97%E7%B3%BB%E7%BB%9F%29.pptx)
+- [Rust语言编程知识与应用(2.2 所有权).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%282.2%20%E6%89%80%E6%9C%89%E6%9D%83%29.pptx)
+- [Rust语言编程知识与应用(2.3 生命周期).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%282.3%20%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%29.pptx)
+- [Rust语言编程知识与应用(2.4 trait).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%282.4%20trait%29.pptx)
+- [Rust语言编程知识与应用(2.5 泛型).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%282.5%20%E6%B3%9B%E5%9E%8B%29.pptx)
+- [Rust语言编程知识与应用(2.6 智能指针).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%282.6%20%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88%29.pptx)
+- [Rust语言编程知识与应用(2.7 内部可变性).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%282.7%20%E5%86%85%E9%83%A8%E5%8F%AF%E5%8F%98%E6%80%A7%29.pptx)
+- [Rust语言编程知识与应用(2.8 闭包).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%282.8%20%E9%97%AD%E5%8C%85%29.pptx)
+- [Rust语言编程知识与应用(3.1 错误处理).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%283.1%20%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86%29.pptx)
+- [Rust语言编程知识与应用(3.2 io和fs模块).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%283.2%20io%E5%92%8Cfs%E6%A8%A1%E5%9D%97%29.pptx)
+- [Rust语言编程知识与应用(3.3 集合容器).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%283.3%20%E9%9B%86%E5%90%88%E5%AE%B9%E5%99%A8%29.pptx)
+- [Rust语言编程知识与应用(4.1 并发编程).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%284.1%20%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%29.pptx)
+- [Rust语言编程知识与应用(4.2 同步机制).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%284.2%20%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6%29.pptx)
+- [Rust语言编程知识与应用(4.3 原子类型).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%284.3%20%E5%8E%9F%E5%AD%90%E7%B1%BB%E5%9E%8B%29.pptx)
+- [Rust语言编程知识与应用(4.4 异步编程).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%284.4%20%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B%29.pptx)
+- [Rust语言编程知识与应用(5.1 裸指针和unsafe rust).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%285.1%20%E8%A3%B8%E6%8C%87%E9%92%88%E5%92%8Cunsafe%20rust%29.pptx)
+- [Rust语言编程知识与应用(5.2 ffi模块).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%285.2%20ffi%E6%A8%A1%E5%9D%97%29.pptx)
+- [Rust语言编程知识与应用(5.3 内存布局).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%285.3%20%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%29.pptx)
+- [Rust语言编程知识与应用(6.1 元编程).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%286.1%20%E5%85%83%E7%BC%96%E7%A8%8B%29.pptx)
+- [Rust语言编程知识与应用(6.2 声明宏).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%286.2%20%E5%A3%B0%E6%98%8E%E5%AE%8F%29.pptx)
+- [Rust语言编程知识与应用(6.3 过程宏).pptx](Rust%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%BA%94%E7%94%A8%286.3%20%E8%BF%87%E7%A8%8B%E5%AE%8F%29.pptx)
+
+[返回贡献目录](../README.md)

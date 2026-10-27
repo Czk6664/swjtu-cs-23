@@ -10,7 +10,7 @@
 
 ## 贡献致谢
 
-感谢 **Cheng Zekai** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
+感谢 **Cheng Zekai**、**Wan Jiale** 提供和整理本课程资料。课件与教材的原作者署名保留，资料贡献者不等同于原创作者。
 
 ## 资料导航
 
@@ -20,6 +20,7 @@
 - [results/](results/README.md)
 - [SCAI004012_视觉计算作业/](SCAI004012_%E8%A7%86%E8%A7%89%E8%AE%A1%E7%AE%97%E4%BD%9C%E4%B8%9A/README.md)
 - [sr_course_design/](sr_course_design/README.md)
+- [Wan Jiale/](Wan%20Jiale/README.md)
 - [作业与课程设计/](%E4%BD%9C%E4%B8%9A%E4%B8%8E%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1/README.md)
 - [可视化/](%E5%8F%AF%E8%A7%86%E5%8C%96/README.md)
 - [课件/](%E8%AF%BE%E4%BB%B6/README.md)
