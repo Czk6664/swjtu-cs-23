@@ -1,5 +1,26 @@
 # access_control_lab
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“网络空间安全技术”课程下的“access_control_lab”目录，主要用于整理此模块的源码及配套文件。
+
+**阅读建议：**从上级项目说明确认模块职责，再结合文件名查找实现；具体入口和运行方法以源码及原说明为准。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **18 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+| 子目录 | 内容与用途 |
+| --- | --- |
+| [tools](tools/README.md) | 处理数据、生成材料或辅助运行的脚本工具 |
+
+- **代码与脚本（12 份）**：[__init__.py](__init__.py)、[abac_model.py](abac_model.py)等；完整列表见本页导航。
+- **配置及其他配套文件（2 份）**：[audit_log.jsonl](audit_log.jsonl)、[experiment_results.json](experiment_results.json)。
+- **文档与说明（1 份）**：[section6_program_design.txt](section6_program_design.txt)。
+
+<!-- directory-guide:end -->
+
 所属课程：[网络空间安全技术](../../../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

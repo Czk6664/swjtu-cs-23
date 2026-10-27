@@ -1,5 +1,36 @@
 # sr_course_design
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“视觉计算”课程下的“sr_course_design”目录，主要用于整理包含依赖或构建配置的项目目录。
+
+**阅读建议：**先读下方原有项目说明，了解功能和环境，再查看依赖文件与源代码。
+
+**项目背景与使用步骤：**请继续阅读本页下方的“原有项目说明”，其中保留了项目自己的功能介绍、环境要求或运行方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **206 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+| 子目录 | 内容与用途 |
+| --- | --- |
+| [ca-imdn-improvement-video](ca-imdn-improvement-video/README.md) | 包含依赖或构建配置的项目目录 |
+| [checkpoints](checkpoints/README.md) | 模型权重或训练检查点 |
+| [imdn-process-video](imdn-process-video/README.md) | 包含依赖或构建配置的项目目录 |
+| [logs](logs/README.md) | 运行日志或过程记录 |
+| [openspec](openspec/README.md) | 项目中该主题的需求、设计或任务记录 |
+| [report](report/README.md) | 报告文档或报告排版源文件 |
+| [src](src/README.md) | 程序源代码与实现文件 |
+| [tests](tests/README.md) | 测试代码、测试用例或测试输入 |
+| [tools](tools/README.md) | 处理数据、生成材料或辅助运行的脚本工具 |
+
+- **文档与说明（16 份）**：[CHECKLIST_100PT.md](CHECKLIST_100PT.md)、[CHECKLIST_10PT.md](CHECKLIST_10PT.md)等；完整列表见本页导航。
+- **配置及其他配套文件（1 份）**：[environment.yml](environment.yml)。
+- **代码与脚本（8 份）**：[run_100pt_sprint_windows.ps1](run_100pt_sprint_windows.ps1)、[run_10pt_experiments_windows.ps1](run_10pt_experiments_windows.ps1)等；完整列表见本页导航。
+
+<!-- directory-guide:end -->
+
 所属课程：[视觉计算](../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

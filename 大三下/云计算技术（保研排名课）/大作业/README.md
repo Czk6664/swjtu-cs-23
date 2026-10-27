@@ -1,5 +1,32 @@
 # 大作业
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“云计算技术”课程下的“大作业”目录，主要用于整理该项课程实践的相关材料，具体内容见下方文件与子目录。
+
+**阅读建议：**先读任务或报告了解目标，再看代码、数据和结果；借鉴方法后独立完成自己的任务。
+
+**项目背景与使用步骤：**请继续阅读本页下方的“原有项目说明”，其中保留了项目自己的功能介绍、环境要求或运行方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **469 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+| 子目录 | 内容与用途 |
+| --- | --- |
+| [cloud-computing-final-project](cloud-computing-final-project/README.md) | 该主题的配套文件或下级模块 |
+| [cloud-report-tex](cloud-report-tex/README.md) | 文档排版源文件及配套资源 |
+| [openspec](openspec/README.md) | 项目中该主题的需求、设计或任务记录 |
+| [tools](tools/README.md) | 处理数据、生成材料或辅助运行的脚本工具 |
+| [课程设计模版_视觉计算2026年](%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E7%89%88_%E8%A7%86%E8%A7%89%E8%AE%A1%E7%AE%972026%E5%B9%B4/README.md) | 课程文档或报告的模板及配套文件 |
+
+- **配置及其他配套文件（1 份）**：[.gitignore](.gitignore)。
+- **文档与说明（2 份）**：[PLAN.md](PLAN.md)、[课程设计任务书.docx](%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1%E4%BB%BB%E5%8A%A1%E4%B9%A6.docx)。
+- **表格与数据（1 份）**：[douban_movies.csv](douban_movies.csv)。
+
+<!-- directory-guide:end -->
+
 所属课程：[云计算技术](../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

@@ -1,5 +1,21 @@
 # Mao Luhan
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“操作系统”课程下的“Mao Luhan”目录，主要用于整理Mao Luhan 提供或整理的课程资料，按下级类别浏览。
+
+**阅读建议：**先按资料类型选择目录；多个贡献者的资料可相互参照，贡献者姓名表示资料来源，不代表文件原作者。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **16 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+- **演示文稿（13 份）**：[OS-总复习1.pptx](OS-%E6%80%BB%E5%A4%8D%E4%B9%A01.pptx)、[OS-总复习2.pptx](OS-%E6%80%BB%E5%A4%8D%E4%B9%A02.pptx)等；完整列表见本页导航。
+- **文档与说明（3 份）**：[OS6-Memory Management.pdf](OS6-Memory%20Management.pdf)、[William_Stallings_Operating_Systems_Internals_and_Design_Principles_watermark.pdf](William_Stallings_Operating_Systems_Internals_and_Design_Principles_watermark.pdf)等；完整列表见本页导航。
+
+<!-- directory-guide:end -->
+
 所属课程：[操作系统](../README.md)。
 
 感谢 **Mao Luhan** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

@@ -1,5 +1,20 @@
 # manual
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“软件系统综合课程设计”课程下的“manual”目录，主要用于整理项目说明或参考文档。
+
+**阅读建议：**先找概述、任务或使用说明建立整体认识，再按需要查阅专题内容。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **42 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+- **图片与图形（42 份）**：[admin_dashboard.png](admin_dashboard.png)、[admin_navbar.png](admin_navbar.png)等；完整列表见本页导航。
+
+<!-- directory-guide:end -->
+
 所属课程：[软件系统综合课程设计](../../../../../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

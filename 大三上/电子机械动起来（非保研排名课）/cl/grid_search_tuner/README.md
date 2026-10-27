@@ -1,5 +1,27 @@
 # grid_search_tuner
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“电子机械动起来”课程下的“grid_search_tuner”目录，主要用于整理该主题的文档与参考材料。
+
+**阅读建议：**先根据下方文件名选择相关文档，再结合上级介绍理解背景；原文件中的说明优先。
+
+**项目背景与使用步骤：**请继续阅读本页下方的“原有项目说明”，其中保留了项目自己的功能介绍、环境要求或运行方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **8 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+| 子目录 | 内容与用途 |
+| --- | --- |
+| [dual_loop_control](dual_loop_control/README.md) | 此模块的源码及配套文件 |
+
+- **文档与说明（1 份）**：[TIMER_UPDATE.md](TIMER_UPDATE.md)。
+- **配置及其他配套文件（1 份）**：[grid_search_tuner.ino](grid_search_tuner.ino)。
+
+<!-- directory-guide:end -->
+
 所属课程：[电子机械动起来](../../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

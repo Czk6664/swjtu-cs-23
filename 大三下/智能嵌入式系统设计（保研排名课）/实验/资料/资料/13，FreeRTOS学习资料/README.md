@@ -1,5 +1,20 @@
 # 13，FreeRTOS学习资料
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“智能嵌入式系统设计”课程下的“13，FreeRTOS学习资料”目录，主要用于整理芯片、模块或嵌入式系统相关参考文档。
+
+**阅读建议：**先核对所用硬件型号和软件版本，再查阅接口、参数与使用方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **4 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+- **文档与说明（4 份）**：[161204_Mastering_the_FreeRTOS_Real_Time_Kernel-A_Hands-On_Tutorial_Guide.pdf](161204_Mastering_the_FreeRTOS_Real_Time_Kernel-A_Hands-On_Tutorial_Guide.pdf)、[FreeRTOS_Reference_Manual_V9.0.0.pdf](FreeRTOS_Reference_Manual_V9.0.0.pdf)等；完整列表见本页导航。
+
+<!-- directory-guide:end -->
+
 所属课程：[智能嵌入式系统设计](../../../../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

@@ -1,5 +1,24 @@
 # dify
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“智能+交通”课程下的“dify”目录，主要用于整理该主题的文档与参考材料。
+
+**阅读建议：**先根据下方文件名选择相关文档，再结合上级介绍理解背景；原文件中的说明优先。
+
+**项目背景与使用步骤：**请继续阅读本页下方的“原有项目说明”，其中保留了项目自己的功能介绍、环境要求或运行方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **4 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+- **文档与说明（1 份）**：[DIFY_1_14_WORKFLOW.md](DIFY_1_14_WORKFLOW.md)。
+- **配置及其他配套文件（2 份）**：[app.dsl.yaml](app.dsl.yaml)、[travelqa-tools.openapi.yaml](travelqa-tools.openapi.yaml)。
+- **代码与脚本（1 份）**：[setup_dify_1_14.ps1](setup_dify_1_14.ps1)。
+
+<!-- directory-guide:end -->
+
 所属课程：[智能+交通](../../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

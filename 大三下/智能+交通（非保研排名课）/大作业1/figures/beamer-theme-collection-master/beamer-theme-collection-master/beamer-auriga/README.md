@@ -1,5 +1,28 @@
 # beamer-auriga
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“智能+交通”课程下的“beamer-auriga”目录，主要用于整理文档排版源文件及配套资源。
+
+**阅读建议：**阅读内容时先找同组的 PDF 成稿；修改排版时需要结合主文档和引用资源。
+
+**项目背景与使用步骤：**请继续阅读本页下方的“原有项目说明”，其中保留了项目自己的功能介绍、环境要求或运行方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **14 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+| 子目录 | 内容与用途 |
+| --- | --- |
+| [slides](slides/README.md) | 演示文稿或汇报材料 |
+
+- **配置及其他配套文件（1 份）**：[.editorconfig](.editorconfig)。
+- **文档与说明（1 份）**：[LICENSE.md](LICENSE.md)。
+- **排版源文件（5 份）**：[auriga-cn-ctex.tex](auriga-cn-ctex.tex)、[auriga-cn-xeCJK.tex](auriga-cn-xeCJK.tex)等；完整列表见本页导航。
+
+<!-- directory-guide:end -->
+
 所属课程：[智能+交通](../../../../../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

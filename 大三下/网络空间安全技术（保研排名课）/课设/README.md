@@ -1,5 +1,34 @@
 # 课设
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“网络空间安全技术”课程下的“课设”目录，主要用于整理该项课程实践的相关材料，具体内容见下方文件与子目录。
+
+**阅读建议：**先读任务或报告了解目标，再看代码、数据和结果；借鉴方法后独立完成自己的任务。
+
+**项目背景与使用步骤：**请继续阅读本页下方的“原有项目说明”，其中保留了项目自己的功能介绍、环境要求或运行方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **87 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+| 子目录 | 内容与用途 |
+| --- | --- |
+| [data](data/README.md) | 项目使用的数据或样例输入 |
+| [docs](docs/README.md) | 项目说明或参考文档 |
+| [outputs](outputs/README.md) | 实验或程序产生的结果文件 |
+| [static](static/README.md) | 应用或文档依赖的资源文件 |
+| [templates](templates/README.md) | 页面、配置或文档模板 |
+| [课程设计模版2026年](%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E7%89%882026%E5%B9%B4/README.md) | 课程文档或报告的模板及配套文件 |
+
+- **图片与图形（1 份）**：[ChatGPT Image 2026年6月10日 08_59_35.png](ChatGPT%20Image%202026%E5%B9%B46%E6%9C%8810%E6%97%A5%2008_59_35.png)。
+- **代码与脚本（8 份）**：[app.py](app.py)、[audit.py](audit.py)等；完整列表见本页导航。
+- **文档与说明（3 份）**：[requirements.txt](requirements.txt)、[topic_1.pdf](topic_1.pdf)等；完整列表见本页导航。
+- **配置及其他配套文件（1 份）**：[secure_login_app.spec](secure_login_app.spec)。
+
+<!-- directory-guide:end -->
+
 所属课程：[网络空间安全技术](../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

@@ -1,5 +1,24 @@
 # open_data
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“智能+交通”课程下的“open_data”目录，主要用于整理项目使用的数据或样例输入。
+
+**阅读建议：**先查上级说明中的数据来源、字段和处理方式，再查看具体文件；此处不一定包含完整数据集。
+
+**项目背景与使用步骤：**请继续阅读本页下方的“原有项目说明”，其中保留了项目自己的功能介绍、环境要求或运行方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **11 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+- **配置及其他配套文件（3 份）**：[chengdu_bus_lines_stops.jsonl](chengdu_bus_lines_stops.jsonl)、[manifest.json](manifest.json)等；完整列表见本页导航。
+- **表格与数据（7 份）**：[chengdu_highway_toll_stations.csv](chengdu_highway_toll_stations.csv)、[chengdu_metro_tram_station_names.xls](chengdu_metro_tram_station_names.xls)等；完整列表见本页导航。
+- **文档与说明（1 份）**：[道路交通安全法.md](%E9%81%93%E8%B7%AF%E4%BA%A4%E9%80%9A%E5%AE%89%E5%85%A8%E6%B3%95.md)。
+
+<!-- directory-guide:end -->
+
 所属课程：[智能+交通](../../../../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

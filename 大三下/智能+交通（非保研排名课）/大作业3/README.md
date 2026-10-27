@@ -1,5 +1,44 @@
 # 大作业3
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“智能+交通”课程下的“大作业3”目录，主要用于整理该项课程实践的相关材料，具体内容见下方文件与子目录。
+
+**阅读建议：**先读任务或报告了解目标，再看代码、数据和结果；借鉴方法后独立完成自己的任务。
+
+**项目背景与使用步骤：**请继续阅读本页下方的“原有项目说明”，其中保留了项目自己的功能介绍、环境要求或运行方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **267 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+| 子目录 | 内容与用途 |
+| --- | --- |
+| [ab_eval_v4](ab_eval_v4/README.md) | 该主题的配套文件或下级模块 |
+| [autodl](autodl/README.md) | 此模块的源码及配套文件 |
+| [course_design_2026](course_design_2026/README.md) | 该主题的配套文件或下级模块 |
+| [data](data/README.md) | 项目使用的数据或样例输入 |
+| [deepseek_lora__v4](deepseek_lora__v4/README.md) | 该主题的配套文件或下级模块 |
+| [deploy](deploy/README.md) | 部署配置或集群资源定义 |
+| [dify](dify/README.md) | 该主题的文档与参考材料 |
+| [docs](docs/README.md) | 项目说明或参考文档 |
+| [eval](eval/README.md) | 实验或程序产生的结果文件 |
+| [finetune](finetune/README.md) | 此模块的源码及配套文件 |
+| [report](report/README.md) | 报告文档或报告排版源文件 |
+| [scripts](scripts/README.md) | 处理数据、生成材料或辅助运行的脚本工具 |
+| [src](src/README.md) | 程序源代码与实现文件 |
+| [web](web/README.md) | 项目的应用或界面相关文件 |
+| [成都市公安局_files](%E6%88%90%E9%83%BD%E5%B8%82%E5%85%AC%E5%AE%89%E5%B1%80_files/README.md) | 该主题的配套文件或下级模块 |
+| [课程设计模版_2026年](%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E7%89%88_2026%E5%B9%B4/README.md) | 课程文档或报告的模板及配套文件 |
+
+- **配置及其他配套文件（3 份）**：[.gitignore](.gitignore)、[config.example.yaml](config.example.yaml)等；完整列表见本页导航。
+- **文档与说明（4 份）**：[AGENTS.md](AGENTS.md)、[CLAUDE.md](CLAUDE.md)等；完整列表见本页导航。
+- **代码与脚本（4 份）**：[setup.ps1](setup.ps1)、[setup_semantic_rag.ps1](setup_semantic_rag.ps1)等；完整列表见本页导航。
+- **演示文稿（1 份）**：[智能交通作业三ppt.pptx](%E6%99%BA%E8%83%BD%E4%BA%A4%E9%80%9A%E4%BD%9C%E4%B8%9A%E4%B8%89ppt.pptx)。
+
+<!-- directory-guide:end -->
+
 所属课程：[智能+交通](../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

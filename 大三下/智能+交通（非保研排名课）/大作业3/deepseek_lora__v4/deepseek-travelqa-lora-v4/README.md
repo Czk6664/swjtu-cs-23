@@ -1,5 +1,27 @@
 # deepseek-travelqa-lora-v4
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“智能+交通”课程下的“deepseek-travelqa-lora-v4”目录，主要用于整理该主题的配套文件或下级模块。
+
+**阅读建议：**先看下方内容摘要选择入口；需要了解整体任务时返回上级项目或课程说明。
+
+**项目背景与使用步骤：**请继续阅读本页下方的“原有项目说明”，其中保留了项目自己的功能介绍、环境要求或运行方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **25 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+| 子目录 | 内容与用途 |
+| --- | --- |
+| [checkpoint-138](checkpoint-138/README.md) | 以实验或模型配置命名的一组训练相关材料 |
+| [checkpoint-69](checkpoint-69/README.md) | 以实验或模型配置命名的一组训练相关材料 |
+
+- **配置及其他配套文件（8 份）**：[adapter_config.json](adapter_config.json)、[all_results.json](all_results.json)等；完整列表见本页导航。
+
+<!-- directory-guide:end -->
+
 所属课程：[智能+交通](../../../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

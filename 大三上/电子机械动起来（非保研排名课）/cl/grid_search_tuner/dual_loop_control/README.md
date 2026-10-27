@@ -1,5 +1,24 @@
 # dual_loop_control
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“电子机械动起来”课程下的“dual_loop_control”目录，主要用于整理此模块的源码及配套文件。
+
+**阅读建议：**从上级项目说明确认模块职责，再结合文件名查找实现；具体入口和运行方法以源码及原说明为准。
+
+**项目背景与使用步骤：**请继续阅读本页下方的“原有项目说明”，其中保留了项目自己的功能介绍、环境要求或运行方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **6 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+- **文档与说明（2 份）**：[TUNING_GUIDE.md](TUNING_GUIDE.md)、[修复说明.md](%E4%BF%AE%E5%A4%8D%E8%AF%B4%E6%98%8E.md)。
+- **代码与脚本（3 份）**：[config.h](config.h)、[control.h](control.h)等；完整列表见本页导航。
+- **配置及其他配套文件（1 份）**：[dual_loop_control.ino](dual_loop_control.ino)。
+
+<!-- directory-guide:end -->
+
 所属课程：[电子机械动起来](../../../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

@@ -1,5 +1,33 @@
 # swjtu-forum-innovation-media-admin-base
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“软件系统综合课程设计”课程下的“swjtu-forum-innovation-media-admin-base”目录，主要用于整理该主题的文档与参考材料。
+
+**阅读建议：**先根据下方文件名选择相关文档，再结合上级介绍理解背景；原文件中的说明优先。
+
+**项目背景与使用步骤：**请继续阅读本页下方的“原有项目说明”，其中保留了项目自己的功能介绍、环境要求或运行方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **573 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+| 子目录 | 内容与用途 |
+| --- | --- |
+| [backend](backend/README.md) | 项目的后端服务实现 |
+| [docs](docs/README.md) | 项目说明或参考文档 |
+| [frontend](frontend/README.md) | 项目的应用或界面相关文件 |
+| [openspec](openspec/README.md) | 项目中该主题的需求、设计或任务记录 |
+| [packaging](packaging/README.md) | 此模块的源码及配套文件 |
+| [stitch_](stitch_/README.md) | 该主题的文档与参考材料 |
+
+- **配置及其他配套文件（1 份）**：[.gitignore](.gitignore)。
+- **文档与说明（5 份）**：[CLAUDE.md](CLAUDE.md)、[DELIVERY.md](DELIVERY.md)等；完整列表见本页导航。
+- **代码与脚本（6 份）**：[build-portable.ps1](build-portable.ps1)、[check-environment.ps1](check-environment.ps1)等；完整列表见本页导航。
+
+<!-- directory-guide:end -->
+
 所属课程：[软件系统综合课程设计](../../../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

@@ -1,5 +1,23 @@
 # WindowsProject2
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“计算机图形学与人机交互”课程下的“WindowsProject2”目录，主要用于整理此模块的源码及配套文件。
+
+**阅读建议：**从上级项目说明确认模块职责，再结合文件名查找实现；具体入口和运行方法以源码及原说明为准。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **25 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+- **文档与说明（3 份）**：[2023112621程泽凯实验2.pdf](2023112621%E7%A8%8B%E6%B3%BD%E5%87%AF%E5%AE%9E%E9%AA%8C2.pdf)、[FIX_ERRORS.txt](FIX_ERRORS.txt)等；完整列表见本页导航。
+- **代码与脚本（9 份）**：[CleanAndRebuild.bat](CleanAndRebuild.bat)、[Shape.h](Shape.h)等；完整列表见本页导航。
+- **配置及其他配套文件（6 份）**：[RCa14248](RCa14248)、[WindowsProject2.rc](WindowsProject2.rc)等；完整列表见本页导航。
+- **图片与图形（7 份）**：[WindowsProject2.ico](WindowsProject2.ico)、[icon.ico](icon.ico)等；完整列表见本页导航。
+
+<!-- directory-guide:end -->
+
 所属课程：[计算机图形学与人机交互](../../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。

@@ -1,5 +1,33 @@
 # improvements
 
+<!-- directory-guide:start -->
+## 本层内容介绍
+
+这里是“智能+交通”课程下的“improvements”目录，主要用于整理此模块的源码及配套文件。
+
+**阅读建议：**从上级项目说明确认模块职责，再结合文件名查找实现；具体入口和运行方法以源码及原说明为准。
+
+**项目背景与使用步骤：**请继续阅读本页下方的“原有项目说明”，其中保留了项目自己的功能介绍、环境要求或运行方法。
+
+### 本层有哪些内容
+
+本目录及子目录共收录 **24 份文件**（不含各层 README）；下面先介绍本层直接可见的内容。
+
+| 子目录 | 内容与用途 |
+| --- | --- |
+| [00_Baseline](00_Baseline/README.md) | 该主题的配套文件或下级模块 |
+| [01_External_Feature_Fusion](01_External_Feature_Fusion/README.md) | 此模块的源码及配套文件 |
+| [02_Dynamic_Graph_Learning](02_Dynamic_Graph_Learning/README.md) | 此模块的源码及配套文件 |
+| [03_Lightweight_Attention](03_Lightweight_Attention/README.md) | 此模块的源码及配套文件 |
+| [04_Multi_Scale_Time](04_Multi_Scale_Time/README.md) | 此模块的源码及配套文件 |
+| [lib](lib/README.md) | 项目内部的公共功能或支撑模块 |
+| [models](models/README.md) | 模型结构、损失函数或模型相关文件 |
+
+- **代码与脚本（7 份）**：[generate_plots.py](generate_plots.py)、[generate_plots_all.py](generate_plots_all.py)等；完整列表见本页导航。
+- **文档与说明（2 份）**：[training_output.txt](training_output.txt)、[第七章_改进模型实验结果与对比分析.md](%E7%AC%AC%E4%B8%83%E7%AB%A0_%E6%94%B9%E8%BF%9B%E6%A8%A1%E5%9E%8B%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C%E4%B8%8E%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90.md)。
+
+<!-- directory-guide:end -->
+
 所属课程：[智能+交通](../../README.md)。
 
 感谢 **Cheng Zekai** 提供或整理本目录资料。原作者与第三方项目署名以文件原文为准。
